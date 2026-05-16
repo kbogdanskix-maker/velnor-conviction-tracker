@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Build output
+.next/
+out/
+dist/
+build/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Python
+*.egg-info/
+*.egg
+.mypy_cache/
+.pytest_cache/
+
+# Logs
+*.log
+celerybeat-schedule
+
+# Redis
+dump.rdb
+
+# Coverage
+coverage/
+htmlcov/
+.coverage

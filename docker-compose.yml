@@ -1,0 +1,94 @@
+version: "3.9"
+
+services:
+  # ── PostgreSQL (local dev only — prod uses Supabase) ────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: vela
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ── Redis ───────────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    command: redis-server --maxmemory 100mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ── FastAPI backend ─────────────────────────────────────────────────────────
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_ENV=development
+      - DATABASE_URL=postgresql+asyncpg://postgres:password@postgres:5432/vela
+      - DATABASE_URL_SYNC=postgresql://postgres:password@postgres:5432/vela
+      - REDIS_URL=redis://redis:6379/0
+    env_file:
+      - ./backend/.env
+    volumes:
+      - ./backend:/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # ── Celery worker ───────────────────────────────────────────────────────────
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      - APP_ENV=development
+      - DATABASE_URL=postgresql+asyncpg://postgres:password@postgres:5432/vela
+      - DATABASE_URL_SYNC=postgresql://postgres:password@postgres:5432/vela
+      - REDIS_URL=redis://redis:6379/0
+    env_file:
+      - ./backend/.env
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - api
+    command: celery -A app.tasks.celery_app worker --loglevel=info --concurrency=2
+
+  # ── Celery beat (scheduled tasks) ──────────────────────────────────────────
+  beat:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      - DATABASE_URL_SYNC=postgresql://postgres:password@postgres:5432/vela
+      - REDIS_URL=redis://redis:6379/0
+    env_file:
+      - ./backend/.env
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - worker
+    command: celery -A app.tasks.celery_app beat --loglevel=info
+
+volumes:
+  postgres_data:
+  redis_data:
