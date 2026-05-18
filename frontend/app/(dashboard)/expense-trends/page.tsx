@@ -18,6 +18,7 @@ import PageTransition from "@/components/celestial/PageTransition";
 import FloatingCard from "@/components/celestial/FloatingCard";
 import RevealOnScroll from "@/components/celestial/RevealOnScroll";
 import DashboardSkeleton from "@/components/shared/DashboardSkeleton";
+import ErrorState from "@/components/shared/ErrorState";
 import { formatCurrency, formatCompact } from "@/lib/formatters";
 import {
   BarChart,
@@ -89,8 +90,8 @@ function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: 
 // ── Main page ────────────────────────────────────────────────────────
 
 export default function ExpenseTrendsPage() {
-  const { summary: cfSummary, isLoading: cfLoading } = useCashFlowSummary();
-  const { data: cloudData, save, isLoading: storeLoading } = useCloudStore<ExpenseSnapshot[]>("expense_trends");
+  const { summary: cfSummary, isLoading: cfLoading, error: cfError } = useCashFlowSummary();
+  const { data: cloudData, save, isLoading: storeLoading, error: storeError } = useCloudStore<ExpenseSnapshot[]>("expense_trends");
 
   const [snapshots, setSnapshots] = useState<ExpenseSnapshot[]>([]);
   const synced = useRef(false);
@@ -169,6 +170,7 @@ export default function ExpenseTrendsPage() {
   }, [sorted]);
 
   const loading = cfLoading || storeLoading;
+  if (cfError || storeError) return <ErrorState message="Failed to load expense trend data." onRetry={() => window.location.reload()} />;
   if (loading) return <DashboardSkeleton />;
 
   return (

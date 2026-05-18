@@ -18,6 +18,8 @@ import { calculateRetirement, DEFAULT_INPUT } from "@/lib/retirement-calc";
 import type { RetirementInput } from "@/lib/retirement-calc";
 import PageTransition from "@/components/celestial/PageTransition";
 import AnimatedNumber from "@/components/celestial/AnimatedNumber";
+import DashboardSkeleton from "@/components/shared/DashboardSkeleton";
+import ErrorState from "@/components/shared/ErrorState";
 import TierGate from "@/components/shared/TierGate";
 
 function formatCompact(v: number): string {
@@ -29,9 +31,15 @@ function formatCompact(v: number): string {
 }
 
 export default function RetirementPage() {
-  const { summary } = useDefaultPortfolio();
-  const { summary: nwSummary } = useNetWorthSummary();
-  const { summary: cfSummary } = useCashFlowSummary();
+  const { summary, loading: pLoading, error: pError } = useDefaultPortfolio();
+  const { summary: nwSummary, isLoading: nwLoading, error: nwError } = useNetWorthSummary();
+  const { summary: cfSummary, isLoading: cfLoading, error: cfError } = useCashFlowSummary();
+
+  const isLoading = pLoading || nwLoading || cfLoading;
+  const error = pError || nwError || cfError;
+
+  if (isLoading) return <DashboardSkeleton />;
+  if (error) return <ErrorState message="Failed to load retirement planning data." onRetry={() => window.location.reload()} />;
 
   // Pre-fill from user data where available
   const portfolioValue = summary?.total_value ?? 0;

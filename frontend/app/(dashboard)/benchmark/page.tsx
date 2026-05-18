@@ -10,6 +10,8 @@ import { calculateBenchmarks, DEFAULT_PROFILE } from "@/lib/benchmarks";
 import { formatCompact, formatPercent, formatNumber } from "@/lib/formatters";
 import PageTransition from "@/components/celestial/PageTransition";
 import TierGate from "@/components/shared/TierGate";
+import DashboardSkeleton from "@/components/shared/DashboardSkeleton";
+import ErrorState from "@/components/shared/ErrorState";
 import type {
   BenchmarkInput, BenchmarkMetric, RiskProfile,
   RiskTolerance, CareerStage, IncomeLevel,
@@ -73,7 +75,7 @@ const INCOME_OPTIONS: { value: IncomeLevel; label: string; range: string }[] = [
 // ── Page ─────────────────────────────────────────────────────────────────────
 
 export default function BenchmarkPage() {
-  const { summary } = useDefaultPortfolio();
+  const { summary, loading, error } = useDefaultPortfolio();
   const hasHoldings = !!summary?.holdings?.length;
   const { dividends } = useDividendSummary(hasHoldings ? (summary as any)?.portfolio_id ?? null : null);
   const { summary: nwSummary } = useNetWorthSummary();
@@ -111,6 +113,9 @@ export default function BenchmarkPage() {
 
     return calculateBenchmarks(input);
   }, [summary, nwSummary, cfSummary, dividends, age, profile]);
+
+  if (loading) return <DashboardSkeleton />;
+  if (error) return <ErrorState message="Failed to load data for benchmarking." onRetry={() => window.location.reload()} />;
 
   return (
     <TierGate requiredTier="voyager">

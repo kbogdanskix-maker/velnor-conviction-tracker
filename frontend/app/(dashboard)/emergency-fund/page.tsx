@@ -12,6 +12,7 @@ import { useNetWorthSummary } from "@/hooks/useNetWorth";
 import { formatCurrency, formatCompact, formatPercent } from "@/lib/formatters";
 import PageTransition from "@/components/celestial/PageTransition";
 import TierGate from "@/components/shared/TierGate";
+import ErrorState from "@/components/shared/ErrorState";
 import AnimatedNumber from "@/components/celestial/AnimatedNumber";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -104,8 +105,8 @@ function analyzeEmergencyFund(
 // ── Page ─────────────────────────────────────────────────────────────────────
 
 export default function EmergencyFundPage() {
-  const { summary: cfSummary, isLoading: cfLoading } = useCashFlowSummary();
-  const { summary: nwSummary, isLoading: nwLoading } = useNetWorthSummary();
+  const { summary: cfSummary, isLoading: cfLoading, error: cfError } = useCashFlowSummary();
+  const { summary: nwSummary, isLoading: nwLoading, error: nwError } = useNetWorthSummary();
   const [targetMonths, setTargetMonths] = useState(6);
 
   const analysis = useMemo(() => {
@@ -150,6 +151,8 @@ export default function EmergencyFundPage() {
       </PageTransition>
     );
   }
+
+  if (cfError || nwError) return <ErrorState message="Failed to load emergency fund data." onRetry={() => window.location.reload()} />;
 
   return (
     <TierGate requiredTier="voyager">

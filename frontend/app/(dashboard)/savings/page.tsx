@@ -11,6 +11,7 @@ import { useCashFlowSummary } from "@/hooks/useCashFlow";
 import { useNetWorthSummary } from "@/hooks/useNetWorth";
 import PageTransition from "@/components/celestial/PageTransition";
 import TierGate from "@/components/shared/TierGate";
+import ErrorState from "@/components/shared/ErrorState";
 
 // ── Rate data — sourced from Bankrate / NerdWallet / Fortune, March 2026 ──
 
@@ -163,8 +164,8 @@ const FEATURE_FILTERS: { value: FeatureFilter; label: string; icon: React.ReactN
 // ── Page ────────────────────────────────────────────────────────────────────
 
 export default function SavingsFinderPage() {
-  const { summary: cfSummary } = useCashFlowSummary();
-  const { summary: nwSummary } = useNetWorthSummary();
+  const { summary: cfSummary, error: cfError } = useCashFlowSummary();
+  const { summary: nwSummary, error: nwError } = useNetWorthSummary();
 
   const [filter, setFilter] = useState<AccountFilter>("all");
   const [activeFeatures, setActiveFeatures] = useState<Set<FeatureFilter>>(new Set());
@@ -207,6 +208,8 @@ export default function SavingsFinderPage() {
   const nationalEarnings = computeEarnings(NATIONAL_AVG_SAVINGS, depositAmount, timeHorizon);
   const bestEarnings = computeEarnings(bestApy, depositAmount, timeHorizon);
   const opportunityCost = bestEarnings - nationalEarnings;
+
+  if (cfError || nwError) return <ErrorState message="Failed to load savings data." onRetry={() => window.location.reload()} />;
 
   return (
     <TierGate requiredTier="voyager">

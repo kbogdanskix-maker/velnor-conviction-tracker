@@ -12,6 +12,7 @@ import { useNetWorthAssets, categoryLabel, type NetWorthAsset } from "@/hooks/us
 import { formatCurrency } from "@/lib/formatters";
 import PageTransition from "@/components/celestial/PageTransition";
 import AnimatedNumber from "@/components/celestial/AnimatedNumber";
+import ErrorState from "@/components/shared/ErrorState";
 
 // ── Payoff math ─────────────────────────────────────────────────────────────
 
@@ -130,7 +131,7 @@ const STRATEGY_INFO = {
 // ── Page ────────────────────────────────────────────────────────────────────
 
 export default function DebtPayoffPage() {
-  const { assets, isLoading } = useNetWorthAssets();
+  const { assets, isLoading, error } = useNetWorthAssets();
   const [extraPayment, setExtraPayment] = useState("200");
   const [selectedStrategy, setSelectedStrategy] = useState<"avalanche" | "snowball">("avalanche");
 
@@ -194,6 +195,8 @@ export default function DebtPayoffPage() {
       </div>
     );
   }
+
+  if (error) return <ErrorState message="Failed to load debt payoff data." onRetry={() => window.location.reload()} />;
 
   if (debts.length === 0) {
     return (

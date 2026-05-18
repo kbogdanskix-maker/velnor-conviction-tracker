@@ -11,6 +11,7 @@ import { useDividendSummary } from "@/hooks/useDividends";
 import { useCashFlowSummary, type CashFlowEntry } from "@/hooks/useCashFlow";
 import { formatCompact, formatCurrency } from "@/lib/formatters";
 import PageTransition from "@/components/celestial/PageTransition";
+import ErrorState from "@/components/shared/ErrorState";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -54,11 +55,11 @@ interface IncomeStream {
 // ── Page ─────────────────────────────────────────────────────────────────────
 
 export default function IncomePage() {
-  const { portfolio, summary } = useDefaultPortfolio();
+  const { portfolio, summary, error: portfolioError } = useDefaultPortfolio();
   const portfolioId = portfolio?.id ?? null;
   const hasHoldings = !!summary?.holdings?.length;
-  const { dividends } = useDividendSummary(hasHoldings ? portfolioId : null);
-  const { summary: cfSummary } = useCashFlowSummary();
+  const { dividends, error: divError } = useDividendSummary(hasHoldings ? portfolioId : null);
+  const { summary: cfSummary, error: cfError } = useCashFlowSummary();
 
   const streams = useMemo(() => {
     const map = new Map<string, IncomeStream>();
@@ -124,6 +125,8 @@ export default function IncomePage() {
   }));
 
   const isEmpty = streams.length === 0;
+
+  if (portfolioError || divError || cfError) return <ErrorState message="Failed to load income data." onRetry={() => window.location.reload()} />;
 
   return (
     <PageTransition className="space-y-6">

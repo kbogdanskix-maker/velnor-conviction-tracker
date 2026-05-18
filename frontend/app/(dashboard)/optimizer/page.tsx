@@ -19,6 +19,7 @@ import PageTransition from "@/components/celestial/PageTransition";
 import FloatingCard from "@/components/celestial/FloatingCard";
 import RevealOnScroll from "@/components/celestial/RevealOnScroll";
 import DashboardSkeleton from "@/components/shared/DashboardSkeleton";
+import ErrorState from "@/components/shared/ErrorState";
 import {
   ScatterChart,
   Scatter,
@@ -171,7 +172,7 @@ function EmptyOptimizer() {
 // ── Main page ────────────────────────────────────────────────────────
 
 export default function OptimizerPage() {
-  const { portfolio, summary, loading, hasHoldings } = useDefaultPortfolio();
+  const { portfolio, summary, loading, error, hasHoldings } = useDefaultPortfolio();
   const { data: risk } = useRiskMetrics(portfolio?.id);
 
   const [selectedProfile, setSelectedProfile] = useState<RiskProfile>("balanced");
@@ -213,6 +214,7 @@ export default function OptimizerPage() {
   }, [summary]);
 
   if (loading) return <DashboardSkeleton />;
+  if (error) return <ErrorState message="Failed to load portfolio data for optimization." onRetry={() => window.location.reload()} />;
 
   return (
     <PageTransition className="space-y-6">

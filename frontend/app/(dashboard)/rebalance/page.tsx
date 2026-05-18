@@ -10,6 +10,8 @@ import { calculateRebalance } from "@/lib/rebalance-calc";
 import type { Strategy, HoldingAllocation } from "@/lib/rebalance-calc";
 import PageTransition from "@/components/celestial/PageTransition";
 import TierGate from "@/components/shared/TierGate";
+import DashboardSkeleton from "@/components/shared/DashboardSkeleton";
+import ErrorState from "@/components/shared/ErrorState";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -28,7 +30,7 @@ function fmtPct(v: number): string {
 // ── Page ─────────────────────────────────────────────────────────────────────
 
 export default function RebalancePage() {
-  const { summary } = useDefaultPortfolio();
+  const { summary, loading, error } = useDefaultPortfolio();
   const holdings = summary?.holdings ?? [];
   const totalValue = summary?.total_value ?? 0;
 
@@ -71,6 +73,9 @@ export default function RebalancePage() {
     target: Math.round(h.targetWeight * 100 * 10) / 10,
     drift: Math.round(h.drift * 10) / 10,
   }));
+
+  if (loading) return <DashboardSkeleton />;
+  if (error) return <ErrorState message="Failed to load portfolio data for rebalancing." onRetry={() => window.location.reload()} />;
 
   if (holdings.length === 0) {
     return (

@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useCloudStore } from "@/hooks/useCloudStore";
 import { formatCurrency } from "@/lib/formatters";
+import ErrorState from "@/components/shared/ErrorState";
 
 /* ── types ──────────────────────────────────────────────────── */
 
@@ -58,7 +59,7 @@ function monthlyAmount(stream: IncomeStream): number {
 const DEFAULT_STREAMS: IncomeStream[] = [];
 
 export default function IncomeStreamsPage() {
-  const { data: streams, save: setStreams } = useCloudStore<IncomeStream[]>("income_streams");
+  const { data: streams, save: setStreams, error } = useCloudStore<IncomeStream[]>("income_streams");
   const syncedRef = useRef(false);
   const [local, setLocal] = useState<IncomeStream[]>(DEFAULT_STREAMS);
   const [showAdd, setShowAdd] = useState(false);
@@ -163,6 +164,8 @@ export default function IncomeStreamsPage() {
     }
     return years;
   }, [activeStreams]);
+
+  if (error) return <ErrorState message="Failed to load income streams data." onRetry={() => window.location.reload()} />;
 
   return (
     <PageTransition>

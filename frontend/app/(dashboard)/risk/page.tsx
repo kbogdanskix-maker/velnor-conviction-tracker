@@ -21,6 +21,7 @@ import PageTransition from "@/components/celestial/PageTransition";
 import FloatingCard from "@/components/celestial/FloatingCard";
 import RevealOnScroll from "@/components/celestial/RevealOnScroll";
 import DashboardSkeleton from "@/components/shared/DashboardSkeleton";
+import ErrorState from "@/components/shared/ErrorState";
 
 // ── Risk grading ─────────────────────────────────────────────────────
 
@@ -491,8 +492,8 @@ function EmptyRisk() {
 // ── Main page ────────────────────────────────────────────────────────
 
 export default function RiskDashboardPage() {
-  const { portfolio, summary, loading, hasHoldings } = useDefaultPortfolio();
-  const { data: risk, isLoading: riskLoading } = useRiskMetrics(portfolio?.id);
+  const { portfolio, summary, loading, hasHoldings, error: portfolioError } = useDefaultPortfolio();
+  const { data: risk, isLoading: riskLoading, error: riskError } = useRiskMetrics(portfolio?.id);
 
   const overallScore = useMemo(() => {
     if (!risk || !summary) return null;
@@ -510,6 +511,8 @@ export default function RiskDashboardPage() {
   }, [summary]);
 
   if (loading || riskLoading) return <DashboardSkeleton />;
+
+  if (portfolioError || riskError) return <ErrorState message="Failed to load risk metrics." onRetry={() => window.location.reload()} />;
 
   const noData = !hasHoldings || !risk || risk.data_points < 2;
 

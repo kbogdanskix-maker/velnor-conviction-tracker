@@ -16,18 +16,19 @@ import {
 import type { AlertInput, AlertSeverity, AlertCategory } from "@/lib/smart-alerts";
 import PageTransition from "@/components/celestial/PageTransition";
 import TierGate from "@/components/shared/TierGate";
+import ErrorState from "@/components/shared/ErrorState";
 
 const SEVERITY_ORDER: AlertSeverity[] = ["critical", "warning", "info", "positive"];
 
 export default function AlertsPage() {
-  const { portfolio, summary } = useDefaultPortfolio();
+  const { portfolio, summary, error: pError } = useDefaultPortfolio();
   const portfolioId = portfolio?.id ?? null;
   const hasHoldings = !!summary?.holdings?.length;
 
-  const { dividends } = useDividendSummary(hasHoldings ? portfolioId : null);
-  const { tax } = useTaxSummary(hasHoldings ? portfolioId : null);
-  const { summary: nwSummary } = useNetWorthSummary();
-  const { goals } = useGoals();
+  const { dividends, error: divError } = useDividendSummary(hasHoldings ? portfolioId : null);
+  const { tax, error: taxError } = useTaxSummary(hasHoldings ? portfolioId : null);
+  const { summary: nwSummary, error: nwError } = useNetWorthSummary();
+  const { goals, error: goalsError } = useGoals();
 
   const [severityFilter, setSeverityFilter] = useState<AlertSeverity | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<AlertCategory | null>(null);
@@ -107,6 +108,9 @@ export default function AlertsPage() {
 
   // Unique categories present
   const activeCategories = Array.from(new Set(alerts.map((a) => a.category))) as AlertCategory[];
+
+  const alertError = pError || divError || taxError || nwError || goalsError;
+  if (alertError) return <ErrorState message="Failed to load alert data." onRetry={() => window.location.reload()} />;
 
   return (
     <TierGate requiredTier="voyager">

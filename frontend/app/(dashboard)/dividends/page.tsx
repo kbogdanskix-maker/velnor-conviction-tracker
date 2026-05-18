@@ -13,12 +13,14 @@ import { useDividendSummary, type DividendHolding } from "@/hooks/useDividends";
 import { formatCurrency, formatPercent, formatDate } from "@/lib/formatters";
 import { exportCSV } from "@/lib/export";
 import AnimatedNumber from "@/components/celestial/AnimatedNumber";
+import ErrorState from "@/components/shared/ErrorState";
+import FloatingCard from "@/components/celestial/FloatingCard";
 
 type SortKey = "income" | "yield" | "ticker";
 
 export default function DividendsPage() {
-  const { portfolio, loading: portfolioLoading } = useDefaultPortfolio();
-  const { dividends, isLoading } = useDividendSummary(portfolio?.id ?? null);
+  const { portfolio, loading: portfolioLoading, error: portfolioError } = useDefaultPortfolio();
+  const { dividends, isLoading, error: dividendError } = useDividendSummary(portfolio?.id ?? null);
   const [sortBy, setSortBy] = useState<SortKey>("income");
   const [sortAsc, setSortAsc] = useState(false);
 
@@ -61,6 +63,8 @@ export default function DividendsPage() {
     );
   }
 
+  if (portfolioError || dividendError) return <ErrorState message="Failed to load dividend data." onRetry={() => window.location.reload()} />;
+
   if (!dividends || dividends.holdings.length === 0) {
     return (
       <div className="space-y-6">
@@ -95,29 +99,36 @@ export default function DividendsPage() {
 
       {/* Summary cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <SummaryCard
-          label="Annual Income"
-          rawValue={dividends.total_annual_income}
-          formatFn={(n) => formatCurrency(n)}
-          sub={`from ${payingHoldings.length} holding${payingHoldings.length !== 1 ? "s" : ""}`}
-          accent
-        />
-        <SummaryCard
-          label="Portfolio Yield"
-          rawValue={(dividends.portfolio_yield ?? 0) * 100}
-          formatFn={(n) => formatPercent(n, false)}
-          sub={`on ${formatCurrency(dividends.total_portfolio_value)} portfolio`}
-        />
-        <SummaryCard
-          label="Monthly Average"
-          rawValue={monthlyIncome}
-          formatFn={(n) => formatCurrency(n)}
-          sub="projected at current rates"
-        />
+        <FloatingCard delay={0}>
+          <SummaryCard
+            label="Annual Income"
+            rawValue={dividends.total_annual_income}
+            formatFn={(n) => formatCurrency(n)}
+            sub={`from ${payingHoldings.length} holding${payingHoldings.length !== 1 ? "s" : ""}`}
+            accent
+          />
+        </FloatingCard>
+        <FloatingCard delay={0.08}>
+          <SummaryCard
+            label="Portfolio Yield"
+            rawValue={(dividends.portfolio_yield ?? 0) * 100}
+            formatFn={(n) => formatPercent(n, false)}
+            sub={`on ${formatCurrency(dividends.total_portfolio_value)} portfolio`}
+          />
+        </FloatingCard>
+        <FloatingCard delay={0.16}>
+          <SummaryCard
+            label="Monthly Average"
+            rawValue={monthlyIncome}
+            formatFn={(n) => formatCurrency(n)}
+            sub="projected at current rates"
+          />
+        </FloatingCard>
       </div>
 
       {/* Upcoming ex-dates */}
       {dividends.next_ex_dates.length > 0 && (
+        <RevealOnScroll>
         <div className="vela-card">
           <h2 className="text-sm font-medium text-zinc-300 mb-3 flex items-center gap-2">
             <Calendar className="w-4 h-4 text-zinc-400" />
@@ -152,9 +163,11 @@ export default function DividendsPage() {
             })}
           </div>
         </div>
+        </RevealOnScroll>
       )}
 
       {/* Holdings table */}
+      <RevealOnScroll delay={0.05}>
       <div className="vela-card">
         <h2 className="text-sm font-medium text-zinc-300 mb-3 flex items-center gap-2">
           <Coins className="w-4 h-4 text-zinc-400" />
@@ -206,9 +219,11 @@ export default function DividendsPage() {
           ))}
         </div>
       </div>
+      </RevealOnScroll>
 
       {/* Income projection */}
       {dividends.total_annual_income > 0 && (
+        <RevealOnScroll delay={0.1}>
         <div className="vela-card bg-zinc-900/50">
           <div className="flex items-start gap-3">
             <TrendingUp className="w-4 h-4 text-vela-teal mt-0.5 shrink-0" />
@@ -236,6 +251,7 @@ export default function DividendsPage() {
             </span>
           </div>
         </div>
+        </RevealOnScroll>
       )}
     </PageTransition>
   );

@@ -16,6 +16,7 @@ import PageTransition from "@/components/celestial/PageTransition";
 import FloatingCard from "@/components/celestial/FloatingCard";
 import RevealOnScroll from "@/components/celestial/RevealOnScroll";
 import DashboardSkeleton from "@/components/shared/DashboardSkeleton";
+import ErrorState from "@/components/shared/ErrorState";
 import { formatCurrency, formatCompact } from "@/lib/formatters";
 import {
   BarChart,
@@ -154,8 +155,8 @@ function MonthlyTooltip({ active, payload, label }: { active?: boolean; payload?
 // ── Main page ────────────────────────────────────────────────────────
 
 export default function DividendForecastPage() {
-  const { portfolio, loading } = useDefaultPortfolio();
-  const { dividends, isLoading: divLoading } = useDividendSummary(portfolio?.id ?? null);
+  const { portfolio, loading, error: portfolioError } = useDefaultPortfolio();
+  const { dividends, isLoading: divLoading, error: divError } = useDividendSummary(portfolio?.id ?? null);
 
   const [years, setYears] = useState(15);
   const [growthRate, setGrowthRate] = useState(5);
@@ -181,6 +182,8 @@ export default function DividendForecastPage() {
   }, [dividends]);
 
   if (loading || divLoading) return <DashboardSkeleton />;
+
+  if (portfolioError || divError) return <ErrorState message="Failed to load dividend forecast data." onRetry={() => window.location.reload()} />;
 
   const hasDividends = dividends && dividends.total_annual_income > 0;
 

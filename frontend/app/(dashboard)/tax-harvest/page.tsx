@@ -20,6 +20,7 @@ import PageTransition from "@/components/celestial/PageTransition";
 import FloatingCard from "@/components/celestial/FloatingCard";
 import RevealOnScroll from "@/components/celestial/RevealOnScroll";
 import DashboardSkeleton from "@/components/shared/DashboardSkeleton";
+import ErrorState from "@/components/shared/ErrorState";
 
 // ── Tax-loss harvesting analysis ─────────────────────────────────────
 
@@ -143,13 +144,14 @@ function EmptyHarvest() {
 // ── Main page ────────────────────────────────────────────────────────
 
 export default function TaxHarvestPage() {
-  const { summary, loading, hasHoldings } = useDefaultPortfolio();
+  const { summary, loading, hasHoldings, error } = useDefaultPortfolio();
 
   const harvest = useMemo(() => {
     if (!summary) return null;
     return analyzeHarvesting(summary.holdings);
   }, [summary]);
 
+  if (error) return <ErrorState message="Failed to load portfolio data for tax harvesting." onRetry={() => window.location.reload()} />;
   if (loading) return <DashboardSkeleton />;
 
   return (

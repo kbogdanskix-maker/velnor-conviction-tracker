@@ -17,6 +17,7 @@ import {
 import { formatCurrency, formatCompact, formatPercent } from "@/lib/formatters";
 import PageTransition from "@/components/celestial/PageTransition";
 import AnimatedNumber from "@/components/celestial/AnimatedNumber";
+import ErrorState from "@/components/shared/ErrorState";
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -50,7 +51,7 @@ function getCatColor(cat: string, idx: number): string {
 // ── Page ─────────────────────────────────────────────────────────────────────
 
 export default function ExpensesPage() {
-  const { summary, entries, isLoading } = useCashFlowSummary();
+  const { summary, entries, isLoading, error } = useCashFlowSummary();
   const [view, setView] = useState<"all" | "fixed" | "variable">("all");
 
   const expenseEntries = useMemo(() => {
@@ -106,6 +107,8 @@ export default function ExpensesPage() {
   const totalExpensePctOfIncome = totalIncome > 0 ? (totalExpenses / totalIncome) * 100 : 0;
 
   const isEmpty = !isLoading && expenseEntries.length === 0;
+
+  if (error) return <ErrorState message="Failed to load expense data." onRetry={() => window.location.reload()} />;
 
   if (isLoading) {
     return (

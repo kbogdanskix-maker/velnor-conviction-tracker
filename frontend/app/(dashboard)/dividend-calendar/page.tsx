@@ -10,6 +10,7 @@ import { useDividendSummary, type DividendHolding } from "@/hooks/useDividends";
 import { formatCompact, formatCurrency } from "@/lib/formatters";
 import PageTransition from "@/components/celestial/PageTransition";
 import TierGate from "@/components/shared/TierGate";
+import ErrorState from "@/components/shared/ErrorState";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -53,7 +54,7 @@ export default function DividendCalendarPage() {
   const { portfolio, summary } = useDefaultPortfolio();
   const portfolioId = portfolio?.id ?? null;
   const hasHoldings = !!summary?.holdings?.length;
-  const { dividends, isLoading } = useDividendSummary(hasHoldings ? portfolioId : null);
+  const { dividends, isLoading, error } = useDividendSummary(hasHoldings ? portfolioId : null);
 
   const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
   const [year] = useState(() => new Date().getFullYear());
@@ -116,6 +117,8 @@ export default function DividendCalendarPage() {
       </PageTransition>
     );
   }
+
+  if (error) return <ErrorState message="Failed to load dividend calendar data." onRetry={() => window.location.reload()} />;
 
   return (
     <TierGate requiredTier="voyager">

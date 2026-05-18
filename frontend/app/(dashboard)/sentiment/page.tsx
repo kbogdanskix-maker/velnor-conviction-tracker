@@ -14,6 +14,8 @@ import {
   Flame, Info, HelpCircle,
 } from "lucide-react";
 import { useDefaultPortfolio } from "@/hooks/usePortfolio";
+import ErrorState from "@/components/shared/ErrorState";
+import DashboardSkeleton from "@/components/shared/DashboardSkeleton";
 
 /* ── types & helpers ────────────────────────────────────────── */
 
@@ -29,7 +31,6 @@ interface TickerSentiment {
   buzz: number;
   sources: { reddit: number; twitter: number; news: number; stocktwits: number };
   trending: boolean;
-  keywords: string[];
   weeklyHistory: number[];
   marketCap: number;
 }
@@ -69,7 +70,105 @@ function sentimentIcon(score: number) {
   return <ThumbsDown className="w-3.5 h-3.5" />;
 }
 
-/* ── seed data generator ───────────────────────────────────── */
+/* ── curated sentiment profiles ────────────────────────────── */
+
+interface SentimentProfile {
+  overall: number;
+  mentions: number;
+  mentionChange: number;
+  buzz: number;
+  sources: { reddit: number; twitter: number; news: number; stocktwits: number };
+  weeklyHistory: number[];
+  marketCap: number;
+}
+
+const CURATED_PROFILES: Record<string, SentimentProfile> = {
+  AAPL: {
+    overall: 42, mentions: 48200, mentionChange: 8, buzz: 55,
+    sources: { reddit: 7200, twitter: 14500, news: 18600, stocktwits: 7900 },
+    weeklyHistory: [35, 38, 40, 44, 41, 45, 42], marketCap: 3400,
+  },
+  NVDA: {
+    overall: 72, mentions: 62400, mentionChange: 22, buzz: 88,
+    sources: { reddit: 15600, twitter: 18700, news: 16800, stocktwits: 11300 },
+    weeklyHistory: [58, 62, 65, 68, 74, 70, 72], marketCap: 3100,
+  },
+  TSLA: {
+    overall: 18, mentions: 71500, mentionChange: -5, buzz: 82,
+    sources: { reddit: 22800, twitter: 21400, news: 12800, stocktwits: 14500 },
+    weeklyHistory: [25, 22, 15, 12, 18, 20, 18], marketCap: 800,
+  },
+  MSFT: {
+    overall: 48, mentions: 38500, mentionChange: 5, buzz: 45,
+    sources: { reddit: 5400, twitter: 11600, news: 15200, stocktwits: 6300 },
+    weeklyHistory: [44, 45, 46, 50, 48, 47, 48], marketCap: 3200,
+  },
+  AMD: {
+    overall: 35, mentions: 28600, mentionChange: 12, buzz: 65,
+    sources: { reddit: 8600, twitter: 7800, news: 5900, stocktwits: 6300 },
+    weeklyHistory: [28, 30, 32, 38, 36, 33, 35], marketCap: 220,
+  },
+  AMZN: {
+    overall: 52, mentions: 34200, mentionChange: 9, buzz: 48,
+    sources: { reddit: 5100, twitter: 10300, news: 13700, stocktwits: 5100 },
+    weeklyHistory: [48, 49, 51, 53, 54, 50, 52], marketCap: 2000,
+  },
+  META: {
+    overall: 55, mentions: 31800, mentionChange: 14, buzz: 62,
+    sources: { reddit: 7600, twitter: 9500, news: 9500, stocktwits: 5200 },
+    weeklyHistory: [45, 48, 52, 55, 58, 54, 55], marketCap: 1500,
+  },
+  GOOGL: {
+    overall: 38, mentions: 29400, mentionChange: 6, buzz: 52,
+    sources: { reddit: 4400, twitter: 8800, news: 11800, stocktwits: 4400 },
+    weeklyHistory: [32, 34, 36, 40, 38, 37, 38], marketCap: 2100,
+  },
+  PLTR: {
+    overall: 62, mentions: 42300, mentionChange: 28, buzz: 91,
+    sources: { reddit: 14800, twitter: 10600, news: 6300, stocktwits: 10600 },
+    weeklyHistory: [50, 54, 58, 60, 65, 63, 62], marketCap: 140,
+  },
+  GME: {
+    overall: 28, mentions: 38700, mentionChange: -12, buzz: 72,
+    sources: { reddit: 18500, twitter: 7700, news: 3900, stocktwits: 8600 },
+    weeklyHistory: [35, 32, 28, 25, 30, 26, 28], marketCap: 8,
+  },
+  SOFI: {
+    overall: 45, mentions: 18900, mentionChange: 18, buzz: 78,
+    sources: { reddit: 7600, twitter: 3800, news: 2800, stocktwits: 4700 },
+    weeklyHistory: [38, 40, 42, 44, 48, 46, 45], marketCap: 12,
+  },
+  SMCI: {
+    overall: -22, mentions: 14200, mentionChange: -18, buzz: 68,
+    sources: { reddit: 4300, twitter: 3600, news: 4300, stocktwits: 2000 },
+    weeklyHistory: [-8, -12, -18, -25, -20, -24, -22], marketCap: 18,
+  },
+  AVGO: {
+    overall: 58, mentions: 12400, mentionChange: 10, buzz: 42,
+    sources: { reddit: 2500, twitter: 3700, news: 4300, stocktwits: 1900 },
+    weeklyHistory: [52, 54, 55, 58, 60, 57, 58], marketCap: 700,
+  },
+  COIN: {
+    overall: 32, mentions: 16800, mentionChange: 25, buzz: 74,
+    sources: { reddit: 5900, twitter: 4200, news: 3400, stocktwits: 3300 },
+    weeklyHistory: [20, 24, 28, 35, 34, 30, 32], marketCap: 50,
+  },
+  RIVN: {
+    overall: -15, mentions: 8400, mentionChange: -8, buzz: 45,
+    sources: { reddit: 3400, twitter: 1700, news: 1700, stocktwits: 1600 },
+    weeklyHistory: [-10, -12, -14, -18, -16, -14, -15], marketCap: 14,
+  },
+  JPM: {
+    overall: 35, mentions: 9800, mentionChange: 4, buzz: 28,
+    sources: { reddit: 1500, twitter: 2900, news: 4400, stocktwits: 1000 },
+    weeklyHistory: [32, 33, 34, 36, 35, 34, 35], marketCap: 600,
+  },
+  XOM: {
+    overall: 12, mentions: 7200, mentionChange: -3, buzz: 22,
+    sources: { reddit: 1100, twitter: 2200, news: 2900, stocktwits: 1000 },
+    weeklyHistory: [15, 14, 12, 10, 11, 13, 12], marketCap: 470,
+  },
+};
 
 function hashCode(s: string): number {
   let h = 0;
@@ -77,74 +176,49 @@ function hashCode(s: string): number {
   return Math.abs(h);
 }
 
-const MARKET_CAPS: Record<string, number> = {
-  AAPL: 3400, MSFT: 3200, NVDA: 3100, GOOGL: 2100, AMZN: 2000,
-  META: 1500, TSLA: 800, BRK: 780, AVGO: 700, LLY: 680,
-  JPM: 600, V: 560, MA: 420, UNH: 500, XOM: 470,
-  HD: 380, PG: 370, COST: 360, JNJ: 380, ABBV: 310,
-  WMT: 480, MRK: 280, AMD: 220, PLTR: 140, SOFI: 12,
-  GME: 8, SMCI: 18, RIVN: 14, LCID: 5, MARA: 4,
-  COIN: 50, SQ: 35, SHOP: 90, SNOW: 45, CRM: 280,
-};
-
-function getMcapTier(mcap: number) {
-  if (mcap > 500) return { baseMentions: 20000 + (mcap / 500) * 15000, volatilityFactor: 0.7 };
-  if (mcap > 100) return { baseMentions: 5000 + (mcap / 100) * 3000, volatilityFactor: 0.85 };
-  if (mcap > 20) return { baseMentions: 1000 + (mcap / 20) * 800, volatilityFactor: 1.0 };
-  if (mcap > 2) return { baseMentions: 200 + (mcap / 2) * 150, volatilityFactor: 1.3 };
-  return { baseMentions: 50 + mcap * 75, volatilityFactor: 1.8 };
-}
-
-const RETAIL_FAVORITES = new Set(["GME", "AMC", "TSLA", "PLTR", "SOFI", "RIVN", "LCID", "MARA", "COIN", "NIO"]);
-
 function generateSentiment(ticker: string, name: string): TickerSentiment {
+  const curated = CURATED_PROFILES[ticker];
+  if (curated) {
+    return {
+      ticker, name,
+      overall: curated.overall,
+      sentiment: curated.overall >= 10 ? "bullish" : curated.overall <= -10 ? "bearish" : "neutral",
+      mentions: curated.mentions,
+      mentionChange: curated.mentionChange,
+      buzz: curated.buzz,
+      sources: curated.sources,
+      trending: curated.buzz >= 70,
+      weeklyHistory: curated.weeklyHistory,
+      marketCap: curated.marketCap,
+    };
+  }
+
   const h = hashCode(ticker);
-  const mcap = MARKET_CAPS[ticker] || (1 + (h % 300));
-  const { baseMentions, volatilityFactor } = getMcapTier(mcap);
-
-  const rawSentiment = ((h % 200) - 100);
-  const overall = Math.max(-100, Math.min(100, Math.round(rawSentiment * 0.6 + ((h * 7 % 40) - 20) * 0.4)));
-
-  const mentionNoise = 0.7 + (h % 60) / 100;
-  let mentions = Math.round(baseMentions * mentionNoise);
-  if (RETAIL_FAVORITES.has(ticker)) mentions = Math.round(mentions * (2 + (h % 30) / 10));
-
-  const buzz = Math.min(100, Math.round(((h * 13) % 100) * volatilityFactor));
-
-  const isRetail = RETAIL_FAVORITES.has(ticker) || mcap < 20;
-  const rBase = isRetail ? 35 + (h % 15) : 15 + (h % 10);
-  const tBase = 20 + (h % 15);
-  const nBase = isRetail ? 10 + (h % 10) : 30 + (h % 15);
-  const sBase = isRetail ? 25 + (h % 10) : 15 + (h % 10);
-  const srcTotal = rBase + tBase + nBase + sBase;
+  const mcap = 50 + (h % 500);
+  const overall = Math.max(-60, Math.min(60, ((h % 120) - 60)));
+  const baseMentions = 1000 + (h % 8000);
+  const mentions = baseMentions;
+  const buzz = 20 + (h % 60);
+  const rPct = 0.25, tPct = 0.30, nPct = 0.30, sPct = 0.15;
 
   const weeklyHistory = Array.from({ length: 7 }, (_, i) => {
-    const dayNoise = ((h * (i + 1) * 17) % 30) - 15;
-    const drift = ((h * (i + 3)) % 10) - 5;
-    return Math.max(-100, Math.min(100, overall + dayNoise + drift * (i / 7)));
+    const drift = ((h * (i + 1)) % 20) - 10;
+    return Math.max(-100, Math.min(100, overall + drift));
   });
 
-  const bullKw = ["upgrade", "beat", "growth", "momentum", "breakout", "buy"];
-  const bearKw = ["downgrade", "miss", "decline", "resistance", "sell", "risk"];
-  const neutralKw = ["hold", "consolidation", "range-bound", "earnings", "guidance", "volume"];
-  const kwPool = overall >= 20 ? bullKw : overall <= -20 ? bearKw : neutralKw;
-
   return {
-    ticker, name,
-    overall,
+    ticker, name, overall,
     sentiment: overall >= 10 ? "bullish" : overall <= -10 ? "bearish" : "neutral",
     mentions,
-    mentionChange: Math.round(((h * 23) % 120) - 60),
+    mentionChange: ((h * 7) % 40) - 20,
     buzz,
     sources: {
-      reddit: Math.round((rBase / srcTotal) * mentions),
-      twitter: Math.round((tBase / srcTotal) * mentions),
-      news: Math.round((nBase / srcTotal) * mentions),
-      stocktwits: Math.round((sBase / srcTotal) * mentions),
+      reddit: Math.round(rPct * mentions),
+      twitter: Math.round(tPct * mentions),
+      news: Math.round(nPct * mentions),
+      stocktwits: Math.round(sPct * mentions),
     },
-    trending: buzz > 75 || RETAIL_FAVORITES.has(ticker),
-    keywords: [kwPool[h % kwPool.length], kwPool[((h >> 4) % kwPool.length)], kwPool[((h >> 8) % kwPool.length)]]
-      .filter((kw, i, arr) => arr.indexOf(kw) === i).slice(0, 3),
+    trending: buzz > 70,
     weeklyHistory,
     marketCap: mcap,
   };
@@ -266,7 +340,7 @@ function MentionsChart({ data }: { data: TickerSentiment[] }) {
 /* ── Main Page ──────────────────────────────────────────────── */
 
 export default function SentimentPage() {
-  const { summary } = useDefaultPortfolio();
+  const { summary, loading: portfolioLoading, error: portfolioError } = useDefaultPortfolio();
   const holdings = summary?.holdings;
   const [searchTicker, setSearchTicker] = useState("");
   const [activeTab, setActiveTab] = useState<"portfolio" | "trending">("portfolio");
@@ -325,6 +399,9 @@ export default function SentimentPage() {
   ];
 
   const topBuzz = [...activeSentiment].sort((a, b) => b.buzz - a.buzz).slice(0, 6);
+
+  if (portfolioLoading) return <DashboardSkeleton />;
+  if (portfolioError) return <ErrorState message="Couldn't load sentiment data." onRetry={() => window.location.reload()} />;
 
   return (
     <PageTransition>
@@ -413,13 +490,23 @@ export default function SentimentPage() {
 
         {/* ── Market Mood ──────────────────────────────────────── */}
         <FloatingCard delay={0}>
-          <div className="p-5 flex items-center justify-center gap-6">
-            <SentimentGauge score={avgSentiment} />
-            <div>
-              <p className="text-zinc-400 text-xs font-medium mb-1">MARKET MOOD</p>
-              <p className={`text-2xl font-display font-bold ${sentimentColor(avgSentiment)}`}>{sentimentLabel(avgSentiment)}</p>
-              <p className={`text-xs mt-1 ${sentimentColor(avgSentiment)}`}>Score: {avgSentiment > 0 ? "+" : ""}{avgSentiment}</p>
-              <p className="text-[10px] text-zinc-600 mt-0.5">Weighted by mention volume</p>
+          <div className="relative p-6 flex items-center justify-center gap-8 overflow-hidden">
+            <div className="absolute inset-0 opacity-30" style={{
+              background: avgSentiment >= 10
+                ? "radial-gradient(ellipse 60% 80% at 30% 50%, rgba(20,184,166,0.25) 0%, transparent 70%)"
+                : avgSentiment <= -10
+                ? "radial-gradient(ellipse 60% 80% at 30% 50%, rgba(239,68,68,0.2) 0%, transparent 70%)"
+                : "radial-gradient(ellipse 60% 80% at 30% 50%, rgba(161,161,170,0.15) 0%, transparent 70%)",
+            }} />
+            <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "url(/noise.svg)", backgroundRepeat: "repeat" }} />
+            <div className="relative">
+              <SentimentGauge score={avgSentiment} />
+            </div>
+            <div className="relative">
+              <p className="text-zinc-500 text-[10px] font-medium tracking-[0.15em] mb-1.5">MARKET MOOD</p>
+              <p className={`text-3xl font-display font-bold tracking-tight ${sentimentColor(avgSentiment)}`}>{sentimentLabel(avgSentiment)}</p>
+              <p className={`text-sm mt-1.5 tabular-nums ${sentimentColor(avgSentiment)}`}>Score: {avgSentiment > 0 ? "+" : ""}{avgSentiment}</p>
+              <p className="text-[10px] text-zinc-600 mt-1">Weighted by mention volume</p>
             </div>
           </div>
         </FloatingCard>
@@ -451,18 +538,26 @@ export default function SentimentPage() {
             <p className="text-[10px] text-zinc-600 mb-3">Tickers with unusual mention activity relative to their baseline</p>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
               {topBuzz.map((s, i) => (
-                <FloatingCard key={s.ticker} delay={0.25 + i * 0.05}>
-                  <div className="p-4 text-center">
-                    <div className="flex items-center justify-center gap-1.5 mb-2">
+                <FloatingCard key={s.ticker} delay={0.25 + i * 0.05} glowColor={s.buzz > 80 ? "rgba(251,146,60,0.15)" : undefined}>
+                  <div className="relative p-4 text-center overflow-hidden">
+                    {s.buzz > 75 && <div className="absolute inset-0 opacity-[0.06]" style={{
+                      background: "radial-gradient(circle at 50% 0%, rgba(251,146,60,0.6) 0%, transparent 60%)",
+                    }} />}
+                    <div className="relative flex items-center justify-center gap-1.5 mb-2">
                       {s.trending && <Zap className="w-3 h-3 text-amber-400 animate-pulse" />}
                       <span className="text-sm font-bold text-zinc-100">{s.ticker}</span>
                     </div>
-                    <Sparkline data={s.weeklyHistory} color={s.overall >= 0 ? "#14b8a6" : "#ef4444"} />
-                    <div className={`mt-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${sentimentBg(s.overall)} ${sentimentColor(s.overall)}`}>
+                    <div className="relative">
+                      <Sparkline data={s.weeklyHistory} color={s.overall >= 0 ? "#14b8a6" : "#ef4444"} />
+                    </div>
+                    <div className={`relative mt-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${sentimentBg(s.overall)} ${sentimentColor(s.overall)}`}>
                       {sentimentIcon(s.overall)} {s.overall > 0 ? "+" : ""}{s.overall}
                     </div>
-                    <p className="text-[10px] text-zinc-500 mt-1">{fmtK(s.mentions)} mentions</p>
-                    <p className="text-[9px] text-zinc-600">buzz: {s.buzz}/100</p>
+                    <p className="text-[10px] text-zinc-500 mt-1.5">{fmtK(s.mentions)} mentions</p>
+                    <div className="mt-1 mx-auto w-16 h-1 rounded-full bg-zinc-800 overflow-hidden">
+                      <div className="h-full rounded-full transition-all" style={{ width: `${s.buzz}%`, background: s.buzz > 75 ? "#fb923c" : s.buzz > 50 ? "#fbbf24" : "#71717a" }} />
+                    </div>
+                    <p className="text-[9px] text-zinc-600 mt-0.5">{s.buzz}/100</p>
                   </div>
                 </FloatingCard>
               ))}
@@ -558,7 +653,6 @@ export default function SentimentPage() {
                           <th className="text-center pb-3 font-medium">7d Trend</th>
                           <th className="text-right pb-3 font-medium">Mentions</th>
                           <th className="text-right pb-3 font-medium">Buzz</th>
-                          <th className="text-left pb-3 font-medium pl-4">Keywords</th>
                           <th className="text-right pb-3 font-medium"><span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#ff4500]" />Reddit</span></th>
                           <th className="text-right pb-3 font-medium"><span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#1da1f2]" />Twitter</span></th>
                           <th className="text-right pb-3 font-medium"><span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#f59e0b]" />News</span></th>
@@ -567,7 +661,7 @@ export default function SentimentPage() {
                       </thead>
                       <tbody className="divide-y divide-zinc-800">
                         {filteredSentiment.map((s) => (
-                          <tr key={s.ticker} className="hover:bg-white/[0.02] transition-colors">
+                          <tr key={s.ticker} className="hover:bg-white/[0.03] hover:shadow-[inset_2px_0_0_0_rgba(20,184,166,0.4)] transition-all duration-200">
                             <td className="py-3">
                               <div className="flex items-center gap-2">
                                 {s.trending && <Zap className="w-3 h-3 text-amber-400" />}
@@ -595,13 +689,6 @@ export default function SentimentPage() {
                                   <div className="h-full rounded-full bg-amber-400/70" style={{ width: `${s.buzz}%` }} />
                                 </div>
                                 <span className="text-xs tabular-nums text-zinc-400 w-6 text-right">{s.buzz}</span>
-                              </div>
-                            </td>
-                            <td className="py-3 pl-4">
-                              <div className="flex gap-1 flex-wrap">
-                                {s.keywords.map((kw) => (
-                                  <span key={kw} className="px-1.5 py-0.5 rounded bg-zinc-800 text-[10px] text-zinc-400">#{kw}</span>
-                                ))}
                               </div>
                             </td>
                             <td className="py-3 text-right tabular-nums text-zinc-400 text-xs">{fmtK(s.sources.reddit)}</td>
@@ -632,11 +719,6 @@ export default function SentimentPage() {
                           <Sparkline data={s.weeklyHistory} color={s.overall >= 0 ? "#14b8a6" : "#ef4444"} />
                           <div className="text-right">
                             <p className="text-xs text-zinc-400 tabular-nums">{fmtK(s.mentions)} mentions</p>
-                            <div className="flex gap-1 mt-1 justify-end">
-                              {s.keywords.slice(0, 2).map((kw) => (
-                                <span key={kw} className="px-1.5 py-0.5 rounded bg-zinc-800 text-[10px] text-zinc-500">#{kw}</span>
-                              ))}
-                            </div>
                           </div>
                         </div>
                       </div>

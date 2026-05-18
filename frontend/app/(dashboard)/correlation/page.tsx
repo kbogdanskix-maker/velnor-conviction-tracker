@@ -15,6 +15,7 @@ import TierGate from "@/components/shared/TierGate";
 import FloatingCard from "@/components/celestial/FloatingCard";
 import GlowBorder from "@/components/celestial/GlowBorder";
 import RevealOnScroll from "@/components/celestial/RevealOnScroll";
+import ErrorState from "@/components/shared/ErrorState";
 
 // ── Types & Helpers ─────────────────────────────────────────────────────────
 
@@ -167,7 +168,7 @@ export default function CorrelationPage() {
   const hasHoldings = (summary?.holdings?.length ?? 0) >= 2;
 
   const [period, setPeriod] = useState("1y");
-  const { correlation, loading } = useCorrelation(hasHoldings ? portfolioId : null, period);
+  const { correlation, loading, error } = useCorrelation(hasHoldings ? portfolioId : null, period);
 
   // Compute everything
   const analysis = useMemo(() => {
@@ -231,7 +232,9 @@ export default function CorrelationPage() {
         </div>
       )}
 
-      {loading ? (
+      {error ? (
+        <ErrorState message="Failed to load correlation data." onRetry={() => window.location.reload()} />
+      ) : loading ? (
         <div className="space-y-3">
           {[...Array(3)].map((_, i) => (
             <div key={i} className="vela-card animate-pulse h-24" />

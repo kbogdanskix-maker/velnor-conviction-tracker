@@ -20,6 +20,7 @@ import PageTransition from "@/components/celestial/PageTransition";
 import FloatingCard from "@/components/celestial/FloatingCard";
 import RevealOnScroll from "@/components/celestial/RevealOnScroll";
 import DashboardSkeleton from "@/components/shared/DashboardSkeleton";
+import ErrorState from "@/components/shared/ErrorState";
 import { formatCurrency, formatCompact } from "@/lib/formatters";
 import {
   AreaChart,
@@ -253,9 +254,9 @@ function EmptyFi() {
 // ── Main page ────────────────────────────────────────────────────────
 
 export default function FinancialIndependencePage() {
-  const { summary: nwSummary, isLoading: nwLoading } = useNetWorthSummary();
-  const { summary: cfSummary, isLoading: cfLoading } = useCashFlowSummary();
-  const { summary: pSummary, loading: pLoading } = useDefaultPortfolio();
+  const { summary: nwSummary, isLoading: nwLoading, error: nwError } = useNetWorthSummary();
+  const { summary: cfSummary, isLoading: cfLoading, error: cfError } = useCashFlowSummary();
+  const { summary: pSummary, loading: pLoading, error: pError } = useDefaultPortfolio();
 
   // Assumptions (user-adjustable)
   const [withdrawalRate, setWithdrawalRate] = useState(4);
@@ -291,6 +292,7 @@ export default function FinancialIndependencePage() {
   }, [nwSummary, cfSummary, withdrawalRate, expectedReturn, inflationRate, currentAge, retirementAge, annualDividendIncome]);
 
   if (loading) return <DashboardSkeleton />;
+  if (nwError || cfError || pError) return <ErrorState message="Failed to load financial independence data." onRetry={() => window.location.reload()} />;
 
   const hasData = nwSummary && cfSummary && cfSummary.total_income > 0;
 

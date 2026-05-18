@@ -16,6 +16,8 @@ import {
 import type { FeeHolding, HoldingFeeDetail } from "@/lib/fee-analyzer";
 import PageTransition from "@/components/celestial/PageTransition";
 import TierGate from "@/components/shared/TierGate";
+import DashboardSkeleton from "@/components/shared/DashboardSkeleton";
+import ErrorState from "@/components/shared/ErrorState";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 

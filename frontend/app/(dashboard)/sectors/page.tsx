@@ -13,6 +13,7 @@ import { formatCompact, formatPercent } from "@/lib/formatters";
 import PageTransition from "@/components/celestial/PageTransition";
 import FloatingCard from "@/components/celestial/FloatingCard";
 import RevealOnScroll from "@/components/celestial/RevealOnScroll";
+import ErrorState from "@/components/shared/ErrorState";
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -88,7 +89,7 @@ export default function SectorsPage() {
   const { portfolio, summary } = useDefaultPortfolio();
   const portfolioId = portfolio?.id ?? null;
   const hasHoldings = !!summary?.holdings?.length;
-  const { breakdown, loading } = useSectorBreakdown(hasHoldings ? portfolioId : null);
+  const { breakdown, loading, error } = useSectorBreakdown(hasHoldings ? portfolioId : null);
 
   const [expandedSector, setExpandedSector] = useState<string | null>(null);
 
@@ -137,6 +138,8 @@ export default function SectorsPage() {
       </PageTransition>
     );
   }
+
+  if (error) return <ErrorState message="Failed to load sector breakdown." onRetry={() => window.location.reload()} />;
 
   return (
     <PageTransition className="space-y-6">

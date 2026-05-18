@@ -3,6 +3,7 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { useCloudStore } from "@/hooks/useCloudStore";
 import PageTransition from "@/components/celestial/PageTransition";
+import ErrorState from "@/components/shared/ErrorState";
 import FloatingCard from "@/components/celestial/FloatingCard";
 import RevealOnScroll from "@/components/celestial/RevealOnScroll";
 import {
@@ -44,7 +45,7 @@ const YEAR = new Date().getFullYear();
 /* ── component ──────────────────────────────────────────────── */
 
 export default function GivingPage() {
-  const { data: donations, save, isLoading } = useCloudStore<Donation[]>("donations");
+  const { data: donations, save, isLoading, error } = useCloudStore<Donation[]>("donations");
   const [showAdd, setShowAdd] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const synced = useRef(false);
@@ -119,6 +120,8 @@ export default function GivingPage() {
   function handleDelete(id: string) {
     save(list.filter((d) => d.id !== id));
   }
+
+  if (error) return <ErrorState message="Failed to load giving data." onRetry={() => window.location.reload()} />;
 
   return (
     <PageTransition>

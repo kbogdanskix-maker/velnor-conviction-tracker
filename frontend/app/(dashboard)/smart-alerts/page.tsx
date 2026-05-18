@@ -27,6 +27,7 @@ import PageTransition from "@/components/celestial/PageTransition";
 import FloatingCard from "@/components/celestial/FloatingCard";
 import RevealOnScroll from "@/components/celestial/RevealOnScroll";
 import DashboardSkeleton from "@/components/shared/DashboardSkeleton";
+import ErrorState from "@/components/shared/ErrorState";
 
 // ── Alert types ───────────────────────────────────────────────────────
 
@@ -378,14 +379,15 @@ function FilterPill({ label, active, count, onClick }: { label: string; active: 
 // ── Main page ─────────────────────────────────────────────────────────
 
 export default function SmartAlertsPage() {
-  const { summary, portfolio, loading: pLoading } = useDefaultPortfolio();
-  const { summary: nw, isLoading: nwLoading } = useNetWorthSummary();
-  const { summary: cf, isLoading: cfLoading } = useCashFlowSummary();
-  const { goals, isLoading: gLoading } = useGoals();
+  const { summary, portfolio, loading: pLoading, error: pError } = useDefaultPortfolio();
+  const { summary: nw, isLoading: nwLoading, error: nwError } = useNetWorthSummary();
+  const { summary: cf, isLoading: cfLoading, error: cfError } = useCashFlowSummary();
+  const { goals, isLoading: gLoading, error: gError } = useGoals();
   const portfolioId = portfolio?.id;
-  const { data: risk, isLoading: rLoading } = useRiskMetrics(portfolioId);
+  const { data: risk, isLoading: rLoading, error: rError } = useRiskMetrics(portfolioId);
 
   const loading = pLoading || nwLoading || cfLoading || gLoading || rLoading;
+  const error = pError || nwError || cfError || gError || rError;
 
   const [activeFilter, setActiveFilter] = useState<AlertCategory | "all">("all");
 
@@ -417,6 +419,7 @@ export default function SmartAlertsPage() {
     return counts;
   }, [allAlerts]);
 
+  if (error) return <ErrorState message="Failed to load alert data." onRetry={() => window.location.reload()} />;
   if (loading) return <DashboardSkeleton />;
 
   return (

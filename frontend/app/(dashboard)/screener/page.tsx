@@ -7,6 +7,7 @@ import { formatCurrency, formatPercent, changePillClass } from "@/lib/formatters
 import TickerDetailModal from "@/components/shared/TickerDetailModal";
 import PageTransition from "@/components/celestial/PageTransition";
 import TierGate from "@/components/shared/TierGate";
+import ErrorState from "@/components/shared/ErrorState";
 
 // ── Filter config ────────────────────────────────────────────────────────────
 
@@ -83,7 +84,7 @@ function formatMargin(v: number | null): string {
 // ── Page ─────────────────────────────────────────────────────────────────────
 
 export default function ScreenerPage() {
-  const { stocks, isLoading } = useScreener();
+  const { stocks, isLoading, error } = useScreener();
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
   const [sortKey, setSortKey] = useState<SortKey>("market_cap");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
@@ -195,6 +196,8 @@ export default function ScreenerPage() {
     stocks.forEach((stock) => { if (stock.sector) s.add(stock.sector); });
     return Array.from(s).sort();
   }, [stocks]);
+
+  if (error) return <ErrorState message="Failed to load screener data." onRetry={() => window.location.reload()} />;
 
   return (
     <TierGate requiredTier="voyager">
