@@ -11,8 +11,8 @@ import {
   LayoutDashboard, PieChart, Eye, BarChart2, TrendingUp, TrendingDown,
   FileText, BookOpen, Newspaper, Globe, ChevronLeft, ChevronRight, ChevronDown,
   LogOut, Settings, Menu, X, Target, Wallet, Calculator, DollarSign, Sparkles,
-  PiggyBank, RotateCcw, Coins, Receipt, GraduationCap, Activity, Bell, Umbrella,
-  Banknote, Brain, Users, Search, Scale, BadgePercent, LayoutGrid, Calendar, GitBranch, CreditCard, Shield, Home, Repeat, Trophy, ArrowLeftRight, Compass, Flame, Dice5, Scissors, LineChart, Crosshair, MapPin, Heart, Star, Building2, Landmark, MessageCircle, GitCompare, Layers, Baby, ArrowDown, HeartPulse, Zap,
+  RotateCcw, Coins, Receipt, GraduationCap, Activity, Bell, Umbrella,
+  Banknote, Brain, Users, Search, Scale, BadgePercent, LayoutGrid, Calendar, GitBranch, CreditCard, Shield, Repeat, Trophy, ArrowLeftRight, Compass, Flame, Dice5, Scissors, LineChart, MapPin, Star, GitCompare, HeartPulse, Zap, MessageCircle,
 } from "lucide-react";
 
 // ── Icon animation + color map ──────────────────────────────────────────────
@@ -25,7 +25,6 @@ const ICON_STYLE: Record<string, { anim: IconAnim; color: string }> = {
   "/portfolio":       { anim: "pulse",  color: "text-teal-400" },
   "/dividends":       { anim: "spin",   color: "text-amber-400" },
   "/dividend-calendar": { anim: "bounce", color: "text-amber-300" },
-  "/drip":            { anim: "spin",   color: "text-cyan-400" },
   "/dividend-forecast": { anim: "pulse", color: "text-amber-400" },
   "/watchlist":       { anim: "blink",  color: "text-violet-400" },
   "/rebalance":       { anim: "wiggle", color: "text-blue-400" },
@@ -42,10 +41,8 @@ const ICON_STYLE: Record<string, { anim: IconAnim; color: string }> = {
   "/cash-flow":       { anim: "bounce", color: "text-green-400" },
   "/expenses":        { anim: "wiggle", color: "text-rose-400" },
   "/budget":          { anim: "pulse",  color: "text-orange-400" },
-  "/real-estate":     { anim: "bounce", color: "text-amber-400" },
   "/affordability":   { anim: "wiggle", color: "text-cyan-400" },
   "/debt-payoff":     { anim: "bounce", color: "text-red-400" },
-  "/savings":         { anim: "wiggle", color: "text-pink-400" },
   "/tax":             { anim: "wiggle", color: "text-yellow-400" },
   "/income":          { anim: "bounce", color: "text-emerald-400" },
   "/insurance":       { anim: "pulse",  color: "text-blue-400" },
@@ -59,38 +56,27 @@ const ICON_STYLE: Record<string, { anim: IconAnim; color: string }> = {
   "/compare":         { anim: "wiggle", color: "text-indigo-400" },
   "/benchmark":       { anim: "bounce", color: "text-blue-400" },
   "/what-if":         { anim: "pulse",  color: "text-fuchsia-400" },
-  "/growth-calc":     { anim: "bounce", color: "text-emerald-400" },
   "/emergency-fund":  { anim: "pulse",  color: "text-red-400" },
   "/milestones":      { anim: "bounce", color: "text-amber-400" },
   "/learn":           { anim: "wiggle", color: "text-cyan-400" },
   "/fi":              { anim: "pulse",  color: "text-orange-400" },
   "/monte-carlo":     { anim: "bounce", color: "text-purple-400" },
   "/nw-history":      { anim: "pulse",  color: "text-teal-400" },
-  "/expense-trends":  { anim: "wiggle", color: "text-pink-400" },
   "/asset-location":  { anim: "bounce", color: "text-sky-400" },
-  "/paycheck":        { anim: "pulse",  color: "text-green-400" },
-  "/giving":          { anim: "bounce", color: "text-rose-400" },
-  "/accounts":        { anim: "pulse",  color: "text-sky-400" },
   "/returns":         { anim: "spin",   color: "text-emerald-400" },
   "/annual-review":   { anim: "bounce", color: "text-amber-400" },
-  "/education":       { anim: "pulse",  color: "text-sky-400" },
-  "/social-security": { anim: "wiggle", color: "text-blue-400" },
-  "/tax-projection":  { anim: "bounce", color: "text-yellow-400" },
-  "/estate":          { anim: "pulse",  color: "text-purple-400" },
-  "/roth-conversion": { anim: "wiggle", color: "text-cyan-400" },
-  "/sentiment":       { anim: "pulse",  color: "text-orange-400" },
-  "/withdrawal":      { anim: "bounce", color: "text-sky-400" },
   "/stock-compare":   { anim: "wiggle", color: "text-indigo-400" },
-  "/income-streams":  { anim: "pulse",  color: "text-emerald-400" },
-  "/life-events":     { anim: "bounce", color: "text-pink-400" },
   // Intelligence
+  "/plan":            { anim: "pulse",  color: "text-teal-400" },
   "/health-score":    { anim: "pulse",  color: "text-rose-400" },
   "/smart-alerts":    { anim: "ring",   color: "text-amber-400" },
+  "/earnings-insights": { anim: "bounce", color: "text-amber-400" },
   // News & Markets
   "/fx":              { anim: "wiggle", color: "text-green-400" },
   "/markets":         { anim: "spin",   color: "text-blue-400" },
   "/macro":           { anim: "bounce", color: "text-teal-400" },
   "/news":            { anim: "wiggle", color: "text-sky-400" },
+  "/sentiment":       { anim: "pulse",  color: "text-violet-400" },
   // Research
   "/thesis":          { anim: "bounce", color: "text-violet-400" },
   "/journal":         { anim: "wiggle", color: "text-slate-300" },
@@ -100,6 +86,7 @@ const ICON_STYLE: Record<string, { anim: IconAnim; color: string }> = {
   // Top-level
   "/dashboard":       { anim: "pulse",  color: "text-teal-400" },
   "/guide":           { anim: "spin",   color: "text-cyan-400" },
+  "/profile":         { anim: "pulse",  color: "text-teal-400" },
 };
 
 const ANIM_CLASS: Record<IconAnim, string> = {
@@ -127,11 +114,13 @@ interface NavGroup {
 
 const NAV_TOP: NavItem = { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard };
 const NAV_GUIDE: NavItem = { href: "/guide", label: "Guide", icon: Compass };
+const NAV_PROFILE: NavItem = { href: "/profile", label: "My Profile", icon: Users };
 
 const NAV_GROUPS: NavGroup[] = [
   {
     label: "Intelligence",
     items: [
+      { href: "/plan", label: "My Plan", icon: Sparkles },
       { href: "/health-score", label: "Health Score", icon: HeartPulse },
       { href: "/smart-alerts", label: "Smart Alerts", icon: Zap },
     ],
@@ -142,7 +131,6 @@ const NAV_GROUPS: NavGroup[] = [
       { href: "/portfolio", label: "Portfolio", icon: PieChart },
       { href: "/dividends", label: "Dividends", icon: Coins },
       { href: "/dividend-calendar", label: "Div Calendar", icon: Calendar, tier: "voyager" },
-      { href: "/drip", label: "DRIP Calc", icon: Coins },
       { href: "/dividend-forecast", label: "Div Forecast", icon: TrendingUp, tier: "voyager" },
       { href: "/watchlist", label: "Watchlist", icon: Eye },
       { href: "/rebalance", label: "Rebalance", icon: Scale, tier: "voyager" },
@@ -152,7 +140,7 @@ const NAV_GROUPS: NavGroup[] = [
       { href: "/correlation", label: "Diversification", icon: Shield, tier: "navigator" },
       { href: "/risk", label: "Risk", icon: Activity },
       { href: "/attribution", label: "Attribution", icon: BarChart2, tier: "voyager" },
-      { href: "/optimizer", label: "Optimizer", icon: Crosshair, tier: "navigator" },
+      { href: "/optimizer", label: "Reflect", icon: Brain, tier: "navigator" },
       { href: "/returns", label: "Returns", icon: TrendingUp },
     ],
   },
@@ -164,10 +152,8 @@ const NAV_GROUPS: NavGroup[] = [
       { href: "/cash-flow", label: "Cash Flow", icon: DollarSign, tier: "voyager" },
       { href: "/expenses", label: "Expenses", icon: CreditCard },
       { href: "/budget", label: "Budget", icon: Target, tier: "voyager" },
-      { href: "/real-estate", label: "Real Estate", icon: Home, tier: "voyager" },
       { href: "/affordability", label: "Affordability", icon: Calculator },
       { href: "/debt-payoff", label: "Debt Payoff", icon: TrendingDown },
-      { href: "/savings", label: "Savings Finder", icon: PiggyBank, tier: "voyager" },
       { href: "/tax", label: "Tax Awareness", icon: Receipt, tier: "voyager" },
       { href: "/tax-harvest", label: "Tax Harvest", icon: Scissors, tier: "voyager" },
       { href: "/income", label: "Income", icon: Banknote },
@@ -175,18 +161,8 @@ const NAV_GROUPS: NavGroup[] = [
       { href: "/stress-index", label: "Stress Index", icon: Activity },
       { href: "/alerts", label: "Alerts", icon: Bell, tier: "voyager" },
       { href: "/subscriptions", label: "Subscriptions", icon: Repeat },
-      { href: "/expense-trends", label: "Expense Trends", icon: LineChart },
       { href: "/asset-location", label: "Asset Location", icon: MapPin, tier: "voyager" },
-      { href: "/paycheck", label: "Paycheck Calc", icon: Banknote },
       { href: "/behavior", label: "Behavior", icon: Brain, tier: "voyager" },
-      { href: "/accounts", label: "Accounts", icon: Building2 },
-      { href: "/giving", label: "Giving", icon: Heart },
-      { href: "/tax-projection", label: "Tax Projection", icon: Receipt, tier: "voyager" },
-      { href: "/estate", label: "Estate Plan", icon: Landmark, tier: "navigator" },
-      { href: "/roth-conversion", label: "Roth Conversion", icon: ArrowLeftRight, tier: "navigator" },
-      { href: "/withdrawal", label: "Withdrawal Strategy", icon: ArrowDown, tier: "navigator" },
-      { href: "/income-streams", label: "Income Streams", icon: Layers, tier: "navigator" },
-      { href: "/life-events", label: "Life Events", icon: Baby, tier: "navigator" },
     ],
   },
   {
@@ -199,13 +175,10 @@ const NAV_GROUPS: NavGroup[] = [
       { href: "/compare", label: "Compare", icon: GitBranch, tier: "voyager" },
       { href: "/benchmark", label: "Benchmark", icon: Users, tier: "voyager" },
       { href: "/what-if", label: "What If", icon: Sparkles, tier: "navigator" },
-      { href: "/growth-calc", label: "Growth Calc", icon: TrendingUp },
       { href: "/emergency-fund", label: "Emergency Fund", icon: Shield, tier: "voyager" },
       { href: "/milestones", label: "Milestones", icon: Trophy },
       { href: "/learn", label: "Learn", icon: GraduationCap },
       { href: "/annual-review", label: "Annual Review", icon: Star },
-      { href: "/education", label: "Education / 529", icon: GraduationCap },
-      { href: "/social-security", label: "Social Security", icon: Shield },
     ],
   },
   {
@@ -221,6 +194,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: "Research",
     items: [
+      { href: "/earnings-insights", label: "Earnings AI", icon: TrendingUp },
       { href: "/thesis", label: "Thesis", icon: BookOpen },
       { href: "/journal", label: "Journal", icon: FileText },
       { href: "/screener", label: "Screener", icon: BarChart2, tier: "voyager" },
@@ -358,9 +332,10 @@ export default function Sidebar() {
 
         {/* Nav */}
         <nav className="flex-1 py-3 px-2 overflow-y-auto space-y-1">
-          {/* Dashboard — always visible, no group */}
+          {/* Dashboard  - always visible, no group */}
           <NavLink item={NAV_TOP} active={pathname === NAV_TOP.href} showLabel={showLabels} collapsed={collapsed} mobileOpen={mobileOpen} adminMode={adminMode} />
           <NavLink item={NAV_GUIDE} active={pathname === NAV_GUIDE.href} showLabel={showLabels} collapsed={collapsed} mobileOpen={mobileOpen} adminMode={adminMode} />
+          <NavLink item={NAV_PROFILE} active={pathname === NAV_PROFILE.href} showLabel={showLabels} collapsed={collapsed} mobileOpen={mobileOpen} adminMode={adminMode} />
 
           {/* Search trigger */}
           <button
@@ -442,7 +417,7 @@ export default function Sidebar() {
           </button>
         </div>
 
-        {/* Collapse toggle — desktop only */}
+        {/* Collapse toggle  - desktop only */}
         <button
           onClick={() => setCollapsed(!collapsed)}
           className="hidden md:flex absolute -right-3 top-16 w-6 h-6 rounded-full items-center justify-center text-zinc-500 hover:text-zinc-100 transition-all
