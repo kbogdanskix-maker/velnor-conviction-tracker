@@ -44,14 +44,15 @@ export function useReflectionChat() {
     return updated;
   }
 
-  function appendChunkToLast(chunk: string): ChatMessage[] {
-    const updated = messages.map((m, i) =>
-      i === messages.length - 1 && m.role === "assistant"
-        ? { ...m, content: m.content + chunk }
-        : m
-    );
-    setMessages(updated);
-    return updated;
+  function appendChunkToLast(chunk: string): void {
+    setMessages((prev) => {
+      const updated = prev.map((m, i) =>
+        i === prev.length - 1 && m.role === "assistant"
+          ? { ...m, content: m.content + chunk }
+          : m
+      );
+      return updated;
+    });
   }
 
   function finaliseLastMessage(updated: ChatMessage[]) {

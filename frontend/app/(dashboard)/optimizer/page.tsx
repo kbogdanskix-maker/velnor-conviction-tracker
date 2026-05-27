@@ -230,6 +230,8 @@ function ContextPanel() {
 // ── Chat message bubble ───────────────────────────────────────────────────────
 
 function MessageBubble({ msg }: { msg: ChatMessage }) {
+  // Don't render empty assistant placeholder — TypingIndicator handles that state
+  if (msg.role === "assistant" && msg.content === "") return null;
   return (
     <div className={`flex gap-2.5 max-w-[88%] ${msg.role === "user" ? "ml-auto flex-row-reverse" : ""}`}>
       <div className={`w-[25px] h-[25px] min-w-[25px] rounded-full flex items-center justify-center text-[10px] font-semibold mt-0.5 shrink-0 ${
@@ -355,8 +357,8 @@ export default function ReflectPage() {
     setStreaming(true);
 
     const placeholder: ChatMessage = { role: "assistant", content: "", timestamp: new Date().toISOString() };
-    const withPlaceholder = [...withUser, placeholder];
-    appendMessage(placeholder);
+    const withPlaceholder = [...withUser, placeholder].slice(-50);
+    finaliseLastMessage(withPlaceholder);
 
     let accumulated = "";
     streamReflect(
