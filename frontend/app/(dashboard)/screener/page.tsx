@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { BarChart2, Search, ChevronUp, ChevronDown, Filter, ArrowUpDown, Lightbulb, X } from "lucide-react";
+import { useState, useMemo, useCallback } from "react";
+import { BarChart2, Search, ChevronUp, ChevronDown, Filter, ArrowUpDown, Lightbulb, X, Loader2 } from "lucide-react";
 import { useScreener, type ScreenerStock } from "@/hooks/useScreener";
+import { api } from "@/lib/api";
 import { formatCurrency, formatPercent, changePillClass } from "@/lib/formatters";
 import TickerDetailModal from "@/components/shared/TickerDetailModal";
 import PageTransition from "@/components/celestial/PageTransition";
@@ -50,7 +51,7 @@ type SortDir = "asc" | "desc";
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatMarketCap(v: number | null): string {
-  if (v == null) return "—";
+  if (v == null) return " -";
   if (v >= 1e12) return `$${(v / 1e12).toFixed(2)}T`;
   if (v >= 1e9) return `$${(v / 1e9).toFixed(1)}B`;
   if (v >= 1e6) return `$${(v / 1e6).toFixed(0)}M`;
@@ -67,17 +68,17 @@ function capLabel(v: number | null): string {
 }
 
 function formatRatio(v: number | null, decimals = 1): string {
-  if (v == null) return "—";
+  if (v == null) return " -";
   return v.toFixed(decimals);
 }
 
 function formatYield(v: number | null): string {
-  if (v == null) return "—";
+  if (v == null) return " -";
   return `${(v * 100).toFixed(2)}%`;
 }
 
 function formatMargin(v: number | null): string {
-  if (v == null) return "—";
+  if (v == null) return " -";
   return `${(v * 100).toFixed(1)}%`;
 }
 
@@ -90,6 +91,28 @@ export default function ScreenerPage() {
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [showFilters, setShowFilters] = useState(false);
   const [selectedTicker, setSelectedTicker] = useState<string | null>(null);
+  const [customStocks, setCustomStocks] = useState<ScreenerStock[]>([]);
+  const [lookupLoading, setLookupLoading] = useState(false);
+  const [lookupError, setLookupError] = useState<string | null>(null);
+
+  const lookupTicker = useCallback(async (ticker: string) => {
+    const t = ticker.toUpperCase().trim();
+    if (!t) return;
+    setLookupLoading(true);
+    setLookupError(null);
+    try {
+      const result = await api.get<ScreenerStock>(`/screener/lookup/${t}`);
+      setCustomStocks((prev) => {
+        const exists = prev.some((s) => s.ticker === t) || stocks.some((s) => s.ticker === t);
+        return exists ? prev : [result, ...prev];
+      });
+      setSelectedTicker(t);
+    } catch {
+      setLookupError(`"${t}" not found  - check the ticker symbol`);
+    } finally {
+      setLookupLoading(false);
+    }
+  }, [stocks]);
 
   function updateFilter<K extends keyof Filters>(key: K, value: Filters[K]) {
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -119,7 +142,8 @@ export default function ScreenerPage() {
   // ── Apply filters ──────────────────────────────────────────────────────────
 
   const filtered = useMemo(() => {
-    let list = [...stocks];
+    const allStocks = [...customStocks.filter(c => !stocks.some(s => s.ticker === c.ticker)), ...stocks];
+    let list = [...allStocks];
 
     // Search
     if (filters.search) {
@@ -184,7 +208,7 @@ export default function ScreenerPage() {
     });
 
     return list;
-  }, [stocks, filters, sortKey, sortDir]);
+  }, [stocks, customStocks, filters, sortKey, sortDir]);
 
   const hasActiveFilters =
     filters.search || filters.sectors.size > 0 || filters.peMin || filters.peMax || filters.capMin || filters.capMax || filters.divYieldMin || filters.betaMax;
@@ -220,10 +244,18 @@ export default function ScreenerPage() {
           <input
             type="text"
             value={filters.search}
-            onChange={(e) => updateFilter("search", e.target.value)}
-            placeholder="Search by ticker, name, sector..."
+            onChange={(e) => { updateFilter("search", e.target.value); setLookupError(null); }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && filters.search.trim()) {
+                lookupTicker(filters.search.trim());
+              }
+            }}
+            placeholder="Search universe or type any ticker + Enter to look up..."
             className="input-field w-full pl-9"
           />
+          {lookupLoading && (
+            <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 animate-spin" />
+          )}
         </div>
         <button
           onClick={() => setShowFilters(!showFilters)}
@@ -248,6 +280,24 @@ export default function ScreenerPage() {
           </button>
         )}
       </div>
+
+      {/* Lookup hint / error */}
+      {lookupError && (
+        <p className="text-xs text-rose-400 flex items-center gap-1.5">
+          <X className="w-3 h-3" />{lookupError}
+        </p>
+      )}
+      {!lookupError && filters.search && filtered.length === 0 && !isLoading && !lookupLoading && (
+        <p className="text-xs text-zinc-500">
+          No results in universe.{" "}
+          <button
+            onClick={() => lookupTicker(filters.search)}
+            className="text-vela-teal hover:underline"
+          >
+            Look up &quot;{filters.search.toUpperCase()}&quot; directly →
+          </button>
+        </p>
+      )}
 
       {/* Advanced Filters */}
       {showFilters && (
@@ -549,17 +599,17 @@ function StockRow({ stock, onClick }: { stock: ScreenerStock; onClick?: () => vo
 
       {/* Name */}
       <td className="px-3 py-2.5 text-zinc-400 max-w-[180px] truncate hidden sm:table-cell">
-        {stock.name || "—"}
+        {stock.name || " -"}
       </td>
 
       {/* Sector */}
       <td className="px-3 py-2.5 text-zinc-500 text-xs hidden lg:table-cell">
-        {stock.sector || "—"}
+        {stock.sector || " -"}
       </td>
 
       {/* Price */}
       <td className="px-3 py-2.5 text-right tabular text-zinc-100 font-medium">
-        {stock.price != null ? `$${stock.price.toFixed(2)}` : "—"}
+        {stock.price != null ? `$${stock.price.toFixed(2)}` : " -"}
       </td>
 
       {/* Day Change */}
@@ -569,7 +619,7 @@ function StockRow({ stock, onClick }: { stock: ScreenerStock; onClick?: () => vo
             {formatPercent(stock.change_pct)}
           </span>
         ) : (
-          <span className="text-zinc-600">—</span>
+          <span className="text-zinc-600"> -</span>
         )}
       </td>
 
@@ -622,18 +672,18 @@ function MobileStockCard({ stock, onClick }: { stock: ScreenerStock; onClick?: (
               </span>
             )}
           </div>
-          <p className="text-xs text-zinc-500 truncate mt-0.5">{stock.name || "—"}</p>
+          <p className="text-xs text-zinc-500 truncate mt-0.5">{stock.name || " -"}</p>
         </div>
         <div className="text-right shrink-0 ml-3">
           <p className="text-sm font-semibold tabular text-zinc-100">
-            {stock.price != null ? `$${stock.price.toFixed(2)}` : "—"}
+            {stock.price != null ? `$${stock.price.toFixed(2)}` : " -"}
           </p>
           {stock.change_pct != null ? (
             <span className={changePillClass(stock.change_pct) + " text-[10px]"}>
               {formatPercent(stock.change_pct)}
             </span>
           ) : (
-            <span className="text-xs text-zinc-600">—</span>
+            <span className="text-xs text-zinc-600"> -</span>
           )}
         </div>
       </div>
@@ -665,7 +715,7 @@ function ScreenerInsights({ stocks }: { stocks: ScreenerStock[] }) {
       body: `Among the stocks in your current view, ${topDividend.ticker} offers the highest dividend yield. `
         + `A ${formatYield(topDividend.dividend_yield)} yield on a ${formatMarketCap(topDividend.market_cap)} company `
         + `${(topDividend.dividend_yield ?? 0) > 0.03 ? "is attractive for income-focused portfolios" : "is modest but adds up over time"}. `
-        + `Always check the payout ratio — high yields from companies with unsustainable payouts can signal a cut ahead.`,
+        + `Always check the payout ratio  - high yields from companies with unsustainable payouts can signal a cut ahead.`,
     });
   }
 
@@ -677,9 +727,9 @@ function ScreenerInsights({ stocks }: { stocks: ScreenerStock[] }) {
     const names = valuePlays.slice(0, 3).map((s) => s.ticker).join(", ");
     insights.push({
       title: `Value candidates: ${names}`,
-      body: `These stocks trade at trailing P/E ratios below 15 — cheaper than the S&P 500 average of ~22. `
+      body: `These stocks trade at trailing P/E ratios below 15  - cheaper than the S&P 500 average of ~22. `
         + `Low P/E can mean the market is undervaluing the business, or it can reflect slow growth expectations. `
-        + `Use the Reverse DCF tool to check what growth rate the market is pricing in — if it's too pessimistic, `
+        + `Use the Reverse DCF tool to check what growth rate the market is pricing in  - if it's too pessimistic, `
         + `there may be an opportunity.`,
     });
   }
@@ -693,7 +743,7 @@ function ScreenerInsights({ stocks }: { stocks: ScreenerStock[] }) {
     insights.push({
       title: `High beta: ${names}`,
       body: `These stocks move significantly more than the market. A beta above 1.5 means when the S&P drops 10%, `
-        + `these could drop 15%+. Great for upside in bull markets, but consider your goals timeline — if you need `
+        + `these could drop 15%+. Great for upside in bull markets, but consider your goals timeline  - if you need `
         + `money within 2-3 years, high-beta holdings add unnecessary risk. Check your portfolio's overall beta `
         + `with the Performance & Risk metrics.`,
     });

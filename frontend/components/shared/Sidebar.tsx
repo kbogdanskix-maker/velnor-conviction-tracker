@@ -12,7 +12,7 @@ import {
   FileText, BookOpen, Newspaper, Globe, ChevronLeft, ChevronRight, ChevronDown,
   LogOut, Settings, Menu, X, Target, Wallet, Calculator, DollarSign, Sparkles,
   RotateCcw, Coins, Receipt, GraduationCap, Activity, Bell, Umbrella,
-  Banknote, Brain, Users, Search, Scale, BadgePercent, LayoutGrid, Calendar, GitBranch, CreditCard, Shield, Repeat, Trophy, ArrowLeftRight, Compass, Flame, Dice5, Scissors, LineChart, MapPin, Star, GitCompare, HeartPulse, Zap, MessageCircle,
+  Banknote, Brain, Users, Search, Scale, BadgePercent, LayoutGrid, Calendar, GitBranch, CreditCard, Shield, Repeat, Trophy, ArrowLeftRight, Compass, Flame, Dice5, Scissors, LineChart, MapPin, Star, GitCompare, HeartPulse, Zap, MessageCircle, StickyNote,
 } from "lucide-react";
 
 // ── Icon animation + color map ──────────────────────────────────────────────
@@ -79,6 +79,7 @@ const ICON_STYLE: Record<string, { anim: IconAnim; color: string }> = {
   "/sentiment":       { anim: "pulse",  color: "text-violet-400" },
   // Research
   "/thesis":          { anim: "bounce", color: "text-violet-400" },
+  "/notes":           { anim: "wiggle", color: "text-amber-400" },
   "/journal":         { anim: "wiggle", color: "text-slate-300" },
   "/screener":        { anim: "pulse",  color: "text-cyan-400" },
   "/valuation/dcf":   { anim: "bounce", color: "text-emerald-400" },
@@ -196,6 +197,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: "/earnings-insights", label: "Earnings AI", icon: TrendingUp },
       { href: "/thesis", label: "Thesis", icon: BookOpen },
+      { href: "/notes", label: "Notes", icon: StickyNote },
       { href: "/journal", label: "Journal", icon: FileText },
       { href: "/screener", label: "Screener", icon: BarChart2, tier: "voyager" },
       { href: "/valuation/dcf", label: "DCF", icon: FileText, tier: "voyager" },

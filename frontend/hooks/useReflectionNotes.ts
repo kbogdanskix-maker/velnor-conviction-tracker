@@ -46,6 +46,20 @@ export function useReflectionNotes() {
     save(updated);
   }
 
+  function addFlagged(content: string) {
+    if (!content.trim()) return;
+    const note: ReflectionNote = {
+      id: crypto.randomUUID(),
+      content: content.trim(),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+    persist({
+      ...notes,
+      flagged: [...notes.flagged, note],
+    });
+  }
+
   function addEphemeral(content: string) {
     if (!content.trim()) return;
     const note: ReflectionNote = {
@@ -86,6 +100,15 @@ export function useReflectionNotes() {
     });
   }
 
+  function editNote(id: string, content: string) {
+    if (!content.trim()) return;
+    const updated_at = new Date().toISOString();
+    persist({
+      flagged: notes.flagged.map((n) => n.id === id ? { ...n, content: content.trim(), updated_at } : n),
+      ephemeral: notes.ephemeral.map((n) => n.id === id ? { ...n, content: content.trim(), updated_at } : n),
+    });
+  }
+
   // Recent ephemeral = last 14 days or last 10, whichever is smaller
   const recentEphemeral = (() => {
     const cutoff = Date.now() - 14 * 24 * 60 * 60 * 1000;
@@ -97,10 +120,12 @@ export function useReflectionNotes() {
   return {
     notes,
     recentEphemeral,
+    addFlagged,
     addEphemeral,
     flagNote,
     unflagNote,
     deleteNote,
+    editNote,
     isLoading,
   };
 }
