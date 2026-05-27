@@ -60,11 +60,14 @@ Displays everything the AI knows about the user. All data is read-only here — 
 - Source: `useProfile()`
 
 **Quick Notes**
-- Multi-line textarea, min-height 72px
-- Persisted to `useCloudStore("reflection_notes")` — auto-saves on blur
-- "Saved ✓" / "Saving…" status indicator
-- Placeholder: "Jot any market observations, half-formed ideas, things to revisit…"
-- This text is injected into every AI message as context
+- A two-tier knowledge library that feeds the AI as background context — not a chat input, not directly quoted back to the user
+- **Flagged (permanent):** standing convictions and investment worldview — always included in AI context, never auto-pruned. Example: "I always hold NVDA through earnings regardless of short-term volatility."
+- **Ephemeral:** working observations, market thoughts, half-baked ideas — auto-pruned when count exceeds 30 notes or note age exceeds 60 days (whichever comes first)
+- The reflect page context panel shows a count preview and a "capture" input for quick entry
+- Full library management (view, edit, flag, delete) lives in the upcoming Notes tab
+- Persisted to `useCloudStore("reflection_notes")` as `{ flagged: Note[], ephemeral: Note[] }`
+- `Note`: `{ id, content, created_at, updated_at }`
+- AI receives flagged notes always + recent ephemeral notes (last 14 days or last 10, whichever is smaller)
 
 ---
 
@@ -80,8 +83,11 @@ Displays everything the AI knows about the user. All data is read-only here — 
 ### Opening message
 - On first load (or after clear), the AI generates an opening message automatically
 - No user action required — the page feels alive immediately
-- The opening is context-aware: prioritises the most interesting signal from {quick notes + macro data + largest/most volatile position + behavioral gap}
-- Example: if quick notes mention yields and 10Y is at 4.8%, the AI opens with that connection
+- Priority order for signal selection:
+  1. **Recent notes × live news/macro** — if the user has recent ephemeral notes or flagged convictions that connect to something in today's macro/news feed, open with that connection
+  2. **Portfolio event** — a position that moved significantly since last session, or one that just crossed a meaningful threshold (e.g. weight crossed 30%)
+  3. **Behavioral gap** — fallback only if nothing notable in notes or market; surfaces the stated-vs-actual hold time pattern
+- Concentration alone is never the opening signal — it's too static and would repeat every session
 
 ### Message streaming
 - Uses `apiStreamPost` — POST to `/ai/reflect` with full context payload
@@ -160,11 +166,14 @@ Rules:
 ### Opening message generation
 When `is_opening: true`, the system prompt adds:
 ```
-Generate a single opening message. Pick the most interesting signal from:
-1. Quick notes cross-referenced with live macro data
-2. Largest concentration position and its current gain/duration
-3. Any position that conflicts with the user's stated style
-4. Behavioral gap (stated long-term, actual avg hold {n} months)
+Generate a single opening message using this priority order:
+1. FIRST: Cross-reference the user's notes (flagged convictions + recent ephemeral) with 
+   today's macro data and news. If any note connects to a live market signal, open with that.
+2. SECOND: If a portfolio position moved significantly since the last session or just crossed 
+   a notable threshold, surface that.
+3. FALLBACK ONLY: Behavioral gap (stated long-term, actual avg hold {n} months) — use this 
+   only if there is nothing notable in notes or market signals.
+Never open with concentration alone — it is too static and will repeat every session.
 Start with the observation, end with one question. Max 80 words.
 ```
 
@@ -219,6 +228,7 @@ User sends message
 
 ## Out of scope (next spec)
 
-- Rich Quick Capture Notes tab (images, links, video embeds) — separate spec
+- **Notes tab** — full library UI (view all notes, edit, flag/unflag, delete, attach images/links/charts); the reflect page only provides a quick-capture input and count preview
 - Proactive notifications ("yields moved, check your note") — requires background job
 - Per-holding conversation threads
+- Auto-pruning job for ephemeral notes — for now, pruning runs client-side on page load
