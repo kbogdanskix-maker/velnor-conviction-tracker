@@ -247,7 +247,7 @@ function OptionsTab({ ticker }: { ticker: string }) {
 
   return (
     <div className="p-5 space-y-5">
-      {/* Expiry selector — scrollable with DTE labels */}
+      {/* Expiry selector  - scrollable with DTE labels */}
       <div>
         <p className="text-xs text-zinc-500 mb-2">Expiration date</p>
         <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
@@ -274,16 +274,16 @@ function OptionsTab({ ticker }: { ticker: string }) {
         </div>
       </div>
 
-      {/* Implied price range — hero visual */}
+      {/* Implied price range  - hero visual */}
       <ImpliedRangeBar chain={chain} expiry={expiry} />
 
       {/* Key metrics row */}
       <OptionsMetrics chain={chain} expiry={expiry} />
 
-      {/* OI by Strike Chart — main chart */}
+      {/* OI by Strike Chart  - main chart */}
       <OptionsOIChart chain={chain} expiry={expiry} />
 
-      {/* Pro section — IV skew + raw chain */}
+      {/* Pro section  - IV skew + raw chain */}
       <div className="border-t border-vela-border pt-4">
         <button
           onClick={() => setShowPro(!showPro)}
@@ -291,7 +291,7 @@ function OptionsTab({ ticker }: { ticker: string }) {
         >
           {showPro ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
           <span className="font-medium">Detailed view</span>
-          <span className="text-zinc-600">— IV skew, full chain</span>
+          <span className="text-zinc-600"> - IV skew, full chain</span>
         </button>
 
         {showPro && (
@@ -385,7 +385,7 @@ function OptionsMetrics({ chain, expiry }: { chain: OptionsChain; expiry: string
     const totalPutOI = puts.reduce((s, p) => s + (p.openInterest || 0), 0);
     const totalOI = totalCallOI + totalPutOI;
 
-    // Max pain — only meaningful when there's OI data
+    // Max pain  - only meaningful when there's OI data
     let maxPainStrike = price;
     if (totalOI > 0) {
       const strikeSet = new Set(Array.from(calls.map(c => c.strike)).concat(puts.map(p => p.strike)));
@@ -418,7 +418,7 @@ function OptionsMetrics({ chain, expiry }: { chain: OptionsChain; expiry: string
     <div className="grid grid-cols-3 gap-2">
       <MetricBox
         label="Max Pain"
-        value={stats.totalOI > 0 ? `$${stats.maxPainStrike.toFixed(0)}` : "—"}
+        value={stats.totalOI > 0 ? `$${stats.maxPainStrike.toFixed(0)}` : " -"}
         sub={stats.totalOI > 0
           ? stats.maxPainStrike > stats.price
             ? `${((stats.maxPainStrike / stats.price - 1) * 100).toFixed(1)}% above spot`
@@ -427,7 +427,7 @@ function OptionsMetrics({ chain, expiry }: { chain: OptionsChain; expiry: string
       />
       <MetricBox
         label="Put/Call OI"
-        value={stats.pcRatio != null ? stats.pcRatio.toFixed(2) : "—"}
+        value={stats.pcRatio != null ? stats.pcRatio.toFixed(2) : " -"}
         sub={sentimentLabel}
         subColor={sentimentColor}
       />
@@ -511,12 +511,12 @@ function OptionsOIChart({ chain, expiry }: { chain: OptionsChain; expiry: string
               labelFormatter={(label: number) => `Strike $${label}`}
             />
             <ReferenceLine x={Number(chartData.reduce((best, d) => Math.abs(d.strike - price) < Math.abs(best - price) ? d.strike : best, chartData[0].strike))} stroke="#14b8a6" strokeDasharray="3 3" strokeWidth={1} />
-            <Bar dataKey="callOI" name="callOI" radius={[2, 2, 0, 0]}>
+            <Bar dataKey="callOI" name="callOI" radius={[2, 2, 0, 0]} activeBar={{ fill: "rgba(52, 211, 153, 0.9)" }}>
               {chartData.map((d, i) => (
                 <Cell key={i} fill={d.strike <= price ? "rgba(52, 211, 153, 0.6)" : "rgba(52, 211, 153, 0.3)"} />
               ))}
             </Bar>
-            <Bar dataKey="putOI" name="putOI" radius={[2, 2, 0, 0]}>
+            <Bar dataKey="putOI" name="putOI" radius={[2, 2, 0, 0]} activeBar={{ fill: "rgba(244, 63, 94, 0.9)" }}>
               {chartData.map((d, i) => (
                 <Cell key={i} fill={d.strike >= price ? "rgba(244, 63, 94, 0.6)" : "rgba(244, 63, 94, 0.3)"} />
               ))}
@@ -582,7 +582,7 @@ function IVByStrike({ chain, expiry }: { chain: OptionsChain; expiry: string }) 
               formatter={(value: number) => [`${value}%`, "IV"]}
               labelFormatter={(label: number) => `Strike $${label}`}
             />
-            <Bar dataKey="iv" fill="rgba(20, 184, 166, 0.5)" radius={[2, 2, 0, 0]} />
+            <Bar dataKey="iv" fill="rgba(20, 184, 166, 0.5)" activeBar={{ fill: "rgba(20, 184, 166, 0.9)" }} radius={[2, 2, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -646,17 +646,17 @@ function RawChainTable({ contracts, side }: { contracts: OptionContract[]; side:
           {contracts.slice(0, 30).map((c, i) => (
             <tr key={i} className="border-b border-zinc-800/50 hover:bg-zinc-800/30">
               <td className="py-1.5 tabular text-zinc-100 font-medium">{c.strike?.toFixed(2)}</td>
-              <td className="py-1.5 tabular text-right text-zinc-200">{c.lastPrice?.toFixed(2) ?? "—"}</td>
-              <td className="py-1.5 tabular text-right text-zinc-400">{c.bid?.toFixed(2) ?? "—"}</td>
-              <td className="py-1.5 tabular text-right text-zinc-400">{c.ask?.toFixed(2) ?? "—"}</td>
+              <td className="py-1.5 tabular text-right text-zinc-200">{c.lastPrice?.toFixed(2) ?? " -"}</td>
+              <td className="py-1.5 tabular text-right text-zinc-400">{c.bid?.toFixed(2) ?? " -"}</td>
+              <td className="py-1.5 tabular text-right text-zinc-400">{c.ask?.toFixed(2) ?? " -"}</td>
               <td className="py-1.5 tabular text-right text-vela-teal">
-                {c.impliedVolatility != null ? `${(c.impliedVolatility * 100).toFixed(1)}%` : "—"}
+                {c.impliedVolatility != null ? `${(c.impliedVolatility * 100).toFixed(1)}%` : " -"}
               </td>
               <td className="py-1.5 tabular text-right text-zinc-400">
-                {c.openInterest?.toLocaleString() ?? "—"}
+                {c.openInterest?.toLocaleString() ?? " -"}
               </td>
               <td className="py-1.5 tabular text-right text-zinc-400">
-                {c.volume?.toLocaleString() ?? "—"}
+                {c.volume?.toLocaleString() ?? " -"}
               </td>
             </tr>
           ))}
@@ -685,7 +685,7 @@ function StatCard({
   return (
     <div className="bg-zinc-800/50 rounded-lg px-3 py-2.5">
       <p className="text-xs text-zinc-500 mb-0.5">{label}</p>
-      <p className="text-sm font-medium text-zinc-100 tabular">{value ?? "—"}</p>
+      <p className="text-sm font-medium text-zinc-100 tabular">{value ?? " -"}</p>
       <p className="text-[11px] text-zinc-600 mt-0.5">{hint}</p>
     </div>
   );
