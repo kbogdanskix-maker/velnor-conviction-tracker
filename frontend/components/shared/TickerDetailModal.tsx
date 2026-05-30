@@ -511,12 +511,12 @@ function OptionsOIChart({ chain, expiry }: { chain: OptionsChain; expiry: string
               labelFormatter={(label: number) => `Strike $${label}`}
             />
             <ReferenceLine x={Number(chartData.reduce((best, d) => Math.abs(d.strike - price) < Math.abs(best - price) ? d.strike : best, chartData[0].strike))} stroke="#14b8a6" strokeDasharray="3 3" strokeWidth={1} />
-            <Bar dataKey="callOI" name="callOI" radius={[2, 2, 0, 0]} activeBar={{ fill: "rgba(52, 211, 153, 0.9)" }}>
+            <Bar dataKey="callOI" name="callOI" radius={[2, 2, 0, 0]} activeBar={{ fill: "rgba(20, 184, 166, 0.85)" }}>
               {chartData.map((d, i) => (
                 <Cell key={i} fill={d.strike <= price ? "rgba(52, 211, 153, 0.6)" : "rgba(52, 211, 153, 0.3)"} />
               ))}
             </Bar>
-            <Bar dataKey="putOI" name="putOI" radius={[2, 2, 0, 0]} activeBar={{ fill: "rgba(244, 63, 94, 0.9)" }}>
+            <Bar dataKey="putOI" name="putOI" radius={[2, 2, 0, 0]} activeBar={{ fill: "rgba(20, 184, 166, 0.85)" }}>
               {chartData.map((d, i) => (
                 <Cell key={i} fill={d.strike >= price ? "rgba(244, 63, 94, 0.6)" : "rgba(244, 63, 94, 0.3)"} />
               ))}
@@ -582,7 +582,7 @@ function IVByStrike({ chain, expiry }: { chain: OptionsChain; expiry: string }) 
               formatter={(value: number) => [`${value}%`, "IV"]}
               labelFormatter={(label: number) => `Strike $${label}`}
             />
-            <Bar dataKey="iv" fill="rgba(20, 184, 166, 0.5)" activeBar={{ fill: "rgba(20, 184, 166, 0.9)" }} radius={[2, 2, 0, 0]} />
+            <Bar dataKey="iv" fill="rgba(20, 184, 166, 0.5)" activeBar={{ fill: "rgba(20, 184, 166, 0.85)" }} radius={[2, 2, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>
