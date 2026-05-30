@@ -763,3 +763,39 @@ async def get_portfolio_history(
     }
 
 
+
+
+# ── Expense Ratio Lookup ──────────────────────────────────────────────────────
+
+@router.get("/expense-ratios")
+async def get_expense_ratios(
+    tickers: str = Query(..., description="Comma-separated tickers, e.g. ARKK,VOO,AAPL"),
+    user: User = Depends(get_current_user),
+):
+    """
+    Look up expense ratios for a list of tickers via yfinance.
+    Returns a dict of {ticker: ratio} where ratio is 0-1 (e.g. 0.0075 = 0.75%).
+    Returns null for individual stocks or unknown tickers.
+    """
+    import yfinance as yf
+    import asyncio
+
+    ticker_list = [t.strip().upper() for t in tickers.split(",") if t.strip()][:20]
+
+    def _fetch_one(ticker: str) -> tuple[str, float | None]:
+        try:
+            info = yf.Ticker(ticker).info
+            raw = info.get("netExpenseRatio")
+            if raw is not None:
+                # yfinance returns as percentage (e.g. 0.75 means 0.75%), convert to 0-1
+                return ticker, round(float(raw) / 100, 6)
+        except Exception:
+            pass
+        return ticker, None
+
+    loop = asyncio.get_event_loop()
+    results = await asyncio.gather(*[
+        loop.run_in_executor(None, _fetch_one, t) for t in ticker_list
+    ])
+
+    return {ticker: ratio for ticker, ratio in results}

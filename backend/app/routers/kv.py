@@ -16,7 +16,12 @@ from app.models.db import User, UserKVStore
 
 router = APIRouter(prefix="/kv")
 
-ALLOWED_KEYS = {"subscriptions", "insurance", "budget", "theses", "nw_history"}
+ALLOWED_KEYS = {
+    "subscriptions", "insurance", "budget", "theses", "nw_history",
+    "income_streams", "accounts", "donations", "expense_trends",
+    "user_profile", "portfolio_reflection_chat", "reflection_notes",
+    "fee_overrides",
+}
 
 
 class KVPut(BaseModel):

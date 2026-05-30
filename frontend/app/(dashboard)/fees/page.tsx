@@ -1,15 +1,17 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import {
   Receipt, TrendingDown, DollarSign, Info, AlertTriangle,
-  CheckCircle, Minus, ArrowRight,
+  CheckCircle, Minus, ArrowRight, RotateCcw,
 } from "lucide-react";
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
 import { useDefaultPortfolio } from "@/hooks/usePortfolio";
+import { useCloudStore } from "@/hooks/useCloudStore";
+import { api } from "@/lib/api";
 import {
   analyzeFees, lookupExpenseRatio, KNOWN_EXPENSE_RATIOS,
 } from "@/lib/fee-analyzer";
@@ -55,26 +57,72 @@ export default function FeesPage() {
   const { summary } = useDefaultPortfolio();
   const holdings = summary?.holdings ?? [];
 
-  // Editable expense ratios — start from known or 0
+  // Persisted user overrides — survive page refresh
+  const { data: savedOverrides, save: saveOverrides, isLoading: kvLoading } =
+    useCloudStore<Record<string, number>>("fee_overrides");
   const [overrides, setOverrides] = useState<Record<string, number>>({});
+  const kvSynced = useRef(false);
+
+  // Sync from cloud KV on first load
+  useEffect(() => {
+    if (savedOverrides && !kvSynced.current) {
+      setOverrides(savedOverrides);
+      kvSynced.current = true;
+    }
+  }, [savedOverrides]);
+
+  // Live ER from yfinance for tickers not in the static table
+  const [liveERs, setLiveERs] = useState<Record<string, number | null>>({});
+  const [fetchingLive, setFetchingLive] = useState(false);
+
+  useEffect(() => {
+    if (!holdings.length) return;
+    const unknown = holdings
+      .map((h) => h.ticker)
+      .filter((t) => lookupExpenseRatio(t) === null);
+    if (!unknown.length) return;
+
+    setFetchingLive(true);
+    api.get<Record<string, number | null>>(
+      `/portfolios/expense-ratios?tickers=${unknown.join(",")}`
+    )
+      .then((data) => setLiveERs(data))
+      .catch(() => {/* silent — falls back to 0 */})
+      .finally(() => setFetchingLive(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [holdings.map((h) => h.ticker).join(",")]);
+
+  function handleOverride(ticker: string, er: number) {
+    const updated = { ...overrides, [ticker]: er };
+    setOverrides(updated);
+    saveOverrides(updated);
+  }
+
+  function handleResetOverride(ticker: string) {
+    const updated = { ...overrides };
+    delete updated[ticker];
+    setOverrides(updated);
+    saveOverrides(updated);
+  }
 
   const feeHoldings: FeeHolding[] = useMemo(() => {
     return holdings.map((h) => {
       const known = lookupExpenseRatio(h.ticker);
-      const er = overrides[h.ticker] ?? known ?? 0;
+      const live = liveERs[h.ticker] ?? null;
+      const er = overrides[h.ticker] ?? known ?? live ?? 0;
       return {
         ticker: h.ticker,
         marketValue: h.market_value ?? h.total_cost ?? 0,
         expenseRatio: er,
-        isETF: known !== null,
+        isETF: known !== null || live !== null,
       };
     });
-  }, [holdings, overrides]);
+  }, [holdings, overrides, liveERs]);
 
   const result = useMemo(() => analyzeFees(feeHoldings), [feeHoldings]);
 
   const unknownCount = feeHoldings.filter(
-    (h) => lookupExpenseRatio(h.ticker) === null && !overrides[h.ticker]
+    (h) => lookupExpenseRatio(h.ticker) === null && liveERs[h.ticker] == null && !overrides[h.ticker]
   ).length;
 
   if (holdings.length === 0) {
@@ -103,7 +151,7 @@ export default function FeesPage() {
             <p className="text-xs text-amber-400">
               {unknownCount} holding{unknownCount > 1 ? "s" : ""} ha{unknownCount > 1 ? "ve" : "s"} no
               known expense ratio. Individual stocks typically have no expense ratio (0%).
-              ETFs and mutual funds do — edit below to add them.
+              ETFs and mutual funds do  - edit below to add them.
             </p>
           </div>
         </div>
@@ -146,7 +194,7 @@ export default function FeesPage() {
           Fee Impact Over Time
         </h2>
         <p className="text-[10px] text-zinc-500 mb-4">
-          Assuming 8% annual returns — your fees ({fmtER(result.weightedExpenseRatio)})
+          Assuming 8% annual returns  - your fees ({fmtER(result.weightedExpenseRatio)})
           vs low-cost index ({fmtER(result.lowCostER)})
         </p>
         <div className="h-64">
@@ -239,11 +287,12 @@ export default function FeesPage() {
             <HoldingRow
               key={h.ticker}
               holding={h}
-              onChangeER={(er) =>
-                setOverrides((prev) => ({ ...prev, [h.ticker]: er }))
-              }
+              onChangeER={(er) => handleOverride(h.ticker, er)}
+              onReset={() => handleResetOverride(h.ticker)}
               hasOverride={h.ticker in overrides}
               knownER={lookupExpenseRatio(h.ticker)}
+              liveER={liveERs[h.ticker] ?? null}
+              fetchingLive={fetchingLive}
             />
           ))}
         </div>
@@ -329,13 +378,19 @@ function Header() {
 function HoldingRow({
   holding,
   onChangeER,
+  onReset,
   hasOverride,
   knownER,
+  liveER,
+  fetchingLive,
 }: {
   holding: HoldingFeeDetail;
   onChangeER: (er: number) => void;
+  onReset: () => void;
   hasOverride: boolean;
   knownER: number | null;
+  liveER: number | null;
+  fetchingLive: boolean;
 }) {
   const [editing, setEditing] = useState(false);
   const [inputVal, setInputVal] = useState(
@@ -350,8 +405,19 @@ function HoldingRow({
     setEditing(false);
   };
 
+  // Source label shown next to ER
+  const sourceLabel = hasOverride
+    ? <span className="text-[9px] text-amber-400 border border-amber-500/30 rounded px-1 py-px">edited</span>
+    : knownER !== null
+    ? <CheckCircle className="w-3 h-3 text-emerald-500/50" />
+    : liveER !== null
+    ? <span className="text-[9px] text-teal-500 border border-teal-500/30 rounded px-1 py-px">live</span>
+    : fetchingLive
+    ? <span className="text-[9px] text-zinc-600 animate-pulse">…</span>
+    : null;
+
   return (
-    <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-zinc-800/50">
+    <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-zinc-800/50 group">
       {/* Ticker */}
       <span className="text-sm font-semibold text-zinc-100 w-14">{holding.ticker}</span>
 
@@ -387,6 +453,7 @@ function HoldingRow({
               setInputVal((holding.expenseRatio * 100).toFixed(2));
               setEditing(true);
             }}
+            title="Click to edit expense ratio"
             className={`text-xs tabular font-medium px-1.5 py-0.5 rounded cursor-pointer hover:ring-1 hover:ring-vela-teal/30 transition ${
               TIER_COLORS[holding.costTier]
             }`}
@@ -394,8 +461,15 @@ function HoldingRow({
             {fmtER(holding.expenseRatio)}
           </button>
         )}
-        {knownER !== null && !hasOverride && (
-          <CheckCircle className="w-3 h-3 text-emerald-500/50" />
+        {sourceLabel}
+        {hasOverride && (
+          <button
+            onClick={onReset}
+            title="Reset to auto-detected value"
+            className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 text-zinc-600 hover:text-zinc-400"
+          >
+            <RotateCcw className="w-3 h-3" />
+          </button>
         )}
       </div>
 
@@ -419,7 +493,7 @@ function HoldingRow({
             <span className="text-zinc-600 ml-0.5">10yr</span>
           </>
         ) : (
-          <span className="text-zinc-600">—</span>
+          <span className="text-zinc-600"> -</span>
         )}
       </span>
     </div>
