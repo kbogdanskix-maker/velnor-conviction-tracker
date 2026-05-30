@@ -39,16 +39,39 @@ export default function RebalancePage() {
   const [cashToInvest, setCashToInvest] = useState(0);
   const [customTargets, setCustomTargets] = useState<Record<string, number>>({});
 
-  // Initialize custom targets from current weights when switching to custom
+  // Initialize custom targets from current weights when switching to custom.
+  // Use currentTotal (not summary total_value) so defaults stay accurate when cashToInvest > 0.
+  const currentTotal = useMemo(
+    () => holdings.reduce((s, h) => s + (h.market_value ?? h.total_cost), 0),
+    [holdings]
+  );
+
   const effectiveCustom = useMemo(() => {
     if (strategy !== "custom") return {};
+    const denominator = (currentTotal + cashToInvest) || totalValue || 1;
     const targets: Record<string, number> = {};
     for (const h of holdings) {
       const mv = h.market_value ?? h.total_cost;
-      targets[h.ticker] = customTargets[h.ticker] ?? Math.round((mv / (totalValue || 1)) * 100);
+      targets[h.ticker] = customTargets[h.ticker] ?? Math.round((mv / denominator) * 100);
     }
     return targets;
-  }, [strategy, holdings, totalValue, customTargets]);
+  }, [strategy, holdings, currentTotal, totalValue, cashToInvest, customTargets]);
+
+  // Normalized effective weights for display (0-100 %)
+  const normalizedTargets = useMemo(() => {
+    const rawSum = Object.values(effectiveCustom).reduce((s, v) => s + v, 0);
+    if (rawSum === 0) return effectiveCustom;
+    const result: Record<string, number> = {};
+    for (const [k, v] of Object.entries(effectiveCustom)) {
+      result[k] = Math.round((v / rawSum) * 1000) / 10; // one decimal
+    }
+    return result;
+  }, [effectiveCustom]);
+
+  const rawInputSum = useMemo(
+    () => Object.values(effectiveCustom).reduce((s, v) => s + v, 0),
+    [effectiveCustom]
+  );
 
   const result = useMemo(() => {
     return calculateRebalance({
@@ -166,31 +189,52 @@ export default function RebalancePage() {
         {/* Custom weight sliders */}
         {strategy === "custom" && (
           <div className="space-y-3 pt-2 border-t border-zinc-800">
-            <p className="text-xs text-zinc-500">Set target weights (will be normalized to 100%)</p>
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-zinc-500">Set target weights — effective targets shown in teal</p>
+              <span className={`text-xs tabular font-medium px-2 py-0.5 rounded ${
+                Math.abs(rawInputSum - 100) < 1
+                  ? "text-zinc-500"
+                  : "text-amber-400 bg-amber-400/10"
+              }`}>
+                Sum: {rawInputSum}%{Math.abs(rawInputSum - 100) >= 1 ? " → normalized" : ""}
+              </span>
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {holdings.map((h) => {
                 const ticker = h.ticker;
                 const val = effectiveCustom[ticker] ?? 0;
+                const effective = normalizedTargets[ticker] ?? 0;
+                const showNormalized = Math.abs(rawInputSum - 100) >= 1;
                 return (
-                  <div key={ticker} className="flex items-center gap-3">
-                    <span className="text-xs text-zinc-300 w-12 font-medium">{ticker}</span>
-                    <input
-                      type="range"
-                      min={0}
-                      max={100}
-                      step={1}
-                      value={val}
-                      onChange={(e) => setCustomTargets((prev) => ({ ...prev, [ticker]: Number(e.target.value) }))}
-                      className="flex-1 h-1.5 bg-zinc-800 rounded-full appearance-none cursor-pointer
-                        [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3
-                        [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-vela-teal
-                        [&::-webkit-slider-thumb]:cursor-pointer"
-                    />
-                    <span className="text-xs tabular text-zinc-400 w-10 text-right">{val}%</span>
+                  <div key={ticker} className="space-y-1">
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs text-zinc-300 w-12 font-medium">{ticker}</span>
+                      <input
+                        type="range"
+                        min={0}
+                        max={100}
+                        step={1}
+                        value={val}
+                        onChange={(e) => setCustomTargets((prev) => ({ ...prev, [ticker]: Number(e.target.value) }))}
+                        className="flex-1 h-1.5 bg-zinc-800 rounded-full appearance-none cursor-pointer
+                          [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3
+                          [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-vela-teal
+                          [&::-webkit-slider-thumb]:cursor-pointer"
+                      />
+                      <span className="text-xs tabular text-zinc-400 w-10 text-right">{val}%</span>
+                      {showNormalized && (
+                        <span className="text-xs tabular text-teal-400 w-12 text-right">→ {effective}%</span>
+                      )}
+                    </div>
                   </div>
                 );
               })}
             </div>
+            {Math.abs(rawInputSum - 100) >= 1 && (
+              <p className="text-[11px] text-amber-400/70">
+                Inputs don&apos;t sum to 100% — teal values show effective targets after normalization.
+              </p>
+            )}
           </div>
         )}
       </div>
