@@ -256,9 +256,27 @@ export default function RebalancePage() {
           <p className="text-xs text-zinc-500">Total Buys</p>
         </div>
         <div className="vela-card text-center py-3">
-          <p className="text-2xl font-bold tabular text-rose-400">{fmtCurrency(-result.totalSells)}</p>
+          <p className="text-2xl font-bold tabular text-rose-400">{fmtCurrency(result.totalSells)}</p>
           <p className="text-xs text-zinc-500">Total Sells</p>
         </div>
+      </div>
+
+      {/* Capital deployment note — explains why buys ≈ sells */}
+      <div className="flex items-center justify-between px-1 text-xs text-zinc-600">
+        <span>
+          Buys − Sells ={" "}
+          <span className={cashToInvest > 0 ? "text-teal-400 font-medium" : "text-zinc-500"}>
+            {cashToInvest > 0 ? fmtCurrency(cashToInvest) : "$0"}
+          </span>
+          {cashToInvest === 0 && (
+            <span className="ml-1 text-zinc-700">
+              — sells fund the buys; add cash above to deploy new capital
+            </span>
+          )}
+        </span>
+        <span className="text-zinc-700 tabular">
+          Net: {fmtCurrency(result.totalBuys - result.totalSells)}
+        </span>
       </div>
 
       {result.isBalanced && (
