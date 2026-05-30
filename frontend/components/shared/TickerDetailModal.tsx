@@ -523,7 +523,8 @@ function OptionsOIChart({ chain, expiry }: { chain: OptionsChain; expiry: string
               name="callOI"
               radius={[2, 2, 0, 0]}
               activeBar={false}
-              onMouseEnter={(data: { strike: number }) => setActiveStrike(data.strike)}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              onMouseEnter={(data: any) => setActiveStrike(data?.strike ?? null)}
             >
               {chartData.map((d, i) => (
                 <Cell
@@ -541,7 +542,8 @@ function OptionsOIChart({ chain, expiry }: { chain: OptionsChain; expiry: string
               name="putOI"
               radius={[2, 2, 0, 0]}
               activeBar={false}
-              onMouseEnter={(data: { strike: number }) => setActiveStrike(data.strike)}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              onMouseEnter={(data: any) => setActiveStrike(data?.strike ?? null)}
             >
               {chartData.map((d, i) => (
                 <Cell
