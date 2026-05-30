@@ -453,6 +453,8 @@ function MetricBox({ label, value, sub, subColor }: { label: string; value: stri
 // ── OI by Strike Chart ───────────────────────────────────────────────────
 
 function OptionsOIChart({ chain, expiry }: { chain: OptionsChain; expiry: string }) {
+  const [activeStrike, setActiveStrike] = useState<number | null>(null);
+
   const chartData = useMemo(() => {
     const calls = chain.chains[expiry]?.calls || [];
     const puts = chain.chains[expiry]?.puts || [];
@@ -489,7 +491,12 @@ function OptionsOIChart({ chain, expiry }: { chain: OptionsChain; expiry: string
       <h4 className="text-xs text-zinc-400 font-medium mb-2">Open Interest by Strike</h4>
       <div className="h-48">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={chartData} barGap={0} barCategoryGap="10%">
+          <BarChart
+            data={chartData}
+            barGap={0}
+            barCategoryGap="10%"
+            onMouseLeave={() => setActiveStrike(null)}
+          >
             <XAxis
               dataKey="strike"
               tick={{ fontSize: 9, fill: "#71717a" }}
@@ -511,14 +518,40 @@ function OptionsOIChart({ chain, expiry }: { chain: OptionsChain; expiry: string
               labelFormatter={(label: number) => `Strike $${label}`}
             />
             <ReferenceLine x={Number(chartData.reduce((best, d) => Math.abs(d.strike - price) < Math.abs(best - price) ? d.strike : best, chartData[0].strike))} stroke="#14b8a6" strokeDasharray="3 3" strokeWidth={1} />
-            <Bar dataKey="callOI" name="callOI" radius={[2, 2, 0, 0]} activeBar={{ fill: "rgba(20, 184, 166, 0.85)" }}>
+            <Bar
+              dataKey="callOI"
+              name="callOI"
+              radius={[2, 2, 0, 0]}
+              activeBar={false}
+              onMouseEnter={(data: { strike: number }) => setActiveStrike(data.strike)}
+            >
               {chartData.map((d, i) => (
-                <Cell key={i} fill={d.strike <= price ? "rgba(52, 211, 153, 0.6)" : "rgba(52, 211, 153, 0.3)"} />
+                <Cell
+                  key={i}
+                  fill={
+                    d.strike === activeStrike
+                      ? "rgba(20, 184, 166, 0.85)"
+                      : d.strike <= price ? "rgba(52, 211, 153, 0.6)" : "rgba(52, 211, 153, 0.3)"
+                  }
+                />
               ))}
             </Bar>
-            <Bar dataKey="putOI" name="putOI" radius={[2, 2, 0, 0]} activeBar={{ fill: "rgba(20, 184, 166, 0.85)" }}>
+            <Bar
+              dataKey="putOI"
+              name="putOI"
+              radius={[2, 2, 0, 0]}
+              activeBar={false}
+              onMouseEnter={(data: { strike: number }) => setActiveStrike(data.strike)}
+            >
               {chartData.map((d, i) => (
-                <Cell key={i} fill={d.strike >= price ? "rgba(244, 63, 94, 0.6)" : "rgba(244, 63, 94, 0.3)"} />
+                <Cell
+                  key={i}
+                  fill={
+                    d.strike === activeStrike
+                      ? "rgba(20, 184, 166, 0.85)"
+                      : d.strike >= price ? "rgba(244, 63, 94, 0.6)" : "rgba(244, 63, 94, 0.3)"
+                  }
+                />
               ))}
             </Bar>
           </BarChart>
