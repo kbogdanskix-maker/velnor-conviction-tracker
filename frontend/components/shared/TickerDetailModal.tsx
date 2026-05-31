@@ -509,8 +509,9 @@ function OptionsOIChart({ chain, expiry }: { chain: OptionsChain; expiry: string
               width={36}
             />
             <Tooltip cursor={false}
-              contentStyle={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 8, fontSize: 11 }}
-              labelStyle={{ color: "#a1a1aa", fontSize: 10 }}
+              contentStyle={{ background: "#0c1a19", border: "1px solid rgba(20,184,166,0.35)", borderRadius: 8, fontSize: 11 }}
+              labelStyle={{ color: "#14b8a6", fontSize: 10, fontWeight: 600 }}
+              itemStyle={{ color: "#5eead4" }}
               formatter={(value: number, name: string) => [
                 value.toLocaleString(),
                 name === "callOI" ? "Call OI" : "Put OI",
@@ -613,7 +614,9 @@ function IVByStrike({ chain, expiry }: { chain: OptionsChain; expiry: string }) 
               domain={["dataMin - 5", "dataMax + 5"]}
             />
             <Tooltip cursor={false}
-              contentStyle={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 8, fontSize: 11 }}
+              contentStyle={{ background: "#0c1a19", border: "1px solid rgba(20,184,166,0.35)", borderRadius: 8, fontSize: 11 }}
+              labelStyle={{ color: "#14b8a6", fontSize: 10, fontWeight: 600 }}
+              itemStyle={{ color: "#5eead4" }}
               formatter={(value: number) => [`${value}%`, "IV"]}
               labelFormatter={(label: number) => `Strike $${label}`}
             />
