@@ -11,18 +11,18 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Vela brand palette
+        // Velnor brand palette — Instrument design system
         vela: {
-          teal: "#14b8a6",       // teal-500  - primary accent
-          "teal-dim": "#0d9488", // teal-600  - hover state
-          bg: "#030712",         // deep space blue-black
-          card: "#0f1729",       // navy-tinted card background
-          "card-hover": "#141d33", // slightly lighter on hover
-          border: "#1e293b",     // slate-800  - cooler borders
-          muted: "#64748b",      // slate-500  - muted text
-          subtle: "#475569",     // slate-600  - very muted
+          teal: "#14b8a6",        // primary accent — the ONLY brand accent
+          "teal-dim": "#0d9488",  // hover state
+          bg: "#050A16",          // page background
+          card: "#0B1322",        // solid card surface
+          "card-hover": "#111A2E",// raised surface
+          border: "#1B2638",      // hairline border
+          muted: "#8A97AC",       // muted text
+          subtle: "#5A6678",      // faint text
         },
-        // P&L colours
+        // P&L — semantic only, never decoration
         gain: "#34d399",   // emerald-400
         loss: "#f43f5e",   // rose-500
       },
@@ -32,10 +32,12 @@ const config: Config = {
         display: ["var(--font-display)", "system-ui", "sans-serif"],
       },
       borderRadius: {
-        DEFAULT: "0.5rem",
-        sm: "0.375rem",
-        lg: "0.75rem",
-        xl: "1rem",
+        DEFAULT: "4px",  // buttons, inputs
+        sm: "4px",
+        md: "6px",       // cards
+        lg: "6px",
+        xl: "8px",       // was 16px — caps oversized cards
+        "2xl": "10px",   // was 16px — caps oversized cards
       },
       keyframes: {
         shimmer: {
