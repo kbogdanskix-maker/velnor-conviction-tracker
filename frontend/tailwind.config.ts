@@ -27,9 +27,9 @@ const config: Config = {
         loss: "#f43f5e",   // rose-500
       },
       fontFamily: {
-        sans: ["var(--font-geist-sans)", "system-ui", "sans-serif"],
-        mono: ["var(--font-geist-mono)", "monospace"],
-        display: ["var(--font-space-grotesk)", "system-ui", "sans-serif"],
+        sans: ["var(--font-sans)", "system-ui", "sans-serif"],
+        mono: ["var(--font-mono)", "monospace"],
+        display: ["var(--font-display)", "system-ui", "sans-serif"],
       },
       borderRadius: {
         DEFAULT: "0.5rem",
