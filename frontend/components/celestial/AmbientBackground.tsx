@@ -32,7 +32,7 @@ export default function AmbientBackground() {
         }}
       />
 
-      {/* Deep indigo wash  - right side */}
+      {/* Deep teal wash  - right side */}
       <div
         className="absolute rounded-full"
         style={{
@@ -41,7 +41,7 @@ export default function AmbientBackground() {
           right: "-25%",
           top: "15%",
           background:
-            "radial-gradient(circle, rgba(99,102,241,0.05) 0%, rgba(99,102,241,0.01) 40%, transparent 60%)",
+            "radial-gradient(circle, rgba(20,184,166,0.045) 0%, rgba(20,184,166,0.01) 40%, transparent 60%)",
           filter: "blur(100px)",
           animation: "ambient-pulse 16s ease-in-out infinite 4s",
         }}
@@ -62,7 +62,7 @@ export default function AmbientBackground() {
         }}
       />
 
-      {/* Faint purple haze  - top right */}
+      {/* Faint cyan haze  - top right */}
       <div
         className="absolute rounded-full"
         style={{
@@ -71,7 +71,7 @@ export default function AmbientBackground() {
           right: "-15%",
           top: "-25%",
           background:
-            "radial-gradient(circle, rgba(139,92,246,0.035) 0%, transparent 50%)",
+            "radial-gradient(circle, rgba(6,182,212,0.03) 0%, transparent 50%)",
           filter: "blur(100px)",
           animation: "ambient-pulse 18s ease-in-out infinite 12s",
         }}
@@ -82,7 +82,7 @@ export default function AmbientBackground() {
         className="absolute inset-x-0 bottom-0 h-[60%]"
         style={{
           background:
-            "linear-gradient(to top, rgba(3,7,18,0.8) 0%, transparent 100%)",
+            "linear-gradient(to top, rgba(5,10,22,0.8) 0%, transparent 100%)",
         }}
       />
     </div>

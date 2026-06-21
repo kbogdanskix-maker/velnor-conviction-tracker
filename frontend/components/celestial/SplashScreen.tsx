@@ -39,7 +39,7 @@ export default function SplashScreen({ children }: { children: React.ReactNode }
         {(phase === "splash" || phase === "exit") && (
           <motion.div
             key="splash"
-            className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#030712]"
+            className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-vela-bg"
             initial={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}

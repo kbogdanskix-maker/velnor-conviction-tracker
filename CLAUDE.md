@@ -1,37 +1,41 @@
-# Vela Wealth Platform
+# Velnor Wealth Platform
 
 ## Frontend Design Guidelines
 
-When building or redesigning frontend pages, follow these principles to avoid generic "AI slop" aesthetics:
+**The single source of truth for visual design is [`frontend/design-system.md`](frontend/design-system.md)** — the
+opinionated "Instrument" anti-slop system. Read it (or paste the relevant section) before building or
+redesigning any frontend surface. The notes below are a summary; the doc wins on any conflict.
+
+### Core direction
+- **Instrument, not SaaS dashboard.** Celestial-navigation soul, expressed as a disciplined accent in-app
+  and a showpiece only on the landing page.
+- **Silence = AI defaults.** Be explicit. Honor the "Do Not Use" list in the design system.
 
 ### Typography
-- Use distinctive, characterful fonts — avoid generic choices like Inter, Roboto, Arial
-- Pair a display font with a refined body font
-- Current stack uses Geist with tabular-nums for financial figures
+- Display: **Bricolage Grotesque** · Body: **Hanken Grotesk** · Figures: **JetBrains Mono** (tabular-nums).
+- **Geist is dropped.** Never reintroduce Geist/Inter/Roboto as the typeface.
 
 ### Color & Theme
-- Commit to the cohesive Vela dark theme: zinc-950 bg, teal-500 accent, emerald-400 profit, rose-500 loss
-- Use CSS variables for consistency
-- Dominant colors with sharp accents — not timid, evenly-distributed palettes
+- Dark base (`vela-bg #050A16`). **Teal `#14B8A6` is the only brand accent.**
+- `gain`/`loss`/`amber` are **semantic only** — never decoration. No indigo / blue / purple anywhere.
 
-### Motion & Interaction
-- Add animations for micro-interactions and page transitions
-- CSS-only where possible, Motion library for React when needed
-- Staggered reveals on page load create more delight than scattered micro-interactions
-- Hover states that surprise
+### Surfaces, shape & motion
+- **Solid surfaces + 1px hairline borders.** No liquid glass (`backdrop-filter` as decoration), no glow,
+  no multi-layer shadows, no hover card-lift.
+- Crisp radius: 4px buttons/inputs, 6px cards, 0 panels. No `rounded-2xl`/pills (avatars keep `rounded-full`).
+- Motion: 150–220ms, ease-out, transform/opacity only; honor `prefers-reduced-motion`. Borrow animation
+  *mechanics* from 21st.dev but re-skin to our tokens (design system §9). 21st is bones, never taste.
 
-### Spatial Composition
-- Asymmetry, overlap, diagonal flow where appropriate
-- Grid-breaking elements for visual interest
-- Generous negative space OR controlled density — be intentional
+### Visual details
+- Atmosphere via a quiet teal-only constellation/wash that never reduces text contrast — not gradient
+  meshes or dramatic shadows.
+- Signature motifs: mono eyebrow labels, hairline rules instead of nested cards, tabular figures,
+  bearing/heading language.
 
-### Visual Details
-- Create atmosphere and depth, not just solid color cards
-- Gradient meshes, noise textures, layered transparencies, dramatic shadows
-- Every page should feel genuinely designed for its specific purpose
+### Anti-patterns to avoid
+- Generic shadcn pill sidebar; cookie-cutter cards with no hierarchy; "clean & spacious" 50px padding as a
+  substitute for hierarchy; emoji as icons.
+- Forgetting that financial data needs clear visual hierarchy and scanability.
 
-### Anti-patterns to Avoid
-- Cookie-cutter card layouts with no visual hierarchy
-- Predictable symmetric grids everywhere
-- Generic component patterns that could be any app
-- Forgetting that financial data needs clear visual hierarchy and scanability
+> Redesign is phased (app-first). See `frontend/design-system.md` changelog and
+> `docs/superpowers/plans/` for current phase status.
