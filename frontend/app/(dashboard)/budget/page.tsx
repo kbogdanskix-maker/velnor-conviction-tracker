@@ -39,7 +39,7 @@ interface CategoryBudget {
   pct: number;
 }
 
-// localStorage helpers removed — now uses useCloudStore
+// localStorage helpers removed  - now uses useCloudStore
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -76,7 +76,7 @@ export default function BudgetPage() {
   const [editValue, setEditValue] = useState("");
   const [showSetup, setShowSetup] = useState(false);
 
-  // Sync from cloud store — only when cloud data actually has content
+  // Sync from cloud store  - only when cloud data actually has content
   const synced = useRef(false);
   useEffect(() => {
     if (!synced.current && Array.isArray(cloudTargets) && cloudTargets.length > 0) {
@@ -118,7 +118,7 @@ export default function BudgetPage() {
       actualMap.set(cat, curr);
     }
 
-    // Build combined list — categories with spending OR budget targets
+    // Build combined list  - categories with spending OR budget targets
     const targetMap = new Map(targets.map((t) => [t.category, t.limit]));
     const allCatsList = [...Array.from(actualMap.keys()), ...Array.from(targetMap.keys())];
     const seen = new Set<string>();
@@ -248,7 +248,7 @@ export default function BudgetPage() {
                   className={`text-2xl font-bold tabular ${totalPct > 100 ? "text-rose-400" : totalPct > 85 ? "text-amber-400" : "text-emerald-400"}`}
                 />
               ) : (
-                <p className="text-2xl font-bold tabular text-zinc-400">—</p>
+                <p className="text-2xl font-bold tabular text-zinc-400"> -</p>
               )}
               <p className="text-xs text-zinc-500 mt-1">Budget Used</p>
             </div>
@@ -268,7 +268,7 @@ export default function BudgetPage() {
                   className="text-2xl font-bold tabular text-vela-teal"
                 />
               ) : (
-                <p className="text-2xl font-bold tabular text-vela-teal">—</p>
+                <p className="text-2xl font-bold tabular text-vela-teal"> -</p>
               )}
               <p className="text-xs text-zinc-500 mt-1">Total Budget</p>
             </div>
@@ -282,7 +282,7 @@ export default function BudgetPage() {
                   }`}
                 />
               ) : (
-                <p className="text-2xl font-bold tabular text-emerald-400">—</p>
+                <p className="text-2xl font-bold tabular text-emerald-400"> -</p>
               )}
               <p className="text-xs text-zinc-500 mt-1">
                 {remainingBudget >= 0 ? "Remaining" : "Over Budget"}
@@ -370,7 +370,7 @@ export default function BudgetPage() {
             </div>
           )}
 
-          {/* Quick setup — set all at once */}
+          {/* Quick setup  - set all at once */}
           {!hasBudgets && hasAnyExpenses && (
             <div className="flex justify-center">
               <button
@@ -397,7 +397,7 @@ export default function BudgetPage() {
             </div>
           )}
 
-          {/* Category list — with targets */}
+          {/* Category list  - with targets */}
           {withTargets.length > 0 && (
             <div className="space-y-3">
               <h2 className="text-sm font-medium text-zinc-300">Budgeted Categories</h2>
@@ -417,7 +417,7 @@ export default function BudgetPage() {
             </div>
           )}
 
-          {/* Unbudgeted categories — expenses without targets */}
+          {/* Unbudgeted categories  - expenses without targets */}
           {withoutTargets.length > 0 && (
             <div className="space-y-3">
               <h2 className="text-sm font-medium text-zinc-400">Unbudgeted</h2>
@@ -462,7 +462,7 @@ export default function BudgetPage() {
 
           <div className="text-center pt-4 pb-8 border-t border-zinc-800">
             <p className="text-xs text-zinc-600">
-              Budget targets are stored locally. Add or update expense entries in Cash Flow to track against your budgets.
+              Budget targets are synced to your account. Add or update expense entries in Cash Flow to track against your budgets.
             </p>
           </div>
         </>
@@ -569,10 +569,18 @@ function CategoryRow({ data, editing, editValue, onStartEdit, onSetEditValue, on
           {data.target > 0 && (
             <div className="mt-2 flex items-center gap-2">
               <div className="flex-1 h-1.5 bg-zinc-800 rounded-full overflow-hidden relative">
+                {/* Normal fill up to 100% */}
                 <div
                   className={`h-full rounded-full transition-all ${statusBg(data.status)}`}
                   style={{ width: `${barPct}%` }}
                 />
+                {/* Overflow pulse — renders on top when over budget */}
+                {overflowPct > 0 && (
+                  <div
+                    className="absolute right-0 top-0 h-full bg-rose-500/50 animate-pulse rounded-full"
+                    style={{ width: `${Math.min(overflowPct * 2, 40)}%` }}
+                  />
+                )}
               </div>
               <span className={`text-[10px] tabular w-10 text-right ${statusColor(data.status)}`}>
                 {data.pct.toFixed(0)}%

@@ -200,7 +200,7 @@ function TimelineRow({
           {formatCurrency(total)}
         </span>
 
-        {/* ⋯ dropdown — visible on hover */}
+        {/* ⋯ dropdown  - visible on hover */}
         <DropdownMenu.Root>
           <DropdownMenu.Trigger asChild>
             <button className="p-1 rounded-md text-zinc-600 opacity-0 group-hover:opacity-100 hover:text-zinc-100 hover:bg-zinc-800 transition-all focus:outline-none focus:opacity-100">

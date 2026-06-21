@@ -62,7 +62,7 @@ const SCENARIOS: Scenario[] = [
     id: "salary_change",
     label: "Salary Change",
     icon: <Briefcase className="w-4 h-4" />,
-    description: "Raise, new job, or income drop — see the ripple effect",
+    description: "Raise, new job, or income drop  - see the ripple effect",
     fields: [
       { key: "current_salary", label: "Current monthly income", type: "currency", defaultValue: 5000 },
       { key: "new_salary", label: "New monthly income", type: "currency", defaultValue: 6000 },
@@ -154,7 +154,7 @@ export default function WhatIfPage() {
           title: `Buying something for ${formatCurrency(price)}`,
           metrics: [
             { label: "Monthly payment", before: formatCurrency(0), after: formatCurrency(monthly), negative: true },
-            { label: "Total interest paid", before: "—", after: formatCurrency(totalInterest), negative: totalInterest > 0 },
+            { label: "Total interest paid", before: " -", after: formatCurrency(totalInterest), negative: totalInterest > 0 },
             { label: "Monthly savings", before: formatCurrency(monthlySavings), after: formatCurrency(newSavings), negative: newSavings < monthlySavings },
             { label: "Savings rate", before: formatPercent(currentSavingsRate, false), after: formatPercent(newSavingsRate, false), negative: newSavingsRate < currentSavingsRate },
             { label: "Net worth over loan term", before: formatCurrency(currentNetWorth), after: formatCurrency(currentNetWorth - totalInterest), negative: totalInterest > 0 },
@@ -177,7 +177,7 @@ export default function WhatIfPage() {
           title: diff > 0 ? `Rent going up by ${formatCurrency(diff)}/mo` : `Rent going down by ${formatCurrency(Math.abs(diff))}/mo`,
           metrics: [
             { label: "Monthly rent", before: formatCurrency(currentRent), after: formatCurrency(newRent), negative: diff > 0 },
-            { label: "Yearly difference", before: "—", after: `${diff > 0 ? "+" : ""}${formatCurrency(yearlyImpact)}`, negative: diff > 0 },
+            { label: "Yearly difference", before: " -", after: `${diff > 0 ? "+" : ""}${formatCurrency(yearlyImpact)}`, negative: diff > 0 },
             { label: "Monthly savings", before: formatCurrency(monthlySavings), after: formatCurrency(newSavings), negative: newSavings < monthlySavings },
             { label: "Savings rate", before: formatPercent(currentSavingsRate, false), after: formatPercent(newSavingsRate, false), negative: newSavingsRate < currentSavingsRate },
           ],
@@ -199,7 +199,7 @@ export default function WhatIfPage() {
           title: diff > 0 ? `Getting a ${formatCurrency(diff)}/mo raise` : `Income dropping by ${formatCurrency(Math.abs(diff))}/mo`,
           metrics: [
             { label: "Monthly income", before: formatCurrency(currentSalary), after: formatCurrency(newSalary), negative: diff < 0 },
-            { label: "Yearly difference", before: "—", after: `${diff > 0 ? "+" : ""}${formatCurrency(diff * 12)}/yr`, negative: diff < 0 },
+            { label: "Yearly difference", before: " -", after: `${diff > 0 ? "+" : ""}${formatCurrency(diff * 12)}/yr`, negative: diff < 0 },
             { label: "Monthly savings", before: formatCurrency(monthlySavings), after: formatCurrency(newSavings), negative: newSavings < monthlySavings },
             { label: "Savings rate", before: formatPercent(currentSavingsRate, false), after: formatPercent(newSavingsRate, false), negative: newSavingsRate < currentSavingsRate },
           ],
@@ -226,9 +226,9 @@ export default function WhatIfPage() {
         return {
           title: `Investing an extra ${formatCurrency(extra)}/mo for ${years} years`,
           metrics: [
-            { label: "Total contributed", before: "—", after: formatCurrency(totalContributed), negative: false },
-            { label: "Growth earned", before: "—", after: formatCurrency(growthEarned), negative: false },
-            { label: "Future value", before: "—", after: formatCurrency(futureValue), negative: false },
+            { label: "Total contributed", before: " -", after: formatCurrency(totalContributed), negative: false },
+            { label: "Growth earned", before: " -", after: formatCurrency(growthEarned), negative: false },
+            { label: "Future value", before: " -", after: formatCurrency(futureValue), negative: false },
             { label: "Monthly savings after", before: formatCurrency(monthlySavings), after: formatCurrency(newSavings), negative: newSavings < monthlySavings },
             { label: "Savings rate", before: formatPercent(currentSavingsRate, false), after: formatPercent(newSavingsRate, false), negative: newSavingsRate < currentSavingsRate },
           ],
@@ -251,16 +251,26 @@ export default function WhatIfPage() {
         const currentSavingsRate = monthlyIncome > 0 ? (monthlySavings / monthlyIncome) * 100 : 0;
         const newSavingsRate = monthlyIncome > 0 ? (newSavings / monthlyIncome) * 100 : 0;
 
+        // Goals whose names suggest emergency fund get the monthly_save added
+        // directly to their contribution — not penalised by the savings reduction
+        const efOverrides: Record<string, number> = {};
+        goals.forEach((g) => {
+          if (/emergency/i.test(g.name)) {
+            const baseContrib = g.monthly_contribution ?? 0;
+            efOverrides[g.name] = baseContrib + monthlySave;
+          }
+        });
+
         return {
           title: `Building a ${targetMonths}-month emergency fund`,
           metrics: [
-            { label: "Target amount", before: "—", after: formatCurrency(targetAmount), negative: false },
-            { label: "Monthly set aside", before: "—", after: formatCurrency(monthlySave), negative: false },
-            { label: "Months to reach goal", before: "—", after: `${monthsToGoal} months`, negative: false },
+            { label: "Target amount", before: " -", after: formatCurrency(targetAmount), negative: false },
+            { label: "Monthly set aside", before: " -", after: formatCurrency(monthlySave), negative: false },
+            { label: "Months to reach goal", before: " -", after: `${monthsToGoal} months`, negative: false },
             { label: "Remaining savings", before: formatCurrency(monthlySavings), after: formatCurrency(newSavings), negative: newSavings < monthlySavings },
             { label: "Savings rate", before: formatPercent(currentSavingsRate, false), after: formatPercent(newSavingsRate, false), negative: newSavingsRate < currentSavingsRate },
           ],
-          goalDelays: computeGoalDelays(goals, monthlySavings, newSavings),
+          goalDelays: computeGoalDelays(goals, monthlySavings, newSavings, efOverrides),
           warning: newSavings < 0 ? "This savings rate would exceed your available surplus" : null,
         };
       }
@@ -371,7 +381,7 @@ export default function WhatIfPage() {
                 <div key={i} className="flex items-center justify-between py-2 border-b border-vela-border last:border-0">
                   <span className="text-sm text-zinc-400">{m.label}</span>
                   <div className="flex items-center gap-2 text-sm tabular">
-                    {m.before !== "—" && (
+                    {m.before !== " -" && (
                       <>
                         <span className="text-zinc-500">{m.before}</span>
                         <ArrowRight className="w-3 h-3 text-zinc-600" />
@@ -390,30 +400,46 @@ export default function WhatIfPage() {
           {impact.goalDelays.length > 0 && (
             <div className="vela-card">
               <h2 className="text-sm font-medium text-zinc-300 mb-3">Impact on Your Goals</h2>
-              <div className="space-y-2">
-                {impact.goalDelays.map((g, i) => (
-                  <div key={i} className="flex items-center justify-between py-2 border-b border-vela-border last:border-0">
-                    <div>
-                      <p className="text-sm font-medium text-zinc-200">{g.name}</p>
-                      <p className="text-xs text-zinc-500">{formatCurrency(g.target)} target</p>
-                    </div>
-                    <div className="text-right">
-                      {g.delayMonths === 0 ? (
-                        <span className="text-xs text-gain">No impact</span>
-                      ) : g.delayMonths === Infinity ? (
-                        <span className="text-xs text-loss">Can't reach this goal</span>
-                      ) : g.delayMonths > 0 ? (
-                        <span className="text-xs text-loss">
-                          Delayed by {g.delayMonths} month{g.delayMonths > 1 ? "s" : ""}
+              <div className="divide-y divide-vela-border">
+                {impact.goalDelays.map((g, i) => {
+                  const cantReach = g.delayMonths === Infinity;
+                  const isDelayed = !cantReach && g.delayMonths > 0;
+                  const isSooner = g.delayMonths < 0;
+                  const noImpact = g.delayMonths === 0;
+                  const absMonths = Math.abs(g.delayMonths);
+
+                  return (
+                    <div key={i} className="py-3 first:pt-0 last:pb-0">
+                      <div className="flex items-start justify-between gap-3">
+                        <p className="text-sm font-medium text-zinc-200 leading-snug">{g.name}</p>
+                        <span className={`shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full border ${
+                          cantReach
+                            ? "bg-rose-500/10 text-rose-400 border-rose-500/25"
+                            : isDelayed
+                            ? "bg-amber-500/10 text-amber-400 border-amber-500/25"
+                            : isSooner
+                            ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/25"
+                            : "bg-zinc-800 text-zinc-500 border-zinc-700"
+                        }`}>
+                          {cantReach ? "Unreachable"
+                            : isDelayed ? `+${absMonths}mo`
+                            : isSooner ? `-${absMonths}mo`
+                            : "No impact"}
                         </span>
-                      ) : (
-                        <span className="text-xs text-gain">
-                          {Math.abs(g.delayMonths)} month{Math.abs(g.delayMonths) > 1 ? "s" : ""} sooner
-                        </span>
+                      </div>
+                      <p className="text-xs text-zinc-500 mt-0.5">{formatCurrency(g.target)} target</p>
+                      {!noImpact && (
+                        <p className="text-xs mt-1 text-zinc-500">
+                          {cantReach
+                            ? "Savings would no longer cover this goal"
+                            : isDelayed
+                            ? `Delayed by ${absMonths} month${absMonths !== 1 ? "s" : ""}`
+                            : `Reached ${absMonths} month${absMonths !== 1 ? "s" : ""} sooner`}
+                        </p>
                       )}
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
@@ -473,7 +499,15 @@ interface GoalDelay {
   delayMonths: number; // positive = delayed, negative = sooner, 0 = no change
 }
 
-function computeGoalDelays(goals: Goal[], currentSavings: number, newSavings: number): GoalDelay[] {
+function computeGoalDelays(
+  goals: Goal[],
+  currentSavings: number,
+  newSavings: number,
+  // Optional: explicit "after" contribution for named goals that should not
+  // be scaled proportionally (e.g. the emergency fund goal in the emergency
+  // fund scenario — it gets MORE, not less)
+  afterContribOverrides: Record<string, number> = {},
+): GoalDelay[] {
   if (goals.length === 0) return [];
 
   // For goals without explicit contributions, split savings evenly among them
@@ -497,12 +531,14 @@ function computeGoalDelays(goals: Goal[], currentSavings: number, newSavings: nu
       return Infinity;
     }
 
-    // Proportional adjustment: scale contribution by the savings change ratio
+    // If this goal has an explicit override for the "after" scenario, use it
+    // directly rather than proportional scaling
     let adjustedContrib: number;
-    if (currentSavings > 0) {
+    if (afterContribOverrides[g.name] !== undefined) {
+      adjustedContrib = Math.max(0, afterContribOverrides[g.name]);
+    } else if (currentSavings > 0) {
       adjustedContrib = Math.max(0, contrib * (newSavings / currentSavings));
     } else {
-      // Can't scale proportionally from zero — apply raw difference instead
       adjustedContrib = Math.max(0, contrib + (newSavings - currentSavings));
     }
 
@@ -515,7 +551,6 @@ function computeGoalDelays(goals: Goal[], currentSavings: number, newSavings: nu
     } else if (monthsAfter === Infinity) {
       delay = Infinity;
     } else if (monthsBefore === Infinity) {
-      // Was unreachable, now reachable — show as big improvement
       delay = -monthsAfter;
     } else {
       delay = monthsAfter - monthsBefore;

@@ -110,7 +110,9 @@ export function useNetWorthSummary() {
   const { data, error, isLoading, mutate } = useSWR<NetWorthSummary>(
     "/net-worth/summary",
     api.get,
-    { revalidateOnFocus: true, refreshInterval: 5 * 60 * 1000 },
+    // Fetches live quotes server-side for portfolio value; dedupe so multiple
+    // consumers / focus revalidations share one request (see usePortfolioSummary).
+    { revalidateOnFocus: true, refreshInterval: 5 * 60 * 1000, dedupingInterval: 30_000 },
   );
 
   return {

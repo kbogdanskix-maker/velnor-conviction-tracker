@@ -61,7 +61,7 @@ function computeDivScore(avgCorr: number, highPairs: number, negativePairs: numb
   if (score >= 80) return { grade: "A", score, summary: "Excellent diversification. Your holdings move independently, reducing risk effectively.", color: "text-emerald-400", bgColor: "bg-emerald-500" };
   if (score >= 65) return { grade: "B", score, summary: "Good diversification. Most holdings provide genuine risk reduction, with some room to improve.", color: "text-emerald-400", bgColor: "bg-emerald-500" };
   if (score >= 50) return { grade: "C", score, summary: "Average diversification. Several holdings move together, limiting risk reduction benefits.", color: "text-amber-400", bgColor: "bg-amber-500" };
-  if (score >= 35) return { grade: "D", score, summary: "Weak diversification. Many holdings are highly correlated — a broad downturn would hit most of your portfolio simultaneously.", color: "text-orange-400", bgColor: "bg-orange-500" };
+  if (score >= 35) return { grade: "D", score, summary: "Weak diversification. Many holdings are highly correlated  - a broad downturn would hit most of your portfolio simultaneously.", color: "text-orange-400", bgColor: "bg-orange-500" };
   return { grade: "F", score, summary: "Poor diversification. Your portfolio essentially behaves like one or two stocks. A single sector move could affect everything.", color: "text-rose-400", bgColor: "bg-rose-500" };
 }
 
@@ -99,7 +99,7 @@ function findClusters(tickers: string[], matrix: number[][]): RiskCluster[] {
         tickers: group.map((i) => tickers[i]),
         avgCorrelation: count > 0 ? total / count : 0,
         label: group.length >= 3
-          ? `These ${group.length} stocks move closely together — holding all of them doesn't add much diversification`
+          ? `These ${group.length} stocks move closely together  - holding all of them doesn't add much diversification`
           : "These two stocks tend to move in the same direction",
       });
     }
@@ -119,15 +119,15 @@ function buildOverlapPairs(tickers: string[], matrix: number[][]): OverlapPair[]
 
       if (corr >= 0.85) {
         severity = "danger";
-        explanation = `Nearly identical movement — holding both barely adds diversification. Consider keeping only one.`;
+        explanation = `Nearly identical movement  - holding both barely adds diversification. Consider keeping only one.`;
       } else if (corr >= 0.7) {
         severity = "warning";
-        explanation = `Strong overlap — these stocks usually rise and fall together. You're doubling down on similar risk.`;
+        explanation = `Strong overlap  - these stocks usually rise and fall together. You're doubling down on similar risk.`;
       } else {
         severity = "ok";
         explanation = corr < -0.2
-          ? "Natural hedge — these move in opposite directions, which helps protect your portfolio."
-          : "Low overlap — these provide genuine diversification benefit.";
+          ? "Natural hedge  - these move in opposite directions, which helps protect your portfolio."
+          : "Low overlap  - these provide genuine diversification benefit.";
       }
 
       pairs.push({ t1: tickers[i], t2: tickers[j], correlation: corr, severity, explanation });
@@ -143,7 +143,7 @@ function getSuggestions(avgCorr: number, clusters: RiskCluster[], negPairs: numb
   const tips: string[] = [];
 
   if (avgCorr > 0.6) {
-    tips.push("Consider adding bonds (BND, AGG) or treasuries (TLT) — they often move opposite to stocks during crashes.");
+    tips.push("Consider adding bonds (BND, AGG) or treasuries (TLT)  - they often move opposite to stocks during crashes.");
   }
   if (clusters.length > 0) {
     tips.push("You have tightly correlated groups. Selling one stock from each cluster and rotating into a different sector would improve diversification without reducing your number of holdings.");
@@ -152,7 +152,7 @@ function getSuggestions(avgCorr: number, clusters: RiskCluster[], negPairs: numb
     tips.push("Adding international stocks (VXUS, EFA) or commodities (GLD, GSG) could introduce valuable low-correlation exposure.");
   }
   if (avgCorr > 0.3) {
-    tips.push("REITs (VNQ) and utilities (XLU) often have lower correlation with growth stocks — worth considering for balance.");
+    tips.push("REITs (VNQ) and utilities (XLU) often have lower correlation with growth stocks  - worth considering for balance.");
   }
   if (tips.length === 0) {
     tips.push("Your diversification looks solid. Continue monitoring as correlations can shift during market crises.");
@@ -252,7 +252,7 @@ export default function CorrelationPage() {
         </div>
       ) : analysis && (
         <>
-          {/* Big Grade Card — wrapped in GlowBorder */}
+          {/* Big Grade Card  - wrapped in GlowBorder */}
           <GlowBorder speed={4}>
             <div className="py-8 text-center px-6">
               <motion.div
@@ -316,7 +316,7 @@ export default function CorrelationPage() {
                 Risk Clusters
               </h2>
               <p className="text-xs text-zinc-500 -mt-1">
-                Stocks that move together act like a single bet — if one drops, they all likely will.
+                Stocks that move together act like a single bet  - if one drops, they all likely will.
               </p>
               {analysis.clusters.map((cluster, i) => (
                 <div key={i} className="vela-card border-amber-500/10">
@@ -348,7 +348,7 @@ export default function CorrelationPage() {
             <div className="space-y-3">
               <h2 className="text-sm font-medium text-zinc-300">Most Overlapping</h2>
               <p className="text-xs text-zinc-500 -mt-1">
-                These pairs move in sync — consider if you really need both.
+                These pairs move in sync  - consider if you really need both.
               </p>
               {analysis.pairs
                 .filter((p) => p.severity !== "ok")
@@ -386,7 +386,7 @@ export default function CorrelationPage() {
             <RevealOnScroll delay={0.05}>
               <div className="vela-card overflow-hidden">
                 <h2 className="text-sm font-medium text-zinc-300 mb-1">Constellation Map</h2>
-                <p className="text-xs text-zinc-500 mb-4">Holdings as stars — connected lines show high overlap. Brighter connections = stronger overlap.</p>
+                <p className="text-xs text-zinc-500 mb-4">Holdings as stars  - connected lines show high overlap. Brighter connections = stronger overlap.</p>
                 <ConstellationViz
                   tickers={correlation.tickers}
                   matrix={correlation.matrix}

@@ -54,6 +54,35 @@ async def cache_delete(key: str) -> None:
         logger.warning("Redis DEL error for key %s: %s", key, e)
 
 
+async def rate_limit_increment(key: str, limit: int, ttl: int) -> tuple[int, bool]:
+    """Atomically increment a counter and check against a limit.
+    Sets TTL only on first write (so counter expires at the natural rollover).
+    Returns (current_count, allowed).
+    """
+    try:
+        r = await get_redis()
+        full_key = f"vela:{key}"
+        count = await r.incr(full_key)
+        if count == 1:
+            # First increment — set expiry
+            await r.expire(full_key, ttl)
+        return count, count <= limit
+    except Exception as e:
+        logger.warning("Redis rate limit error for key %s: %s", key, e)
+        # Fail open — don't block requests on Redis errors
+        return 0, True
+
+
+async def rate_limit_get(key: str) -> int:
+    """Return current counter value (0 if not set)."""
+    try:
+        r = await get_redis()
+        val = await r.get(f"vela:{key}")
+        return int(val) if val else 0
+    except Exception:
+        return 0
+
+
 async def cache_delete_pattern(pattern: str) -> None:
     """Delete all keys matching a glob pattern (e.g. 'quotes:*')."""
     try:

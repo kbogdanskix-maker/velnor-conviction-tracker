@@ -1,5 +1,5 @@
 /**
- * Smart Alerts — threshold-based notification engine
+ * Smart Alerts  - threshold-based notification engine
  *
  * Evaluates user data and produces alerts when notable events occur.
  * All evaluation is client-side, no backend needed.
@@ -283,13 +283,13 @@ function riskAlerts(input: AlertInput): SmartAlert[] {
   const alerts: SmartAlert[] = [];
   const now = Date.now();
 
-  // Over-concentration
-  const concentrated = input.holdings.filter((h) => h.weight > 0.5);
+  // Over-concentration (aligned with Stress Index "heavily concentrated" band at 40%)
+  const concentrated = input.holdings.filter((h) => h.weight > 0.4);
   for (const h of concentrated) {
     alerts.push({
       id: `concentrated-${h.ticker}`,
       title: `${h.ticker} is ${(h.weight * 100).toFixed(0)}% of your portfolio`,
-      message: `More than half your portfolio in one stock. Consider your risk tolerance.`,
+      message: `Over 40% of your portfolio sits in one stock. Consider your risk tolerance.`,
       severity: "warning",
       category: "risk",
       timestamp: now,

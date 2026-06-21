@@ -1,749 +1,351 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import PageTransition from "@/components/celestial/PageTransition";
-import FloatingCard from "@/components/celestial/FloatingCard";
-import RevealOnScroll from "@/components/celestial/RevealOnScroll";
+import { useState } from "react";
 import {
-  BarChart, Bar, XAxis, YAxis, Tooltip,
-  ResponsiveContainer, CartesianGrid, Cell, PieChart, Pie,
-} from "recharts";
-import {
-  MessageCircle, TrendingUp, TrendingDown, Zap,
-  AlertTriangle, ThumbsUp, ThumbsDown, Minus, Search,
-  Flame, Info, HelpCircle,
+  MessageCircle, TrendingUp, TrendingDown, Minus,
+  RefreshCw, ExternalLink, Search, ChevronDown, ChevronUp,
+  Newspaper,
 } from "lucide-react";
-import { useDefaultPortfolio } from "@/hooks/usePortfolio";
-import ErrorState from "@/components/shared/ErrorState";
+import { usePortfolioSentiment, useTickerSentiment, type TickerSentiment } from "@/hooks/useSentiment";
+import PageTransition from "@/components/celestial/PageTransition";
+import RevealOnScroll from "@/components/celestial/RevealOnScroll";
 import DashboardSkeleton from "@/components/shared/DashboardSkeleton";
 
-/* ── types & helpers ────────────────────────────────────────── */
+// ── Score gauge ──────────────────────────────────────────────────────────────
 
-type Sentiment = "bullish" | "bearish" | "neutral";
+function ScoreGauge({ score }: { score: number }) {
+  // score is -100..100, map to 0..180 degrees
+  const clamp = Math.max(-100, Math.min(100, score));
+  const deg = ((clamp + 100) / 200) * 180;
+  const color =
+    clamp >= 20 ? "#34d399"   // emerald-400
+    : clamp <= -20 ? "#f43f5e" // rose-500
+    : "#a1a1aa";               // zinc-400
 
-interface TickerSentiment {
-  ticker: string;
-  name: string;
-  overall: number;
-  sentiment: Sentiment;
-  mentions: number;
-  mentionChange: number;
-  buzz: number;
-  sources: { reddit: number; twitter: number; news: number; stocktwits: number };
-  trending: boolean;
-  weeklyHistory: number[];
-  marketCap: number;
+  return (
+    <div className="relative flex items-end justify-center" style={{ width: 80, height: 44 }}>
+      {/* Track */}
+      <svg width="80" height="44" viewBox="0 0 80 44" fill="none">
+        <path
+          d="M6 40 A34 34 0 0 1 74 40"
+          stroke="#27272a"
+          strokeWidth="6"
+          strokeLinecap="round"
+          fill="none"
+        />
+        <path
+          d="M6 40 A34 34 0 0 1 74 40"
+          stroke={color}
+          strokeWidth="6"
+          strokeLinecap="round"
+          strokeDasharray="106.8"
+          strokeDashoffset={106.8 - (deg / 180) * 106.8}
+          fill="none"
+          style={{ transition: "stroke-dashoffset 0.8s ease, stroke 0.4s ease" }}
+        />
+      </svg>
+      {/* Needle */}
+      <div
+        className="absolute bottom-0 left-1/2 origin-bottom"
+        style={{
+          width: 2,
+          height: 28,
+          marginLeft: -1,
+          marginBottom: 6,
+          background: color,
+          borderRadius: 2,
+          transform: `rotate(${deg - 90}deg)`,
+          transition: "transform 0.8s ease, background 0.4s ease",
+        }}
+      />
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-2.5 h-2.5 rounded-full bg-zinc-800 border-2" style={{ borderColor: color }} />
+    </div>
+  );
 }
 
-const fmt = (n: number) => n.toLocaleString("en-US");
-const fmtK = (n: number) => n >= 1000 ? `${(n / 1000).toFixed(1)}k` : fmt(n);
+// ── Sentiment bar ────────────────────────────────────────────────────────────
 
-function sentimentColor(score: number): string {
-  if (score >= 40) return "text-emerald-400";
-  if (score >= 10) return "text-emerald-400/70";
-  if (score > -10) return "text-zinc-400";
-  if (score > -40) return "text-rose-400/70";
-  return "text-rose-400";
+function SentimentBar({ bullish, bearish, neutral }: { bullish: number; bearish: number; neutral: number }) {
+  return (
+    <div className="flex h-1.5 rounded-full overflow-hidden gap-px">
+      <div className="bg-emerald-400/70 transition-all duration-500" style={{ width: `${bullish}%` }} />
+      <div className="bg-zinc-600 transition-all duration-500" style={{ width: `${neutral}%` }} />
+      <div className="bg-rose-500/70 transition-all duration-500" style={{ width: `${bearish}%` }} />
+    </div>
+  );
 }
 
-function sentimentBg(score: number): string {
-  if (score >= 40) return "bg-emerald-500/15";
-  if (score >= 10) return "bg-emerald-500/10";
-  if (score > -10) return "bg-zinc-500/10";
-  if (score > -40) return "bg-rose-500/10";
-  return "bg-rose-500/15";
+// ── Score label ──────────────────────────────────────────────────────────────
+
+function ScoreLabel({ score }: { score: number }) {
+  if (score >= 20) return <span className="text-emerald-400 font-semibold">Bullish</span>;
+  if (score <= -20) return <span className="text-rose-500 font-semibold">Bearish</span>;
+  return <span className="text-zinc-400 font-semibold">Neutral</span>;
 }
 
-function sentimentLabel(score: number): string {
-  if (score >= 60) return "Very Bullish";
-  if (score >= 30) return "Bullish";
-  if (score >= 10) return "Slightly Bullish";
-  if (score > -10) return "Neutral";
-  if (score > -30) return "Slightly Bearish";
-  if (score > -60) return "Bearish";
-  return "Very Bearish";
+// ── Headline row ─────────────────────────────────────────────────────────────
+
+function HeadlineRow({ h }: { h: TickerSentiment["headlines"][0] }) {
+  const dotColor =
+    h.label === "bullish" ? "bg-emerald-400"
+    : h.label === "bearish" ? "bg-rose-500"
+    : "bg-zinc-500";
+
+  return (
+    <a
+      href={h.url || "#"}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex items-start gap-2.5 py-2 hover:bg-zinc-800/40 rounded px-2 -mx-2 transition-colors group"
+    >
+      <div className={`mt-1.5 w-1.5 h-1.5 rounded-full shrink-0 ${dotColor}`} />
+      <div className="flex-1 min-w-0">
+        <p className="text-xs text-zinc-300 group-hover:text-zinc-100 leading-snug transition-colors line-clamp-2">
+          {h.title}
+        </p>
+        <p className="text-[10px] text-zinc-600 mt-0.5">{h.source}</p>
+      </div>
+      <ExternalLink className="w-3 h-3 text-zinc-700 group-hover:text-zinc-400 shrink-0 mt-0.5 transition-colors" />
+    </a>
+  );
 }
 
-function sentimentIcon(score: number) {
-  if (score >= 10) return <ThumbsUp className="w-3.5 h-3.5" />;
-  if (score > -10) return <Minus className="w-3.5 h-3.5" />;
-  return <ThumbsDown className="w-3.5 h-3.5" />;
+// ── Ticker card ──────────────────────────────────────────────────────────────
+
+function TickerCard({ s }: { s: TickerSentiment }) {
+  const [expanded, setExpanded] = useState(false);
+  const scoreColor =
+    s.overall_score >= 20 ? "text-emerald-400"
+    : s.overall_score <= -20 ? "text-rose-500"
+    : "text-zinc-400";
+  const borderColor =
+    s.overall_score >= 20 ? "border-emerald-400/20"
+    : s.overall_score <= -20 ? "border-rose-500/20"
+    : "border-zinc-800";
+
+  return (
+    <div className={`vela-card border ${borderColor} transition-colors`}>
+      {/* Header row */}
+      <div className="flex items-start gap-4">
+        <ScoreGauge score={s.overall_score} />
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-0.5">
+            <span className="font-mono font-bold text-zinc-100 text-base">{s.ticker}</span>
+            <ScoreLabel score={s.overall_score} />
+          </div>
+          <div className={`text-2xl font-display font-bold tabular-nums ${scoreColor}`}>
+            {s.overall_score > 0 ? "+" : ""}{s.overall_score}
+          </div>
+          <p className="text-[10px] text-zinc-600 mt-0.5">
+            {s.article_count} article{s.article_count !== 1 ? "s" : ""} scored
+          </p>
+        </div>
+        {/* Breakdown */}
+        <div className="text-right shrink-0 hidden sm:block">
+          <div className="flex items-center gap-3 text-[10px] mb-1.5">
+            <span className="text-emerald-400">{s.bullish_pct}% bull</span>
+            <span className="text-zinc-500">{s.neutral_pct}% neut</span>
+            <span className="text-rose-500">{s.bearish_pct}% bear</span>
+          </div>
+          <SentimentBar bullish={s.bullish_pct} bearish={s.bearish_pct} neutral={s.neutral_pct} />
+        </div>
+      </div>
+
+      {/* Mobile breakdown */}
+      <div className="sm:hidden mt-2">
+        <div className="flex items-center gap-3 text-[10px] mb-1">
+          <span className="text-emerald-400">{s.bullish_pct}% bull</span>
+          <span className="text-zinc-500">{s.neutral_pct}% neut</span>
+          <span className="text-rose-500">{s.bearish_pct}% bear</span>
+        </div>
+        <SentimentBar bullish={s.bullish_pct} bearish={s.bearish_pct} neutral={s.neutral_pct} />
+      </div>
+
+      {/* Headlines toggle */}
+      {s.headlines.length > 0 && (
+        <div className="mt-3">
+          <button
+            onClick={() => setExpanded(!expanded)}
+            className="flex items-center gap-1.5 text-[10px] text-zinc-500 hover:text-zinc-300 transition-colors"
+          >
+            <Newspaper className="w-3 h-3" />
+            {expanded ? "Hide" : "Show"} headlines
+            {expanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+          </button>
+          {expanded && (
+            <div className="mt-2 space-y-0.5 border-t border-zinc-800 pt-2">
+              {s.headlines.map((h, i) => (
+                <HeadlineRow key={i} h={h} />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
 }
 
-/* ── curated sentiment profiles ────────────────────────────── */
+// ── Lookup panel ─────────────────────────────────────────────────────────────
 
-interface SentimentProfile {
-  overall: number;
-  mentions: number;
-  mentionChange: number;
-  buzz: number;
-  sources: { reddit: number; twitter: number; news: number; stocktwits: number };
-  weeklyHistory: number[];
-  marketCap: number;
-}
+function TickerLookup() {
+  const [input, setInput] = useState("");
+  const [queried, setQueried] = useState<string | null>(null);
+  const { sentiment, isLoading } = useTickerSentiment(queried);
 
-const CURATED_PROFILES: Record<string, SentimentProfile> = {
-  AAPL: {
-    overall: 42, mentions: 48200, mentionChange: 8, buzz: 55,
-    sources: { reddit: 7200, twitter: 14500, news: 18600, stocktwits: 7900 },
-    weeklyHistory: [35, 38, 40, 44, 41, 45, 42], marketCap: 3400,
-  },
-  NVDA: {
-    overall: 72, mentions: 62400, mentionChange: 22, buzz: 88,
-    sources: { reddit: 15600, twitter: 18700, news: 16800, stocktwits: 11300 },
-    weeklyHistory: [58, 62, 65, 68, 74, 70, 72], marketCap: 3100,
-  },
-  TSLA: {
-    overall: 18, mentions: 71500, mentionChange: -5, buzz: 82,
-    sources: { reddit: 22800, twitter: 21400, news: 12800, stocktwits: 14500 },
-    weeklyHistory: [25, 22, 15, 12, 18, 20, 18], marketCap: 800,
-  },
-  MSFT: {
-    overall: 48, mentions: 38500, mentionChange: 5, buzz: 45,
-    sources: { reddit: 5400, twitter: 11600, news: 15200, stocktwits: 6300 },
-    weeklyHistory: [44, 45, 46, 50, 48, 47, 48], marketCap: 3200,
-  },
-  AMD: {
-    overall: 35, mentions: 28600, mentionChange: 12, buzz: 65,
-    sources: { reddit: 8600, twitter: 7800, news: 5900, stocktwits: 6300 },
-    weeklyHistory: [28, 30, 32, 38, 36, 33, 35], marketCap: 220,
-  },
-  AMZN: {
-    overall: 52, mentions: 34200, mentionChange: 9, buzz: 48,
-    sources: { reddit: 5100, twitter: 10300, news: 13700, stocktwits: 5100 },
-    weeklyHistory: [48, 49, 51, 53, 54, 50, 52], marketCap: 2000,
-  },
-  META: {
-    overall: 55, mentions: 31800, mentionChange: 14, buzz: 62,
-    sources: { reddit: 7600, twitter: 9500, news: 9500, stocktwits: 5200 },
-    weeklyHistory: [45, 48, 52, 55, 58, 54, 55], marketCap: 1500,
-  },
-  GOOGL: {
-    overall: 38, mentions: 29400, mentionChange: 6, buzz: 52,
-    sources: { reddit: 4400, twitter: 8800, news: 11800, stocktwits: 4400 },
-    weeklyHistory: [32, 34, 36, 40, 38, 37, 38], marketCap: 2100,
-  },
-  PLTR: {
-    overall: 62, mentions: 42300, mentionChange: 28, buzz: 91,
-    sources: { reddit: 14800, twitter: 10600, news: 6300, stocktwits: 10600 },
-    weeklyHistory: [50, 54, 58, 60, 65, 63, 62], marketCap: 140,
-  },
-  GME: {
-    overall: 28, mentions: 38700, mentionChange: -12, buzz: 72,
-    sources: { reddit: 18500, twitter: 7700, news: 3900, stocktwits: 8600 },
-    weeklyHistory: [35, 32, 28, 25, 30, 26, 28], marketCap: 8,
-  },
-  SOFI: {
-    overall: 45, mentions: 18900, mentionChange: 18, buzz: 78,
-    sources: { reddit: 7600, twitter: 3800, news: 2800, stocktwits: 4700 },
-    weeklyHistory: [38, 40, 42, 44, 48, 46, 45], marketCap: 12,
-  },
-  SMCI: {
-    overall: -22, mentions: 14200, mentionChange: -18, buzz: 68,
-    sources: { reddit: 4300, twitter: 3600, news: 4300, stocktwits: 2000 },
-    weeklyHistory: [-8, -12, -18, -25, -20, -24, -22], marketCap: 18,
-  },
-  AVGO: {
-    overall: 58, mentions: 12400, mentionChange: 10, buzz: 42,
-    sources: { reddit: 2500, twitter: 3700, news: 4300, stocktwits: 1900 },
-    weeklyHistory: [52, 54, 55, 58, 60, 57, 58], marketCap: 700,
-  },
-  COIN: {
-    overall: 32, mentions: 16800, mentionChange: 25, buzz: 74,
-    sources: { reddit: 5900, twitter: 4200, news: 3400, stocktwits: 3300 },
-    weeklyHistory: [20, 24, 28, 35, 34, 30, 32], marketCap: 50,
-  },
-  RIVN: {
-    overall: -15, mentions: 8400, mentionChange: -8, buzz: 45,
-    sources: { reddit: 3400, twitter: 1700, news: 1700, stocktwits: 1600 },
-    weeklyHistory: [-10, -12, -14, -18, -16, -14, -15], marketCap: 14,
-  },
-  JPM: {
-    overall: 35, mentions: 9800, mentionChange: 4, buzz: 28,
-    sources: { reddit: 1500, twitter: 2900, news: 4400, stocktwits: 1000 },
-    weeklyHistory: [32, 33, 34, 36, 35, 34, 35], marketCap: 600,
-  },
-  XOM: {
-    overall: 12, mentions: 7200, mentionChange: -3, buzz: 22,
-    sources: { reddit: 1100, twitter: 2200, news: 2900, stocktwits: 1000 },
-    weeklyHistory: [15, 14, 12, 10, 11, 13, 12], marketCap: 470,
-  },
-};
-
-function hashCode(s: string): number {
-  let h = 0;
-  for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0;
-  return Math.abs(h);
-}
-
-function generateSentiment(ticker: string, name: string): TickerSentiment {
-  const curated = CURATED_PROFILES[ticker];
-  if (curated) {
-    return {
-      ticker, name,
-      overall: curated.overall,
-      sentiment: curated.overall >= 10 ? "bullish" : curated.overall <= -10 ? "bearish" : "neutral",
-      mentions: curated.mentions,
-      mentionChange: curated.mentionChange,
-      buzz: curated.buzz,
-      sources: curated.sources,
-      trending: curated.buzz >= 70,
-      weeklyHistory: curated.weeklyHistory,
-      marketCap: curated.marketCap,
-    };
+  function handleSearch() {
+    const t = input.trim().toUpperCase();
+    if (t) setQueried(t);
   }
 
-  const h = hashCode(ticker);
-  const mcap = 50 + (h % 500);
-  const overall = Math.max(-60, Math.min(60, ((h % 120) - 60)));
-  const baseMentions = 1000 + (h % 8000);
-  const mentions = baseMentions;
-  const buzz = 20 + (h % 60);
-  const rPct = 0.25, tPct = 0.30, nPct = 0.30, sPct = 0.15;
-
-  const weeklyHistory = Array.from({ length: 7 }, (_, i) => {
-    const drift = ((h * (i + 1)) % 20) - 10;
-    return Math.max(-100, Math.min(100, overall + drift));
-  });
-
-  return {
-    ticker, name, overall,
-    sentiment: overall >= 10 ? "bullish" : overall <= -10 ? "bearish" : "neutral",
-    mentions,
-    mentionChange: ((h * 7) % 40) - 20,
-    buzz,
-    sources: {
-      reddit: Math.round(rPct * mentions),
-      twitter: Math.round(tPct * mentions),
-      news: Math.round(nPct * mentions),
-      stocktwits: Math.round(sPct * mentions),
-    },
-    trending: buzz > 70,
-    weeklyHistory,
-    marketCap: mcap,
-  };
-}
-
-const TRENDING_TICKERS = [
-  { ticker: "AAPL", name: "Apple Inc." },
-  { ticker: "NVDA", name: "NVIDIA Corp." },
-  { ticker: "TSLA", name: "Tesla Inc." },
-  { ticker: "MSFT", name: "Microsoft Corp." },
-  { ticker: "AMD", name: "Advanced Micro Devices" },
-  { ticker: "AMZN", name: "Amazon.com" },
-  { ticker: "META", name: "Meta Platforms" },
-  { ticker: "GOOGL", name: "Alphabet Inc." },
-  { ticker: "PLTR", name: "Palantir Technologies" },
-  { ticker: "GME", name: "GameStop Corp." },
-  { ticker: "SOFI", name: "SoFi Technologies" },
-  { ticker: "SMCI", name: "Super Micro Computer" },
-];
-
-/* ── Sparkline ──────────────────────────────────────────────── */
-
-function Sparkline({ data, color }: { data: number[]; color: string }) {
-  const min = Math.min(...data);
-  const max = Math.max(...data);
-  const range = max - min || 1;
-  const h = 24, w = 60;
-  const points = data.map((v, i) => `${(i / (data.length - 1)) * w},${h - ((v - min) / range) * h}`).join(" ");
   return (
-    <svg width={w} height={h} className="inline-block">
-      <polyline points={points} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-/* ── Gauge ──────────────────────────────────────────────────── */
-
-function SentimentGauge({ score }: { score: number }) {
-  const normalized = (score + 100) / 200;
-  const needleAngle = Math.PI * (1 - normalized);
-  const cx = 100, cy = 90, r = 70, needleLen = 55;
-  const nx = cx + needleLen * Math.cos(needleAngle);
-  const ny = cy - needleLen * Math.sin(needleAngle);
-  const arcPt = (a: number) => ({ x: cx + r * Math.cos(a), y: cy - r * Math.sin(a) });
-
-  const segments = [
-    { from: Math.PI, to: Math.PI * 0.75, color: "#ef4444" },
-    { from: Math.PI * 0.75, to: Math.PI * 0.55, color: "#f97316" },
-    { from: Math.PI * 0.55, to: Math.PI * 0.45, color: "#a3a3a3" },
-    { from: Math.PI * 0.45, to: Math.PI * 0.25, color: "#34d399" },
-    { from: Math.PI * 0.25, to: 0, color: "#10b981" },
-  ];
-  const needleColor = score >= 10 ? "#14b8a6" : score > -10 ? "#a3a3a3" : "#ef4444";
-
-  return (
-    <div className="w-44 h-28 mx-auto">
-      <svg viewBox="0 0 200 110" className="w-full h-full">
-        <path d={`M ${arcPt(Math.PI).x} ${arcPt(Math.PI).y} A ${r} ${r} 0 0 1 ${arcPt(0).x} ${arcPt(0).y}`}
-          fill="none" stroke="#27272a" strokeWidth="14" strokeLinecap="round" />
-        {segments.map((seg, i) => {
-          const start = arcPt(seg.from), end = arcPt(seg.to);
-          return (
-            <path key={i}
-              d={`M ${start.x} ${start.y} A ${r} ${r} 0 0 1 ${end.x} ${end.y}`}
-              fill="none" stroke={seg.color} strokeWidth="14" strokeLinecap="butt" opacity="0.5" />
-          );
-        })}
-        <line x1={cx} y1={cy} x2={nx} y2={ny} stroke={needleColor} strokeWidth="2.5" strokeLinecap="round" />
-        <circle cx={cx} cy={cy} r="5" fill={needleColor} />
-        <circle cx={cx} cy={cy} r="2.5" fill="#18181b" />
-        <text x="18" y="105" fill="#71717a" fontSize="9" textAnchor="middle">-100</text>
-        <text x={cx} y="108" fill="#71717a" fontSize="9" textAnchor="middle">0</text>
-        <text x="182" y="105" fill="#71717a" fontSize="9" textAnchor="middle">+100</text>
-      </svg>
-    </div>
-  );
-}
-
-/* ── Mentions Bar Chart ─────────────────────────────────────── */
-
-function MentionsChart({ data }: { data: TickerSentiment[] }) {
-  const chartData = useMemo(() =>
-    [...data].sort((a, b) => b.mentions - a.mentions).slice(0, 12).map((s) => ({
-      ticker: s.ticker,
-      mentions: s.mentions,
-      fill: s.sentiment === "bullish" ? "#34d399" : s.sentiment === "bearish" ? "#f87171" : "#71717a",
-    })), [data]);
-
-  if (chartData.length === 0) return null;
-
-  return (
-    <div>
-      <h3 className="font-display font-semibold text-zinc-100 mb-1">Mentions by Ticker</h3>
-      <p className="text-[10px] text-zinc-600 mb-3">
-        Volume scales with market cap — mega-caps dominate. Outlier small-caps signal unusual retail interest.
-      </p>
-      <div className="h-52">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={chartData} layout="vertical" margin={{ left: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#27272a" horizontal={false} />
-            <XAxis type="number" tick={{ fill: "#71717a", fontSize: 9 }}
-              tickFormatter={(v: number) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : `${v}`}
-              axisLine={false} tickLine={false} />
-            <YAxis type="category" dataKey="ticker" tick={{ fill: "#a1a1aa", fontSize: 10, fontWeight: 500 }}
-              width={44} axisLine={false} tickLine={false} />
-            <Tooltip cursor={false}
-              contentStyle={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 8, fontSize: 11 }}
-              formatter={(v: number) => [fmt(v), "Mentions"]} />
-            <Bar dataKey="mentions" radius={[0, 4, 4, 0]} barSize={14}>
-              {chartData.map((d, i) => <Cell key={i} fill={d.fill} fillOpacity={0.7} />)}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
+    <div className="vela-card space-y-3">
+      <h2 className="section-heading">Look Up Any Ticker</h2>
+      <div className="flex gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-500" />
+          <input
+            className="w-full bg-zinc-800/60 border border-zinc-700/50 rounded-lg pl-8 pr-3 py-2 text-sm text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:border-teal-500/50 transition-colors"
+            placeholder="e.g. TSLA, NVDA, META"
+            value={input}
+            onChange={(e) => setInput(e.target.value.toUpperCase())}
+            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+          />
+        </div>
+        <button
+          onClick={handleSearch}
+          disabled={!input.trim()}
+          className="px-4 py-2 rounded-lg bg-teal-500/15 text-teal-400 border border-teal-500/20 text-sm hover:bg-teal-500/25 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+        >
+          Analyze
+        </button>
       </div>
+
+      {isLoading && queried && (
+        <div className="text-center py-6 text-sm text-zinc-500">
+          <RefreshCw className="w-4 h-4 animate-spin mx-auto mb-2" />
+          Fetching & scoring news for {queried}…
+        </div>
+      )}
+
+      {sentiment && !isLoading && (
+        <TickerCard s={sentiment} />
+      )}
     </div>
   );
 }
 
-/* ── Main Page ──────────────────────────────────────────────── */
+// ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function SentimentPage() {
-  const { summary, loading: portfolioLoading, error: portfolioError } = useDefaultPortfolio();
-  const holdings = summary?.holdings;
-  const [searchTicker, setSearchTicker] = useState("");
-  const [activeTab, setActiveTab] = useState<"portfolio" | "trending">("portfolio");
-  const [showMethodology, setShowMethodology] = useState(false);
+  const { tickers, isLoading, error, refresh } = usePortfolioSentiment();
 
-  const portfolioSentiment = useMemo(() => {
-    if (!holdings?.length) return [];
-    const seen = new Set<string>();
-    return holdings
-      .filter((h) => { if (seen.has(h.ticker)) return false; seen.add(h.ticker); return true; })
-      .map((h) => generateSentiment(h.ticker, h.ticker))
-      .sort((a, b) => b.mentions - a.mentions);
-  }, [holdings]);
-
-  const trendingSentiment = useMemo(
-    () => TRENDING_TICKERS.map((t) => generateSentiment(t.ticker, t.name)).sort((a, b) => b.buzz - a.buzz), [],
-  );
-
-  const activeSentiment = activeTab === "portfolio" ? portfolioSentiment : trendingSentiment;
-  const filteredSentiment = searchTicker
-    ? activeSentiment.filter((s) => s.ticker.toLowerCase().includes(searchTicker.toLowerCase()))
-    : activeSentiment;
-
-  const avgSentiment = useMemo(() => {
-    if (trendingSentiment.length === 0) return 0;
-    const total = trendingSentiment.reduce((s, t) => s + t.mentions, 0);
-    return total === 0 ? 0 : Math.round(trendingSentiment.reduce((s, t) => s + t.overall * t.mentions, 0) / total);
-  }, [trendingSentiment]);
-
-  const bullishCount = activeSentiment.filter((s) => s.sentiment === "bullish").length;
-  const bearishCount = activeSentiment.filter((s) => s.sentiment === "bearish").length;
-  const neutralCount = activeSentiment.filter((s) => s.sentiment === "neutral").length;
-
-  const sourceData = useMemo(() => {
-    const totals = { reddit: 0, twitter: 0, news: 0, stocktwits: 0 };
-    activeSentiment.forEach((s) => {
-      totals.reddit += s.sources.reddit;
-      totals.twitter += s.sources.twitter;
-      totals.news += s.sources.news;
-      totals.stocktwits += s.sources.stocktwits;
-    });
-    return [
-      { name: "Reddit", value: totals.reddit, fill: "#ff4500", desc: "r/wallstreetbets, r/stocks, r/investing" },
-      { name: "Twitter/X", value: totals.twitter, fill: "#1da1f2", desc: "$CASHTAG mentions, FinTwit" },
-      { name: "News", value: totals.news, fill: "#f59e0b", desc: "Reuters, Bloomberg, CNBC, SeekingAlpha" },
-      { name: "StockTwits", value: totals.stocktwits, fill: "#14b8a6", desc: "Bull/bear tags, trending streams" },
-    ];
-  }, [activeSentiment]);
-
-  const distributionData = [
-    { name: "V. Bearish", count: activeSentiment.filter((s) => s.overall <= -60).length, fill: "#ef4444" },
-    { name: "Bearish", count: activeSentiment.filter((s) => s.overall > -60 && s.overall <= -10).length, fill: "#f87171" },
-    { name: "Neutral", count: activeSentiment.filter((s) => s.overall > -10 && s.overall < 10).length, fill: "#71717a" },
-    { name: "Bullish", count: activeSentiment.filter((s) => s.overall >= 10 && s.overall < 60).length, fill: "#34d399" },
-    { name: "V. Bullish", count: activeSentiment.filter((s) => s.overall >= 60).length, fill: "#10b981" },
-  ];
-
-  const topBuzz = [...activeSentiment].sort((a, b) => b.buzz - a.buzz).slice(0, 6);
-
-  if (portfolioLoading) return <DashboardSkeleton />;
-  if (portfolioError) return <ErrorState message="Couldn't load sentiment data." onRetry={() => window.location.reload()} />;
+  const mostBullish = tickers.length > 0
+    ? tickers.reduce((a, b) => a.overall_score > b.overall_score ? a : b)
+    : null;
+  const mostBearish = tickers.length > 0
+    ? tickers.reduce((a, b) => a.overall_score < b.overall_score ? a : b)
+    : null;
+  const avgScore = tickers.length > 0
+    ? Math.round(tickers.reduce((s, t) => s + t.overall_score, 0) / tickers.length)
+    : 0;
 
   return (
-    <PageTransition>
-      <div className="p-6 md:p-10 max-w-7xl mx-auto space-y-8">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-2xl font-display font-bold text-zinc-100">Social Sentiment</h1>
-            <p className="text-zinc-400 text-sm mt-1">Crowd sentiment aggregated from social media, news & financial communities</p>
-          </div>
-          <div className="flex items-center gap-3 flex-wrap">
-            <button onClick={() => setShowMethodology(!showMethodology)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-400 hover:text-zinc-200 text-xs transition-colors">
-              <HelpCircle className="w-3.5 h-3.5" /> How it works
-            </button>
-            <div className="relative">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-500" />
-              <input value={searchTicker} onChange={(e) => setSearchTicker(e.target.value.toUpperCase())}
-                placeholder="Filter ticker..."
-                className="pl-8 pr-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-100 text-sm w-40 focus:outline-none focus:ring-1 focus:ring-vela-teal placeholder:text-zinc-600" />
-            </div>
-            <div className="flex rounded-lg border border-zinc-700 overflow-hidden">
-              {(["portfolio", "trending"] as const).map((tab) => (
-                <button key={tab} onClick={() => setActiveTab(tab)}
-                  className={`px-3 py-1.5 text-xs font-medium transition-colors capitalize ${
-                    activeTab === tab ? "bg-vela-teal/15 text-vela-teal" : "bg-zinc-800 text-zinc-400 hover:text-zinc-200"
-                  }`}>{tab}</button>
-              ))}
-            </div>
-          </div>
+    <PageTransition className="space-y-6">
+      {/* Header */}
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-display font-bold text-zinc-100 flex items-center gap-2">
+            <MessageCircle className="w-6 h-6 text-teal-400" />
+            News Sentiment
+          </h1>
+          <p className="text-sm text-zinc-500 mt-0.5">
+            Real news headlines scored with VADER NLP — refreshed every 4 hours
+          </p>
         </div>
-
-        {/* ── Methodology Explainer ──────────────────────────── */}
-        {showMethodology && (
-          <FloatingCard delay={0}>
-            <div className="p-5 space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="font-display font-semibold text-zinc-100 flex items-center gap-2">
-                  <Info className="w-4 h-4 text-vela-teal" /> How Sentiment is Calculated
-                </h2>
-                <button onClick={() => setShowMethodology(false)} className="text-zinc-500 hover:text-zinc-300 text-xs">Hide</button>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                <div className="space-y-3">
-                  <div>
-                    <h3 className="text-zinc-200 font-medium text-xs mb-1">Score (−100 to +100)</h3>
-                    <p className="text-zinc-500 text-xs leading-relaxed">
-                      NLP analysis of posts, articles, and comments. Bullish language (upgrade, beat, growth) pushes positive;
-                      bearish language (downgrade, miss, risk) pushes negative. Weighted by source credibility.
-                    </p>
-                  </div>
-                  <div>
-                    <h3 className="text-zinc-200 font-medium text-xs mb-1">Mentions Count</h3>
-                    <p className="text-zinc-500 text-xs leading-relaxed">
-                      Total posts mentioning the ticker. <span className="text-amber-400/80">Scales with market cap</span> — AAPL
-                      gets 50k+ while small-caps get hundreds. Small stocks with unusually high mentions signal retail momentum.
-                    </p>
-                  </div>
-                </div>
-                <div className="space-y-3">
-                  <div>
-                    <h3 className="text-zinc-200 font-medium text-xs mb-1">Buzz Score (0–100)</h3>
-                    <p className="text-zinc-500 text-xs leading-relaxed">
-                      Measures <span className="text-amber-400/80">unusual activity</span> vs. baseline — not raw volume.
-                      A small stock with 500 mentions when it usually gets 50 scores higher than a mega-cap with steady 40k.
-                    </p>
-                  </div>
-                  <div>
-                    <h3 className="text-zinc-200 font-medium text-xs mb-1">Source Weighting</h3>
-                    <p className="text-zinc-500 text-xs leading-relaxed">
-                      Reddit/StockTwits dominate for small & meme stocks (retail-driven).
-                      News dominates for mega-caps (institutional coverage). Each source has different signal-to-noise.
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/10">
-                <p className="text-[11px] text-zinc-500">
-                  <span className="text-amber-400 font-medium">Demo mode:</span> Simulated data based on market cap weighting.
-                  Production would connect to Reddit API, Twitter/X API, news aggregators & StockTwits with live NLP scoring.
-                </p>
-              </div>
-            </div>
-          </FloatingCard>
-        )}
-
-        {/* ── Market Mood ──────────────────────────────────────── */}
-        <FloatingCard delay={0}>
-          <div className="relative p-6 flex items-center justify-center gap-8 overflow-hidden">
-            <div className="absolute inset-0 opacity-30" style={{
-              background: avgSentiment >= 10
-                ? "radial-gradient(ellipse 60% 80% at 30% 50%, rgba(20,184,166,0.25) 0%, transparent 70%)"
-                : avgSentiment <= -10
-                ? "radial-gradient(ellipse 60% 80% at 30% 50%, rgba(239,68,68,0.2) 0%, transparent 70%)"
-                : "radial-gradient(ellipse 60% 80% at 30% 50%, rgba(161,161,170,0.15) 0%, transparent 70%)",
-            }} />
-            <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "url(/noise.svg)", backgroundRepeat: "repeat" }} />
-            <div className="relative">
-              <SentimentGauge score={avgSentiment} />
-            </div>
-            <div className="relative">
-              <p className="text-zinc-500 text-[10px] font-medium tracking-[0.15em] mb-1.5">MARKET MOOD</p>
-              <p className={`text-3xl font-display font-bold tracking-tight ${sentimentColor(avgSentiment)}`}>{sentimentLabel(avgSentiment)}</p>
-              <p className={`text-sm mt-1.5 tabular-nums ${sentimentColor(avgSentiment)}`}>Score: {avgSentiment > 0 ? "+" : ""}{avgSentiment}</p>
-              <p className="text-[10px] text-zinc-600 mt-1">Weighted by mention volume</p>
-            </div>
-          </div>
-        </FloatingCard>
-
-        {/* ── Summary Cards ────────────────────────────────────── */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[
-            { icon: <ThumbsUp className="w-3.5 h-3.5 text-emerald-400" />, label: "BULLISH", value: bullishCount, color: "text-emerald-400" },
-            { icon: <Minus className="w-3.5 h-3.5 text-zinc-400" />, label: "NEUTRAL", value: neutralCount, color: "text-zinc-300" },
-            { icon: <ThumbsDown className="w-3.5 h-3.5 text-rose-400" />, label: "BEARISH", value: bearishCount, color: "text-rose-400" },
-            { icon: <MessageCircle className="w-3.5 h-3.5 text-sky-400" />, label: "TOTAL MENTIONS", value: fmt(activeSentiment.reduce((s, t) => s + t.mentions, 0)), color: "text-zinc-100" },
-          ].map((card, i) => (
-            <FloatingCard key={card.label} delay={0.05 + i * 0.05}>
-              <div className="p-5">
-                <div className="flex items-center gap-2 text-zinc-400 text-xs font-medium mb-3">{card.icon} {card.label}</div>
-                <p className={`text-2xl font-display font-bold tabular-nums ${card.color}`}>{card.value}</p>
-                <p className="text-xs text-zinc-500 mt-1">{i < 3 ? `of ${activeSentiment.length} tickers` : "across 4 sources"}</p>
-              </div>
-            </FloatingCard>
-          ))}
-        </div>
-
-        {/* ── Hot Buzz Grid ───────────────────────────────────── */}
-        <RevealOnScroll>
-          <div>
-            <h2 className="font-display font-semibold text-zinc-100 mb-1 flex items-center gap-2">
-              <Flame className="w-4 h-4 text-orange-400" /> Hottest Buzz
-            </h2>
-            <p className="text-[10px] text-zinc-600 mb-3">Tickers with unusual mention activity relative to their baseline</p>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-              {topBuzz.map((s, i) => (
-                <FloatingCard key={s.ticker} delay={0.25 + i * 0.05} glowColor={s.buzz > 80 ? "rgba(251,146,60,0.15)" : undefined}>
-                  <div className="relative p-4 text-center overflow-hidden">
-                    {s.buzz > 75 && <div className="absolute inset-0 opacity-[0.06]" style={{
-                      background: "radial-gradient(circle at 50% 0%, rgba(251,146,60,0.6) 0%, transparent 60%)",
-                    }} />}
-                    <div className="relative flex items-center justify-center gap-1.5 mb-2">
-                      {s.trending && <Zap className="w-3 h-3 text-amber-400 animate-pulse" />}
-                      <span className="text-sm font-bold text-zinc-100">{s.ticker}</span>
-                    </div>
-                    <div className="relative">
-                      <Sparkline data={s.weeklyHistory} color={s.overall >= 0 ? "#14b8a6" : "#ef4444"} />
-                    </div>
-                    <div className={`relative mt-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${sentimentBg(s.overall)} ${sentimentColor(s.overall)}`}>
-                      {sentimentIcon(s.overall)} {s.overall > 0 ? "+" : ""}{s.overall}
-                    </div>
-                    <p className="text-[10px] text-zinc-500 mt-1.5">{fmtK(s.mentions)} mentions</p>
-                    <div className="mt-1 mx-auto w-16 h-1 rounded-full bg-zinc-800 overflow-hidden">
-                      <div className="h-full rounded-full transition-all" style={{ width: `${s.buzz}%`, background: s.buzz > 75 ? "#fb923c" : s.buzz > 50 ? "#fbbf24" : "#71717a" }} />
-                    </div>
-                    <p className="text-[9px] text-zinc-600 mt-0.5">{s.buzz}/100</p>
-                  </div>
-                </FloatingCard>
-              ))}
-            </div>
-          </div>
-        </RevealOnScroll>
-
-        {/* ── Charts Row ──────────────────────────────────────── */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <RevealOnScroll>
-            <FloatingCard delay={0.35}>
-              <div className="p-5"><MentionsChart data={activeSentiment} /></div>
-            </FloatingCard>
-          </RevealOnScroll>
-
-          <RevealOnScroll>
-            <FloatingCard delay={0.4}>
-              <div className="p-5">
-                <h2 className="font-display font-semibold text-zinc-100 mb-1">Mentions by Source</h2>
-                <p className="text-[10px] text-zinc-600 mb-3">Where the conversation is happening</p>
-                <div className="h-44">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie data={sourceData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={40} outerRadius={75}
-                        stroke="#09090b" strokeWidth={2}>
-                        {sourceData.map((d, i) => <Cell key={i} fill={d.fill} />)}
-                      </Pie>
-                      <Tooltip cursor={false} contentStyle={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 8 }}
-                        formatter={(v: number, name: string) => [fmt(v), name]} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-                <div className="space-y-1.5 mt-2">
-                  {sourceData.map((d) => (
-                    <div key={d.name} className="flex items-start gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full mt-0.5 shrink-0" style={{ background: d.fill }} />
-                      <div>
-                        <span className="text-xs text-zinc-300 font-medium">{d.name}</span>
-                        <span className="text-xs text-zinc-500 ml-1.5">{fmtK(d.value)}</span>
-                        <p className="text-[10px] text-zinc-600 leading-tight">{d.desc}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </FloatingCard>
-          </RevealOnScroll>
-        </div>
-
-        {/* ── Distribution ────────────────────────────────────── */}
-        <RevealOnScroll>
-          <FloatingCard delay={0.42}>
-            <div className="p-5">
-              <h2 className="font-display font-semibold text-zinc-100 mb-4">Sentiment Distribution</h2>
-              <div className="h-40">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={distributionData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
-                    <XAxis dataKey="name" tick={{ fill: "#71717a", fontSize: 9 }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fill: "#71717a", fontSize: 11 }} axisLine={false} tickLine={false} allowDecimals={false} />
-                    <Tooltip cursor={false} contentStyle={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 8 }} />
-                    <Bar dataKey="count" radius={[4, 4, 0, 0]}>
-                      {distributionData.map((d, i) => <Cell key={i} fill={d.fill} fillOpacity={0.7} />)}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          </FloatingCard>
-        </RevealOnScroll>
-
-        {/* ── Ticker Table ────────────────────────────────────── */}
-        <RevealOnScroll>
-          <FloatingCard delay={0.45}>
-            <div className="p-5">
-              <h2 className="font-display font-semibold text-zinc-100 mb-4">
-                {activeTab === "portfolio" ? "Portfolio" : "Trending"} Sentiment
-              </h2>
-
-              {filteredSentiment.length === 0 ? (
-                <div className="py-12 text-center text-zinc-500">
-                  {activeTab === "portfolio" ? <p>Add holdings to your portfolio to see sentiment data</p> : <p>No tickers match your filter</p>}
-                </div>
-              ) : (
-                <>
-                  {/* Desktop table */}
-                  <div className="hidden md:block overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="text-zinc-400 text-xs">
-                          <th className="text-left pb-3 font-medium">Ticker</th>
-                          <th className="text-center pb-3 font-medium">Sentiment</th>
-                          <th className="text-center pb-3 font-medium">7d Trend</th>
-                          <th className="text-right pb-3 font-medium">Mentions</th>
-                          <th className="text-right pb-3 font-medium">Buzz</th>
-                          <th className="text-right pb-3 font-medium"><span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#ff4500]" />Reddit</span></th>
-                          <th className="text-right pb-3 font-medium"><span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#1da1f2]" />Twitter</span></th>
-                          <th className="text-right pb-3 font-medium"><span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#f59e0b]" />News</span></th>
-                          <th className="text-right pb-3 font-medium"><span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#14b8a6]" />StockTwits</span></th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-zinc-800">
-                        {filteredSentiment.map((s) => (
-                          <tr key={s.ticker} className="hover:bg-white/[0.03] hover:shadow-[inset_2px_0_0_0_rgba(20,184,166,0.4)] transition-all duration-200">
-                            <td className="py-3">
-                              <div className="flex items-center gap-2">
-                                {s.trending && <Zap className="w-3 h-3 text-amber-400" />}
-                                <span className="font-medium text-zinc-100">{s.ticker}</span>
-                                <span className="text-[9px] text-zinc-600">{s.marketCap >= 1000 ? `${(s.marketCap / 1000).toFixed(1)}T` : `${s.marketCap}B`}</span>
-                              </div>
-                            </td>
-                            <td className="py-3 text-center">
-                              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${sentimentBg(s.overall)} ${sentimentColor(s.overall)}`}>
-                                {sentimentIcon(s.overall)} {s.overall > 0 ? "+" : ""}{s.overall}
-                              </span>
-                            </td>
-                            <td className="py-3 text-center">
-                              <Sparkline data={s.weeklyHistory} color={s.overall >= 0 ? "#14b8a6" : "#ef4444"} />
-                            </td>
-                            <td className="py-3 text-right tabular-nums text-zinc-300">
-                              {fmtK(s.mentions)}
-                              <span className={`ml-1.5 text-[10px] ${s.mentionChange >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
-                                {s.mentionChange >= 0 ? "↑" : "↓"}{Math.abs(s.mentionChange)}%
-                              </span>
-                            </td>
-                            <td className="py-3 text-right">
-                              <div className="flex items-center justify-end gap-2">
-                                <div className="w-12 h-1.5 rounded-full bg-zinc-800 overflow-hidden">
-                                  <div className="h-full rounded-full bg-amber-400/70" style={{ width: `${s.buzz}%` }} />
-                                </div>
-                                <span className="text-xs tabular-nums text-zinc-400 w-6 text-right">{s.buzz}</span>
-                              </div>
-                            </td>
-                            <td className="py-3 text-right tabular-nums text-zinc-400 text-xs">{fmtK(s.sources.reddit)}</td>
-                            <td className="py-3 text-right tabular-nums text-zinc-400 text-xs">{fmtK(s.sources.twitter)}</td>
-                            <td className="py-3 text-right tabular-nums text-zinc-400 text-xs">{fmtK(s.sources.news)}</td>
-                            <td className="py-3 text-right tabular-nums text-zinc-400 text-xs">{fmtK(s.sources.stocktwits)}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-
-                  {/* Mobile cards */}
-                  <div className="md:hidden space-y-3">
-                    {filteredSentiment.map((s) => (
-                      <div key={s.ticker} className="p-3 rounded-lg bg-zinc-800/50 border border-zinc-800">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            {s.trending && <Zap className="w-3 h-3 text-amber-400" />}
-                            <span className="font-medium text-zinc-100">{s.ticker}</span>
-                            <span className="text-[9px] text-zinc-600">{s.marketCap}B</span>
-                          </div>
-                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${sentimentBg(s.overall)} ${sentimentColor(s.overall)}`}>
-                            {sentimentIcon(s.overall)} {s.overall > 0 ? "+" : ""}{s.overall}
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <Sparkline data={s.weeklyHistory} color={s.overall >= 0 ? "#14b8a6" : "#ef4444"} />
-                          <div className="text-right">
-                            <p className="text-xs text-zinc-400 tabular-nums">{fmtK(s.mentions)} mentions</p>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              )}
-            </div>
-          </FloatingCard>
-        </RevealOnScroll>
-
-        {/* ── Disclaimer ──────────────────────────────────────── */}
-        <RevealOnScroll>
-          <div className="p-4 rounded-xl bg-amber-500/5 border border-amber-500/10 text-sm text-zinc-400">
-            <p className="font-medium text-amber-400 mb-2 flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4" /> Disclaimer
-            </p>
-            <p className="text-xs">
-              Sentiment data reflects crowd opinion, not investment advice. Social sentiment can be manipulated.
-              Mention volumes naturally correlate with market cap — larger companies generate more discussion.
-              High buzz does not indicate a good investment.
-            </p>
-          </div>
-        </RevealOnScroll>
+        <button
+          onClick={() => refresh()}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs text-zinc-400 hover:text-zinc-200 bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700/50 transition-colors"
+        >
+          <RefreshCw className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">Refresh</span>
+        </button>
       </div>
+
+      {/* Portfolio summary */}
+      {!isLoading && tickers.length > 0 && (
+        <RevealOnScroll>
+          <div className="grid grid-cols-3 gap-4">
+            <div className="vela-card text-center">
+              <p className="text-xs text-zinc-500 mb-1">Portfolio Avg</p>
+              <p className={`text-2xl font-display font-bold tabular-nums ${avgScore >= 20 ? "text-emerald-400" : avgScore <= -20 ? "text-rose-500" : "text-zinc-300"}`}>
+                {avgScore > 0 ? "+" : ""}{avgScore}
+              </p>
+              <ScoreLabel score={avgScore} />
+            </div>
+            {mostBullish && (
+              <div className="vela-card text-center border border-emerald-400/15">
+                <p className="text-xs text-zinc-500 mb-1 flex items-center justify-center gap-1">
+                  <TrendingUp className="w-3 h-3 text-emerald-400" /> Most Bullish
+                </p>
+                <p className="font-mono font-bold text-zinc-100">{mostBullish.ticker}</p>
+                <p className="text-emerald-400 font-bold tabular-nums">+{mostBullish.overall_score}</p>
+              </div>
+            )}
+            {mostBearish && mostBearish.ticker !== mostBullish?.ticker && (
+              <div className="vela-card text-center border border-rose-500/15">
+                <p className="text-xs text-zinc-500 mb-1 flex items-center justify-center gap-1">
+                  <TrendingDown className="w-3 h-3 text-rose-500" /> Most Bearish
+                </p>
+                <p className="font-mono font-bold text-zinc-100">{mostBearish.ticker}</p>
+                <p className="text-rose-500 font-bold tabular-nums">{mostBearish.overall_score}</p>
+              </div>
+            )}
+          </div>
+        </RevealOnScroll>
+      )}
+
+      {/* Per-ticker cards */}
+      {isLoading ? (
+        <DashboardSkeleton />
+      ) : error ? (
+        <div className="vela-card text-center py-10 text-zinc-500 text-sm">
+          Failed to load sentiment data. Make sure your portfolio has holdings.
+        </div>
+      ) : tickers.length === 0 ? (
+        <div className="vela-card text-center py-12 space-y-2">
+          <MessageCircle className="w-10 h-10 text-zinc-700 mx-auto" />
+          <p className="text-zinc-400 font-medium">No holdings or watchlist items yet</p>
+          <p className="text-zinc-600 text-sm">Add positions to your portfolio or watchlist to see sentiment scores.</p>
+        </div>
+      ) : (
+        <RevealOnScroll delay={0.05}>
+          <div className="space-y-3">
+            <h2 className="section-heading">Your Holdings &amp; Watchlist</h2>
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              {tickers.map((s) => (
+                <TickerCard key={s.ticker} s={s} />
+              ))}
+            </div>
+          </div>
+        </RevealOnScroll>
+      )}
+
+      {/* Ad-hoc lookup */}
+      <RevealOnScroll delay={0.1}>
+        <TickerLookup />
+      </RevealOnScroll>
+
+      {/* Methodology note */}
+      <RevealOnScroll delay={0.15}>
+        <div className="flex gap-3 p-3 rounded-lg border border-zinc-800 bg-zinc-800/30">
+          <Minus className="w-4 h-4 text-zinc-500 shrink-0 mt-0.5" />
+          <p className="text-xs text-zinc-500 leading-relaxed">
+            Scores are computed with <strong className="text-zinc-400">VADER NLP</strong> on recent headlines from Yahoo Finance.
+            VADER measures text polarity, not price direction — a headline can sound positive while the stock falls.
+            Use as one signal among many, not a trading signal.
+          </p>
+        </div>
+      </RevealOnScroll>
     </PageTransition>
   );
 }

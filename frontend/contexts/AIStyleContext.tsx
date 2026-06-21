@@ -89,7 +89,7 @@ export const TONE_OPTIONS: { value: AITone; label: string; desc: string; example
     value: "casual",
     label: "Casual",
     desc: "Friendly and approachable",
-    example: "Nice day! Your portfolio is up 2.3% — tech stocks are doing the heavy lifting.",
+    example: "Nice day! Your portfolio is up 2.3%  - tech stocks are doing the heavy lifting.",
   },
   {
     value: "concise",
@@ -101,6 +101,6 @@ export const TONE_OPTIONS: { value: AITone; label: string; desc: string; example
     value: "encouraging",
     label: "Encouraging",
     desc: "Motivational and positive focus",
-    example: "Great progress! Your portfolio gained 2.3% today — your strategy is paying off.",
+    example: "Great progress! Your portfolio gained 2.3% today  - your strategy is paying off.",
   },
 ];

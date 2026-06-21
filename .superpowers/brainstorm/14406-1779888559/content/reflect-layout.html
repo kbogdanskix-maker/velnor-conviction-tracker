@@ -1,0 +1,138 @@
+<h2>Portfolio Reflection — Page Layout</h2>
+<p class="subtitle">Two-column: context panel on the left, conversation on the right. Take a look and let me know if this structure feels right.</p>
+
+<div style="margin-top: 24px;">
+  <div style="background: #0a0a0a; border: 1px solid #27272a; border-radius: 12px; overflow: hidden; font-family: 'Inter', sans-serif; min-height: 580px; display: flex; flex-direction: column;">
+
+    <!-- Page header -->
+    <div style="padding: 20px 24px 16px; border-bottom: 1px solid #18181b; display: flex; align-items: center; justify-content: between; gap: 12px;">
+      <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
+        <div style="width: 8px; height: 8px; border-radius: 50%; background: #14b8a6; box-shadow: 0 0 8px #14b8a6;"></div>
+        <span style="color: #f4f4f5; font-size: 18px; font-weight: 600; letter-spacing: -0.3px;">Portfolio Reflection</span>
+      </div>
+      <span style="color: #52525b; font-size: 12px;">Powered by Claude</span>
+    </div>
+
+    <!-- Two-column body -->
+    <div style="display: flex; flex: 1; min-height: 0;">
+
+      <!-- LEFT: Context panel -->
+      <div style="width: 240px; min-width: 240px; border-right: 1px solid #18181b; padding: 16px; display: flex; flex-direction: column; gap: 16px; background: #0d0d0d;">
+
+        <div>
+          <div style="color: #52525b; font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px;">Your Context</div>
+
+          <div style="background: #18181b; border-radius: 8px; padding: 10px 12px; margin-bottom: 6px;">
+            <div style="color: #71717a; font-size: 10px; margin-bottom: 3px;">Portfolio</div>
+            <div style="color: #f4f4f5; font-size: 13px; font-weight: 500;">$25,472.53</div>
+            <div style="color: #34d399; font-size: 11px;">+11.23% total return</div>
+          </div>
+
+          <div style="background: #18181b; border-radius: 8px; padding: 10px 12px; margin-bottom: 6px;">
+            <div style="color: #71717a; font-size: 10px; margin-bottom: 5px;">Holdings</div>
+            <div style="display: flex; flex-direction: column; gap: 3px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: #e4e4e7; font-size: 12px; font-weight: 500;">NVDA</span>
+                <span style="color: #34d399; font-size: 11px;">34% · +140%</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: #e4e4e7; font-size: 12px; font-weight: 500;">AAPL</span>
+                <span style="color: #34d399; font-size: 11px;">18% · +21%</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: #e4e4e7; font-size: 12px; font-weight: 500;">PYPL</span>
+                <span style="color: #fb7185; font-size: 11px;">8% · −6%</span>
+              </div>
+              <div style="color: #52525b; font-size: 10px; margin-top: 2px;">+3 more positions</div>
+            </div>
+          </div>
+
+          <div style="background: #18181b; border-radius: 8px; padding: 10px 12px; margin-bottom: 6px;">
+            <div style="color: #71717a; font-size: 10px; margin-bottom: 5px;">Thesis Notes</div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <div style="width: 6px; height: 6px; border-radius: 50%; background: #14b8a6;"></div>
+              <span style="color: #e4e4e7; font-size: 12px;">3 theses written</span>
+            </div>
+            <div style="color: #52525b; font-size: 10px; margin-top: 4px; line-height: 1.4;">The more you write, the more accurately the AI reflects your actual reasoning</div>
+          </div>
+
+          <div style="background: #18181b; border-radius: 8px; padding: 10px 12px;">
+            <div style="color: #71717a; font-size: 10px; margin-bottom: 5px;">Goals</div>
+            <div style="color: #e4e4e7; font-size: 12px;">Retirement · $500k by 2040</div>
+            <div style="height: 4px; background: #27272a; border-radius: 2px; margin-top: 5px;">
+              <div style="height: 100%; width: 18%; background: #14b8a6; border-radius: 2px;"></div>
+            </div>
+            <div style="color: #52525b; font-size: 10px; margin-top: 3px;">18% funded</div>
+          </div>
+        </div>
+
+        <div style="margin-top: auto; padding-top: 8px; border-top: 1px solid #18181b;">
+          <div style="color: #52525b; font-size: 10px; line-height: 1.5;">Profile: Aggressive · Age 30 · Avg hold ~11mo</div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Chat -->
+      <div style="flex: 1; display: flex; flex-direction: column; min-width: 0;">
+
+        <!-- Messages -->
+        <div style="flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px;">
+
+          <!-- AI opening message -->
+          <div style="display: flex; gap: 10px; max-width: 85%;">
+            <div style="width: 28px; height: 28px; min-width: 28px; border-radius: 50%; background: linear-gradient(135deg, #14b8a6, #6366f1); display: flex; align-items: center; justify-content: center; font-size: 12px; color: white; font-weight: 600;">V</div>
+            <div style="background: #18181b; border: 1px solid #27272a; border-radius: 12px 12px 12px 2px; padding: 12px 14px;">
+              <p style="color: #e4e4e7; font-size: 13px; line-height: 1.6; margin: 0;">You're sitting on a 140% gain in NVDA after 8 months — and it's now 34% of your portfolio. That's a meaningful position. What's your current thinking on it — are you treating this as a trim trigger, or do you still see a next leg?</p>
+            </div>
+          </div>
+
+          <!-- User reply -->
+          <div style="display: flex; gap: 10px; max-width: 85%; margin-left: auto; flex-direction: row-reverse;">
+            <div style="width: 28px; height: 28px; min-width: 28px; border-radius: 50%; background: #27272a; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #a1a1aa; font-weight: 600;">K</div>
+            <div style="background: #1a2a2a; border: 1px solid #14b8a640; border-radius: 12px 12px 2px 12px; padding: 12px 14px;">
+              <p style="color: #e4e4e7; font-size: 13px; line-height: 1.6; margin: 0;">I think the AI boom still has a couple of years in it but the asymmetry is getting tighter. I'll probably trim 10-15% if it hits $200 but hold the core position.</p>
+            </div>
+          </div>
+
+          <!-- AI follow-up -->
+          <div style="display: flex; gap: 10px; max-width: 85%;">
+            <div style="width: 28px; height: 28px; min-width: 28px; border-radius: 50%; background: linear-gradient(135deg, #14b8a6, #6366f1); display: flex; align-items: center; justify-content: center; font-size: 12px; color: white; font-weight: 600;">V</div>
+            <div style="background: #18181b; border: 1px solid #27272a; border-radius: 12px 12px 12px 2px; padding: 12px 14px;">
+              <p style="color: #e4e4e7; font-size: 13px; line-height: 1.6; margin: 0;">That's a price-target trim rather than a thesis trim — worth knowing the difference. What would actually change your view on NVDA's AI cycle thesis, independent of the stock price?</p>
+            </div>
+          </div>
+
+          <!-- Typing indicator -->
+          <div style="display: flex; gap: 10px; max-width: 85%;">
+            <div style="width: 28px; height: 28px; min-width: 28px; border-radius: 50%; background: linear-gradient(135deg, #14b8a6, #6366f1); display: flex; align-items: center; justify-content: center; font-size: 12px; color: white; font-weight: 600;">V</div>
+            <div style="background: #18181b; border: 1px solid #27272a; border-radius: 12px 12px 12px 2px; padding: 12px 14px;">
+              <div style="display: flex; gap: 4px; align-items: center; height: 16px;">
+                <div style="width: 6px; height: 6px; border-radius: 50%; background: #14b8a6; animation: pulse 1s infinite;"></div>
+                <div style="width: 6px; height: 6px; border-radius: 50%; background: #14b8a6; animation: pulse 1s 0.2s infinite;"></div>
+                <div style="width: 6px; height: 6px; border-radius: 50%; background: #14b8a6; animation: pulse 1s 0.4s infinite;"></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Input -->
+        <div style="padding: 12px 16px; border-top: 1px solid #18181b; display: flex; gap: 8px; align-items: flex-end;">
+          <div style="flex: 1; background: #18181b; border: 1px solid #27272a; border-radius: 10px; padding: 10px 14px; color: #52525b; font-size: 13px; min-height: 40px; display: flex; align-items: center;">Type your thoughts...</div>
+          <div style="width: 36px; height: 36px; background: #14b8a6; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<style>
+@keyframes pulse {
+  0%, 100% { opacity: 0.3; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1); }
+}
+</style>
+
+<p class="subtitle" style="margin-top: 16px;">This shows the two-column layout with context on the left and the Reflective Analyst pattern in action. Does this feel like the right structure?</p>

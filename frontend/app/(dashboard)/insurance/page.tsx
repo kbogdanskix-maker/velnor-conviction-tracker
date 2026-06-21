@@ -3,12 +3,13 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import {
   Shield, Heart, Car, Home, Umbrella, User, AlertTriangle,
-  CheckCircle2, XCircle, ChevronDown, Info, Plus, Trash2, Edit2, Check, X,
+  CheckCircle2, XCircle, Plus, Trash2, Edit2, Check, X, Users, Building2,
 } from "lucide-react";
 import { formatCurrency } from "@/lib/formatters";
 import { useCashFlowSummary } from "@/hooks/useCashFlow";
 import { useNetWorthSummary } from "@/hooks/useNetWorth";
 import { useCloudStore } from "@/hooks/useCloudStore";
+import { useProfile } from "@/hooks/useProfile";
 import PageTransition from "@/components/celestial/PageTransition";
 import TierGate from "@/components/shared/TierGate";
 
@@ -47,14 +48,13 @@ const TYPE_META: Record<InsuranceType, { label: string; icon: React.ComponentTyp
 
 const INSURANCE_TYPES: InsuranceType[] = ["health", "auto", "home_renters", "life", "disability", "umbrella"];
 
-// localStorage helpers removed — now uses useCloudStore
-
 // ── Page ────────────────────────────────────────────────────────────────────
 
 export default function InsurancePage() {
   const { summary: cashFlow } = useCashFlowSummary();
   const { summary: netWorth } = useNetWorthSummary();
   const { data: cloudPolicies, save: savePolicies } = useCloudStore<Policy[]>("insurance");
+  const { profile, update: updateProfile } = useProfile();
   const [policies, setPolicies] = useState<Policy[]>([]);
 
   // Sync from cloud store — only when cloud data actually has content
@@ -65,6 +65,12 @@ export default function InsurancePage() {
       setPolicies(cloudPolicies);
     }
   }, [cloudPolicies]);
+
+  // Auto-detect homeowner from net worth liabilities (mortgage keyword)
+  const liabilityNames = (netWorth?.assets ?? [])
+    .filter((a) => a.is_liability)
+    .map((a) => a.name?.toLowerCase() ?? "");
+  const hasMortgage = liabilityNames.some((n) => n.includes("mortgage") || n.includes("home loan") || n.includes("house"));
   const [showAdd, setShowAdd] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
 
@@ -127,9 +133,11 @@ export default function InsurancePage() {
   }
 
   const annualIncome = (cashFlow?.total_income ?? 0) * 12;
+  const monthlyIncome = cashFlow?.total_income ?? 0;
   const totalAssets = netWorth?.total_assets ?? 0;
   const totalLiabilities = netWorth?.total_liabilities ?? 0;
-  const dependents = 0; // Could be configurable
+  const { dependents, isHomeowner } = profile;
+  const effectiveHomeowner = isHomeowner || hasMortgage;
 
   // Gap analysis
   const gaps = useMemo((): GapResult[] => {
@@ -198,53 +206,62 @@ export default function InsurancePage() {
       }
     }
 
-    // Home / Renters
+    // Home / Renters — context-aware for owner vs renter
     const homePolicies = byType.get("home_renters") || [];
     if (homePolicies.length === 0) {
       results.push({
         type: "home_renters", label: "Home / Renters", icon: Home,
         status: "missing", priority: "high",
-        message: "No home or renters insurance on file.",
-        recommendation: "Whether you rent or own, property insurance protects your belongings and provides liability coverage. Renters insurance is typically $15-30/month.",
+        message: effectiveHomeowner
+          ? "No home insurance on file. As a homeowner, this is essential."
+          : "No renters insurance on file.",
+        recommendation: effectiveHomeowner
+          ? "Home insurance protects your property and provides liability coverage. Required by most mortgage lenders."
+          : "Renters insurance is typically $15–30/month and covers your belongings plus liability. One of the best value insurance products.",
       });
     } else {
       results.push({
         type: "home_renters", label: "Home / Renters", icon: Home,
         status: "covered", priority: "low",
-        message: `Property insurance active. ${homePolicies.length} policy(ies) on file.`,
-        recommendation: "Update coverage after major purchases. Review replacement cost vs. actual cash value.",
+        message: `${effectiveHomeowner ? "Home" : "Renters"} insurance active. ${homePolicies.length} policy(ies) on file.`,
+        recommendation: effectiveHomeowner
+          ? "Update coverage after renovations or major purchases. Review replacement cost vs. actual cash value."
+          : "Review annually — your coverage should reflect the value of your belongings.",
       });
     }
 
-    // Life
+    // Life — priority depends on dependents and shared debt
     const lifePolicies = byType.get("life") || [];
     const totalLifeCoverage = lifePolicies.reduce((s, p) => s + p.coverage, 0);
+    const lifeNeeded = dependents > 0 || totalLiabilities > 50000;
     if (lifePolicies.length === 0) {
-      if (annualIncome > 0 || totalLiabilities > 50000) {
+      if (lifeNeeded) {
         results.push({
           type: "life", label: "Life", icon: User,
-          status: "missing", priority: "high",
-          message: "No life insurance on file.",
+          status: "missing", priority: dependents > 0 ? "high" : "medium",
+          message: dependents > 0
+            ? `No life insurance on file. You have ${dependents} dependent${dependents > 1 ? "s" : ""} relying on your income.`
+            : "No life insurance on file. You carry significant shared debt.",
           recommendation: annualIncome > 0
-            ? `Rule of thumb: 10-12x annual income (${formatCurrency(annualIncome * 10)} – ${formatCurrency(annualIncome * 12)}). Term life is the most cost-effective option.`
-            : "Consider life insurance if you have dependents or significant debt that would burden others.",
+            ? `Rule of thumb: ${dependents > 0 ? "10-12x" : "5-7x"} annual income = ${formatCurrency(annualIncome * (dependents > 0 ? 10 : 5))}–${formatCurrency(annualIncome * (dependents > 0 ? 12 : 7))}. Term life is most cost-effective.`
+            : "Consider life insurance if others depend on your income or share your debt.",
         });
       } else {
         results.push({
           type: "life", label: "Life", icon: User,
           status: "missing", priority: "low",
-          message: "No life insurance on file. May not be needed if no dependents or major debts.",
-          recommendation: "Life insurance becomes important when others depend on your income or you carry shared debt.",
+          message: "No life insurance on file — not urgent with no dependents or major shared debt.",
+          recommendation: "Life insurance becomes important when others depend on your income. Revisit if your situation changes.",
         });
       }
     } else {
-      const idealCoverage = annualIncome * 10;
-      if (annualIncome > 0 && totalLifeCoverage < idealCoverage * 0.6) {
+      const idealCoverage = annualIncome * (dependents > 0 ? 10 : 5);
+      if (lifeNeeded && annualIncome > 0 && totalLifeCoverage < idealCoverage * 0.6) {
         results.push({
           type: "life", label: "Life", icon: User,
-          status: "gap", priority: "high",
-          message: `Life coverage (${formatCurrency(totalLifeCoverage)}) is below 60% of the recommended ${formatCurrency(idealCoverage)} (10x income).`,
-          recommendation: "Consider increasing coverage. A supplemental term policy can fill the gap affordably.",
+          status: "gap", priority: dependents > 0 ? "high" : "medium",
+          message: `Life coverage (${formatCurrency(totalLifeCoverage)}) is below the recommended ${formatCurrency(idealCoverage)} (${dependents > 0 ? "10x" : "5x"} income).`,
+          recommendation: "Consider a supplemental term policy to close the gap affordably.",
         });
       } else {
         results.push({
@@ -296,14 +313,14 @@ export default function InsurancePage() {
       const order = { high: 0, medium: 1, low: 2 };
       return order[a.priority] - order[b.priority];
     });
-  }, [policies, annualIncome, totalAssets, totalLiabilities]);
+  }, [policies, annualIncome, totalAssets, totalLiabilities, dependents, effectiveHomeowner]);
 
   const totalMonthlyPremiums = policies.reduce((s, p) => s + p.premium, 0);
   const coveredCount = gaps.filter((g) => g.status === "covered").length;
   const gapCount = gaps.filter((g) => g.status === "gap").length;
   const missingCount = gaps.filter((g) => g.status === "missing").length;
-
   const overallScore = Math.round((coveredCount / Math.max(gaps.length, 1)) * 100);
+  const pctOfIncome = monthlyIncome > 0 ? (totalMonthlyPremiums / monthlyIncome) * 100 : null;
 
   return (
     <TierGate requiredTier="voyager">
@@ -316,11 +333,48 @@ export default function InsurancePage() {
         </p>
       </div>
 
+      {/* Profile strip */}
+      <div className="vela-card p-4">
+        <p className="text-xs text-zinc-500 uppercase tracking-wider mb-3">Your Profile</p>
+        <div className="flex flex-wrap gap-6">
+          {/* Dependents */}
+          <div className="flex items-center gap-3">
+            <Users className="w-4 h-4 text-zinc-500 shrink-0" />
+            <span className="text-sm text-zinc-400">Dependents</span>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => updateProfile({ dependents: Math.max(0, dependents - 1) })}
+                className="w-6 h-6 rounded bg-zinc-800 text-zinc-300 hover:bg-zinc-700 text-sm font-bold leading-none flex items-center justify-center transition-colors"
+              >−</button>
+              <span className="w-6 text-center text-sm font-medium text-zinc-100 tabular-nums">{dependents}</span>
+              <button
+                onClick={() => updateProfile({ dependents: dependents + 1 })}
+                className="w-6 h-6 rounded bg-zinc-800 text-zinc-300 hover:bg-zinc-700 text-sm font-bold leading-none flex items-center justify-center transition-colors"
+              >+</button>
+            </div>
+          </div>
+          {/* Homeowner */}
+          <div className="flex items-center gap-3">
+            <Building2 className="w-4 h-4 text-zinc-500 shrink-0" />
+            <span className="text-sm text-zinc-400">I own my home</span>
+            <button
+              onClick={() => updateProfile({ isHomeowner: !isHomeowner })}
+              className={`w-10 h-5 rounded-full transition-colors relative ${(isHomeowner || hasMortgage) ? "bg-teal-500" : "bg-zinc-700"}`}
+            >
+              <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${(isHomeowner || hasMortgage) ? "translate-x-5" : "translate-x-0.5"}`} />
+            </button>
+            {hasMortgage && !isHomeowner && (
+              <span className="text-[10px] text-teal-400/70">auto-detected from net worth</span>
+            )}
+          </div>
+        </div>
+      </div>
+
       {/* Score cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="vela-card p-4 text-center">
           <p className="text-xs text-zinc-500 uppercase tracking-wider">Coverage Score</p>
-          <p className={`text-3xl font-bold tabular-nums mt-1 ${overallScore >= 80 ? "text-gain" : overallScore >= 50 ? "text-yellow-400" : "text-loss"}`}>
+          <p className={`text-3xl font-bold tabular-nums mt-1 ${overallScore >= 80 ? "text-gain" : overallScore >= 50 ? "text-amber-400" : "text-loss"}`}>
             {overallScore}%
           </p>
         </div>
@@ -329,12 +383,23 @@ export default function InsurancePage() {
           <p className="text-3xl font-bold text-gain tabular-nums mt-1">{coveredCount}</p>
         </div>
         <div className="vela-card p-4 text-center">
-          <p className="text-xs text-zinc-500 uppercase tracking-wider">Gaps</p>
-          <p className={`text-3xl font-bold tabular-nums mt-1 ${gapCount > 0 ? "text-yellow-400" : "text-zinc-500"}`}>{gapCount}</p>
+          <p className="text-xs text-zinc-500 uppercase tracking-wider">Gaps / Missing</p>
+          <p className={`text-3xl font-bold tabular-nums mt-1 ${gapCount + missingCount > 0 ? "text-loss" : "text-zinc-500"}`}>
+            {gapCount + missingCount}
+          </p>
         </div>
         <div className="vela-card p-4 text-center">
-          <p className="text-xs text-zinc-500 uppercase tracking-wider">Missing</p>
-          <p className={`text-3xl font-bold tabular-nums mt-1 ${missingCount > 0 ? "text-loss" : "text-zinc-500"}`}>{missingCount}</p>
+          <p className="text-xs text-zinc-500 uppercase tracking-wider">% of Income</p>
+          {pctOfIncome !== null ? (
+            <>
+              <p className={`text-3xl font-bold tabular-nums mt-1 ${pctOfIncome > 15 ? "text-loss" : pctOfIncome > 10 ? "text-amber-400" : "text-gain"}`}>
+                {pctOfIncome.toFixed(1)}%
+              </p>
+              <p className="text-[10px] text-zinc-600 mt-0.5">target: 10–15%</p>
+            </>
+          ) : (
+            <p className="text-3xl font-bold text-zinc-600 tabular-nums mt-1">—</p>
+          )}
         </div>
       </div>
 
@@ -347,11 +412,11 @@ export default function InsurancePage() {
             <div
               key={gap.type}
               className={`vela-card p-4 border-l-4 ${
-                gap.status === "covered" ? "border-l-gain" : gap.status === "gap" ? "border-l-yellow-400" : "border-l-loss"
+                gap.status === "covered" ? "border-l-gain" : gap.status === "gap" ? "border-l-amber-400" : "border-l-loss"
               }`}
             >
               <div className="flex items-start gap-3">
-                <div className={`mt-0.5 ${gap.status === "covered" ? "text-gain" : gap.status === "gap" ? "text-yellow-400" : "text-loss"}`}>
+                <div className={`mt-0.5 ${gap.status === "covered" ? "text-gain" : gap.status === "gap" ? "text-amber-400" : "text-loss"}`}>
                   {gap.status === "covered" ? <CheckCircle2 className="w-5 h-5" /> : gap.status === "gap" ? <AlertTriangle className="w-5 h-5" /> : <XCircle className="w-5 h-5" />}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -359,7 +424,7 @@ export default function InsurancePage() {
                     <Icon className="w-4 h-4 text-zinc-400" />
                     <span className="text-sm font-semibold text-zinc-200">{gap.label}</span>
                     <span className={`text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded ${
-                      gap.priority === "high" ? "bg-loss/15 text-loss" : gap.priority === "medium" ? "bg-yellow-400/15 text-yellow-400" : "bg-zinc-700 text-zinc-400"
+                      gap.priority === "high" ? "bg-loss/15 text-loss" : gap.priority === "medium" ? "bg-amber-400/15 text-amber-400" : "bg-zinc-700 text-zinc-400"
                     }`}>
                       {gap.priority}
                     </span>
@@ -529,19 +594,19 @@ export default function InsurancePage() {
           <div className="flex items-start gap-3">
             <span className="text-loss font-bold text-xs mt-0.5 shrink-0">1. ESSENTIAL</span>
             <p className="text-zinc-400">
-              <span className="text-zinc-200 font-medium">Health & Auto</span> — legally required or financially catastrophic without. Always maintain these first.
+              <span className="text-zinc-200 font-medium">Health & Auto</span>  - legally required or financially catastrophic without. Always maintain these first.
             </p>
           </div>
           <div className="flex items-start gap-3">
-            <span className="text-yellow-400 font-bold text-xs mt-0.5 shrink-0">2. CRITICAL</span>
+            <span className="text-amber-400 font-bold text-xs mt-0.5 shrink-0">2. CRITICAL</span>
             <p className="text-zinc-400">
-              <span className="text-zinc-200 font-medium">Disability & Home/Renters</span> — protects your earning power and belongings. Disability is the most underinsured risk.
+              <span className="text-zinc-200 font-medium">Disability & Home/Renters</span>  - protects your earning power and belongings. Disability is the most underinsured risk.
             </p>
           </div>
           <div className="flex items-start gap-3">
             <span className="text-gain font-bold text-xs mt-0.5 shrink-0">3. IMPORTANT</span>
             <p className="text-zinc-400">
-              <span className="text-zinc-200 font-medium">Life & Umbrella</span> — important if you have dependents (life) or significant assets to protect (umbrella).
+              <span className="text-zinc-200 font-medium">Life & Umbrella</span>  - important if you have dependents (life) or significant assets to protect (umbrella).
             </p>
           </div>
         </div>

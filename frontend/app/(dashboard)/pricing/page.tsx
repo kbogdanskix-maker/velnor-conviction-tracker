@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Check, Star, Rocket, Crown, Sparkles } from "lucide-react";
+import { Check, Sunrise, Telescope, Orbit, Sparkles } from "lucide-react";
 import PageTransition, { MotionSection } from "@/components/celestial/PageTransition";
 import GlowBorder from "@/components/celestial/GlowBorder";
 import { useTier } from "@/hooks/useTier";
@@ -14,6 +14,7 @@ interface Plan {
   tagline: string;
   price: number;
   interval: string;
+  yearlyPrice?: number;       // optional annual billing price
   icon: React.ComponentType<{ className?: string }>;
   accent: string;           // tailwind text-color
   glowFrom: string;         // gradient start
@@ -29,74 +30,80 @@ const PLANS: Plan[] = [
     tagline: "Chart your course",
     price: 0,
     interval: "forever",
-    icon: Star,
+    icon: Sunrise,
     accent: "text-zinc-300",
     glowFrom: "rgba(161,161,170,0.15)",
     glowTo: "rgba(161,161,170,0.05)",
     buttonClass: "bg-zinc-800 hover:bg-zinc-700 text-zinc-200",
     features: [
-      "Portfolio tracker (manual entry)",
-      "Net worth dashboard",
-      "Watchlist (up to 10 tickers)",
-      "Goal planner (3 goals)",
-      "Affordability calculator",
-      "Debt payoff planner",
-      "Market overview",
-      "News feed",
-      "Growth calculator",
-      "Milestones timeline",
-      "Expense tracker",
+      "Portfolio & net worth tracking",
+      "Net worth history & milestones",
+      "Watchlist",
+      "Health Score & Smart Alerts",
+      "Risk & returns analysis",
       "Sector breakdown",
+      "Goal planner",
+      "Affordability & debt payoff",
+      "Expense, income & subscription tracking",
+      "FI tracker",
+      "Markets, news & sentiment",
+      "Thesis, notes & journal (3 thesis threads)",
+      "Learn library & annual review",
+      "1-year history · 60s quote refresh",
     ],
   },
   {
     id: "voyager",
     name: "Voyager",
     tagline: "Navigate with precision",
-    price: 9,
+    price: 9.99,
     interval: "mo",
-    icon: Rocket,
+    yearlyPrice: 99.99,
+    icon: Telescope,
     accent: "text-vela-teal",
     glowFrom: "rgba(20,184,166,0.25)",
     glowTo: "rgba(20,184,166,0.05)",
     buttonClass: "bg-vela-teal hover:bg-teal-400 text-zinc-950 font-semibold",
     features: [
       "Everything in Horizon, plus:",
-      "Stock screener (600+ tickers)",
-      "Dividend calendar & DRIP",
-      "DCF & Reverse DCF valuation",
+      "AI insights — 10 per day",
+      "Stock screener (5,000+ tickers)",
+      "DCF & Reverse DCF valuation (5 saved models)",
+      "Stock Compare",
+      "Dividend calendar & forecast",
+      "Rebalance advisor & fee analyzer",
+      "Position sizing & attribution",
       "Cash flow & budget tools",
-      "Real estate analyzer",
-      "Tax awareness insights",
-      "Insurance planner",
-      "Retirement projections",
-      "Rebalance advisor",
-      "Fee analyzer",
-      "Position sizing",
-      "Benchmark comparison",
-      "Emergency fund planner",
-      "Savings finder (HYSA/CD)",
-      "Behavior & alerts",
-      "FX rates & Macro dashboard",
+      "Tax awareness & tax-loss harvesting",
+      "Insurance & retirement planning",
+      "Asset location & emergency fund",
+      "Behavior insights",
+      "Portfolio comparison & benchmarking",
+      "FX rates & macro dashboard",
+      "5-year history · 15s quote refresh",
     ],
   },
   {
     id: "navigator",
     name: "Navigator",
     tagline: "Master the cosmos",
-    price: 49,
+    price: 29.99,
     interval: "mo",
-    icon: Crown,
+    yearlyPrice: 250,
+    icon: Orbit,
     accent: "text-violet-400",
     glowFrom: "rgba(139,92,246,0.25)",
     glowTo: "rgba(139,92,246,0.05)",
     buttonClass: "bg-violet-500 hover:bg-violet-400 text-white font-semibold",
     features: [
       "Everything in Voyager, plus:",
+      "Unlimited AI insights",
       "\"What If\" scenario simulator",
+      "Monte Carlo projections",
       "Correlation & diversification map",
-      "AI daily debrief (coming soon)",
-      "Portfolio export & PDF reports",
+      "Reflect — AI portfolio journal",
+      "Company Deep-Dive (filings, insider & institutional)",
+      "5s real-time quote refresh",
       "Priority support",
     ],
   },
@@ -150,7 +157,7 @@ export default function PricingPage() {
                     isPopular ? "border-vela-teal/20" : "border-zinc-800/60"
                   }`}
                 >
-                  {/* Popular badge — inside card, pinned to top */}
+                  {/* Popular badge  - inside card, pinned to top */}
                   {isPopular && (
                     <div className="flex justify-center pt-3">
                       <span className="px-3 py-1 rounded-full bg-vela-teal/20 text-vela-teal text-[11px] font-semibold uppercase tracking-wider border border-vela-teal/30">
@@ -190,6 +197,12 @@ export default function PricingPage() {
                           </>
                         )}
                       </div>
+                      {plan.yearlyPrice && (
+                        <p className="text-zinc-500 text-xs mt-1.5">
+                          or <span className="text-zinc-300 tabular">${plan.yearlyPrice}</span>/yr
+                          <span className="text-zinc-600"> — save {Math.round((1 - plan.yearlyPrice / (plan.price * 12)) * 100)}%</span>
+                        </p>
+                      )}
                     </div>
                   </div>
 
@@ -259,7 +272,7 @@ export default function PricingPage() {
           All plans include unlimited data retention. Cancel anytime.
         </p>
         <p className="text-zinc-600 text-xs mt-2">
-          Prices in USD. Billed monthly. No hidden fees.
+          Prices in USD. Billed monthly or annually. No hidden fees.
         </p>
       </MotionSection>
     </PageTransition>

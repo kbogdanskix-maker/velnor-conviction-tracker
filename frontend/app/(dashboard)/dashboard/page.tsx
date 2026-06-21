@@ -414,7 +414,7 @@ export default function DashboardPage() {
               ))}
             </div>
             <p className="text-[10px] text-zinc-600 mt-2">
-              Vela does not provide financial advice. These are educational pointers to help you find the right professional.
+              Velnor does not provide financial advice. These are educational pointers to help you find the right professional.
             </p>
           </MotionSection>
         </RevealOnScroll>
@@ -492,7 +492,7 @@ function getPersonalizedSubtitle(
 ): string {
   // No portfolio yet
   if (!hasHoldings || !summary) {
-    if (hour < 12) return "A fresh start — let's chart your course.";
+    if (hour < 12) return "A fresh start  - let's chart your course.";
     if (hour < 18) return "Ready to set sail? Your portfolio awaits.";
     return "The stars are out. Great time to plan your next move.";
   }
@@ -504,7 +504,7 @@ function getPersonalizedSubtitle(
   // Portfolio is up today
   if (dayPnl > 0) {
     const pct = summary.total_day_change_pct ?? 0;
-    if (pct > 2) return "Markets are flying today — your portfolio is catching the wind.";
+    if (pct > 2) return "Markets are flying today  - your portfolio is catching the wind.";
     return "Your portfolio is trending up. Steady as she goes.";
   }
 
@@ -514,7 +514,7 @@ function getPersonalizedSubtitle(
   }
 
   // Flat / no change
-  if (goalCount > 0) return `Tracking ${goalCount} goal${goalCount > 1 ? "s" : ""} — you're building momentum.`;
+  if (goalCount > 0) return `Tracking ${goalCount} goal${goalCount > 1 ? "s" : ""}  - you're building momentum.`;
   if (netWorth > 0) return "Your wealth is in motion. Here's the view from above.";
   return "Here's your portfolio at a glance.";
 }

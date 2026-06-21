@@ -4,6 +4,10 @@ import { useCloudStore } from "./useCloudStore";
 
 export type RiskTolerance = "conservative" | "moderate" | "aggressive";
 export type Sophistication = "beginner" | "intermediate" | "advanced";
+export type Objective = "growth" | "income" | "preservation" | "target" | "learning";
+export type TimeHorizon = "short" | "medium" | "long";
+// Framings the user wants the app/AI to downplay.
+export type DeEmphasis = "retirement" | "income" | "tax" | "volatility";
 
 export interface UserProfile {
   age: number;
@@ -13,6 +17,11 @@ export interface UserProfile {
   marginalTaxRate: number;
   riskTolerance: RiskTolerance;
   sophistication: Sophistication;
+  // Investor identity — shapes AI framing and app norms.
+  primaryObjective: Objective;
+  timeHorizon: TimeHorizon;
+  deEmphasize: DeEmphasis[];
+  philosophy: string;
 }
 
 export const DEFAULT_PROFILE: UserProfile = {
@@ -23,6 +32,11 @@ export const DEFAULT_PROFILE: UserProfile = {
   marginalTaxRate: 22,
   riskTolerance: "moderate",
   sophistication: "intermediate",
+  // Defaults preserve today's behavior until the user sets them.
+  primaryObjective: "target",
+  timeHorizon: "long",
+  deEmphasize: [],
+  philosophy: "",
 };
 
 export const US_TAX_BRACKETS = [

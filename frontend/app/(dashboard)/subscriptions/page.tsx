@@ -50,7 +50,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   Other: "#71717a",
 };
 
-// localStorage helpers removed — now uses useCloudStore
+// localStorage helpers removed  - now uses useCloudStore
 
 function toMonthly(cost: number, freq: Frequency): number {
   switch (freq) {
@@ -86,7 +86,7 @@ export default function SubscriptionsPage() {
   const { data: cloudSubs, save: saveSubs } = useCloudStore<Subscription[]>("subscriptions");
   const [subs, setSubs] = useState<Subscription[]>([]);
 
-  // Sync from cloud store — only when cloud data actually has content
+  // Sync from cloud store  - only when cloud data actually has content
   const synced = useRef(false);
   useEffect(() => {
     if (!synced.current && Array.isArray(cloudSubs) && cloudSubs.length > 0) {
@@ -239,7 +239,7 @@ export default function SubscriptionsPage() {
         <div className="vela-card p-4 text-center">
           <p className="text-xs text-zinc-500 uppercase tracking-wider">% of Income</p>
           <p className={`text-2xl font-bold tabular-nums mt-1 ${incomePercent > 15 ? "text-loss" : incomePercent > 10 ? "text-yellow-400" : "text-gain"}`}>
-            {monthlyIncome > 0 ? `${incomePercent.toFixed(1)}%` : "—"}
+            {monthlyIncome > 0 ? `${incomePercent.toFixed(1)}%` : " -"}
           </p>
         </div>
       </div>
@@ -481,10 +481,10 @@ export default function SubscriptionsPage() {
       <div className="vela-card p-5">
         <h3 className="text-sm font-semibold text-zinc-300 mb-3">Subscription Audit Tips</h3>
         <div className="space-y-2 text-sm text-zinc-400">
-          <p><span className="text-zinc-200 font-medium">Check bank statements</span> — search for recurring charges you may have forgotten about.</p>
-          <p><span className="text-zinc-200 font-medium">Audit quarterly</span> — ask "Did I use this in the last 30 days?" for each subscription.</p>
-          <p><span className="text-zinc-200 font-medium">Negotiate or downgrade</span> — many services offer cheaper tiers or retention discounts if you call to cancel.</p>
-          <p><span className="text-zinc-200 font-medium">Annual vs monthly</span> — switching to annual billing often saves 15-20% on services you know you'll keep.</p>
+          <p><span className="text-zinc-200 font-medium">Check bank statements</span>  - search for recurring charges you may have forgotten about.</p>
+          <p><span className="text-zinc-200 font-medium">Audit quarterly</span>  - ask "Did I use this in the last 30 days?" for each subscription.</p>
+          <p><span className="text-zinc-200 font-medium">Negotiate or downgrade</span>  - many services offer cheaper tiers or retention discounts if you call to cancel.</p>
+          <p><span className="text-zinc-200 font-medium">Annual vs monthly</span>  - switching to annual billing often saves 15-20% on services you know you'll keep.</p>
         </div>
       </div>
     </PageTransition>

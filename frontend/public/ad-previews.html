@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Velnor — Ad Creatives</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #ebedf0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #050505; padding: 40px 16px 80px; display:flex; flex-direction:column; align-items:center; gap:14px; }
+  .wrap { width: 100%; max-width: 440px; }
+  .clabel { max-width:440px; width:100%; font-size:12px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:#8a8d91; margin:26px 0 2px; }
+  .note { max-width:440px; font-size:12px; color:#65676b; text-align:center; line-height:1.5; margin-top:10px; }
+  .word { font-weight:600; letter-spacing:.18em; text-transform:lowercase; color:#e9eaec; }
+
+  .post { background:#fff; border-radius:14px; box-shadow:0 1px 3px rgba(0,0,0,.08); overflow:hidden; }
+  .phead { display:flex; align-items:center; gap:10px; padding:13px 15px; }
+  .avatar { width:38px; height:38px; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center; background:#08090a; }
+  .handle { font-weight:600; font-size:14px; line-height:1.2; }
+  .meta { color:#8a8d91; font-size:12px; }
+  .dots { margin-left:auto; color:#8a8d91; }
+  .cap { padding:0 15px 13px; font-size:15px; line-height:1.45; color:#1c1e21; }
+
+  /* shared creative canvas */
+  .creative { min-height:540px; position:relative; overflow:hidden; color:#e9eaec; display:flex; flex-direction:column;
+    padding:30px 30px 26px;
+    background:
+      radial-gradient(125% 70% at 85% -6%, rgba(20,184,166,.13), transparent 50%),
+      radial-gradient(120% 80% at 8% 110%, rgba(99,102,241,.15), transparent 55%),
+      linear-gradient(180deg, #070b14 0%, #05070e 100%); }
+  .creative > * { position:relative; z-index:1; }
+  .creative::before { content:''; position:absolute; inset:0; z-index:0; pointer-events:none; opacity:.9;
+    background-size:300px 300px;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cg fill='%23dbeafe'%3E%3Ccircle cx='18' cy='30' r='.9' opacity='.7'/%3E%3Ccircle cx='60' cy='16' r='.6' opacity='.4'/%3E%3Ccircle cx='98' cy='58' r='1' opacity='.8'/%3E%3Ccircle cx='134' cy='30' r='.6' opacity='.35'/%3E%3Ccircle cx='168' cy='52' r='.8' opacity='.55'/%3E%3Ccircle cx='206' cy='22' r='.7' opacity='.5'/%3E%3Ccircle cx='244' cy='48' r='1.1' opacity='.7'/%3E%3Ccircle cx='278' cy='28' r='.6' opacity='.4'/%3E%3Ccircle cx='30' cy='98' r='.7' opacity='.5'/%3E%3Ccircle cx='80' cy='122' r='.9' opacity='.6'/%3E%3Ccircle cx='160' cy='130' r='.8' opacity='.55'/%3E%3Ccircle cx='200' cy='106' r='.6' opacity='.4'/%3E%3Ccircle cx='240' cy='136' r='.9' opacity='.6'/%3E%3Ccircle cx='48' cy='170' r='.8' opacity='.5'/%3E%3Ccircle cx='142' cy='184' r='1' opacity='.7'/%3E%3Ccircle cx='188' cy='158' r='.7' opacity='.45'/%3E%3Ccircle cx='272' cy='166' r='.9' opacity='.6'/%3E%3Ccircle cx='72' cy='212' r='.9' opacity='.6'/%3E%3Ccircle cx='166' cy='226' r='.8' opacity='.5'/%3E%3Ccircle cx='212' cy='252' r='.7' opacity='.45'/%3E%3Ccircle cx='258' cy='234' r='1' opacity='.65'/%3E%3Ccircle cx='42' cy='286' r='.8' opacity='.5'/%3E%3C/g%3E%3C/svg%3E"); }
+  .grain { position:absolute; inset:0; opacity:.045; pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+  .mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  .cw { margin-top:auto; padding-top:18px; }
+  .cw .big { font-size:23px; font-weight:600; letter-spacing:.005em; line-height:1.28; color:#e9eaec; }
+  .cw .big b { color:#5eead4; font-weight:600; }
+  .kick { font-size:11px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:#3f8a80; margin-bottom:9px; }
+
+  .linkcard { background:#f6f7f9; padding:13px 15px; }
+  .ldom { color:#8a8d91; font-size:11px; letter-spacing:.06em; text-transform:uppercase; }
+  .lhead { font-weight:600; font-size:15px; margin-top:3px; color:#1c1e21; }
+  .lcta { margin-top:9px; display:inline-block; background:#eceef1; color:#1c1e21; font-weight:600; font-size:13px; padding:8px 16px; border-radius:7px; }
+
+  /* ① chart */
+  .chart { flex:none; margin-top:6px; position:relative; border:1px solid rgba(148,163,184,.14); border-radius:14px; overflow:hidden; background:rgba(15,23,41,.5); backdrop-filter:blur(16px) saturate(125%); -webkit-backdrop-filter:blur(16px) saturate(125%); box-shadow:inset 0 1px 0 rgba(255,255,255,.05), 0 8px 30px rgba(0,0,0,.3); }
+  .chart .top { display:flex; align-items:baseline; gap:9px; padding:13px 15px 2px; }
+  .chart .tk { font-weight:700; font-size:14px; letter-spacing:.02em; }
+  .chart .nm { font-size:11px; color:#62656b; }
+  .chart .ret { margin-left:auto; font-weight:700; font-size:14px; color:#5eead4; letter-spacing:-.01em; }
+  .chart .ret small { font-weight:600; font-size:9px; letter-spacing:.12em; text-transform:uppercase; color:#3f8a80; margin-left:5px; }
+  .chartwrap { height:118px; margin-top:4px; }
+  .scare { position:absolute; top:46px; left:16px; display:flex; align-items:center; gap:7px; font-size:11px; font-weight:500; letter-spacing:.01em; color:#ecc684; text-shadow:0 1px 5px #08090a, 0 0 3px #08090a; }
+  .scare::before { content:''; width:7px; height:7px; border-radius:50%; background:#e6b663; box-shadow:0 0 9px rgba(230,182,99,.85); }
+
+  .replies { margin-top:16px; display:grid; gap:10px; }
+  .reply { display:flex; gap:11px; align-items:flex-start; padding:12px 14px; border-radius:13px; border:1px solid; backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); }
+  .reply .av { width:24px; height:24px; min-width:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+  .reply .who { font-size:11px; margin-bottom:3px; letter-spacing:.02em; }
+  .reply .txt { font-size:12.5px; line-height:1.5; }
+  .r-bad { border-color:rgba(207,138,149,.16); background:rgba(28,16,18,.5); }
+  .r-bad .av { background:#1a1416; }
+  .r-bad .who { color:#7e676b; }
+  .r-bad .txt { color:#938b90; }
+  .r-bad .txt b { color:#cf8a95; font-weight:600; }
+  .r-good { border-color:rgba(20,184,166,.3); background:rgba(20,184,166,.08); }
+  .r-good .who { color:#4f8a80; }
+  .r-good .txt { color:#d6d9df; }
+  .r-good .txt b { color:#5eead4; font-weight:700; }
+  .r-good .txt em { color:#fff; font-style:normal; font-weight:500; }
+
+  /* ② one place */
+  .stack { flex:none; margin-top:6px; border:1px solid rgba(148,163,184,.14); border-radius:14px; overflow:hidden; background:rgba(15,23,41,.5); backdrop-filter:blur(16px) saturate(125%); -webkit-backdrop-filter:blur(16px) saturate(125%); box-shadow:inset 0 1px 0 rgba(255,255,255,.05), 0 8px 30px rgba(0,0,0,.3); }
+  .srow { display:flex; align-items:center; justify-content:space-between; padding:15px 16px; border-bottom:1px solid rgba(148,163,184,.1); }
+  .srow .lbl { font-size:13.5px; color:#c4c8ce; }
+  .srow .sub { font-size:11px; color:#62656b; margin-top:3px; }
+  .srow .val { font-size:14px; font-weight:600; letter-spacing:-.01em; color:#d6d9df; text-align:right; }
+  .srow .val small { display:block; font-size:11px; font-weight:500; margin-top:3px; }
+  .val .pos { color:#5eead4; } .val .neg { color:#cf8a95; }
+  .bar { height:5px; background:rgba(148,163,184,.18); border-radius:99px; margin-top:8px; width:130px; overflow:hidden; }
+  .bar > i { display:block; height:100%; background:linear-gradient(90deg,#0d9488,#5eead4); border-radius:99px; }
+  .srow.total { background:rgba(20,184,166,.05); border-bottom:none; }
+  .srow.total .lbl { color:#e9eaec; font-weight:600; }
+  .srow.total .val { color:#5eead4; font-size:17px; }
+  .privnote { display:flex; align-items:center; gap:8px; margin-top:13px; font-size:11px; color:#8a93a3; letter-spacing:.01em; }
+  .privnote svg { flex:none; opacity:.85; }
+
+  /* ③ same market, different you */
+  .event { flex:none; margin-top:6px; text-align:center; font-size:13px; font-weight:600; color:#e8a3ad; background:rgba(40,18,22,.5); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border:1px solid rgba(207,138,149,.2); border-radius:12px; padding:12px; letter-spacing:.01em; }
+  .cards { margin-top:12px; display:grid; gap:11px; }
+  .pcard { border:1px solid rgba(20,184,166,.24); background:rgba(20,184,166,.08); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); border-radius:13px; padding:14px 15px; box-shadow:0 8px 30px rgba(0,0,0,.25); }
+  .goalchip { display:inline-block; font-size:10.5px; letter-spacing:.04em; color:#4f8a80; background:rgba(20,184,166,.1); border:1px solid rgba(20,184,166,.2); padding:4px 10px; border-radius:99px; }
+  .take { margin-top:10px; font-size:13px; line-height:1.5; color:#d6d9df; }
+  .take b { color:#5eead4; font-weight:600; }
+
+  /* ④ manifesto */
+  .manifesto { justify-content:center; }
+  .manifesto .m { font-size:25px; line-height:1.42; font-weight:500; color:#cfd3d9; letter-spacing:.004em; }
+  .manifesto .m b { color:#5eead4; font-weight:600; }
+  .manifesto .m span.dim { color:#7a7f86; }
+  .manifesto .sig { margin-top:30px; display:flex; align-items:center; gap:10px; opacity:.95; }
+</style>
+</head>
+<body>
+
+  <!-- ───────── ① BEHAVIOR (winner) ───────── -->
+  <div class="clabel">Concept ① · Behavior — hold vs churn</div>
+  <div class="wrap">
+  <div class="post">
+    <div class="phead">
+      <div class="avatar">
+        <svg width="22" height="19" viewBox="0 0 60 52" fill="none">
+          <path d="M7 40 L20 15 L33 30 L46 9 L53 34" stroke="#14b8a6" stroke-opacity=".5" stroke-width="1.6" stroke-linejoin="round"/>
+          <circle cx="7" cy="40" r="2.1" fill="#5eead4"/><circle cx="20" cy="15" r="2.9" fill="#5eead4"/><circle cx="33" cy="30" r="1.9" fill="#5eead4"/><circle cx="46" cy="9" r="2.4" fill="#5eead4"/><circle cx="53" cy="34" r="1.7" fill="#5eead4"/>
+        </svg>
+      </div>
+      <div><div class="handle">velnor</div><div class="meta">Sponsored</div></div>
+      <div class="dots">•••</div>
+    </div>
+    <div class="cap">Same stock. Same year. The only thing that differed was the behavior.</div>
+    <div class="creative">
+      <div class="grain"></div>
+      <div class="chart">
+        <div class="top"><span class="tk">MU</span><span class="nm">Micron · 1Y</span><span class="ret">+712%<small>held</small></span></div>
+        <div class="chartwrap">
+          <svg viewBox="0 0 320 118" preserveAspectRatio="none" width="100%" height="100%">
+            <defs><linearGradient id="cf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#34d399" stop-opacity=".22"/><stop offset="1" stop-color="#34d399" stop-opacity="0"/></linearGradient></defs>
+            <path d="M0 98 C 24 96, 40 95, 58 99 C 70 102, 78 104, 92 100 C 110 95, 122 86, 140 78 C 162 68, 178 56, 200 44 C 222 32, 240 20, 266 12 C 282 8, 296 6, 308 11 L320 16 L320 118 L0 118 Z" fill="url(#cf)"/>
+            <path d="M0 98 C 24 96, 40 95, 58 99 C 70 102, 78 104, 92 100 C 110 95, 122 86, 140 78 C 162 68, 178 56, 200 44 C 222 32, 240 20, 266 12 C 282 8, 296 6, 308 11 L320 16" stroke="#5eead4" stroke-width="2.4" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+            <line x1="84" y1="99" x2="84" y2="42" stroke="#e6b663" stroke-width="1" stroke-dasharray="2 3" opacity=".55"/>
+            <circle cx="84" cy="103" r="3.6" fill="#e6b663"/><circle cx="84" cy="103" r="6" fill="#e6b663" opacity=".18"/>
+            <circle cx="308" cy="11" r="3.2" fill="#5eead4"/>
+          </svg>
+        </div>
+        <span class="scare">the management scare</span>
+      </div>
+      <div class="replies">
+        <div class="reply r-bad">
+          <div class="av"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M3 14c4 0 7-3 9-6 1 3 4 4 8 3-2 4-6 6-10 6-3 0-6-1-7-3z" fill="#5a4448"/></svg></div>
+          <div><div class="who mono">rob' inn</div><div class="txt">Caught the same name. Couldn't sit still, kept trading around it. Ended the year <b>red.</b></div></div>
+        </div>
+        <div class="reply r-good">
+          <div class="av"><svg width="14" height="12" viewBox="0 0 60 52" fill="none"><path d="M7 40 L20 15 L33 30 L46 9 L53 34" stroke="#5eead4" stroke-width="2.6" stroke-linejoin="round"/></svg></div>
+          <div><div class="who mono">velnor</div><div class="txt">You almost sold when management's guidance spooked the Street. We helped you tell <em>one soft quarter</em> apart from the thesis, so you held. <b>+712%</b>, your best call yet.</div></div>
+        </div>
+      </div>
+      <div class="cw"><span class="big">They need you trading.<br><b>We need you to win.</b></span></div>
+    </div>
+    <div class="linkcard"><div class="ldom">vela.finance</div><div class="lhead">An investing app that helps you hold your winners, not churn them</div><div class="lcta">Get early access</div></div>
+  </div>
+  </div>
+
+  <!-- ───────── ② ONE PLACE (unification) ───────── -->
+  <div class="clabel">Concept ② · One place — the whole picture</div>
+  <div class="wrap">
+  <div class="post">
+    <div class="phead">
+      <div class="avatar"><svg width="22" height="19" viewBox="0 0 60 52" fill="none"><path d="M7 40 L20 15 L33 30 L46 9 L53 34" stroke="#14b8a6" stroke-opacity=".5" stroke-width="1.6" stroke-linejoin="round"/><circle cx="7" cy="40" r="2.1" fill="#5eead4"/><circle cx="20" cy="15" r="2.9" fill="#5eead4"/><circle cx="33" cy="30" r="1.9" fill="#5eead4"/><circle cx="46" cy="9" r="2.4" fill="#5eead4"/><circle cx="53" cy="34" r="1.7" fill="#5eead4"/></svg></div>
+      <div><div class="handle">velnor</div><div class="meta">Sponsored</div></div>
+      <div class="dots">•••</div>
+    </div>
+    <div class="cap">Your portfolio doesn't live in a vacuum. Your rent, your goals and your debt all move the same number.</div>
+    <div class="creative">
+      <div class="grain"></div>
+      <div class="kick">Your money, one screen</div>
+      <div class="stack">
+        <div class="srow"><div><div class="lbl">Investments</div><div class="sub">SPY · NVDA · 4 more</div></div><div class="val">$24,180<small><span class="pos">+$312 today</span></small></div></div>
+        <div class="srow"><div><div class="lbl">Cash</div></div><div class="val">$8,400</div></div>
+        <div class="srow"><div><div class="lbl">Car loan</div><div class="sub">5.9% · 32 mo left</div></div><div class="val"><span class="neg">-$11,200</span></div></div>
+        <div class="srow"><div><div class="lbl">Emergency fund</div><div class="bar"><i style="width:72%"></i></div></div><div class="val">72%<small>$7.2k / $10k</small></div></div>
+        <div class="srow total"><div class="lbl">Net worth</div><div class="val">$28,580</div></div>
+      </div>
+      <div class="privnote">
+        <svg width="11" height="13" viewBox="0 0 24 24" fill="none"><rect x="4" y="10" width="16" height="11" rx="2" stroke="#8a93a3" stroke-width="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="#8a93a3" stroke-width="2"/></svg>
+        Just the figures you enter. No account numbers, no logins, nothing sensitive stored.
+      </div>
+      <div class="cw"><span class="big">Everything you own and owe.<br><b>One screen.</b></span></div>
+    </div>
+    <div class="linkcard"><div class="ldom">vela.finance</div><div class="lhead">See your whole financial life in one place</div><div class="lcta">Get early access</div></div>
+  </div>
+  </div>
+
+  <!-- ───────── ③ SAME MARKET, DIFFERENT YOU (personalization) ───────── -->
+  <div class="clabel">Concept ③ · Same market, different you</div>
+  <div class="wrap">
+  <div class="post">
+    <div class="phead">
+      <div class="avatar"><svg width="22" height="19" viewBox="0 0 60 52" fill="none"><path d="M7 40 L20 15 L33 30 L46 9 L53 34" stroke="#14b8a6" stroke-opacity=".5" stroke-width="1.6" stroke-linejoin="round"/><circle cx="7" cy="40" r="2.1" fill="#5eead4"/><circle cx="20" cy="15" r="2.9" fill="#5eead4"/><circle cx="33" cy="30" r="1.9" fill="#5eead4"/><circle cx="46" cy="9" r="2.4" fill="#5eead4"/><circle cx="53" cy="34" r="1.7" fill="#5eead4"/></svg></div>
+      <div><div class="handle">velnor</div><div class="meta">Sponsored</div></div>
+      <div class="dots">•••</div>
+    </div>
+    <div class="cap">The same headline means two different things. It depends on your goal, not the market's mood.</div>
+    <div class="creative">
+      <div class="grain"></div>
+      <div class="event">Nasdaq down 4%. Chip stocks lead the selloff.</div>
+      <div class="cards">
+        <div class="pcard">
+          <span class="goalchip">Goal · car in 18 months</span>
+          <div class="take">Your down payment sits in cash and T-bills. A chip selloff can't reach it. <b>Nothing to do today.</b></div>
+        </div>
+        <div class="pcard">
+          <span class="goalchip">Holding · AMD · 14 months</span>
+          <div class="take">Your buy note: hold for data-center share through 2028. Today's drop is the whole sector, not that thesis. <b>This is the level you marked to add.</b></div>
+        </div>
+        <div class="pcard">
+          <span class="goalchip">Goal · wealth, 30 years out</span>
+          <div class="take">Your buys are automatic. A 4% day just lowers your average, exactly as planned. <b>Nothing to change.</b></div>
+        </div>
+      </div>
+      <div class="cw"><span class="big">We keep the reasons you wrote down,<br><b>so a red day can't erase them.</b></span></div>
+    </div>
+    <div class="linkcard"><div class="ldom">vela.finance</div><div class="lhead">Investing guidance built around your goals</div><div class="lcta">Get early access</div></div>
+  </div>
+  </div>
+
+  <!-- ───────── ④ MANIFESTO (native text) ───────── -->
+  <div class="clabel">Concept ④ · Manifesto — native text</div>
+  <div class="wrap">
+  <div class="post">
+    <div class="phead">
+      <div class="avatar"><svg width="22" height="19" viewBox="0 0 60 52" fill="none"><path d="M7 40 L20 15 L33 30 L46 9 L53 34" stroke="#14b8a6" stroke-opacity=".5" stroke-width="1.6" stroke-linejoin="round"/><circle cx="7" cy="40" r="2.1" fill="#5eead4"/><circle cx="20" cy="15" r="2.9" fill="#5eead4"/><circle cx="33" cy="30" r="1.9" fill="#5eead4"/><circle cx="46" cy="9" r="2.4" fill="#5eead4"/><circle cx="53" cy="34" r="1.7" fill="#5eead4"/></svg></div>
+      <div><div class="handle">velnor</div><div class="meta">Sponsored</div></div>
+      <div class="dots">•••</div>
+    </div>
+    <div class="cap">A calmer way to invest.</div>
+    <div class="creative manifesto">
+      <div class="grain"></div>
+      <div class="m">
+        Most investing apps want you to trade more.<br>
+        <span class="dim">The more you move, the more they earn.</span><br><br>
+        We built the opposite.<br>
+        vela helps you choose well, then <b>hold your nerve.</b>
+      </div>
+      <div class="sig">
+        <svg width="22" height="19" viewBox="0 0 60 52" fill="none"><path d="M7 40 L20 15 L33 30 L46 9 L53 34" stroke="#14b8a6" stroke-opacity=".5" stroke-width="1.6" stroke-linejoin="round"/><circle cx="7" cy="40" r="2.1" fill="#5eead4"/><circle cx="20" cy="15" r="2.9" fill="#5eead4"/><circle cx="33" cy="30" r="1.9" fill="#5eead4"/><circle cx="46" cy="9" r="2.4" fill="#5eead4"/><circle cx="53" cy="34" r="1.7" fill="#5eead4"/></svg>
+        <span class="word" style="font-size:17px;">velnor</span>
+      </div>
+    </div>
+    <div class="linkcard"><div class="ldom">vela.finance</div><div class="lhead">An investing app built for holders, not churners</div><div class="lcta">Get early access</div></div>
+  </div>
+  </div>
+
+  <div class="note">Four native-feed mockups for layout and copy review. Final assets to be image-generated. MU figure reflects its real 2026 run; the ② dashboard figures are illustrative product UI.</div>
+
+</body>
+</html>

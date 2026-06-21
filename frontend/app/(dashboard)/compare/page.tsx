@@ -8,7 +8,7 @@ import {
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, ReferenceLine, Legend, RadarChart,
-  PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar,
+  PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Cell,
 } from "recharts";
 import { motion } from "framer-motion";
 import { formatCurrency } from "@/lib/formatters";
@@ -20,7 +20,29 @@ import FloatingCard from "@/components/celestial/FloatingCard";
 import RevealOnScroll from "@/components/celestial/RevealOnScroll";
 import TierGate from "@/components/shared/TierGate";
 
-// ── Benchmark data (static — typical annual returns) ────────────────────────
+// ── Locale-tolerant number parsing ───────────────────────────────────────────
+// Accepts both "." and "," as the decimal separator (e.g. "33,1" → 33.1) and
+// strips thousands separators, so users in comma-decimal locales aren't silently
+// reset to 0. A bare `type="number"` input rejects commas outright (value = "").
+function parseNum(v: string): number {
+  let s = v.trim().replace(/\s/g, "");
+  if (s.includes(",") && s.includes(".")) {
+    // Both present: the right-most one is the decimal separator.
+    s = s.lastIndexOf(",") > s.lastIndexOf(".")
+      ? s.replace(/\./g, "").replace(",", ".")
+      : s.replace(/,/g, "");
+  } else if (s.includes(",")) {
+    const parts = s.split(",");
+    // "33,1" → decimal; "10,000" → thousands separator.
+    s = parts.length === 2 && parts[1].length <= 2
+      ? parts[0] + "." + parts[1]
+      : s.replace(/,/g, "");
+  }
+  const n = parseFloat(s);
+  return isNaN(n) ? 0 : n;
+}
+
+// ── Benchmark data (static  - typical annual returns) ────────────────────────
 
 interface BenchmarkProfile {
   key: string;
@@ -136,6 +158,52 @@ export default function ComparePage() {
 
   const COLORS = ["#14b8a6", "#f59e0b", "#a855f7", "#f43f5e", "#3b82f6"];
 
+  // Colours for return bars relative to user's own return
+  function returnBarColor(returnVal: number, isUser: boolean): string {
+    if (isUser) return "#14b8a6";          // teal  - your portfolio
+    if (returnVal > userReturn) return "#f43f5e";  // rose  - benchmark beats you
+    if (returnVal < userReturn) return "#34d399";  // emerald - you beat benchmark
+    return "#71717a";
+  }
+
+  // Estimated Sharpe for user when live data unavailable
+  const RISK_FREE = 4.5;
+  const liveVolatility = risk?.annualized_volatility != null ? Number(risk.annualized_volatility) : null;
+  const liveSharpe = risk?.sharpe_ratio != null ? Number(risk.sharpe_ratio) : null;
+  const estimatedSharpe = liveVolatility && liveVolatility > 0
+    ? parseFloat(((userReturn - RISK_FREE) / liveVolatility).toFixed(2))
+    : null;
+  const displaySharpe = liveSharpe ?? estimatedSharpe;
+
+  // Sharpe comparison bar data
+  const sharpeCompData = useMemo(() => {
+    const data: { name: string; sharpe: number; isUser: boolean }[] = [];
+    if (displaySharpe != null) data.push({ name: "Your Portfolio", sharpe: displaySharpe, isUser: true });
+    for (const b of selected) data.push({ name: b.label, sharpe: b.sharpe, isUser: false });
+    return data;
+  }, [displaySharpe, selected]);
+
+  function sharpeBarColor(sharpe: number, isUser: boolean): string {
+    if (isUser) return "#14b8a6";
+    if (sharpe >= 0.8) return "#34d399";
+    if (sharpe >= 0.5) return "#f59e0b";
+    return "#f43f5e";
+  }
+
+  function sharpeLabel(s: number): string {
+    if (s >= 1.0) return "Excellent";
+    if (s >= 0.7) return "Good";
+    if (s >= 0.5) return "Fair";
+    return "Poor";
+  }
+
+  function sharpeLabelColor(s: number): string {
+    if (s >= 1.0) return "text-emerald-400";
+    if (s >= 0.7) return "text-emerald-400";
+    if (s >= 0.5) return "text-amber-400";
+    return "text-rose-400";
+  }
+
   return (
     <TierGate requiredTier="voyager">
     <PageTransition className="space-y-6">
@@ -175,9 +243,10 @@ export default function ComparePage() {
           <div className="relative">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-zinc-500">$</span>
             <input
-              type="number"
+              type="text"
+              inputMode="decimal"
               value={investmentAmount || ""}
-              onChange={(e) => setInvestmentAmount(parseFloat(e.target.value) || 0)}
+              onChange={(e) => setInvestmentAmount(parseNum(e.target.value))}
               className="w-full bg-zinc-800 border border-zinc-700 rounded-lg pl-7 pr-3 py-2 text-sm text-zinc-100 tabular-nums focus:outline-none focus:ring-1 focus:ring-vela-teal"
             />
           </div>
@@ -188,10 +257,10 @@ export default function ComparePage() {
           </label>
           <div className="relative">
             <input
-              type="number"
+              type="text"
+              inputMode="decimal"
               value={userReturn || ""}
-              onChange={(e) => setUserReturn(parseFloat(e.target.value) || 0)}
-              step="0.5"
+              onChange={(e) => setUserReturn(parseNum(e.target.value))}
               className="w-full bg-zinc-800 border border-zinc-700 rounded-lg pl-3 pr-8 py-2 text-sm text-zinc-100 tabular-nums focus:outline-none focus:ring-1 focus:ring-vela-teal"
             />
             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-zinc-500">%</span>
@@ -263,17 +332,15 @@ export default function ComparePage() {
                 <YAxis type="category" dataKey="name" tick={{ fill: "#a1a1aa", fontSize: 10 }} width={95} />
                 <Tooltip cursor={false}
                   contentStyle={{ backgroundColor: "#18181b", border: "1px solid #3f3f46", borderRadius: "0.5rem" }}
-                  formatter={(v: number) => [`${v.toFixed(1)}%`, "Annual Return"]}
+                  labelStyle={{ color: "#e4e4e7" }}
+                  itemStyle={{ color: "#e4e4e7" }}
+                  formatter={(v: number) => [`${v.toFixed(2)}%`, "Annual Return"]}
                 />
                 <ReferenceLine x={0} stroke="#52525b" />
-                {returnCompData.map((_, i) => null)}
                 <Bar dataKey="return" radius={[0, 4, 4, 0]}>
-                  {returnCompData.map((entry, i) => {
-                    const fill = i === 0 ? COLORS[0] : COLORS[selectedBenchmarks.indexOf(
-                      BENCHMARKS.find((b) => b.label === entry.name)?.key ?? ""
-                    ) + 1] || "#71717a";
-                    return <rect key={i} fill={fill} />;
-                  })}
+                  {returnCompData.map((entry, i) => (
+                    <Cell key={i} fill={returnBarColor(entry.return, i === 0)} />
+                  ))}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
@@ -296,6 +363,8 @@ export default function ComparePage() {
                 <Legend wrapperStyle={{ fontSize: "11px", color: "#a1a1aa" }} />
                 <Tooltip
                   contentStyle={{ backgroundColor: "#18181b", border: "1px solid #3f3f46", borderRadius: "0.5rem" }}
+                  labelStyle={{ color: "#e4e4e7" }}
+                  formatter={(v: number) => [Number(v).toFixed(2)]}
                 />
               </RadarChart>
             </ResponsiveContainer>
@@ -304,6 +373,85 @@ export default function ComparePage() {
       </div>
 
       </RevealOnScroll>
+
+      {/* Sharpe Ratio Comparison */}
+      {sharpeCompData.length > 0 && (
+      <RevealOnScroll delay={0.12}>
+      <div className="vela-card p-5">
+        <div className="flex items-start justify-between gap-4 mb-4">
+          <div>
+            <h3 className="text-sm font-semibold text-zinc-300">Sharpe Ratio Comparison</h3>
+            <p className="text-xs text-zinc-500 mt-0.5">
+              Return per unit of risk (risk-free rate: {RISK_FREE}%). Higher is better.
+              {!liveSharpe && estimatedSharpe != null && (
+                <span className="text-zinc-600"> · Your value estimated from volatility.</span>
+              )}
+            </p>
+          </div>
+          {displaySharpe != null && (
+            <div className="text-right shrink-0">
+              <p className={`text-xl font-bold tabular ${sharpeLabelColor(displaySharpe)}`}>
+                {displaySharpe.toFixed(2)}
+              </p>
+              <p className={`text-xs font-medium ${sharpeLabelColor(displaySharpe)}`}>
+                {sharpeLabel(displaySharpe)} · Your Portfolio
+              </p>
+            </div>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Bar chart */}
+          <div className="h-48">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={sharpeCompData} layout="vertical" margin={{ left: 10, right: 30 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#27272a" horizontal={false} />
+                <XAxis type="number" tick={{ fill: "#71717a", fontSize: 11 }} domain={[0, "dataMax + 0.2"]} tickFormatter={(v: number) => v.toFixed(1)} />
+                <YAxis type="category" dataKey="name" tick={{ fill: "#a1a1aa", fontSize: 10 }} width={95} />
+                <Tooltip cursor={false}
+                  contentStyle={{ backgroundColor: "#18181b", border: "1px solid #3f3f46", borderRadius: "0.5rem" }}
+                  labelStyle={{ color: "#e4e4e7" }}
+                  itemStyle={{ color: "#e4e4e7" }}
+                  formatter={(v: number) => [v.toFixed(2), "Sharpe Ratio"]}
+                />
+                <ReferenceLine x={0.7} stroke="#52525b" strokeDasharray="4 4" label={{ value: "0.7 good", position: "top", fill: "#52525b", fontSize: 9 }} />
+                <Bar dataKey="sharpe" radius={[0, 4, 4, 0]}>
+                  {sharpeCompData.map((entry, i) => (
+                    <Cell key={i} fill={sharpeBarColor(entry.sharpe, entry.isUser)} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Per-entry labels */}
+          <div className="flex flex-col justify-center gap-2">
+            {sharpeCompData.map((entry, i) => (
+              <div key={i} className="flex items-center justify-between py-1.5 border-b border-zinc-800/60 last:border-0">
+                <span className={`text-sm font-medium ${entry.isUser ? "text-teal-400" : "text-zinc-300"}`}>
+                  {entry.name}
+                </span>
+                <div className="flex items-center gap-2">
+                  <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded border ${
+                    entry.sharpe >= 1.0 ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/25" :
+                    entry.sharpe >= 0.7 ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/25" :
+                    entry.sharpe >= 0.5 ? "bg-amber-500/10 text-amber-400 border-amber-500/25" :
+                    "bg-rose-500/10 text-rose-400 border-rose-500/25"
+                  }`}>
+                    {sharpeLabel(entry.sharpe)}
+                  </span>
+                  <span className="text-sm tabular font-semibold text-zinc-200">{entry.sharpe.toFixed(2)}</span>
+                </div>
+              </div>
+            ))}
+            <p className="text-[10px] text-zinc-600 mt-2">
+              Above 0.7 is generally considered good. Above 1.0 is excellent.
+            </p>
+          </div>
+        </div>
+      </div>
+      </RevealOnScroll>
+      )}
 
       {/* Benchmark details table */}
       <RevealOnScroll delay={0.15}>
@@ -325,12 +473,12 @@ export default function ComparePage() {
           <tbody>
             <tr className="border-b border-zinc-800/50 bg-vela-teal/[0.04]">
               <td className="py-2.5 pr-4 font-medium text-vela-teal">Your Portfolio</td>
-              <td className="text-right tabular-nums py-2.5 px-3 text-zinc-200">{userReturn.toFixed(1)}%</td>
-              <td className="text-right tabular-nums py-2.5 px-3 text-zinc-400">{risk?.annualized_volatility != null ? `${Number(risk.annualized_volatility).toFixed(1)}%` : "—"}</td>
-              <td className="text-right tabular-nums py-2.5 px-3 text-loss">{risk?.max_drawdown != null ? `${Number(risk.max_drawdown).toFixed(1)}%` : "—"}</td>
-              <td className="text-right tabular-nums py-2.5 px-3 text-zinc-400">{risk?.sharpe_ratio != null ? Number(risk.sharpe_ratio).toFixed(2) : "—"}</td>
-              <td className="text-right tabular-nums py-2.5 px-3 text-zinc-500">—</td>
-              <td className="text-right tabular-nums py-2.5 px-3 text-zinc-500">—</td>
+              <td className="text-right tabular-nums py-2.5 px-3 text-teal-400 font-semibold">{userReturn.toFixed(1)}%</td>
+              <td className="text-right tabular-nums py-2.5 px-3 text-zinc-400">{risk?.annualized_volatility != null ? `${Number(risk.annualized_volatility).toFixed(1)}%` : " -"}</td>
+              <td className="text-right tabular-nums py-2.5 px-3 text-loss">{risk?.max_drawdown != null ? `${Number(risk.max_drawdown).toFixed(1)}%` : " -"}</td>
+              <td className="text-right tabular-nums py-2.5 px-3 text-zinc-400">{risk?.sharpe_ratio != null ? Number(risk.sharpe_ratio).toFixed(2) : " -"}</td>
+              <td className="text-right tabular-nums py-2.5 px-3 text-zinc-500"> -</td>
+              <td className="text-right tabular-nums py-2.5 px-3 text-zinc-500"> -</td>
               <td className="text-right tabular-nums py-2.5 px-3 text-zinc-200 font-medium">
                 {formatCurrency(investmentAmount * Math.pow(1 + userReturn / 100, years))}
               </td>
@@ -343,7 +491,10 @@ export default function ComparePage() {
                   <td className="py-2.5 pr-4">
                     <span className="font-medium text-zinc-200">{b.label}</span>
                   </td>
-                  <td className="text-right tabular-nums py-2.5 px-3 text-zinc-200">{b.annualReturn.toFixed(1)}%</td>
+                  <td className={`text-right tabular-nums py-2.5 px-3 font-medium ${
+                    b.annualReturn > userReturn ? "text-rose-400" :
+                    b.annualReturn < userReturn ? "text-emerald-400" : "text-zinc-200"
+                  }`}>{b.annualReturn.toFixed(1)}%</td>
                   <td className="text-right tabular-nums py-2.5 px-3 text-zinc-400">{b.volatility.toFixed(1)}%</td>
                   <td className="text-right tabular-nums py-2.5 px-3 text-loss">{b.maxDrawdown.toFixed(1)}%</td>
                   <td className="text-right tabular-nums py-2.5 px-3 text-zinc-400">{b.sharpe.toFixed(2)}</td>
@@ -362,12 +513,12 @@ export default function ComparePage() {
       <div className="vela-card p-5">
         <h3 className="text-sm font-semibold text-zinc-300 mb-3">Understanding the Metrics</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
-          <div><span className="font-medium text-zinc-300">Annual Return</span><span className="text-zinc-500"> — Average yearly return (historical, not guaranteed).</span></div>
-          <div><span className="font-medium text-zinc-300">Volatility</span><span className="text-zinc-500"> — Standard deviation of returns. Higher = more price swings.</span></div>
-          <div><span className="font-medium text-zinc-300">Max Drawdown</span><span className="text-zinc-500"> — Worst peak-to-trough decline. How bad can it get?</span></div>
-          <div><span className="font-medium text-zinc-300">Sharpe Ratio</span><span className="text-zinc-500"> — Return per unit of risk. Higher is better (above 0.7 is good).</span></div>
-          <div><span className="font-medium text-zinc-300">Dividend Yield</span><span className="text-zinc-500"> — Annual dividends as % of price. Income component.</span></div>
-          <div><span className="font-medium text-zinc-300">Expense Ratio</span><span className="text-zinc-500"> — Annual fund management cost. Lower is better.</span></div>
+          <div><span className="font-medium text-zinc-300">Annual Return</span><span className="text-zinc-500">  - Average yearly return (historical, not guaranteed).</span></div>
+          <div><span className="font-medium text-zinc-300">Volatility</span><span className="text-zinc-500">  - Standard deviation of returns. Higher = more price swings.</span></div>
+          <div><span className="font-medium text-zinc-300">Max Drawdown</span><span className="text-zinc-500">  - Worst peak-to-trough decline. How bad can it get?</span></div>
+          <div><span className="font-medium text-zinc-300">Sharpe Ratio</span><span className="text-zinc-500">  - Return per unit of risk. Higher is better (above 0.7 is good).</span></div>
+          <div><span className="font-medium text-zinc-300">Dividend Yield</span><span className="text-zinc-500">  - Annual dividends as % of price. Income component.</span></div>
+          <div><span className="font-medium text-zinc-300">Expense Ratio</span><span className="text-zinc-500">  - Annual fund management cost. Lower is better.</span></div>
         </div>
       </div>
     </PageTransition>

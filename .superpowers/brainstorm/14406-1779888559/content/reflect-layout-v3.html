@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vela — Reflect</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #050505;
+    color: #f4f4f5;
+    font-family: 'Geist', system-ui, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 24px 48px;
+  }
+
+  .page-title { color: #f4f4f5; font-size: 20px; font-weight: 600; letter-spacing: -0.3px; margin-bottom: 4px; text-align: center; }
+  .page-sub { color: #52525b; font-size: 12px; text-align: center; margin-bottom: 24px; }
+
+  .shell {
+    width: 100%;
+    max-width: 980px;
+    background: #0a0a0a;
+    border: 1px solid #1c1c1e;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 0 0 1px #ffffff08, 0 32px 64px -16px #000000cc, 0 0 120px -40px #14b8a614;
+    display: flex;
+    flex-direction: column;
+    min-height: 680px;
+  }
+
+  .topbar {
+    padding: 13px 20px;
+    border-bottom: 1px solid #111;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(180deg, #0f0f0f 0%, #0a0a0a 100%);
+  }
+  .topbar-left { display: flex; align-items: center; gap: 9px; }
+  .teal-dot { width: 7px; height: 7px; border-radius: 50%; background: #14b8a6; box-shadow: 0 0 10px #14b8a670; }
+  .topbar-title { font-size: 14px; font-weight: 600; color: #f4f4f5; letter-spacing: -0.2px; }
+  .topbar-right { display: flex; align-items: center; gap: 12px; }
+  .model-badge { font-size: 10px; color: #3f3f46; font-family: 'Geist Mono', monospace; }
+  .clear-btn { font-size: 11px; color: #3f3f46; cursor: pointer; padding: 3px 8px; border-radius: 5px; border: 1px solid #1c1c1e; transition: all 0.15s; }
+  .clear-btn:hover { color: #71717a; border-color: #27272a; }
+
+  .body { display: flex; flex: 1; min-height: 0; }
+
+  /* ── Context panel ── */
+  .ctx {
+    width: 240px;
+    min-width: 240px;
+    border-right: 1px solid #111;
+    background: #080808;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .ctx-inner { padding: 14px 13px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+
+  .section-label {
+    font-size: 9.5px;
+    font-weight: 600;
+    color: #3f3f46;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 5px;
+  }
+
+  .ctx-card {
+    background: #0f0f0f;
+    border: 1px solid #161616;
+    border-radius: 9px;
+    padding: 9px 11px;
+  }
+
+  .ctx-card-label { font-size: 9.5px; color: #52525b; margin-bottom: 4px; font-weight: 500; }
+
+  .pv { font-size: 15px; font-weight: 600; color: #f4f4f5; font-variant-numeric: tabular-nums; letter-spacing: -0.3px; }
+  .pv-sub { font-size: 11px; color: #34d399; margin-top: 1px; font-variant-numeric: tabular-nums; }
+  .pv-metrics { display: flex; gap: 10px; margin-top: 5px; padding-top: 5px; border-top: 1px solid #161616; }
+  .pv-metric { display: flex; flex-direction: column; gap: 1px; }
+  .pv-metric-label { font-size: 9px; color: #3f3f46; }
+  .pv-metric-val { font-size: 11px; color: #a1a1aa; font-variant-numeric: tabular-nums; }
+
+  .holding-row { display: flex; justify-content: space-between; align-items: center; padding: 2.5px 0; }
+  .holding-left { display: flex; align-items: center; gap: 6px; }
+  .holding-ticker { font-size: 11.5px; font-weight: 500; color: #d4d4d8; font-family: 'Geist Mono', monospace; }
+  .holding-days { font-size: 9.5px; color: #3f3f46; }
+  .holding-right { display: flex; flex-direction: column; align-items: flex-end; gap: 1px; }
+  .holding-wt { font-size: 10px; color: #52525b; font-variant-numeric: tabular-nums; }
+  .holding-pnl { font-size: 11px; font-variant-numeric: tabular-nums; font-weight: 500; }
+  .gain { color: #34d399; }
+  .loss { color: #fb7185; }
+  .more { font-size: 9.5px; color: #3f3f46; margin-top: 3px; }
+
+  .thesis-row { display: flex; align-items: center; justify-content: space-between; }
+  .thesis-count { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #a1a1aa; }
+  .thesis-link { font-size: 10px; color: #14b8a6; cursor: pointer; }
+  .thesis-link:hover { color: #0d9488; }
+  .thesis-nudge { font-size: 9.5px; color: #3f3f46; line-height: 1.5; margin-top: 5px; padding-top: 5px; border-top: 1px solid #161616; }
+
+  .goal-name { font-size: 12px; color: #d4d4d8; margin-bottom: 6px; }
+  .progress-bar { height: 3px; background: #161616; border-radius: 99px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, #0d9488, #14b8a6); border-radius: 99px; }
+  .progress-label { font-size: 9.5px; color: #52525b; margin-top: 3px; }
+
+  /* Profile pills */
+  .profile-pills { display: flex; flex-wrap: wrap; gap: 4px; }
+  .pill {
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 99px;
+    border: 1px solid #1c1c1e;
+    color: #71717a;
+    font-weight: 500;
+  }
+  .pill.teal { border-color: #14b8a630; color: #14b8a6; background: #14b8a608; }
+  .pill.amber { border-color: #f59e0b30; color: #f59e0b; background: #f59e0b08; }
+
+  /* Quick notes */
+  .notes-area {
+    width: 100%;
+    background: #0c0c0c;
+    border: 1px solid #161616;
+    border-radius: 8px;
+    padding: 8px 10px;
+    color: #a1a1aa;
+    font-size: 11.5px;
+    font-family: 'Geist', sans-serif;
+    resize: none;
+    min-height: 72px;
+    line-height: 1.55;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .notes-area:focus { border-color: #14b8a640; }
+  .notes-area::placeholder { color: #2a2a2a; }
+  .notes-save { font-size: 10px; color: #3f3f46; text-align: right; margin-top: 3px; cursor: pointer; }
+  .notes-save:hover { color: #71717a; }
+
+  /* ── Chat ── */
+  .chat {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    background: #0a0a0a;
+    position: relative;
+  }
+  .chat::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 280px; height: 280px;
+    background: radial-gradient(ellipse at top right, #14b8a609 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .messages {
+    flex: 1;
+    padding: 18px 18px 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    overflow-y: auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  .msg { display: flex; gap: 9px; max-width: 88%; }
+  .msg.user { margin-left: auto; flex-direction: row-reverse; }
+
+  .avatar {
+    width: 25px; height: 25px; min-width: 25px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 600;
+    margin-top: 2px; flex-shrink: 0;
+  }
+  .avatar.ai { background: linear-gradient(135deg, #0d9488, #6366f1); color: white; box-shadow: 0 0 10px #14b8a628; }
+  .avatar.user { background: #141414; color: #71717a; border: 1px solid #1c1c1e; }
+
+  .bubble {
+    padding: 10px 13px;
+    border-radius: 13px;
+    font-size: 12.5px;
+    line-height: 1.65;
+  }
+  .bubble.ai { background: #0f0f0f; border: 1px solid #181818; border-top-left-radius: 4px; color: #e4e4e7; box-shadow: 0 2px 10px #00000035; }
+  .bubble.user { background: #0c1a1a; border: 1px solid #14b8a618; border-top-right-radius: 4px; color: #e4e4e7; }
+
+  .typing { display: flex; gap: 4px; align-items: center; height: 16px; }
+  .dot { width: 5px; height: 5px; border-radius: 50%; background: #14b8a6; }
+  .dot:nth-child(1) { animation: blink 1.2s 0s infinite; }
+  .dot:nth-child(2) { animation: blink 1.2s 0.2s infinite; }
+  .dot:nth-child(3) { animation: blink 1.2s 0.4s infinite; }
+  @keyframes blink {
+    0%,100% { opacity: 0.2; transform: translateY(0); }
+    50% { opacity: 1; transform: translateY(-2px); }
+  }
+
+  .input-area {
+    padding: 10px 14px 13px;
+    border-top: 1px solid #111;
+    display: flex;
+    gap: 7px;
+    align-items: flex-end;
+    position: relative;
+    z-index: 1;
+  }
+  .input-box {
+    flex: 1;
+    background: #0f0f0f;
+    border: 1px solid #181818;
+    border-radius: 9px;
+    padding: 9px 12px;
+    color: #3f3f46;
+    font-size: 12.5px;
+    font-family: 'Geist', sans-serif;
+    min-height: 38px;
+    display: flex;
+    align-items: center;
+  }
+  .send-btn {
+    width: 34px; height: 34px;
+    background: #14b8a6;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    box-shadow: 0 0 14px #14b8a628;
+  }
+</style>
+</head>
+<body>
+
+<h1 class="page-title">Reflect — Full Context Panel</h1>
+<p class="page-sub">Section 2 detail: everything the AI sees about you, visible in the left panel</p>
+
+<div class="shell">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="teal-dot"></div>
+      <span class="topbar-title">Reflect</span>
+    </div>
+    <div class="topbar-right">
+      <span class="model-badge">claude-3-5-sonnet</span>
+      <span class="clear-btn">Clear chat</span>
+    </div>
+  </div>
+
+  <div class="body">
+
+    <!-- Context panel -->
+    <div class="ctx">
+      <div class="ctx-inner">
+
+        <div>
+          <div class="section-label">Portfolio</div>
+          <div class="ctx-card">
+            <div class="pv">$25,472.53</div>
+            <div class="pv-sub">+11.23% total return</div>
+            <div class="pv-metrics">
+              <div class="pv-metric">
+                <span class="pv-metric-label">Sharpe</span>
+                <span class="pv-metric-val">0.87</span>
+              </div>
+              <div class="pv-metric">
+                <span class="pv-metric-label">Volatility</span>
+                <span class="pv-metric-val">18.4%</span>
+              </div>
+              <div class="pv-metric">
+                <span class="pv-metric-label">Positions</span>
+                <span class="pv-metric-val">6</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-label">Holdings</div>
+          <div class="ctx-card">
+            <div class="holding-row">
+              <div class="holding-left">
+                <span class="holding-ticker">NVDA</span>
+                <span class="holding-days">243d</span>
+              </div>
+              <div class="holding-right">
+                <span class="holding-wt">34%</span>
+                <span class="holding-pnl gain">+140.2%</span>
+              </div>
+            </div>
+            <div class="holding-row">
+              <div class="holding-left">
+                <span class="holding-ticker">AAPL</span>
+                <span class="holding-days">365d</span>
+              </div>
+              <div class="holding-right">
+                <span class="holding-wt">18%</span>
+                <span class="holding-pnl gain">+21.6%</span>
+              </div>
+            </div>
+            <div class="holding-row">
+              <div class="holding-left">
+                <span class="holding-ticker">MSFT</span>
+                <span class="holding-days">189d</span>
+              </div>
+              <div class="holding-right">
+                <span class="holding-wt">14%</span>
+                <span class="holding-pnl gain">+8.1%</span>
+              </div>
+            </div>
+            <div class="holding-row">
+              <div class="holding-left">
+                <span class="holding-ticker">PYPL</span>
+                <span class="holding-days">312d</span>
+              </div>
+              <div class="holding-right">
+                <span class="holding-wt">8%</span>
+                <span class="holding-pnl loss">−6.1%</span>
+              </div>
+            </div>
+            <div class="more">+2 more positions</div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-label">Thesis</div>
+          <div class="ctx-card">
+            <div class="thesis-row">
+              <div class="thesis-count">
+                <div style="width:5px;height:5px;border-radius:50%;background:#14b8a6;box-shadow:0 0 6px #14b8a650;"></div>
+                3 theses written
+              </div>
+              <span class="thesis-link">View →</span>
+            </div>
+            <div class="thesis-nudge">More thesis notes = more accurate reflection of your actual reasoning</div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-label">Goals</div>
+          <div class="ctx-card">
+            <div class="goal-name">Retirement · $500k by 2040</div>
+            <div class="progress-bar"><div class="progress-fill" style="width:18%"></div></div>
+            <div class="progress-label">18% funded · 14y remaining</div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-label">Profile</div>
+          <div class="ctx-card">
+            <div class="profile-pills">
+              <span class="pill teal">Aggressive</span>
+              <span class="pill teal">Advanced</span>
+              <span class="pill">Age 30</span>
+              <span class="pill">22% tax</span>
+              <span class="pill amber">~11mo avg hold</span>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-label">Quick notes</div>
+          <textarea class="notes-area" placeholder="Yields rising — thinking large banks for NIM play. Watch JPM + WFC next week.">Yields rising — thinking large banks for NIM play. Watch JPM + WFC next week.</textarea>
+          <div class="notes-save">Saved ✓</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Chat -->
+    <div class="chat">
+      <div class="messages">
+
+        <div class="msg">
+          <div class="avatar ai">V</div>
+          <div class="bubble ai">
+            10Y yields are at 4.8% this morning. You noted a potential NIM play in banks last week — JPM and WFC are both sitting near support. Worth walking through the setup or is this still just a watch for you?
+          </div>
+        </div>
+
+        <div class="msg user">
+          <div class="avatar user">K</div>
+          <div class="bubble user">
+            Still watching. I want to see if the curve steepens more before committing — short end needs to come down a bit.
+          </div>
+        </div>
+
+        <div class="msg">
+          <div class="avatar ai">V</div>
+          <div class="bubble ai">
+            So you're playing the steepener, not just the absolute level. That's a different bet — you're counting on the Fed cutting while the long end holds or rises. What's your read on the timing there?
+          </div>
+        </div>
+
+        <div class="msg">
+          <div class="avatar ai">V</div>
+          <div class="bubble ai"><div class="typing"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
+        </div>
+
+      </div>
+
+      <div class="input-area">
+        <div class="input-box">Your thoughts…</div>
+        <div class="send-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

@@ -205,7 +205,7 @@ export default function TaxPage() {
         <div className="flex items-start gap-2 pt-2 border-t border-vela-border text-[10px] text-zinc-600">
           <Info className="w-3 h-3 mt-0.5 shrink-0" />
           <span>
-            Estimates only — uses FIFO (first-in, first-out) by earliest buy date. Consult a tax professional for actual tax obligations. Not financial or tax advice.
+            Estimates only  - uses FIFO (first-in, first-out) by earliest buy date. Consult a tax professional for actual tax obligations. Not financial or tax advice.
           </span>
         </div>
       </div>
@@ -254,7 +254,7 @@ function TaxRow({ holding: h }: { holding: TaxHolding }) {
         {formatPercent(h.unrealized_gain_pct)}
       </td>
       <td className="py-2 tabular text-right text-zinc-400">
-        {h.days_held != null ? `${h.days_held}d` : "—"}
+        {h.days_held != null ? `${h.days_held}d` : " -"}
       </td>
       <td className="py-2 text-center">
         <span className={`text-[10px] font-medium px-2 py-0.5 rounded ${
@@ -266,7 +266,7 @@ function TaxRow({ holding: h }: { holding: TaxHolding }) {
         </span>
       </td>
       <td className="py-2 tabular text-right text-zinc-500">
-        {h.is_long_term ? "—" : h.days_until_long_term != null ? `${h.days_until_long_term}d` : "—"}
+        {h.is_long_term ? " -" : h.days_until_long_term != null ? `${h.days_until_long_term}d` : " -"}
       </td>
     </tr>
   );

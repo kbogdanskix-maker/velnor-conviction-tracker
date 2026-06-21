@@ -19,13 +19,13 @@ import TierGate from "@/components/shared/TierGate";
 interface DCFInputs {
   ticker: string;
   currentFCF: number;
-  growthRateY1_5: number;
-  growthRateY6_10: number;
+  growthRateY1_5: number | null;
+  growthRateY6_10: number | null;
   discountRate: number;
   terminalGrowthRate: number;
   sharesOutstanding: number;
   currentPrice: number;
-  netCash: number;
+  netDebt: number;
 }
 
 interface Fundamentals {
@@ -63,12 +63,12 @@ interface DCFResult {
 function runDCF(inputs: DCFInputs): DCFResult {
   const {
     currentFCF, growthRateY1_5, growthRateY6_10,
-    discountRate, terminalGrowthRate, sharesOutstanding, currentPrice, netCash,
+    discountRate, terminalGrowthRate, sharesOutstanding, currentPrice, netDebt,
   } = inputs;
 
   const r = discountRate / 100;
-  const g1 = growthRateY1_5 / 100;
-  const g2 = growthRateY6_10 / 100;
+  const g1 = (growthRateY1_5 ?? 0) / 100;
+  const g2 = (growthRateY6_10 ?? 0) / 100;
   const tg = terminalGrowthRate / 100;
 
   const projected: { year: number; fcf: number; pv: number }[] = [];
@@ -86,7 +86,7 @@ function runDCF(inputs: DCFInputs): DCFResult {
   const terminalValue = r > tg ? terminalFCF / (r - tg) : 0;
   const pvTerminal = terminalValue / Math.pow(1 + r, 10);
   const enterpriseValue = totalPV + pvTerminal;
-  const equityValue = enterpriseValue + netCash;
+  const equityValue = enterpriseValue - netDebt;
   const intrinsicPrice = sharesOutstanding > 0 ? equityValue / sharesOutstanding : 0;
   const marginOfSafety = currentPrice > 0
     ? ((intrinsicPrice - currentPrice) / currentPrice) * 100
@@ -122,13 +122,13 @@ function sensitivityTable(
 const EMPTY_INPUTS: DCFInputs = {
   ticker: "",
   currentFCF: 0,
-  growthRateY1_5: 10,
-  growthRateY6_10: 5,
+  growthRateY1_5: null,
+  growthRateY6_10: null,
   discountRate: 10,
   terminalGrowthRate: 3,
   sharesOutstanding: 0,
   currentPrice: 0,
-  netCash: 0,
+  netDebt: 0,
 };
 
 // ── Page ────────────────────────────────────────────────────────────────────
@@ -172,13 +172,13 @@ export default function DCFPage() {
       setInputs({
         ticker: data.ticker,
         currentFCF: data.fcf ?? 0,
-        growthRateY1_5: Math.round(Math.max(growthEstimate, 0) * 10) / 10,
-        growthRateY6_10: Math.round(Math.max(growthEstimate * 0.5, 2) * 10) / 10,
+        growthRateY1_5: null,
+        growthRateY6_10: null,
         discountRate: Math.max(wacc, 7),
         terminalGrowthRate: 3,
         sharesOutstanding: data.shares_outstanding ?? 0,
         currentPrice: data.price ?? 0,
-        netCash: data.net_cash ?? 0,
+        netDebt: -(data.net_cash ?? 0),
       });
     } catch {
       setLoadError(`Failed to load data for ${ticker.toUpperCase()}`);
@@ -203,16 +203,12 @@ export default function DCFPage() {
 
   const result = useMemo(() => {
     if (inputs.currentFCF === 0 || inputs.sharesOutstanding === 0) return null;
-    return runDCF(inputs);
+    if (inputs.growthRateY1_5 == null || inputs.growthRateY6_10 == null) return null;
+    return runDCF(inputs as DCFInputs & { growthRateY1_5: number; growthRateY6_10: number });
   }, [inputs]);
 
-  const growthSteps = [
-    inputs.growthRateY1_5 - 4,
-    inputs.growthRateY1_5 - 2,
-    inputs.growthRateY1_5,
-    inputs.growthRateY1_5 + 2,
-    inputs.growthRateY1_5 + 4,
-  ];
+  const baseGrowth = inputs.growthRateY1_5 ?? 10;
+  const growthSteps = [baseGrowth - 4, baseGrowth - 2, baseGrowth, baseGrowth + 2, baseGrowth + 4];
   const discountSteps = [
     inputs.discountRate - 2,
     inputs.discountRate - 1,
@@ -249,7 +245,7 @@ export default function DCFPage() {
           DCF Valuation
         </h1>
         <p className="text-zinc-500 text-sm mt-0.5">
-          Discounted Cash Flow model — estimate what a stock is really worth
+          Discounted Cash Flow model  - estimate what a stock is really worth
         </p>
       </div>
 
@@ -288,22 +284,28 @@ export default function DCFPage() {
               <p className="text-xs text-zinc-500">{fundamentals.ticker}</p>
             </div>
             <p className="text-lg font-bold tabular text-zinc-100">
-              ${fundamentals.price?.toFixed(2) ?? "—"}
+              ${fundamentals.price?.toFixed(2) ?? " -"}
             </p>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-1 text-[10px]">
-            <FundRow label="Market Cap" value={fundamentals.market_cap ? `$${(fundamentals.market_cap / 1000).toFixed(0)}B` : "—"} />
+            <FundRow label="Market Cap" value={fundamentals.market_cap ? `$${(fundamentals.market_cap / 1000).toFixed(0)}B` : " -"} />
             <FundRow label="FCF (TTM)" value={fundamentals.fcf ? `$${(fundamentals.fcf / 1000).toFixed(1)}B` : "N/A"} highlight={!fundamentals.fcf} />
-            <FundRow label="Shares" value={fundamentals.shares_outstanding ? `${(fundamentals.shares_outstanding / 1000).toFixed(1)}B` : "—"} />
-            <FundRow label="Net Cash" value={fundamentals.net_cash != null ? `$${(fundamentals.net_cash / 1000).toFixed(1)}B` : "—"} />
-            <FundRow label="Rev Growth" value={fundamentals.revenue_growth != null ? `${fundamentals.revenue_growth.toFixed(1)}%` : "—"} />
-            <FundRow label="P/E (TTM)" value={fundamentals.trailing_pe ? `${fundamentals.trailing_pe.toFixed(1)}x` : "—"} />
-            <FundRow label="Beta" value={fundamentals.beta ? `${fundamentals.beta.toFixed(2)}` : "—"} />
-            <FundRow label="Op. Margin" value={fundamentals.operating_margins ? `${fundamentals.operating_margins.toFixed(1)}%` : "—"} />
+            <FundRow label="Shares" value={fundamentals.shares_outstanding ? `${fundamentals.shares_outstanding.toFixed(1)}M` : " -"} />
+            <FundRow label="Rev Growth" value={fundamentals.revenue_growth != null ? `${fundamentals.revenue_growth.toFixed(1)}%` : " -"} />
+            <FundRow label="Cash" value={fundamentals.total_cash != null ? `$${(fundamentals.total_cash / 1000).toFixed(1)}B` : " -"} />
+            <FundRow label="Total Debt" value={fundamentals.total_debt != null ? `$${(fundamentals.total_debt / 1000).toFixed(1)}B` : " -"} />
+            <FundRow
+              label={fundamentals.net_cash != null && fundamentals.net_cash >= 0 ? "Net Cash" : "Net Debt"}
+              value={fundamentals.net_cash != null ? `$${(Math.abs(fundamentals.net_cash) / 1000).toFixed(1)}B` : " -"}
+              highlight={fundamentals.net_cash != null && fundamentals.net_cash < 0}
+            />
+            <FundRow label="P/E (TTM)" value={fundamentals.trailing_pe ? `${fundamentals.trailing_pe.toFixed(1)}x` : " -"} />
+            <FundRow label="Beta" value={fundamentals.beta ? `${fundamentals.beta.toFixed(2)}` : " -"} />
+            <FundRow label="Op. Margin" value={fundamentals.operating_margins ? `${fundamentals.operating_margins.toFixed(1)}%` : " -"} />
           </div>
           {!fundamentals.fcf && (
             <p className="text-[10px] text-amber-400 mt-2">
-              FCF data not available — enter it manually below.
+              FCF data not available  - enter it manually below.
             </p>
           )}
         </div>
@@ -327,14 +329,32 @@ export default function DCFPage() {
             <h2 className="text-sm font-medium text-zinc-300">Model Inputs</h2>
 
             <InputField label="Current FCF ($M)" value={inputs.currentFCF} onChange={(v) => set("currentFCF", Number(v))} step={1000} />
-            <InputField label="Growth Y1-5 (%)" value={inputs.growthRateY1_5} onChange={(v) => set("growthRateY1_5", Number(v))} step={0.5} min={-50} max={100} />
-            <InputField label="Growth Y6-10 (%)" value={inputs.growthRateY6_10} onChange={(v) => set("growthRateY6_10", Number(v))} step={0.5} min={-50} max={100} />
+            <NullableInputField
+              label="Growth Y1–5 (%)"
+              value={inputs.growthRateY1_5}
+              onChange={(v) => set("growthRateY1_5", v)}
+              placeholder="Enter your estimate"
+              step={0.5} min={-50} max={100}
+            />
+            <NullableInputField
+              label="Growth Y6–10 (%)"
+              value={inputs.growthRateY6_10}
+              onChange={(v) => set("growthRateY6_10", v)}
+              placeholder="Enter your estimate"
+              step={0.5} min={-50} max={100}
+            />
             <InputField label="Discount Rate / WACC (%)" value={inputs.discountRate} onChange={(v) => set("discountRate", Number(v))} step={0.5} min={1} max={30} />
             <InputField label="Terminal Growth (%)" value={inputs.terminalGrowthRate} onChange={(v) => set("terminalGrowthRate", Number(v))} step={0.5} min={0} max={5} />
             <InputField label="Shares Outstanding (M)" value={inputs.sharesOutstanding} onChange={(v) => set("sharesOutstanding", Number(v))} step={100} min={1} />
             <InputField label="Current Price ($)" value={inputs.currentPrice} onChange={(v) => set("currentPrice", Number(v))} step={1} min={0} />
-            <InputField label="Net Cash ($M)" value={inputs.netCash} onChange={(v) => set("netCash", Number(v))} step={1000} />
+            <InputField label="Net Debt ($M)" value={inputs.netDebt} onChange={(v) => set("netDebt", Number(v))} step={100} />
 
+            <p className="text-[10px] text-zinc-600">Net Debt = Total Debt − Cash. Negative means net cash (adds to equity value).</p>
+            {(inputs.growthRateY1_5 == null || inputs.growthRateY6_10 == null) && inputs.currentFCF !== 0 && (
+              <p className="text-[10px] text-amber-400 bg-amber-400/5 border border-amber-400/20 rounded-lg px-3 py-2">
+                Enter growth rates above to see the valuation.
+              </p>
+            )}
             <p className="text-[10px] text-zinc-600">
               All values auto-loaded from {inputs.ticker}. Adjust as needed for your thesis.
             </p>
@@ -451,7 +471,7 @@ export default function DCFPage() {
                               {dr.toFixed(1)}%
                             </td>
                             {sensitivityData[ri].map((price, ci) => {
-                              const isBase = dr === inputs.discountRate && growthSteps[ci] === inputs.growthRateY1_5;
+                              const isBase = dr === inputs.discountRate && growthSteps[ci] === baseGrowth;
                               const upsideCell = price > inputs.currentPrice;
                               return (
                                 <td
@@ -504,7 +524,7 @@ function FundRow({ label, value, highlight }: { label: string; value: string; hi
   return (
     <div className="flex justify-between">
       <span className="text-zinc-500">{label}</span>
-      <span className={highlight ? "text-amber-400 font-medium" : "text-zinc-300 font-medium tabular"}>{value}</span>
+      <span className={highlight ? "text-rose-400 font-medium tabular" : "text-zinc-300 font-medium tabular"}>{value}</span>
     </div>
   );
 }
@@ -531,6 +551,37 @@ function InputField({
         min={min}
         max={max}
         className="input-field w-full tabular"
+      />
+    </div>
+  );
+}
+
+function NullableInputField({
+  label, value, onChange, placeholder, step, min, max,
+}: {
+  label: string;
+  value: number | null;
+  onChange: (v: number | null) => void;
+  placeholder?: string;
+  step?: number;
+  min?: number;
+  max?: number;
+}) {
+  return (
+    <div>
+      <label className="text-xs text-zinc-500 mb-1 block">{label}</label>
+      <input
+        type="number"
+        value={value ?? ""}
+        placeholder={placeholder}
+        onChange={(e) => {
+          const raw = e.target.value;
+          onChange(raw === "" ? null : Number(raw));
+        }}
+        step={step}
+        min={min}
+        max={max}
+        className="input-field w-full tabular placeholder:text-zinc-600"
       />
     </div>
   );
@@ -567,9 +618,9 @@ function DCFInsights({ result, inputs, fundamentals }: {
       icon: <TrendingUp className="w-4 h-4" />,
       title: `${result.marginOfSafety.toFixed(0)}% upside to fair value`,
       body: `Based on your assumptions, ${inputs.ticker} appears undervalued. `
-        + `The market would need to grow FCF at ${inputs.growthRateY1_5}% for 5 years to justify a $${result.intrinsicPrice.toFixed(0)} price. `
+        + `The market would need to grow FCF at ${inputs.growthRateY1_5 ?? 0}% for 5 years to justify a $${result.intrinsicPrice.toFixed(0)} price. `
         + (fundamentals?.trailing_pe
-          ? `Current P/E of ${fundamentals.trailing_pe}x ${fundamentals.trailing_pe < 20 ? "suggests reasonable valuation" : "is above average"} — cross-check with the sensitivity table.`
+          ? `Current P/E of ${fundamentals.trailing_pe}x ${fundamentals.trailing_pe < 20 ? "suggests reasonable valuation" : "is above average"}  - cross-check with the sensitivity table.`
           : `Use the sensitivity table to stress-test different growth scenarios.`),
       color: "text-emerald-400",
     });
@@ -577,10 +628,10 @@ function DCFInsights({ result, inputs, fundamentals }: {
     insights.push({
       icon: <Lightbulb className="w-4 h-4" />,
       title: "Fair value below market price",
-      body: `DCF only values actual cash flows — it ignores brand premium, M&A speculation, and momentum. `
+      body: `DCF only values actual cash flows  - it ignores brand premium, M&A speculation, and momentum. `
         + `A ${Math.abs(result.marginOfSafety).toFixed(0)}% gap could mean the stock is overvalued, or that your growth assumptions are conservative. `
-        + (fundamentals?.revenue_growth && fundamentals.revenue_growth > inputs.growthRateY1_5
-          ? `Note: recent revenue growth (${fundamentals.revenue_growth}%) is higher than your Y1-5 assumption (${inputs.growthRateY1_5}%) — consider whether this pace is sustainable.`
+        + (fundamentals?.revenue_growth && fundamentals.revenue_growth > (inputs.growthRateY1_5 ?? 0)
+          ? `Note: recent revenue growth (${fundamentals.revenue_growth}%) is higher than your Y1-5 assumption (${inputs.growthRateY1_5 ?? 0}%)  - consider whether this pace is sustainable.`
           : `Try adjusting growth rates or discount rate to see where the breakeven is.`),
       color: "text-amber-400",
     });
@@ -590,7 +641,7 @@ function DCFInsights({ result, inputs, fundamentals }: {
   if (bigUpside) {
     insights.push({
       icon: <AlertTriangle className="w-4 h-4" />,
-      title: "Large mispricing — verify your assumptions",
+      title: "Large mispricing  - verify your assumptions",
       body: `40%+ gaps are rare in liquid markets. Check: is the FCF figure normalized (not a one-time peak)? `
         + `Is the growth rate sustainable for 5 full years? Are there unmodeled risks (regulation, competition, cyclicality)?`,
       color: "text-amber-400",
@@ -601,7 +652,7 @@ function DCFInsights({ result, inputs, fundamentals }: {
   if (terminalPct > 65) {
     insights.push({
       icon: <BookOpen className="w-4 h-4" />,
-      title: `${terminalPct.toFixed(0)}% of value from terminal — high sensitivity`,
+      title: `${terminalPct.toFixed(0)}% of value from terminal  - high sensitivity`,
       body: `A 0.5% change in terminal growth rate would swing fair value 10-20%. `
         + `This means the model is betting heavily on what happens after year 10. Stress-test with 2-2.5% terminal growth.`,
       color: "text-zinc-400",
@@ -612,7 +663,7 @@ function DCFInsights({ result, inputs, fundamentals }: {
   if (inputs.discountRate >= 12) {
     insights.push({
       icon: <Lightbulb className="w-4 h-4" />,
-      title: `${inputs.discountRate}% WACC — conservative`,
+      title: `${inputs.discountRate}% WACC  - conservative`,
       body: `Most analysts use 8-11%. A higher rate builds in safety but compresses fair value. `
         + (fundamentals?.beta ? `With ${inputs.ticker}'s beta of ${fundamentals.beta}, CAPM suggests ~${(4.5 + fundamentals.beta * 5.5).toFixed(1)}% WACC.` : ``),
       color: "text-zinc-400",
@@ -620,7 +671,7 @@ function DCFInsights({ result, inputs, fundamentals }: {
   } else if (inputs.discountRate <= 7) {
     insights.push({
       icon: <AlertTriangle className="w-4 h-4" />,
-      title: `${inputs.discountRate}% WACC — aggressive`,
+      title: `${inputs.discountRate}% WACC  - aggressive`,
       body: `This inflates fair value meaningfully. Only justified for low-beta, `
         + `stable-cashflow businesses (utilities, consumer staples). Most equities warrant 9-11%.`,
       color: "text-amber-400",
@@ -628,10 +679,10 @@ function DCFInsights({ result, inputs, fundamentals }: {
   }
 
   // 5. Growth reality check
-  if (inputs.growthRateY1_5 > 20) {
+  if ((inputs.growthRateY1_5 ?? 0) > 20) {
     insights.push({
       icon: <AlertTriangle className="w-4 h-4" />,
-      title: "20%+ growth for 5 years — historically rare",
+      title: "20%+ growth for 5 years  - historically rare",
       body: `Only ~10% of large caps sustain 20%+ FCF growth over 5 years. `
         + `Mean reversion is powerful. Try a lower rate to see if the thesis still holds.`,
       color: "text-amber-400",
@@ -642,7 +693,7 @@ function DCFInsights({ result, inputs, fundamentals }: {
     icon: <BookOpen className="w-4 h-4" />,
     title: "One lens, not the full picture",
     body: `Cross-check with the Reverse DCF (what growth the market is pricing in) and your own qualitative thesis. `
-      + `${upside ? "Undervalued stocks can stay cheap — match conviction to position size." : "Overvaluation doesn't mean sell — but revisit whether your thesis has changed."}`,
+      + `${upside ? "Undervalued stocks can stay cheap  - match conviction to position size." : "Overvaluation doesn't mean sell  - but revisit whether your thesis has changed."}`,
     color: "text-zinc-400",
   });
 

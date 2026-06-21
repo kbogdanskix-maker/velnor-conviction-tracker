@@ -15,9 +15,18 @@ interface Props {
   transaction?: Transaction | null;
 }
 
+const ASSET_TYPES = [
+  { value: "stock", label: "Stock" },
+  { value: "etf", label: "ETF" },
+  { value: "reit", label: "REIT" },
+  { value: "bond_etf", label: "Bond ETF" },
+  { value: "crypto", label: "Crypto" },
+] as const;
+
 const INITIAL: TransactionCreate = {
   ticker: "",
   transaction_type: "buy",
+  asset_type: "stock",
   quantity: 0,
   price: 0,
   fees: 0,
@@ -50,6 +59,7 @@ export default function AddTransactionModal({
       setForm({
         ticker: transaction.ticker,
         transaction_type: transaction.transaction_type,
+        asset_type: transaction.asset_type || "stock",
         quantity: transaction.quantity,
         price: transaction.price,
         fees: transaction.fees,
@@ -86,7 +96,7 @@ export default function AddTransactionModal({
         setPriceHint(`Close on ${dateOnly}: $${res.price!.toFixed(2)}`);
       }
     } catch {
-      // silently fail — user can still type manually
+      // silently fail  - user can still type manually
     } finally {
       setPriceFetching(false);
     }
@@ -284,6 +294,27 @@ export default function AddTransactionModal({
                   }}
                   className="w-full bg-zinc-800 border border-vela-border rounded-md px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:ring-1 focus:ring-vela-teal [color-scheme:dark]"
                 />
+              </div>
+            </div>
+
+            {/* Asset Type */}
+            <div>
+              <label className="block text-sm text-zinc-400 font-medium mb-1.5">Asset Type</label>
+              <div className="flex gap-2 flex-wrap">
+                {ASSET_TYPES.map((t) => (
+                  <button
+                    key={t.value}
+                    type="button"
+                    onClick={() => update("asset_type", t.value)}
+                    className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                      (form.asset_type || "stock") === t.value
+                        ? "bg-teal-500/15 text-teal-400 border border-teal-500/30"
+                        : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 border border-transparent"
+                    }`}
+                  >
+                    {t.label}
+                  </button>
+                ))}
               </div>
             </div>
 

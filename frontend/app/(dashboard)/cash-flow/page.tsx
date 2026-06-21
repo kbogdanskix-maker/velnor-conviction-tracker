@@ -22,6 +22,7 @@ import TierGate from "@/components/shared/TierGate";
 import FloatingCard from "@/components/celestial/FloatingCard";
 import RevealOnScroll from "@/components/celestial/RevealOnScroll";
 import AnimatedNumber from "@/components/celestial/AnimatedNumber";
+import GoalsStrip from "@/components/shared/GoalsStrip";
 
 // ── Page ────────────────────────────────────────────────────────────────────
 
@@ -84,7 +85,7 @@ export default function CashFlowPage() {
                     "Monthly Amount": e.amount,
                     Notes: e.notes ?? "",
                   })),
-                  `vela-cashflow-${new Date().toISOString().slice(0, 10)}.csv`,
+                  `velnor-cashflow-${new Date().toISOString().slice(0, 10)}.csv`,
                 )
               }
               className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs text-zinc-400 hover:text-zinc-200 bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700/50 transition-colors"
@@ -125,6 +126,11 @@ export default function CashFlowPage() {
           </p>
         </div>
       </div>
+
+      {/* Goals in context — how much of your saving funds your goals */}
+      <RevealOnScroll>
+        <GoalsStrip monthlySavings={summary?.savings} />
+      </RevealOnScroll>
 
       {/* Savings rate bar */}
       {(summary?.total_income ?? 0) > 0 && (

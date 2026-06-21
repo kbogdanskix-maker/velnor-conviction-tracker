@@ -70,15 +70,77 @@ const GRADE_RING: Record<string, string> = {
   F: "stroke-rose-400",
 };
 
+// ── Goal context detection ────────────────────────────────────────────
+
+interface GoalContext {
+  horizon: "short" | "medium" | "long"; // <24mo / 24-120mo / >120mo
+  hasRetirement: boolean;
+  hasHouseOrDebt: boolean;
+  hasUrgentUnderfunded: boolean; // due <12mo, <70% done
+  urgentGoalName: string | null;
+  weights: { diversification: number; savings: number; debt: number; performance: number; goals: number };
+}
+
+function monthsUntilDate(dateStr: string): number {
+  const now = new Date();
+  const t = new Date(dateStr);
+  return Math.max(0, (t.getFullYear() - now.getFullYear()) * 12 + (t.getMonth() - now.getMonth()));
+}
+
+function detectGoalContext(
+  goals: { name: string; icon: string; target_amount: number; current_amount: number; monthly_contribution: number; target_date: string }[] | null,
+): GoalContext {
+  const defaultWeights = { diversification: 20, savings: 20, debt: 20, performance: 20, goals: 20 };
+  if (!goals || goals.length === 0) {
+    return { horizon: "medium", hasRetirement: false, hasHouseOrDebt: false, hasUrgentUnderfunded: false, urgentGoalName: null, weights: defaultWeights };
+  }
+
+  const hasRetirement = goals.some((g) => /retir|pension|fire|independen/i.test(g.name));
+  const hasHouseOrDebt = goals.some((g) => /house|home|mortgage|property|debt|loan/i.test(g.name));
+
+  const horizons = goals.map((g) => monthsUntilDate(g.target_date));
+  const minHorizon = Math.min(...horizons);
+  const avgHorizon = horizons.reduce((a, b) => a + b, 0) / horizons.length;
+  const horizon: "short" | "medium" | "long" = avgHorizon < 24 ? "short" : avgHorizon > 120 ? "long" : "medium";
+
+  const urgentGoal = goals.find((g) => {
+    const mo = monthsUntilDate(g.target_date);
+    const pct = g.target_amount > 0 ? (g.current_amount / g.target_amount) * 100 : 100;
+    return mo < 12 && pct < 70;
+  });
+
+  // Compute goal-aware weights (must sum to 100)
+  let weights = { ...defaultWeights };
+  if (hasRetirement) {
+    weights = { diversification: 25, savings: 25, debt: 10, performance: 30, goals: 10 };
+  } else if (hasHouseOrDebt) {
+    weights = { diversification: 15, savings: 25, debt: 30, performance: 15, goals: 15 };
+  } else if (horizon === "short") {
+    weights = { diversification: 10, savings: 30, debt: 20, performance: 10, goals: 30 };
+  } else if (horizon === "long") {
+    weights = { diversification: 25, savings: 20, debt: 10, performance: 30, goals: 15 };
+  }
+
+  return {
+    horizon,
+    hasRetirement,
+    hasHouseOrDebt,
+    hasUrgentUnderfunded: !!urgentGoal,
+    urgentGoalName: urgentGoal?.name ?? null,
+    weights,
+  };
+}
+
 // ── Score computation ─────────────────────────────────────────────────
 
 function computeHealthScore(
   portfolio: { total_value: number; holdings: { unrealized_pnl_pct: number | null; sector?: string }[] } | null,
   netWorth: { net_worth: number; total_assets: number; total_liabilities: number } | null,
   cashFlow: { total_income: number; total_expenses: number; savings_rate: number | null } | null,
-  goals: { target_amount: number; current_amount: number }[] | null,
+  goals: { name: string; icon: string; target_amount: number; current_amount: number; monthly_contribution: number; target_date: string }[] | null,
   risk: { annualized_volatility: number | null; max_drawdown: number | null; sharpe_ratio: number | null } | null,
-): Dimension[] {
+): { dimensions: Dimension[]; weights: GoalContext["weights"]; goalContext: GoalContext } {
+  const ctx = detectGoalContext(goals);
   const dims: Dimension[] = [];
 
   // 1. Portfolio Diversification (0-100)
@@ -93,9 +155,9 @@ function computeHealthScore(
     const basePts = holdingCount >= 3 ? 20 : holdingCount * 7; // 20 base pts for having a real portfolio
     divScore = Math.min(100, Math.round(holdingPts + sectorPts + basePts));
 
-    if (sectors.size <= 2) divInsight = `Only ${sectors.size} sector${sectors.size === 1 ? "" : "s"} — consider diversifying across more industries.`;
-    else if (holdingCount < 5) divInsight = `${holdingCount} holdings across ${sectors.size} sectors — adding more positions would improve resilience.`;
-    else divInsight = `${holdingCount} holdings across ${sectors.size} sectors — well diversified.`;
+    if (sectors.size <= 2) divInsight = `Only ${sectors.size} sector${sectors.size === 1 ? "" : "s"}  - consider diversifying across more industries.`;
+    else if (holdingCount < 5) divInsight = `${holdingCount} holdings across ${sectors.size} sectors  - adding more positions would improve resilience.`;
+    else divInsight = `${holdingCount} holdings across ${sectors.size} sectors  - well diversified.`;
   }
   dims.push({
     key: "diversification",
@@ -120,10 +182,10 @@ function computeHealthScore(
     else if (rate >= 0) savScore = 40;
     else savScore = 15;
 
-    if (rate >= 20) savInsight = `${rate.toFixed(0)}% savings rate — excellent. You're well above the recommended 20%.`;
-    else if (rate >= 10) savInsight = `${rate.toFixed(0)}% savings rate — good, but aim for 20%+ to accelerate wealth building.`;
-    else if (rate >= 0) savInsight = `${rate.toFixed(0)}% savings rate — below the 20% target. Review expenses for reduction opportunities.`;
-    else savInsight = `Negative savings rate — expenses exceed income. This needs immediate attention.`;
+    if (rate >= 20) savInsight = `${rate.toFixed(0)}% savings rate  - excellent. You're well above the recommended 20%.`;
+    else if (rate >= 10) savInsight = `${rate.toFixed(0)}% savings rate  - good, but aim for 20%+ to accelerate wealth building.`;
+    else if (rate >= 0) savInsight = `${rate.toFixed(0)}% savings rate  - below the 20% target. Review expenses for reduction opportunities.`;
+    else savInsight = `Negative savings rate  - expenses exceed income. This needs immediate attention.`;
   }
   dims.push({
     key: "savings",
@@ -144,19 +206,19 @@ function computeHealthScore(
     const debtToAsset = netWorth.total_assets > 0 ? (netWorth.total_liabilities / netWorth.total_assets) * 100 : 0;
     if (netWorth.total_liabilities === 0) {
       debtScore = 100;
-      debtInsight = "No liabilities — debt-free! Outstanding position.";
+      debtInsight = "No liabilities  - debt-free! Outstanding position.";
     } else if (debtToAsset < 20) {
       debtScore = 90;
-      debtInsight = `Debt-to-asset ratio of ${debtToAsset.toFixed(0)}% — very manageable.`;
+      debtInsight = `Debt-to-asset ratio of ${debtToAsset.toFixed(0)}%  - very manageable.`;
     } else if (debtToAsset < 40) {
       debtScore = 70;
-      debtInsight = `Debt-to-asset ratio of ${debtToAsset.toFixed(0)}% — moderate. Focus on paying down high-interest debt.`;
+      debtInsight = `Debt-to-asset ratio of ${debtToAsset.toFixed(0)}%  - moderate. Focus on paying down high-interest debt.`;
     } else if (debtToAsset < 70) {
       debtScore = 45;
-      debtInsight = `Debt-to-asset ratio of ${debtToAsset.toFixed(0)}% — elevated. Prioritize debt reduction.`;
+      debtInsight = `Debt-to-asset ratio of ${debtToAsset.toFixed(0)}%  - elevated. Prioritize debt reduction.`;
     } else {
       debtScore = 20;
-      debtInsight = `Debt-to-asset ratio of ${debtToAsset.toFixed(0)}% — critical. Liabilities significantly outweigh assets.`;
+      debtInsight = `Debt-to-asset ratio of ${debtToAsset.toFixed(0)}%  - critical. Liabilities significantly outweigh assets.`;
     }
   }
   dims.push({
@@ -195,9 +257,9 @@ function computeHealthScore(
 
     perfScore = Math.min(100, sharpePts + volPts + ddPts);
 
-    if (sharpe >= 1.0) perfInsight = `Sharpe ${sharpe.toFixed(2)} with ${vol.toFixed(0)}% vol — strong risk-adjusted returns.`;
-    else if (sharpe >= 0.5) perfInsight = `Sharpe ${sharpe.toFixed(2)} — decent returns for the risk taken. Vol at ${vol.toFixed(0)}%.`;
-    else perfInsight = `Sharpe ${sharpe.toFixed(2)} — returns don't adequately compensate for ${vol.toFixed(0)}% volatility.`;
+    if (sharpe >= 1.0) perfInsight = `Sharpe ${sharpe.toFixed(2)} with ${vol.toFixed(0)}% vol  - strong risk-adjusted returns.`;
+    else if (sharpe >= 0.5) perfInsight = `Sharpe ${sharpe.toFixed(2)}  - decent returns for the risk taken. Vol at ${vol.toFixed(0)}%.`;
+    else perfInsight = `Sharpe ${sharpe.toFixed(2)}  - returns don't adequately compensate for ${vol.toFixed(0)}% volatility.`;
   }
   dims.push({
     key: "performance",
@@ -211,21 +273,33 @@ function computeHealthScore(
     linkLabel: "View Risk Metrics",
   });
 
-  // 5. Goal Progress (0-100)
+  // 5. Goal Progress (0-100) — horizon + urgency aware
   let goalScore = 50;
   let goalInsight = "Create financial goals to track progress.";
   if (goals && goals.length > 0) {
-    const avgProgress = goals.reduce((sum, g) => {
+    const goalData = goals.map((g) => {
       const pct = g.target_amount > 0 ? Math.min(100, (g.current_amount / g.target_amount) * 100) : 0;
-      return sum + pct;
-    }, 0) / goals.length;
+      const mo = monthsUntilDate(g.target_date);
+      // Urgency penalty: near-deadline + underfunded reduces score harder
+      const urgencyMultiplier = mo < 12 && pct < 70 ? 0.7 : mo < 24 && pct < 40 ? 0.85 : 1.0;
+      return { pct, mo, urgencyMultiplier, name: g.name, monthly: g.monthly_contribution };
+    });
 
-    goalScore = Math.round(avgProgress);
-    const onTrack = goals.filter((g) => g.target_amount > 0 && (g.current_amount / g.target_amount) >= 0.5).length;
+    const weightedProgress = goalData.reduce((sum, g) => sum + g.pct * g.urgencyMultiplier, 0) / goalData.length;
+    goalScore = Math.round(Math.min(100, weightedProgress));
 
-    if (avgProgress >= 75) goalInsight = `${onTrack}/${goals.length} goals over 50% complete — excellent progress.`;
-    else if (avgProgress >= 40) goalInsight = `${onTrack}/${goals.length} goals over 50% — making progress. Keep contributing.`;
-    else goalInsight = `Goals averaging ${avgProgress.toFixed(0)}% completion — consider increasing contributions.`;
+    const onTrack = goalData.filter((g) => g.pct >= 50).length;
+    const urgent = goalData.filter((g) => g.mo < 12 && g.pct < 70);
+
+    if (ctx.hasUrgentUnderfunded && urgent.length > 0) {
+      goalInsight = `"${urgent[0].name}" is due within a year at ${urgent[0].pct.toFixed(0)}% — urgently increase contributions.`;
+    } else if (goalScore >= 75) {
+      goalInsight = `${onTrack}/${goals.length} goals over 50% complete — excellent progress.`;
+    } else if (goalScore >= 40) {
+      goalInsight = `${onTrack}/${goals.length} goals over 50% — making progress. Keep contributing.`;
+    } else {
+      goalInsight = `Goals averaging ${weightedProgress.toFixed(0)}% completion — consider increasing monthly contributions.`;
+    }
   }
   dims.push({
     key: "goals",
@@ -239,7 +313,7 @@ function computeHealthScore(
     linkLabel: "View Goals",
   });
 
-  return dims;
+  return { dimensions: dims, weights: ctx.weights, goalContext: ctx };
 }
 
 // ── Circular score gauge ──────────────────────────────────────────────
@@ -366,21 +440,35 @@ export default function HealthScorePage() {
 
   const loading = pLoading || nwLoading || cfLoading || gLoading || rLoading;
 
-  const dimensions = useMemo(() => {
-    if (loading) return [];
+  const { dimensions, weights, goalContext } = useMemo(() => {
+    if (loading) return { dimensions: [], weights: { diversification: 20, savings: 20, debt: 20, performance: 20, goals: 20 }, goalContext: null };
     return computeHealthScore(
       summary ? { total_value: summary.total_value, holdings: summary.holdings } : null,
       nw ?? null,
       cf ?? null,
-      goals ?? null,
+      goals && goals.length > 0 ? goals.map(g => ({
+        name: g.name, icon: g.icon,
+        target_amount: g.target_amount, current_amount: g.current_amount,
+        monthly_contribution: g.monthly_contribution, target_date: g.target_date,
+      })) : null,
       risk ?? null,
     );
   }, [loading, summary, nw, cf, goals, risk]);
 
+  // Weighted overall score (goal-context-aware)
   const overallScore = useMemo(() => {
     if (dimensions.length === 0) return 0;
-    return Math.round(dimensions.reduce((s, d) => s + d.score, 0) / dimensions.length);
-  }, [dimensions]);
+    const keyMap: Record<string, keyof typeof weights> = {
+      diversification: "diversification", savings: "savings",
+      debt: "debt", performance: "performance", goals: "goals",
+    };
+    const totalWeight = Object.values(weights).reduce((s, w) => s + w, 0);
+    const weighted = dimensions.reduce((s, d) => {
+      const w = weights[keyMap[d.key]] ?? 20;
+      return s + d.score * w;
+    }, 0);
+    return Math.round(weighted / totalWeight);
+  }, [dimensions, weights]);
 
   const overallGrade = toGrade(overallScore);
   const actionItems = useMemo(() => getActionItems(dimensions), [dimensions]);
@@ -397,6 +485,11 @@ export default function HealthScorePage() {
         </h1>
         <p className="text-sm text-zinc-500 mt-0.5">
           A holistic assessment of your financial well-being across 5 dimensions
+          {goalContext && goals && goals.length > 0 && (
+            <span className="ml-2 text-[11px] text-teal-500/80 font-medium">
+              · weights adjusted for your {goalContext.hasRetirement ? "retirement" : goalContext.hasHouseOrDebt ? "home/debt" : goalContext.horizon + "-term"} goals
+            </span>
+          )}
         </p>
       </div>
 
@@ -443,6 +536,11 @@ export default function HealthScorePage() {
                   <div className="flex items-center gap-2">
                     <d.icon className={`w-4 h-4 ${GRADE_COLORS[d.grade]}`} />
                     <span className="text-sm font-medium text-zinc-200">{d.label}</span>
+                    {weights[d.key as keyof typeof weights] !== 20 && (
+                      <span className="text-[9px] font-semibold text-teal-500/70 bg-teal-500/10 px-1.5 py-0.5 rounded-full">
+                        {weights[d.key as keyof typeof weights]}%
+                      </span>
+                    )}
                   </div>
                   <div className="flex items-center gap-1.5">
                     <StatusIcon grade={d.grade} />
@@ -517,7 +615,7 @@ export default function HealthScorePage() {
             </div>
             <div className="space-y-1">
               <p className="text-zinc-300 font-medium">Overall Score</p>
-              <p>Weighted average of all dimensions. A = 90+, B = 75+, C = 60+, D = 40+.</p>
+              <p>Weighted average across dimensions — weights shift based on your goals (retirement, home, horizon). A = 90+, B = 75+, C = 60+, D = 40+.</p>
             </div>
           </div>
         </div>

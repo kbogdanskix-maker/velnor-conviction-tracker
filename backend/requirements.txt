@@ -40,9 +40,11 @@ sendgrid==6.11.0
 
 # Social data
 praw==7.8.1
+vaderSentiment==3.3.2
 requests==2.32.3
 
 # Utils
 python-dotenv==1.0.1
 tenacity==9.0.0
 slowapi==0.1.9
+anthropic>=0.40.0

@@ -43,3 +43,7 @@ dump.rdb
 coverage/
 htmlcov/
 .coverage
+
+# Force-ignore all local env files (belt and suspenders)
+**/.env.local
+frontend/.env.local

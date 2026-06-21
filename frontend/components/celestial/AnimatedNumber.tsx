@@ -42,6 +42,15 @@ export default function AnimatedNumber({
     requestAnimationFrame(tick);
   }, [inView, value, duration, format]);
 
+  // Safety net: if the in-view animation never fires (element rendered
+  // off-screen, IntersectionObserver doesn't trigger, reduced-motion, etc.),
+  // still show the real value instead of staying stuck at format(0).
+  useEffect(() => {
+    if (inView) return;
+    const id = setTimeout(() => setDisplay(format(value)), duration + 200);
+    return () => clearTimeout(id);
+  }, [inView, value, duration, format]);
+
   return (
     <span ref={ref} className={className}>
       {display}

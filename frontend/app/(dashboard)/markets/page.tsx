@@ -73,7 +73,7 @@ export default function MarketsPage() {
           <MoversSkeleton />
         ) : (
           <>
-            {/* Gainers — horizontal scroll */}
+            {/* Gainers  - horizontal scroll */}
             {gainers.length > 0 && (
               <div>
                 <div className="flex items-center gap-1.5 mb-2">
@@ -92,7 +92,7 @@ export default function MarketsPage() {
               </div>
             )}
 
-            {/* Losers — horizontal scroll */}
+            {/* Losers  - horizontal scroll */}
             {losers.length > 0 && (
               <div>
                 <div className="flex items-center gap-1.5 mb-2">
@@ -127,7 +127,7 @@ export default function MarketsPage() {
   );
 }
 
-// ── Index Card Inner — content only (FloatingCard provides the vela-card wrapper)
+// ── Index Card Inner  - content only (FloatingCard provides the vela-card wrapper)
 
 function IndexCardInner({ index }: { index: MarketIndex }) {
   const changePct = Number(index.change_pct ?? 0);
@@ -182,7 +182,7 @@ function MoverCard({ mover, onClick }: { mover: Mover; onClick: () => void }) {
         {formatPercent(changePct)}
       </span>
       <p className="text-xs text-zinc-500 tabular mt-1">
-        {mover.price != null ? formatCurrency(mover.price) : "—"}
+        {mover.price != null ? formatCurrency(mover.price) : " -"}
       </p>
     </motion.div>
   );

@@ -14,7 +14,7 @@ interface GlowBorderProps {
 
 /**
  * Wraps content with a pulsing gradient border glow.
- * Gentle opacity breathing — no rotation or spinning.
+ * Gentle opacity breathing  - no rotation or spinning.
  */
 export default function GlowBorder({
   children,
@@ -39,7 +39,7 @@ export default function GlowBorder({
         }}
       />
 
-      {/* Inner card body — covers the gradient except at the 1px border */}
+      {/* Inner card body  - covers the gradient except at the 1px border */}
       <div className="relative rounded-2xl bg-[#0a101f] overflow-hidden">
         {children}
       </div>

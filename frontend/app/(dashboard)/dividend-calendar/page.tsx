@@ -12,6 +12,24 @@ import PageTransition from "@/components/celestial/PageTransition";
 import TierGate from "@/components/shared/TierGate";
 import ErrorState from "@/components/shared/ErrorState";
 
+// ── Custom Tooltip ───────────────────────────────────────────────────────────
+
+function DivTooltip({ active, payload, label }: any) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div style={{
+      background: "#0c1a19",
+      border: "1px solid rgba(20,184,166,0.35)",
+      borderRadius: 8,
+      padding: "6px 10px",
+      fontSize: 11,
+    }}>
+      <p style={{ color: "#14b8a6", fontWeight: 600, marginBottom: 2 }}>{label}</p>
+      <p style={{ color: "#5eead4" }}>{formatCurrency(payload[0].value)}</p>
+    </div>
+  );
+}
+
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -159,7 +177,7 @@ export default function DividendCalendarPage() {
             </div>
           </div>
 
-          {/* Bar chart — monthly income */}
+          {/* Bar chart  - monthly income */}
           <div className="vela-card">
             <h2 className="text-sm font-medium text-zinc-300 mb-4">
               {year} Monthly Dividend Income
@@ -190,15 +208,7 @@ export default function DividendCalendarPage() {
                     tickFormatter={(v) => formatCompact(v)}
                     width={55}
                   />
-                  <Tooltip cursor={false}
-                    contentStyle={{
-                      backgroundColor: "#18181b",
-                      border: "1px solid #27272a",
-                      borderRadius: 8,
-                      fontSize: 12,
-                    }}
-                    formatter={(val: number) => [formatCurrency(val), "Projected"]}
-                  />
+                  <Tooltip cursor={false} content={<DivTooltip />} />
                   <Bar dataKey="total" radius={[4, 4, 0, 0]} cursor="pointer">
                     {calendar.map((d, i) => (
                       <Cell
@@ -286,7 +296,7 @@ export default function DividendCalendarPage() {
             </div>
           )}
 
-          {/* Calendar grid — compact 12-month view */}
+          {/* Calendar grid  - compact 12-month view */}
           <div className="space-y-3">
             <h2 className="text-sm font-medium text-zinc-300">Calendar Overview</h2>
             <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2">
@@ -317,7 +327,7 @@ export default function DividendCalendarPage() {
                       />
                     </div>
                     <p className={`text-[10px] tabular mt-1 ${m.total > 0 ? "text-zinc-300" : "text-zinc-600"}`}>
-                      {m.total > 0 ? formatCurrency(m.total) : "—"}
+                      {m.total > 0 ? formatCurrency(m.total) : " -"}
                     </p>
                     {m.holdings.length > 0 && (
                       <p className="text-[9px] text-zinc-600 mt-0.5">
@@ -339,17 +349,17 @@ export default function DividendCalendarPage() {
             <p className="text-xs text-zinc-400">
               {payingMonths >= 10 ? (
                 <>
-                  <span className="text-emerald-400 font-medium">Excellent coverage</span> — you receive dividends in {payingMonths} out of 12 months.
+                  <span className="text-emerald-400 font-medium">Excellent coverage</span>  - you receive dividends in {payingMonths} out of 12 months.
                   This provides consistent passive income throughout the year.
                 </>
               ) : payingMonths >= 6 ? (
                 <>
-                  <span className="text-zinc-300 font-medium">Good coverage</span> — dividends expected in {payingMonths} months.
+                  <span className="text-zinc-300 font-medium">Good coverage</span>  - dividends expected in {payingMonths} months.
                   Adding stocks with different payment schedules could fill the gaps.
                 </>
               ) : (
                 <>
-                  <span className="text-amber-400 font-medium">Sparse coverage</span> — dividends only in {payingMonths} month{payingMonths !== 1 ? "s" : ""}.
+                  <span className="text-amber-400 font-medium">Sparse coverage</span>  - dividends only in {payingMonths} month{payingMonths !== 1 ? "s" : ""}.
                   Consider diversifying with dividend payers that have staggered schedules for more consistent income.
                 </>
               )}

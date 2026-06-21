@@ -28,7 +28,6 @@ export default function Starfield({ count = 150 }: { count?: number }) {
   const starsRef = useRef<Star[]>([]);
   const shootingRef = useRef<ShootingStar[]>([]);
   const rafRef = useRef<number>(0);
-  const mouseRef = useRef({ x: -1, y: -1 });
   const { prefs } = useAnimationPrefs();
   const disabled = prefs.reduceMotion || prefs.disableBackgroundEffects;
 
@@ -80,24 +79,12 @@ export default function Starfield({ count = 150 }: { count?: number }) {
 
     function draw(time: number) {
       ctx!.clearRect(0, 0, w, h);
-      const mx = mouseRef.current.x;
-      const my = mouseRef.current.y;
 
       // Stars
       for (const star of starsRef.current) {
         const twinkle = Math.sin(time * star.speed + star.offset);
         const pulse = 0.5 + twinkle * 0.5;
-        let alpha = star.baseOpacity * pulse;
-
-        // Mouse proximity glow
-        if (mx >= 0) {
-          const dx = star.x - mx;
-          const dy = star.y - my;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 120) {
-            alpha = Math.min(1, alpha + (1 - dist / 120) * 0.5);
-          }
-        }
+        const alpha = star.baseOpacity * pulse;
 
         // Star core
         ctx!.beginPath();
@@ -182,18 +169,11 @@ export default function Starfield({ count = 150 }: { count?: number }) {
     rafRef.current = requestAnimationFrame(draw);
 
     const onResize = () => { resize(); createStars(); };
-    const onMouse = (e: MouseEvent) => { mouseRef.current = { x: e.clientX, y: e.clientY }; };
-    const onLeave = () => { mouseRef.current = { x: -1, y: -1 }; };
-
     window.addEventListener("resize", onResize);
-    window.addEventListener("mousemove", onMouse);
-    window.addEventListener("mouseleave", onLeave);
 
     return () => {
       cancelAnimationFrame(rafRef.current);
       window.removeEventListener("resize", onResize);
-      window.removeEventListener("mousemove", onMouse);
-      window.removeEventListener("mouseleave", onLeave);
     };
   }, [count, disabled]);
 

@@ -159,7 +159,7 @@ export default function AffordabilityPage() {
     }
   }
 
-  // Net worth impact — down payment converts cash → asset equity (net-neutral at purchase),
+  // Net worth impact  - down payment converts cash → asset equity (net-neutral at purchase),
   // only interest paid over the loan's life is a true net worth reduction
   const nwImpact = nw ? {
     newLiability: loanAmount,
@@ -317,7 +317,7 @@ export default function AffordabilityPage() {
                 </div>
               </div>
               <p className="text-xs text-zinc-500 mt-2">
-                Down payment ({formatCurrency(downAmount)}) converts cash to equity — net worth stays the same at purchase.
+                Down payment ({formatCurrency(downAmount)}) converts cash to equity  - net worth stays the same at purchase.
                 Only the {formatCurrency(nwImpact.interestCost)} in interest is a true loss over time.
               </p>
               <div className="mt-3 flex items-center justify-between">

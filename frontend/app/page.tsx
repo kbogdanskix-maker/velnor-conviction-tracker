@@ -3,49 +3,12 @@
 import { useState, useEffect, useRef, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { createBrowserClient } from "@/lib/supabase-browser";
+import HeroVoyage from "@/components/celestial/HeroVoyage";
 
-/* ─── tiny SVG icons (no dependency) ────────────────────────────────────── */
+/* ─── icons ─────────────────────────────────────────────────────────────── */
 const icons = {
-  portfolio: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
-      <path d="M3 3v18h18" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M7 16l4-6 4 3 5-7" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  ),
-  valuation: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
-      <circle cx="12" cy="12" r="9" />
-      <path d="M12 7v5l3 3" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  ),
-  planning: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
-      <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" strokeLinecap="round" strokeLinejoin="round" />
-      <rect x="9" y="3" width="6" height="4" rx="1" />
-      <path d="M9 14l2 2 4-4" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  ),
-  tax: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
-      <path d="M2 9l10-6 10 6" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M4 9v9a2 2 0 002 2h12a2 2 0 002-2V9" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M10 13h4" strokeLinecap="round" />
-    </svg>
-  ),
-  whatif: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
-      <path d="M12 3C7.03 3 3 7.03 3 12s4.03 9 9 9" strokeLinecap="round" />
-      <path d="M21 12c0-4.97-4.03-9-9-9" strokeLinecap="round" strokeDasharray="4 3" />
-      <path d="M16 16l2 2 4-4" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  ),
-  pulse: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
-      <path d="M3 12h4l3-8 4 16 3-8h4" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  ),
   check: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="w-4 h-4">
       <path d="M5 12l5 5L20 7" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   ),
@@ -54,46 +17,89 @@ const icons = {
       <path d="M5 12h14m-6-6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   ),
+  compass: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" className="w-5 h-5">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M15.5 8.5l-2 5-5 2 2-5z" strokeLinejoin="round" />
+    </svg>
+  ),
 };
 
-const FEATURES = [
-  { icon: icons.portfolio, title: "Portfolio Intelligence", desc: "Personalized daily briefings on your holdings. Earnings, news, and signals — curated for what you own." },
-  { icon: icons.valuation, title: "Valuation Tools", desc: "DCF, reverse DCF, and Monte Carlo simulations. Know what a stock is worth before you buy." },
-  { icon: icons.planning, title: "Financial Planning", desc: "Goals, retirement modeling, debt payoff strategies, and affordability analysis in one place." },
-  { icon: icons.tax, title: "Tax Optimization", desc: "Tax-loss harvesting finder, Roth conversion analysis, and projected tax liability — year-round." },
-  { icon: icons.whatif, title: '"What If" Simulator', desc: "Model life decisions before you make them. New job, big purchase, extra savings — see the impact instantly." },
-  { icon: icons.pulse, title: "Market Pulse", desc: "Live indices, sector rotation, and sentiment — always know what the market is doing and why it matters to you." },
+/* ─── "Set your bearing" — the differentiator, made interactive ─────────────
+   Same portfolio. Flip your objective. Watch Velnor re-read it.            */
+const BEARINGS = [
+  {
+    key: "growth",
+    label: "Maximize growth",
+    deg: "041°",
+    reply:
+      "You're young with a long runway, so concentration isn't the enemy here, conviction drift is. The real question: would you buy NVDA at today's price with fresh cash? If yes, the weight is earning its place. If you're hesitating, that's the signal worth acting on, not the percentage.",
+  },
+  {
+    key: "income",
+    label: "Generate income",
+    deg: "118°",
+    reply:
+      "Built for income, this book is light on yield. Your largest positions pay almost nothing, so the portfolio is asking you to wait for price, not cash. That can be the right call, but it should be a choice. Where is this income actually meant to come from?",
+  },
+  {
+    key: "preserve",
+    label: "Preserve capital",
+    deg: "337°",
+    reply:
+      "If the job is protecting what you have, one name carrying this much of the book is the thing to look at first. A bad quarter there moves your whole net worth. Not wrong, but worth deciding on purpose: how much of a drawdown in that position could you sit through without flinching?",
+  },
 ];
 
-const COMPETITORS = [
-  { name: "Stock Analysis", focus: "Research", missing: "No financial planning" },
-  { name: "Screener Tools", focus: "Screening", missing: "No portfolio context" },
-  { name: "Wealth Advisors", focus: "Advisory", missing: "No DIY research tools" },
-  { name: "Budget Apps", focus: "Budgeting", missing: "No investment analysis" },
-];
+/* ─── Wind currents — drifting flow lines behind the hero ───────────────── */
+function WindCurrents() {
+  return (
+    <svg
+      className="pointer-events-none absolute inset-0 w-full h-full z-0"
+      preserveAspectRatio="none"
+      viewBox="0 0 1200 800"
+      aria-hidden
+    >
+      <defs>
+        <linearGradient id="wind" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="#14b8a6" stopOpacity="0" />
+          <stop offset="45%" stopColor="#14b8a6" stopOpacity="0.55" />
+          <stop offset="100%" stopColor="#34d399" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      {[120, 230, 360, 470, 600, 690].map((y, i) => (
+        <path
+          key={y}
+          d={`M-100 ${y} C 300 ${y - 70 - i * 6}, 700 ${y + 60 + i * 5}, 1300 ${y - 30}`}
+          fill="none"
+          stroke="url(#wind)"
+          strokeWidth={1.1}
+          className="wind-line"
+          style={{ animationDelay: `${i * 0.9}s`, animationDuration: `${11 + i * 1.4}s` }}
+        />
+      ))}
+    </svg>
+  );
+}
 
-/* ─── Constellation background ──────────────────────────────────────────── */
+/* ─── Constellation background (the night sky you navigate by) ──────────── */
 function ConstellationBg() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-
     let animId: number;
     const stars: { x: number; y: number; r: number; phase: number; speed: number }[] = [];
-
     function resize() {
       canvas!.width = window.innerWidth;
       canvas!.height = window.innerHeight * 4;
     }
-
     function init() {
       resize();
       stars.length = 0;
-      const count = Math.floor((canvas!.width * canvas!.height) / 18000);
+      const count = Math.floor((canvas!.width * canvas!.height) / 17000);
       for (let i = 0; i < count; i++) {
         stars.push({
           x: Math.random() * canvas!.width,
@@ -104,11 +110,10 @@ function ConstellationBg() {
         });
       }
     }
-
     function draw(t: number) {
       ctx!.clearRect(0, 0, canvas!.width, canvas!.height);
       for (const s of stars) {
-        const alpha = 0.25 + 0.35 * Math.sin(s.phase + t * s.speed);
+        const alpha = 0.22 + 0.34 * Math.sin(s.phase + t * s.speed);
         ctx!.beginPath();
         ctx!.arc(s.x, s.y, s.r, 0, Math.PI * 2);
         ctx!.fillStyle = `rgba(148, 163, 184, ${alpha})`;
@@ -116,7 +121,6 @@ function ConstellationBg() {
       }
       animId = requestAnimationFrame(draw);
     }
-
     init();
     animId = requestAnimationFrame(draw);
     window.addEventListener("resize", init);
@@ -125,21 +129,13 @@ function ConstellationBg() {
       window.removeEventListener("resize", init);
     };
   }, []);
-
-  return (
-    <canvas
-      ref={canvasRef}
-      className="pointer-events-none fixed inset-0 z-0"
-      style={{ opacity: 0.6 }}
-    />
-  );
+  return <canvas ref={canvasRef} className="pointer-events-none fixed inset-0 z-0" style={{ opacity: 0.6 }} />;
 }
 
-/* ─── Reveal-on-scroll wrapper ──────────────────────────────────────────── */
+/* ─── Reveal-on-scroll ──────────────────────────────────────────────────── */
 function Reveal({ children, className = "", delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
-
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
@@ -150,19 +146,14 @@ function Reveal({ children, className = "", delay = 0 }: { children: React.React
     obs.observe(el);
     return () => obs.disconnect();
   }, []);
-
   return (
-    <div
-      ref={ref}
-      className={`transition-all duration-700 ease-out ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"} ${className}`}
-      style={{ transitionDelay: `${delay}ms` }}
-    >
+    <div ref={ref} className={`transition-all duration-700 ease-out ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"} ${className}`} style={{ transitionDelay: `${delay}ms` }}>
       {children}
     </div>
   );
 }
 
-/* ─── Email form (reusable) ─────────────────────────────────────────────── */
+/* ─── Waitlist form (unchanged logic — Supabase insert) ─────────────────── */
 function WaitlistForm({ id, large = false }: { id: string; large?: boolean }) {
   const [email, setEmail] = useState("");
   const [state, setState] = useState<"idle" | "loading" | "success" | "error">("idle");
@@ -175,7 +166,6 @@ function WaitlistForm({ id, large = false }: { id: string; large?: boolean }) {
       setErrorMsg("Please enter a valid email.");
       return;
     }
-
     setState("loading");
     try {
       const supabase = createBrowserClient();
@@ -183,12 +173,8 @@ function WaitlistForm({ id, large = false }: { id: string; large?: boolean }) {
         email: email.toLowerCase().trim(),
         referral_source: typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("ref") || "direct" : "direct",
       });
-
       if (error) {
-        if (error.code === "23505") {
-          setState("success");
-          return;
-        }
+        if (error.code === "23505") { setState("success"); return; }
         throw error;
       }
       setState("success");
@@ -200,11 +186,11 @@ function WaitlistForm({ id, large = false }: { id: string; large?: boolean }) {
 
   if (state === "success") {
     return (
-      <div className={`flex items-center gap-3 ${large ? "text-lg" : "text-sm"}`}>
+      <div className={`flex items-center gap-3 ${large ? "text-base" : "text-sm"}`}>
         <span className="flex items-center justify-center w-8 h-8 rounded-full bg-gain/15">
           <span className="text-gain">{icons.check}</span>
         </span>
-        <span className="text-zinc-200">You&apos;re on the list. We&apos;ll be in touch.</span>
+        <span className="text-zinc-200">You&apos;re on the list. We&apos;ll email you the moment early access opens.</span>
       </div>
     );
   }
@@ -236,12 +222,72 @@ function WaitlistForm({ id, large = false }: { id: string; large?: boolean }) {
   );
 }
 
-/* ─── Main page ─────────────────────────────────────────────────────────── */
+/* ─── Bearing demo ──────────────────────────────────────────────────────── */
+function BearingDemo() {
+  const [active, setActive] = useState(0);
+  const b = BEARINGS[active];
+  return (
+    <div className="vela-card overflow-hidden">
+      {/* preview tag */}
+      <div className="flex items-center gap-2 mb-3">
+        <span className="text-[10px] font-mono uppercase tracking-widest text-vela-teal/90 bg-vela-teal/10 border border-vela-teal/25 px-2 py-0.5 rounded-full">
+          Preview · Reflect
+        </span>
+        <span className="text-[10px] text-zinc-600">a glimpse of Velnor&apos;s portfolio AI</span>
+      </div>
+      {/* chart header */}
+      <div className="flex items-center justify-between gap-3 pb-4 border-b border-zinc-800/70">
+        <div className="flex items-center gap-2.5 text-zinc-300">
+          <span className="text-vela-teal">{icons.compass}</span>
+          <span className="text-sm font-medium">Set your bearing</span>
+        </div>
+        <span className="font-mono text-[11px] text-zinc-600 tabular-nums">HEADING {b.deg}</span>
+      </div>
+
+      {/* bearing selector */}
+      <div className="flex flex-wrap gap-2 pt-4">
+        {BEARINGS.map((opt, i) => (
+          <button
+            key={opt.key}
+            onClick={() => setActive(i)}
+            className={`text-xs px-3 py-1.5 rounded-full border transition-all ${
+              i === active
+                ? "border-vela-teal/50 bg-vela-teal/10 text-vela-teal"
+                : "border-zinc-800 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300"
+            }`}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+
+      {/* the read */}
+      <div className="mt-4 flex gap-3">
+        <div className="w-7 h-7 min-w-7 rounded-full bg-gradient-to-br from-teal-600 to-indigo-500 flex items-center justify-center text-white text-[11px] font-semibold mt-0.5 shadow-[0_0_12px_#14b8a633]">
+          V
+        </div>
+        <p key={b.key} className="bearing-reply text-[13.5px] leading-relaxed text-zinc-300">
+          {b.reply}
+        </p>
+      </div>
+      <p className="text-[11px] text-zinc-600 mt-4 pt-3 border-t border-zinc-800/70">
+        Same portfolio. Different bearing. Velnor re-charts the read, grounded in your real numbers, never generic.
+      </p>
+    </div>
+  );
+}
+
+/* ─── Page ──────────────────────────────────────────────────────────────── */
 export default function LandingPage() {
   const router = useRouter();
   const [checked, setChecked] = useState(false);
 
   useEffect(() => {
+    // Allow previewing the landing even while signed in: visit /?preview
+    if (typeof window !== "undefined" && new URLSearchParams(window.location.search).has("preview")) {
+      setChecked(true);
+      return;
+    }
     const supabase = createBrowserClient();
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) router.replace("/dashboard");
@@ -252,185 +298,227 @@ export default function LandingPage() {
   if (!checked) return null;
 
   return (
-    <div className="atmospheric-bg noise-overlay min-h-screen text-zinc-100">
+    <div className="atmospheric-bg noise-overlay min-h-screen text-zinc-100 overflow-x-hidden">
       <ConstellationBg />
+
+      {/* keyframes for the navigation/wind/sail motifs */}
+      <style>{`
+        @keyframes windDrift {
+          0%   { stroke-dasharray: 8 600; stroke-dashoffset: 700; opacity: 0; }
+          15%  { opacity: 1; }
+          85%  { opacity: 1; }
+          100% { stroke-dasharray: 8 600; stroke-dashoffset: -700; opacity: 0; }
+        }
+        .wind-line { animation: windDrift linear infinite; }
+        @keyframes sailBillow {
+          0%, 100% { d: path("M40 18 C 220 70, 300 200, 196 344 L40 300 Z"); }
+          50%      { d: path("M40 18 C 248 60, 286 210, 182 348 L40 300 Z"); }
+        }
+        .sail-billow { animation: sailBillow 7s ease-in-out infinite; transform-origin: 40px 180px; }
+        @media (prefers-reduced-motion: reduce) { .sail-billow, .wind-line { animation: none; } }
+        @keyframes seamShift { 0%,100% { opacity: .12 } 50% { opacity: .3 } }
+        .sail-seam { animation: seamShift 7s ease-in-out infinite; }
+        @keyframes mastTwinkle { 0%,100% { opacity: .55 } 50% { opacity: 1 } }
+        .masthead-star { animation: mastTwinkle 2.4s ease-in-out infinite; }
+        @keyframes replyIn { from { opacity: 0; transform: translateY(6px) } to { opacity: 1; transform: translateY(0) } }
+        .bearing-reply { animation: replyIn .45s ease-out; }
+        @keyframes courseDraw { to { stroke-dashoffset: 0 } }
+      `}</style>
 
       {/* ── Nav ───────────────────────────────────────────────────────── */}
       <nav className="relative z-10 flex items-center justify-between px-6 md:px-12 py-5">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-vela-teal/20 flex items-center justify-center text-vela-teal font-bold text-sm border border-vela-teal/30">
+          <div className="w-8 h-8 rounded-lg bg-vela-teal/15 flex items-center justify-center text-vela-teal font-bold text-sm border border-vela-teal/30">
             V
           </div>
-          <span className="text-xl font-display font-semibold tracking-tight">Vela</span>
+          <div className="leading-none">
+            <span className="text-xl font-display font-semibold tracking-tight">Velnor</span>
+          </div>
+          <span className="hidden sm:inline ml-2 font-mono text-[10px] text-zinc-600 tracking-widest uppercase">Celestial navigation for your money</span>
         </div>
-        <a
-          href="/login"
-          className="btn-ghost text-sm font-medium"
-        >
-          Sign in
-        </a>
+        <a href="/login" className="btn-ghost text-sm font-medium">Sign in</a>
       </nav>
 
       {/* ── Hero ──────────────────────────────────────────────────────── */}
-      <section className="relative z-10 flex flex-col items-center text-center px-6 pt-16 pb-28 md:pt-28 md:pb-40 max-w-4xl mx-auto">
-        <Reveal>
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-vela-teal/10 border border-vela-teal/20 text-vela-teal text-xs font-medium tracking-wide mb-8">
-            <span className="w-1.5 h-1.5 rounded-full bg-vela-teal animate-[ambient-pulse_2s_ease-in-out_infinite]" />
-            Coming soon
-          </div>
-        </Reveal>
-
-        <Reveal delay={100}>
-          <h1 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.08] mb-6">
-            Your investments{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-vela-teal via-emerald-400 to-teal-300">
-              and
-            </span>{" "}
-            your life finances.
-            <br />
-            <span className="text-zinc-500">Finally together.</span>
-          </h1>
-        </Reveal>
-
-        <Reveal delay={200}>
-          <p className="text-zinc-400 text-lg md:text-xl max-w-2xl leading-relaxed mb-10">
-            Portfolio intelligence, valuation tools, financial planning, and tax
-            optimization — unified in one platform. Stop juggling apps.
-            Start making better decisions.
-          </p>
-        </Reveal>
-
-        <Reveal delay={300}>
-          <WaitlistForm id="hero-email" large />
-        </Reveal>
-
-        <Reveal delay={400}>
-          <p className="text-zinc-600 text-xs mt-4">
-            Free to join. No spam. Unsubscribe anytime.
-          </p>
-        </Reveal>
-      </section>
-
-      {/* ── Features ──────────────────────────────────────────────────── */}
-      <section className="relative z-10 px-6 md:px-12 pb-28 max-w-6xl mx-auto">
-        <Reveal>
-          <p className="text-vela-teal text-sm font-medium tracking-widest uppercase mb-3 text-center">
-            Everything you need
-          </p>
-          <h2 className="font-display text-3xl md:text-4xl font-bold text-center mb-4 tracking-tight">
-            One platform. Zero compromises.
-          </h2>
-          <p className="text-zinc-500 text-center max-w-xl mx-auto mb-14">
-            Every tool a serious investor needs, connected to every tool a
-            smart financial planner needs.
-          </p>
-        </Reveal>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {FEATURES.map((f, i) => (
-            <Reveal key={f.title} delay={i * 80}>
-              <div className="vela-card group h-full">
-                <div className="w-10 h-10 rounded-xl bg-vela-teal/10 border border-vela-teal/20 flex items-center justify-center text-vela-teal mb-4 group-hover:bg-vela-teal/20 transition-colors">
-                  {f.icon}
-                </div>
-                <h3 className="font-display font-semibold text-lg text-zinc-100 mb-2">
-                  {f.title}
-                </h3>
-                <p className="text-zinc-500 text-sm leading-relaxed">{f.desc}</p>
+      <section className="relative z-10 px-6 md:px-12 pt-12 md:pt-20 pb-28 md:pb-36 max-w-6xl mx-auto">
+        <WindCurrents />
+        <div className="relative grid lg:grid-cols-[1.15fr_0.85fr] gap-10 items-center">
+          {/* copy */}
+          <div className="relative">
+            <Reveal>
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-vela-teal/10 border border-vela-teal/20 text-vela-teal text-[11px] font-medium tracking-wide mb-7">
+                <span className="w-1.5 h-1.5 rounded-full bg-vela-teal animate-[ambient-pulse_2s_ease-in-out_infinite]" />
+                Pre-launch · charting the course
               </div>
             </Reveal>
-          ))}
+            <Reveal delay={90}>
+              <h1 className="font-display text-[2.6rem] sm:text-5xl md:text-6xl font-bold tracking-tight leading-[1.05] mb-6">
+                Your investments{" "}
+                <span className="relative inline-block">
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-vela-teal via-emerald-400 to-teal-300">and</span>
+                </span>{" "}
+                your life finances.
+                <br />
+                <span className="text-zinc-500">Finally on one heading.</span>
+              </h1>
+            </Reveal>
+            <Reveal delay={180}>
+              <p className="text-zinc-400 text-lg max-w-xl leading-relaxed mb-9">
+                Your portfolio, research, planning, and taxes in one place, with an AI that
+                actually knows <span className="text-zinc-200">your</span> goals and gives you a
+                straight answer. Stop paying for four apps that don&apos;t talk to each other.
+              </p>
+            </Reveal>
+            <Reveal delay={260}><WaitlistForm id="hero-email" large /></Reveal>
+            <Reveal delay={340}>
+              <p className="text-zinc-600 text-xs mt-4 font-mono tracking-wide">Free to join · no spam · unsubscribe anytime</p>
+            </Reveal>
+          </div>
+
+          {/* hero stage — slot for the show-stopper animation; minimal guiding-star placeholder for now */}
+          <Reveal delay={200} className="relative hidden lg:block">
+            <div className="relative h-[440px]">
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_60%_45%,#14b8a610_0%,transparent_65%)]" />
+              <HeroVoyage />
+              <div className="absolute left-2 top-6 font-mono text-[10px] text-zinc-600 tabular-nums z-10">N 41.2°</div>
+              <div className="absolute left-0 bottom-8 font-mono text-[10px] text-zinc-600 tabular-nums z-10">↑ in motion</div>
+            </div>
+          </Reveal>
         </div>
       </section>
 
-      {/* ── Why Vela — fragmentation ──────────────────────────────────── */}
+      {/* ── Two waters, one current ───────────────────────────────────── */}
       <section className="relative z-10 px-6 md:px-12 pb-28 max-w-5xl mx-auto">
         <Reveal>
-          <p className="text-vela-teal text-sm font-medium tracking-widest uppercase mb-3 text-center">
-            The problem
-          </p>
-          <h2 className="font-display text-3xl md:text-4xl font-bold text-center mb-4 tracking-tight">
-            You shouldn&apos;t need four apps to manage your money.
+          <p className="text-vela-teal text-xs font-medium tracking-[0.2em] uppercase mb-3 text-center">The crossing</p>
+          <h2 className="font-display text-3xl md:text-[2.5rem] font-bold text-center mb-4 tracking-tight leading-tight">
+            Two waters most people row separately.
           </h2>
-          <p className="text-zinc-500 text-center max-w-xl mx-auto mb-14">
-            Today&apos;s tools force you to context-switch between research,
-            tracking, planning, and tax — each in a separate silo.
+          <p className="text-zinc-500 text-center max-w-xl mx-auto mb-12">
+            Your brokerage knows your stocks. Your budgeting app knows your spending. Neither knows
+            both, so nothing can tell you what a trade actually means for your goals. Velnor connects them.
           </p>
         </Reveal>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Fragmented side */}
-          <Reveal delay={100}>
-            <div className="rounded-2xl p-6 border border-zinc-800/60 bg-zinc-900/30">
-              <p className="text-sm font-medium text-zinc-500 uppercase tracking-wider mb-5">
-                Without Vela
-              </p>
-              <div className="space-y-3">
-                {COMPETITORS.map((c) => (
-                  <div
-                    key={c.name}
-                    className="flex items-center justify-between py-2.5 px-4 rounded-xl bg-zinc-800/30 border border-zinc-800/50"
-                  >
-                    <div>
-                      <p className="text-sm font-medium text-zinc-300">{c.name}</p>
-                      <p className="text-xs text-zinc-600">{c.focus} only</p>
-                    </div>
-                    <span className="text-xs text-loss/80 bg-loss/10 px-2.5 py-1 rounded-full">
-                      {c.missing}
-                    </span>
+        <div className="grid md:grid-cols-[1fr_auto_1fr] gap-4 md:gap-6 items-stretch">
+          <Reveal delay={80}>
+            <div className="h-full rounded-2xl p-5 border border-zinc-800/60 bg-zinc-900/30">
+              <p className="text-[11px] font-mono uppercase tracking-wider text-zinc-500 mb-4">Markets &amp; research</p>
+              <div className="space-y-2.5">
+                {["Brokerage apps", "Stock screeners", "Valuation spreadsheets", "Research subscriptions"].map((x) => (
+                  <div key={x} className="flex items-center justify-between py-2 px-3 rounded-lg bg-zinc-800/30 border border-zinc-800/50">
+                    <span className="text-sm text-zinc-300">{x}</span>
+                    <span className="text-[10px] text-loss/80 bg-loss/10 px-2 py-0.5 rounded-full">no life context</span>
                   </div>
                 ))}
               </div>
-              <p className="text-zinc-600 text-xs mt-4 text-center">4 subscriptions. 4 logins. Zero context.</p>
             </div>
           </Reveal>
 
-          {/* Vela side */}
-          <Reveal delay={200}>
-            <div className="rounded-2xl p-6 border border-vela-teal/20 bg-vela-teal/[0.03] relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-vela-teal/5 via-transparent to-transparent pointer-events-none" />
-              <p className="text-sm font-medium text-vela-teal uppercase tracking-wider mb-5 relative">
-                With Vela
-              </p>
-              <div className="space-y-3 relative">
-                {[
-                  "Portfolio tracking & intelligence",
-                  "DCF, Monte Carlo & valuation",
-                  "Goals, retirement & debt payoff",
-                  "Tax harvesting & projections",
-                  "Budgeting, net worth & cash flow",
-                  "Screener, watchlist & market pulse",
-                ].map((item) => (
-                  <div
-                    key={item}
-                    className="flex items-center gap-3 py-2.5 px-4 rounded-xl bg-vela-teal/[0.06] border border-vela-teal/10"
-                  >
-                    <span className="text-vela-teal flex-shrink-0">{icons.check}</span>
-                    <p className="text-sm text-zinc-200">{item}</p>
+          {/* the merge node */}
+          <Reveal delay={160} className="flex md:flex-col items-center justify-center gap-2">
+            <div className="hidden md:block w-px h-12 bg-gradient-to-b from-transparent to-vela-teal/40" />
+            <div className="w-12 h-12 rounded-xl bg-vela-teal/15 border border-vela-teal/40 flex items-center justify-center text-vela-teal shadow-[0_0_24px_#14b8a633] shrink-0">
+              {icons.compass}
+            </div>
+            <div className="hidden md:block w-px h-12 bg-gradient-to-b from-vela-teal/40 to-transparent" />
+          </Reveal>
+
+          <Reveal delay={240}>
+            <div className="h-full rounded-2xl p-5 border border-zinc-800/60 bg-zinc-900/30">
+              <p className="text-[11px] font-mono uppercase tracking-wider text-zinc-500 mb-4">Life &amp; planning</p>
+              <div className="space-y-2.5">
+                {["Budgeting apps", "Net-worth trackers", "Retirement calculators", "Goal planners"].map((x) => (
+                  <div key={x} className="flex items-center justify-between py-2 px-3 rounded-lg bg-zinc-800/30 border border-zinc-800/50">
+                    <span className="text-sm text-zinc-300">{x}</span>
+                    <span className="text-[10px] text-loss/80 bg-loss/10 px-2 py-0.5 rounded-full">no markets</span>
                   </div>
                 ))}
               </div>
-              <p className="text-vela-teal/60 text-xs mt-4 text-center relative">One platform. One login. Full picture.</p>
             </div>
           </Reveal>
         </div>
+        <Reveal delay={300}>
+          <div className="mt-6 rounded-2xl p-5 border border-vela-teal/25 bg-vela-teal/[0.04] relative overflow-hidden text-center">
+            <div className="absolute inset-0 bg-gradient-to-br from-vela-teal/[0.06] via-transparent to-transparent" />
+            <p className="relative text-sm text-zinc-200">
+              <span className="text-vela-teal font-medium">Velnor</span> is the one place that does both.
+              One login, one view, your full financial picture.
+            </p>
+          </div>
+        </Reveal>
       </section>
 
-      {/* ── Aspirational ──────────────────────────────────────────────── */}
-      <section className="relative z-10 px-6 py-24 md:py-32">
+      {/* ── Three waypoints on the course ─────────────────────────────── */}
+      <section className="relative z-10 px-6 md:px-12 pb-28 max-w-4xl mx-auto">
+        <Reveal>
+          <p className="text-vela-teal text-xs font-medium tracking-[0.2em] uppercase mb-3 text-center">The course</p>
+          <h2 className="font-display text-3xl md:text-[2.5rem] font-bold text-center mb-14 tracking-tight">
+            Three waypoints to clarity.
+          </h2>
+        </Reveal>
+
+        <div className="relative">
+          {/* charted course line */}
+          <svg className="absolute left-[19px] md:left-1/2 md:-translate-x-1/2 top-2 bottom-2 h-[calc(100%-1rem)] w-6 z-0" viewBox="0 0 8 600" preserveAspectRatio="none" aria-hidden>
+            <path d="M4 0 L4 600" stroke="#14b8a6" strokeOpacity="0.3" strokeWidth="1.4" strokeDasharray="2 7" strokeLinecap="round" />
+          </svg>
+
+          <div className="space-y-5 relative z-10">
+            {[
+              { tag: "Waypoint I", title: "See the whole sky", body: "Portfolio, net worth, goals, and cash flow in one view. No more stitching four apps together just to figure out where you stand." },
+              { tag: "Waypoint II", title: "Sail by real instruments", body: "A 5,000-ticker screener, DCF and reverse-DCF valuation, and company deep-dives. The real tools to judge what a stock is worth before you buy, not the toy charts in your brokerage app." },
+              { tag: "Waypoint III", title: "An intelligence that's yours", body: "Velnor reads your holdings through the goals and style you set. Tell it you invest for growth and you get growth advice; say you're protecting capital and the same portfolio gets a very different take, always tied to your real numbers, never made up." },
+            ].map((w, i) => (
+              <Reveal key={w.title} delay={i * 90}>
+                <div className="flex gap-4 md:gap-6 md:even:flex-row-reverse md:text-right md:even:text-left">
+                  <div className="relative shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-vela-bg border border-vela-teal/40 flex items-center justify-center shadow-[0_0_18px_#14b8a626]">
+                      <span className="w-2 h-2 rounded-full bg-vela-teal shadow-[0_0_8px_#14b8a6]" />
+                    </div>
+                  </div>
+                  <div className="vela-card flex-1 md:max-w-[440px]">
+                    <p className="font-mono text-[10px] tracking-widest uppercase text-vela-teal/70 mb-1.5">{w.tag}</p>
+                    <h3 className="font-display font-semibold text-lg text-zinc-100 mb-1.5">{w.title}</h3>
+                    <p className="text-zinc-500 text-sm leading-relaxed">{w.body}</p>
+                  </div>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Set your bearing (interactive differentiator) ─────────────── */}
+      <section className="relative z-10 px-6 md:px-12 pb-28 max-w-5xl mx-auto">
+        <div className="grid lg:grid-cols-2 gap-10 items-center">
+          <Reveal>
+            <p className="text-vela-teal text-xs font-medium tracking-[0.2em] uppercase mb-3">The difference</p>
+            <h2 className="font-display text-3xl md:text-[2.4rem] font-bold tracking-tight leading-tight mb-5">
+              Most tools give everyone the same answer. Velnor asks where <span className="text-transparent bg-clip-text bg-gradient-to-r from-vela-teal to-emerald-400">you&apos;re headed</span> first.
+            </h2>
+            <p className="text-zinc-500 leading-relaxed mb-4">
+              Pick what you&apos;re investing for, and the same portfolio gets a completely different
+              read. That&apos;s the point: advice built around your goals, not a one-size-fits-all
+              risk score. Try it on the right.
+            </p>
+            <p className="text-zinc-600 text-sm">And it never makes up a number. If it doesn&apos;t have the figure, it tells you.</p>
+          </Reveal>
+          <Reveal delay={150}><BearingDemo /></Reveal>
+        </div>
+      </section>
+
+      {/* ── For navigators (aspirational) ─────────────────────────────── */}
+      <section className="relative z-10 px-6 py-20 md:py-28">
         <Reveal>
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="font-display text-3xl md:text-4xl font-bold tracking-tight mb-5">
-              Built for investors who{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-vela-teal to-emerald-400">
-                think in decades
-              </span>
-              , not days.
+              For people who&apos;d rather{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-vela-teal to-emerald-400">navigate</span>{" "}
+              than drift.
             </h2>
             <p className="text-zinc-500 text-lg leading-relaxed max-w-2xl mx-auto">
-              Vela is for people who take their money seriously — not day traders
-              chasing tickers, but long-term builders who want clarity across
-              their entire financial life.
+              Velnor is for serious self-directed investors. People who want to see their whole financial
+              picture, make their own calls, and use tools that respect how much they care about getting it right.
             </p>
           </div>
         </Reveal>
@@ -439,16 +527,11 @@ export default function LandingPage() {
       {/* ── Bottom CTA ────────────────────────────────────────────────── */}
       <section className="relative z-10 px-6 pb-32">
         <Reveal>
-          <div className="max-w-xl mx-auto text-center">
-            <h3 className="font-display text-2xl md:text-3xl font-bold tracking-tight mb-3">
-              Be the first to know.
-            </h3>
-            <p className="text-zinc-500 mb-8">
-              Join the waitlist and get early access when we launch.
-            </p>
-            <div className="flex justify-center">
-              <WaitlistForm id="bottom-email" />
-            </div>
+          <div className="max-w-xl mx-auto text-center relative">
+            <span className="inline-block w-1.5 h-1.5 rounded-full bg-teal-200 shadow-[0_0_14px_5px_#5eead455] mb-6 animate-[ambient-pulse_3s_ease-in-out_infinite]" />
+            <h3 className="font-display text-2xl md:text-3xl font-bold tracking-tight mb-3 relative">Come aboard before we sail.</h3>
+            <p className="text-zinc-500 mb-8">Join the waitlist for early access when Velnor launches.</p>
+            <div className="flex justify-center"><WaitlistForm id="bottom-email" /></div>
           </div>
         </Reveal>
       </section>
@@ -457,12 +540,10 @@ export default function LandingPage() {
       <footer className="relative z-10 border-t border-zinc-800/40 px-6 py-8">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-zinc-600 text-xs">
           <div className="flex items-center gap-2">
-            <div className="w-5 h-5 rounded bg-vela-teal/15 flex items-center justify-center text-vela-teal font-bold text-[10px]">
-              V
-            </div>
-            <span>Vela &copy; {new Date().getFullYear()}</span>
+            <div className="w-5 h-5 rounded bg-vela-teal/15 flex items-center justify-center text-vela-teal font-bold text-[10px]">V</div>
+            <span>Velnor &copy; {new Date().getFullYear()}</span>
           </div>
-          <p>Your wealth, in motion.</p>
+          <p className="font-mono tracking-wide">Your wealth, in motion.</p>
         </div>
       </footer>
     </div>

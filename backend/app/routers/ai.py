@@ -9,15 +9,18 @@ from decimal import Decimal
 from datetime import datetime, timezone
 from pydantic import BaseModel
 
-from fastapi import APIRouter, Depends
+from datetime import date
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
+from app.core.cache import rate_limit_increment, rate_limit_get
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy import func as sqlfunc
 
 from app.dependencies import get_current_user, get_db
-from app.models.db import User, Portfolio, Holding, Goal, NetWorthAsset, Transaction
-from app.services import ai_service
+from app.core.tier import require_tier, Tier
+from app.models.db import User, Portfolio, Holding, Goal, NetWorthAsset, Transaction, UserKVStore
+from app.services import ai_service, portfolio_calc, market_data
 from app.services.market_data import cache_get
 from app.services.macro_service import get_macro_dashboard
 
@@ -29,18 +32,16 @@ router = APIRouter(prefix="/ai")
 @router.get("/earnings/{ticker}")
 async def earnings_summary(
     ticker: str,
-    _: User = Depends(get_current_user),
+    user: User = Depends(get_current_user),
 ):
     """Stream an AI-generated earnings intelligence briefing for a stock."""
+    sse_headers = await _enforce_insight_quota(user)
     t = ticker.upper()
 
     return StreamingResponse(
         ai_service.get_earnings_summary(t),
         media_type="text/event-stream",
-        headers={
-            "Cache-Control": "no-cache",
-            "X-Accel-Buffering": "no",
-        },
+        headers=sse_headers,
     )
 
 
@@ -62,15 +63,13 @@ async def generate_plan(
     db: AsyncSession = Depends(get_db),
 ):
     """Stream a personalised financial plan based on the user's data."""
+    sse_headers = await _enforce_insight_quota(user)
     context = await _build_user_context(user, db)
 
     return StreamingResponse(
         ai_service.stream_financial_plan(context),
         media_type="text/event-stream",
-        headers={
-            "Cache-Control": "no-cache",
-            "X-Accel-Buffering": "no",
-        },
+        headers=sse_headers,
     )
 
 
@@ -86,6 +85,7 @@ async def learn_analysis(
     db: AsyncSession = Depends(get_db),
 ):
     """Stream a concept-applied stock analysis for the Learn section."""
+    sse_headers = await _enforce_insight_quota(user)
     ticker = body.ticker.upper()
 
     # Fetch ticker financial data (reuse earnings raw data)
@@ -112,25 +112,25 @@ async def learn_analysis(
                     "avg_cost_basis": float(h.avg_cost_basis),
                     "total_cost": float(h.total_cost),
                 }
-                # Enrich from cached portfolio summary if available
-                cached_summary = await cache_get(f"portfolio_summary:{portfolio.id}")
-                if cached_summary and "holdings" in cached_summary:
-                    for ch in cached_summary["holdings"]:
-                        if ch.get("ticker", "").upper() == ticker:
-                            holding_context.update({
-                                "market_value": ch.get("market_value"),
-                                "unrealized_pnl": ch.get("unrealized_pnl"),
-                                "unrealized_pnl_pct": ch.get("unrealized_pnl_pct"),
-                            })
+                # Enrich with a live quote for this one ticker. (The previous code
+                # read a portfolio_summary cache that is never written, so market
+                # value never reached the learn analysis.)
+                quotes = await market_data.get_quotes([h.ticker], ttl=60)
+                price = float((quotes.get(h.ticker) or {}).get("price", 0) or 0)
+                if price > 0:
+                    mv = price * float(h.quantity)
+                    cost = float(h.total_cost)
+                    holding_context.update({
+                        "market_value": round(mv, 2),
+                        "unrealized_pnl": round(mv - cost, 2),
+                        "unrealized_pnl_pct": round((mv - cost) / cost * 100, 2) if cost > 0 else None,
+                    })
                 break
 
     return StreamingResponse(
         ai_service.stream_learn_analysis(body.concept_id, ticker, ticker_data, holding_context),
         media_type="text/event-stream",
-        headers={
-            "Cache-Control": "no-cache",
-            "X-Accel-Buffering": "no",
-        },
+        headers=sse_headers,
     )
 
 
@@ -186,15 +186,29 @@ async def _build_user_context(user: User, db: AsyncSession) -> dict:
             select(Holding).where(Holding.portfolio_id == portfolio.id)
         )
         holdings = holdings_result.scalars().all()
+        # Enrich with live prices (the portfolio_summary cache is never written).
+        tickers = [h.ticker for h in holdings]
+        quotes = await market_data.get_quotes(tickers, ttl=60) if tickers else {}
+        enriched, totals = portfolio_calc.enrich_holdings_with_quotes(holdings, quotes)
         portfolio_ctx = {
             "holdings_count": len(holdings),
-            "top_holdings": [h.ticker for h in sorted(holdings, key=lambda x: float(x.total_cost), reverse=True)][:5],
+            "total_value": float(totals.get("total_value") or 0),
+            "unrealized_pnl": float(totals.get("unrealized_pnl") or 0),
+            "top_holdings": [
+                e["ticker"]
+                for e in sorted(enriched, key=lambda x: float(x.get("market_value") or 0), reverse=True)
+            ][:5],
         }
-        # Try to get enriched portfolio value from cache
-        from app.services.market_data import cache_get as cg
-        cached_summary = await cg(f"portfolio_summary:{portfolio.id}")
-        if cached_summary:
-            portfolio_ctx.update(cached_summary)
+
+    # Investor profile (objective, risk, horizon, philosophy) from the cloud KV store
+    prof_result = await db.execute(
+        select(UserKVStore).where(
+            UserKVStore.user_id == user.id,
+            UserKVStore.key == "user_profile",
+        )
+    )
+    prof_row = prof_result.scalar_one_or_none()
+    profile = prof_row.data if prof_row and isinstance(prof_row.data, dict) else {}
 
     return {
         "net_worth": {
@@ -205,6 +219,7 @@ async def _build_user_context(user: User, db: AsyncSession) -> dict:
         "cash_flow": cf_data,
         "goals": goals,
         "portfolio": portfolio_ctx,
+        "profile": profile,
     }
 
 
@@ -215,6 +230,96 @@ class ThesisNote(BaseModel):
     stance: str
     title: str
     body: str
+
+
+class AlertInsightRequest(BaseModel):
+    alert_title: str
+    alert_description: str
+    alert_category: str
+    alert_severity: str
+
+
+# Insight limits per tier (per day). -1 = unlimited.
+_INSIGHT_LIMITS: dict[str, int] = {
+    "horizon":   0,   # free — no AI insights
+    "voyager":   10,  # mid — 10/day
+    "navigator": -1,  # pro — unlimited
+}
+
+
+async def _enforce_insight_quota(user: User) -> dict[str, str]:
+    """
+    Enforce the per-tier AI insight quota for any AI-generating endpoint.
+
+    - Horizon (free): raises 403 — AI is a paid feature.
+    - Voyager: increments a shared per-day Redis counter; raises 429 when the
+      daily limit is exhausted.
+    - Navigator: unlimited.
+
+    Returns the SSE headers (including remaining-quota hints) to attach to the
+    StreamingResponse. All AI insight endpoints share one daily counter so the
+    "10 insights/day" limit spans plans, earnings briefings, and learn analyses.
+    """
+    tier = user.tier or "horizon"
+    daily_limit = _INSIGHT_LIMITS.get(tier, 0)
+
+    # Block horizon tier entirely
+    if daily_limit == 0:
+        raise HTTPException(
+            status_code=403,
+            detail="AI insights are not available on the free plan. Upgrade to Voyager or Navigator.",
+        )
+
+    sse_headers: dict[str, str] = {
+        "Cache-Control": "no-cache",
+        "X-Accel-Buffering": "no",
+    }
+
+    # Rate-limit voyager tier via Redis daily counter
+    if daily_limit > 0:
+        today = date.today().isoformat()
+        rate_key = f"insight_limit:{user.id}:{today}"
+        # TTL = 25h so counter always outlives the calendar day
+        count, allowed = await rate_limit_increment(rate_key, daily_limit, ttl=90000)
+        if not allowed:
+            raise HTTPException(
+                status_code=429,
+                detail=f"Daily limit of {daily_limit} AI insights reached. Resets at midnight. Upgrade to Navigator for unlimited insights.",
+                headers={"X-Insight-Limit": str(daily_limit), "X-Insight-Used": str(count)},
+            )
+        remaining = daily_limit - count
+        sse_headers["X-Insight-Remaining"] = str(remaining)
+        sse_headers["X-Insight-Limit"] = str(daily_limit)
+
+    return sse_headers
+
+
+@router.post("/alert-insight")
+async def alert_insight(
+    body: AlertInsightRequest,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Stream a personalised AI insight for a specific smart alert."""
+    sse_headers = await _enforce_insight_quota(user)
+
+    context = await _build_user_context(user, db)
+    # (Removed a dead `portfolio_sectors` cache read that was never populated, so
+    # it always no-op'd. Computing sectors live here would add per-ticker info
+    # fetches to this high-frequency endpoint and isn't worth the cost.)
+
+    alert = {
+        "title": body.alert_title,
+        "description": body.alert_description,
+        "category": body.alert_category,
+        "severity": body.alert_severity,
+    }
+
+    return StreamingResponse(
+        ai_service.stream_alert_insight(alert, context),
+        media_type="text/event-stream",
+        headers=sse_headers,
+    )
 
 
 class ReflectMessage(BaseModel):
@@ -242,8 +347,10 @@ async def portfolio_reflect(
     body: ReflectRequest,
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
+    _tier: None = Depends(require_tier(Tier.NAVIGATOR)),
 ):
-    """Stream an AI portfolio reflection response."""
+    """Stream an AI portfolio reflection response. Navigator-only (matches the
+    Reflect page's frontend tier gate)."""
     # ── Fetch holdings from DB ──────────────────────────────────────────────
     portfolio_result = await db.execute(
         select(Portfolio).where(
@@ -254,7 +361,6 @@ async def portfolio_reflect(
     portfolio = portfolio_result.scalar_one_or_none()
 
     holdings_ctx: list[dict] = []
-    total_value = 1  # avoid division by zero default
     if portfolio:
         holdings_result = await db.execute(
             select(Holding).where(Holding.portfolio_id == portfolio.id)
@@ -275,12 +381,19 @@ async def portfolio_reflect(
             row.ticker: row.first_buy for row in tx_result
         }
 
-        # Try enriched cache for market values and P&L
-        cached_summary = await cache_get(f"portfolio_summary:{portfolio.id}")
-        cached_by_ticker: dict[str, dict] = {}
-        if cached_summary and "holdings" in cached_summary:
-            cached_by_ticker = {h["ticker"]: h for h in cached_summary["holdings"]}
-            total_value = cached_summary.get("total_value") or 1
+        # Enrich with live prices the same way the portfolio summary endpoint does.
+        # (The previous code read a `portfolio_summary:{id}` cache that is never
+        # written, so every weight came back None and rendered as "0.0%" — Claude
+        # saw an all-zero portfolio.) Compute fresh from quotes, and fall back to
+        # cost-basis weights if prices are unavailable so the context is never zero.
+        tickers = [h.ticker for h in raw_holdings]
+        quotes = await market_data.get_quotes(tickers, ttl=60) if tickers else {}
+        enriched, totals = portfolio_calc.enrich_holdings_with_quotes(raw_holdings, quotes)
+        enriched_by_ticker = {e["ticker"]: e for e in enriched}
+
+        market_total = float(totals.get("total_value") or 0)
+        cost_total = sum(float(h.total_cost) for h in raw_holdings) or 1.0
+        use_cost_basis = market_total <= 0  # prices unavailable -> weight by cost
 
         for h in raw_holdings:
             days_held: int | None = None
@@ -290,17 +403,20 @@ async def portfolio_reflect(
                     fb = fb.replace(tzinfo=timezone.utc)
                 days_held = (datetime.now(timezone.utc) - fb).days
 
-            cached = cached_by_ticker.get(h.ticker, {})
-            weight_pct = (
-                (cached.get("market_value") or 0) / total_value * 100
-                if cached_summary and total_value
-                else None
-            )
+            e = enriched_by_ticker.get(h.ticker, {})
+            if use_cost_basis:
+                weight_pct = float(h.total_cost) / cost_total * 100
+                pnl_pct = None
+            else:
+                weight_pct = float(e.get("market_value") or 0) / market_total * 100
+                raw_pnl = e.get("unrealized_pnl_pct")
+                pnl_pct = float(raw_pnl) if raw_pnl is not None else None
+
             holdings_ctx.append({
                 "ticker": h.ticker,
                 "days_held": days_held,
                 "weight_pct": weight_pct,
-                "unrealized_pnl_pct": cached.get("unrealized_pnl_pct"),
+                "unrealized_pnl_pct": pnl_pct,
             })
 
     # ── Fetch goals + net worth ──────────────────────────────────────────────

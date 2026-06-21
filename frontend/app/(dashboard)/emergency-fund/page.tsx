@@ -61,12 +61,12 @@ function analyzeEmergencyFund(
     grade = "A";
     gradeColor = "text-emerald-400";
     gradeBg = "bg-emerald-500";
-    summary = `Fully funded. You have ${monthsCovered.toFixed(1)} months of expenses covered — meeting your ${targetMonths}-month target.`;
+    summary = `Fully funded. You have ${monthsCovered.toFixed(1)} months of expenses covered  - meeting your ${targetMonths}-month target.`;
   } else if (monthsCovered >= targetMonths * 0.75) {
     grade = "B";
     gradeColor = "text-emerald-400";
     gradeBg = "bg-emerald-500";
-    summary = `Almost there. ${monthsCovered.toFixed(1)} months covered — ${formatCompact(gap)} more to reach your ${targetMonths}-month target.`;
+    summary = `Almost there. ${monthsCovered.toFixed(1)} months covered  - ${formatCompact(gap)} more to reach your ${targetMonths}-month target.`;
   } else if (monthsCovered >= 3) {
     grade = "C";
     gradeColor = "text-amber-400";
@@ -309,7 +309,7 @@ export default function EmergencyFundPage() {
 
             {analysis.grade === "A" && (
               <Tip
-                title="You're set — consider optimizing"
+                title="You're set  - consider optimizing"
                 body="Your emergency fund is fully funded. Make sure it's in a high-yield savings account (4-5% APY) rather than a regular checking account. Any savings beyond your target can go toward investing."
                 color="text-emerald-400"
               />
@@ -318,7 +318,7 @@ export default function EmergencyFundPage() {
             {(analysis.grade === "B" || analysis.grade === "C") && (
               <Tip
                 title={`${formatCompact(analysis.gap)} more to reach your target`}
-                body={`At ${formatCompact(analysis.monthlySavings)}/mo savings, you'll get there in ${analysis.monthsToTarget ?? "—"} months. Consider automating a transfer to a dedicated HYSA on payday to make it effortless.`}
+                body={`At ${formatCompact(analysis.monthlySavings)}/mo savings, you'll get there in ${analysis.monthsToTarget ?? " -"} months. Consider automating a transfer to a dedicated HYSA on payday to make it effortless.`}
                 color="text-amber-400"
               />
             )}
@@ -341,7 +341,7 @@ export default function EmergencyFundPage() {
             {analysis.liquidAssets > 0 && analysis.monthlyExpenses > 0 && (
               <Tip
                 title="Where to keep it"
-                body="Emergency funds should be liquid and safe — a high-yield savings account (HYSA) is ideal. Avoid CDs (locked up) or brokerage accounts (volatile). Check the Savings Finder page for current HYSA rates."
+                body="Emergency funds should be liquid and safe  - a high-yield savings account (HYSA) is ideal. Avoid CDs (locked up) or brokerage accounts (volatile). Check the Savings Finder page for current HYSA rates."
                 color="text-zinc-400"
               />
             )}

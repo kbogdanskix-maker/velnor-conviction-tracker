@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
+import { useProfile } from "@/hooks/useProfile";
 import { Users, TrendingUp, TrendingDown, Info, Sliders, Shield, Sparkles } from "lucide-react";
 import { useDefaultPortfolio } from "@/hooks/usePortfolio";
 import { useNetWorthSummary } from "@/hooks/useNetWorth";
@@ -80,10 +81,28 @@ export default function BenchmarkPage() {
   const { dividends } = useDividendSummary(hasHoldings ? (summary as any)?.portfolio_id ?? null : null);
   const { summary: nwSummary } = useNetWorthSummary();
   const { summary: cfSummary } = useCashFlowSummary();
+  const { profile: userProfile } = useProfile();
 
-  const [age, setAge] = useState(30);
-  const [profile, setProfile] = useState<RiskProfile>(DEFAULT_PROFILE);
+  const [age, setAge] = useState(userProfile.age);
+  const [profile, setProfile] = useState<RiskProfile>({
+    ...DEFAULT_PROFILE,
+    riskTolerance: userProfile.riskTolerance,
+    hasDependents: userProfile.dependents > 0,
+  });
   const [showProfile, setShowProfile] = useState(true);
+
+  // useProfile loads from an async cloud store, so the initial useState above
+  // captures DEFAULT_PROFILE (age 30, moderate) before the real values arrive.
+  // Sync the benchmark's age/risk/dependents once the actual profile resolves.
+  // What-if overrides change local state (not userProfile), so they're preserved.
+  useEffect(() => {
+    setAge(userProfile.age);
+    setProfile((prev) => ({
+      ...prev,
+      riskTolerance: userProfile.riskTolerance,
+      hasDependents: userProfile.dependents > 0,
+    }));
+  }, [userProfile.age, userProfile.riskTolerance, userProfile.dependents]);
 
   function updateProfile<K extends keyof RiskProfile>(key: K, value: RiskProfile[K]) {
     setProfile((prev) => ({ ...prev, [key]: value }));

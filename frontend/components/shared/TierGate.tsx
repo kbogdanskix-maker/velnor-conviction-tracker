@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * TierGate — wraps any Voyager/Navigator-only feature.
+ * TierGate  - wraps any Voyager/Navigator-only feature.
  * Shows an upgrade prompt if the user's tier is insufficient.
  *
  * IMPORTANT: This is UX-only. The real enforcement is on the backend.

@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spec — Portfolio Reflection</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #080808;
+    color: #e4e4e7;
+    font-family: 'Geist', system-ui, sans-serif;
+    font-size: 13.5px;
+    line-height: 1.7;
+    padding: 40px 24px 80px;
+    max-width: 820px;
+    margin: 0 auto;
+  }
+
+  .meta {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 28px;
+  }
+  .meta-pill {
+    font-size: 10.5px;
+    padding: 3px 9px;
+    border-radius: 99px;
+    border: 1px solid #1c1c1e;
+    color: #71717a;
+    font-family: 'Geist Mono', monospace;
+  }
+  .meta-pill.green { border-color: #14b8a630; color: #14b8a6; background: #14b8a608; }
+
+  h1 {
+    font-size: 26px;
+    font-weight: 700;
+    color: #f4f4f5;
+    letter-spacing: -0.5px;
+    margin-bottom: 10px;
+  }
+
+  hr {
+    border: none;
+    border-top: 1px solid #141414;
+    margin: 28px 0;
+  }
+
+  h2 {
+    font-size: 15px;
+    font-weight: 600;
+    color: #f4f4f5;
+    letter-spacing: -0.2px;
+    margin: 32px 0 12px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #141414;
+  }
+
+  h3 {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #a1a1aa;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 20px 0 8px;
+  }
+
+  h4 {
+    font-size: 13px;
+    font-weight: 600;
+    color: #d4d4d8;
+    margin: 16px 0 6px;
+  }
+
+  p { margin-bottom: 10px; color: #a1a1aa; }
+  p strong { color: #e4e4e7; }
+
+  ul, ol {
+    padding-left: 18px;
+    margin-bottom: 10px;
+    color: #a1a1aa;
+  }
+  li { margin-bottom: 4px; }
+  li strong { color: #e4e4e7; }
+
+  code {
+    font-family: 'Geist Mono', monospace;
+    font-size: 11.5px;
+    background: #111;
+    border: 1px solid #1c1c1e;
+    padding: 1px 5px;
+    border-radius: 4px;
+    color: #14b8a6;
+  }
+
+  pre {
+    background: #0c0c0c;
+    border: 1px solid #1a1a1a;
+    border-radius: 10px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    margin: 10px 0 16px;
+  }
+  pre code {
+    background: none;
+    border: none;
+    padding: 0;
+    color: #a1a1aa;
+    font-size: 11.5px;
+    line-height: 1.6;
+  }
+
+  .overview-box {
+    background: #0d0d0d;
+    border: 1px solid #1a1a1a;
+    border-left: 3px solid #14b8a6;
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    color: #a1a1aa;
+  }
+
+  .section-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .section-card {
+    background: #0d0d0d;
+    border: 1px solid #161616;
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+
+  .section-card h4 { margin-top: 0; margin-bottom: 8px; font-size: 12px; color: #71717a; text-transform: uppercase; letter-spacing: 0.08em; }
+  .section-card ul { margin: 0; padding-left: 14px; }
+  .section-card li { font-size: 12px; color: #71717a; margin-bottom: 3px; }
+  .section-card li strong { color: #d4d4d8; }
+
+  .rule-list {
+    background: #0d0d0d;
+    border: 1px solid #161616;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 10px 0;
+  }
+  .rule-list li {
+    font-size: 12.5px;
+    color: #71717a;
+    padding: 4px 0;
+    border-bottom: 1px solid #111;
+  }
+  .rule-list li:last-child { border-bottom: none; }
+  .rule-list li::marker { color: #14b8a6; }
+
+  .out-of-scope {
+    background: #0a0a0a;
+    border: 1px solid #141414;
+    border-radius: 8px;
+    padding: 12px 16px;
+  }
+  .out-of-scope li { color: #3f3f46; font-size: 12px; }
+
+  .flow-box {
+    background: #0c0c0c;
+    border: 1px solid #1a1a1a;
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-family: 'Geist Mono', monospace;
+    font-size: 11px;
+    color: #52525b;
+    line-height: 1.8;
+  }
+  .flow-box .comment { color: #3f3f46; }
+  .flow-box .arrow { color: #14b8a6; }
+  .flow-box .action { color: #a1a1aa; }
+
+  .tag {
+    display: inline-block;
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-family: 'Geist Mono', monospace;
+    margin-left: 4px;
+    vertical-align: middle;
+  }
+  .tag.teal { background: #14b8a610; color: #14b8a6; border: 1px solid #14b8a630; }
+  .tag.amber { background: #f59e0b10; color: #f59e0b; border: 1px solid #f59e0b30; }
+</style>
+</head>
+<body>
+
+<div class="meta">
+  <span class="meta-pill">2026-05-27</span>
+  <span class="meta-pill green">Approved</span>
+  <span class="meta-pill">route: /optimizer</span>
+  <span class="meta-pill">label: Reflect</span>
+</div>
+
+<h1>Portfolio Reflection</h1>
+<hr>
+
+<div class="overview-box">
+  Replace the optimizer page with a persistent, context-aware conversational interface — not a critique, but a <strong>thinking partner</strong> that observes the portfolio, surfaces connections to live market data and the user's own notes, and asks focused questions to help the user articulate their own reasoning.<br><br>
+  AI approach: <strong>Reflective Analyst</strong> — opens with a data-driven observation, shares a concise read, asks one focused question. Tone calibrated to declared sophistication level.
+</div>
+
+<h2>Page Structure</h2>
+<div class="section-grid">
+  <div class="section-card">
+    <h4>Layout</h4>
+    <ul>
+      <li>Two-column desktop</li>
+      <li><strong>240px</strong> context panel left</li>
+      <li>Chat fills remaining width</li>
+      <li>Single-column stack on mobile</li>
+    </ul>
+  </div>
+  <div class="section-card">
+    <h4>Route &amp; nav</h4>
+    <ul>
+      <li>Route: <strong>/optimizer</strong> (unchanged)</li>
+      <li>Sidebar label: <strong>Reflect</strong></li>
+      <li>Icon: <strong>Brain</strong></li>
+      <li>Heading: "Reflect"</li>
+    </ul>
+  </div>
+</div>
+
+<h2>Context Panel</h2>
+<p>Everything the AI knows about you — visible so you can see its full picture. Read-only; editing lives in each respective page.</p>
+
+<div class="section-grid">
+  <div class="section-card">
+    <h4>Portfolio</h4>
+    <ul>
+      <li>Total value, total return %</li>
+      <li>Sharpe, volatility, position count</li>
+      <li><em>Source: SWR summary cache</em></li>
+    </ul>
+  </div>
+  <div class="section-card">
+    <h4>Holdings</h4>
+    <ul>
+      <li>Ticker + <strong>days held</strong> (from <code>created_at</code>)</li>
+      <li>Weight % + unrealised P&L %</li>
+      <li>Sorted by weight desc</li>
+    </ul>
+  </div>
+  <div class="section-card">
+    <h4>Thesis</h4>
+    <ul>
+      <li>Count + teal indicator</li>
+      <li>"View →" → /thesis</li>
+      <li>Nudge note below count</li>
+    </ul>
+  </div>
+  <div class="section-card">
+    <h4>Goals</h4>
+    <ul>
+      <li>Primary goal name + target</li>
+      <li>Progress bar + % funded</li>
+      <li>Years remaining</li>
+    </ul>
+  </div>
+  <div class="section-card">
+    <h4>Profile pills</h4>
+    <ul>
+      <li><strong>Risk</strong> <span class="tag teal">teal</span></li>
+      <li><strong>Sophistication</strong> <span class="tag teal">teal</span></li>
+      <li>Age, tax bracket</li>
+      <li><strong>Avg hold</strong> <span class="tag amber">amber</span> — behavioral gap flag</li>
+    </ul>
+  </div>
+  <div class="section-card">
+    <h4>Quick Notes</h4>
+    <ul>
+      <li>Multi-line textarea</li>
+      <li>Auto-saves on blur → <code>reflection_notes</code></li>
+      <li>Injected into every AI message</li>
+    </ul>
+  </div>
+</div>
+
+<h2>Chat</h2>
+
+<h3>Persistence</h3>
+<ul>
+  <li>Stored in <code>useCloudStore("portfolio_reflection_chat")</code></li>
+  <li>Schema: <code>{ messages: Message[], started_at, last_active }</code></li>
+  <li>Capped at <strong>50 messages</strong> — oldest trimmed when exceeded</li>
+  <li>"Clear chat" resets and triggers a new opening message</li>
+</ul>
+
+<h3>Opening message</h3>
+<ul>
+  <li>Auto-generated on first load or after clear — no user action required</li>
+  <li>Picks the most interesting signal: quick notes × macro data, largest concentration, behavioral gap</li>
+</ul>
+
+<h3>Input</h3>
+<ul>
+  <li>Multi-line textarea, grows up to 4 lines</li>
+  <li><code>Cmd+Enter</code> / <code>Ctrl+Enter</code> to send — Enter adds newline</li>
+  <li>Disabled while AI is responding</li>
+</ul>
+
+<h2>Backend — POST /ai/reflect</h2>
+
+<h3>Request body</h3>
+<pre><code>{
+  "messages": [{ "role": "user|assistant", "content": "..." }],
+  "profile": { "age": 30, "riskTolerance": "aggressive", "sophistication": "advanced", "marginalTaxRate": 22 },
+  "quick_notes": "Yields rising — thinking large banks for NIM...",
+  "thesis_notes": [{ "ticker": "NVDA", "stance": "bullish", "title": "...", "body": "..." }],
+  "is_opening": false
+}</code></pre>
+
+<h3>Backend enrichment (server-side)</h3>
+<ul>
+  <li>Full holdings from DB (<code>ticker</code>, <code>avg_cost_basis</code>, <code>quantity</code>, <code>created_at</code>)</li>
+  <li>Enriched portfolio summary from Redis cache</li>
+  <li>Goals + net worth from DB</li>
+  <li>Macro context: 10Y yield, Fed Funds rate, VIX (existing macro service)</li>
+</ul>
+
+<h3>System prompt rules</h3>
+<ul class="rule-list">
+  <li>Ask one question at a time — never multiple in one message</li>
+  <li>Keep responses under 120 words unless user asks to elaborate</li>
+  <li>Never tell the user they made a mistake — ask questions that help them reach their own conclusions</li>
+  <li>Never add generic financial advice or disclaimer boilerplate</li>
+  <li>When notes mention a market theme, connect it to their actual portfolio</li>
+  <li>Reference specific tickers and real numbers</li>
+  <li>Tone scales with sophistication: Advanced = institutional, Intermediate = brief explanations, Beginner = accessible</li>
+</ul>
+
+<h2>Data Flow</h2>
+<div class="flow-box">
+  <span class="comment">// Page load</span><br>
+  <span class="arrow">→</span> <span class="action">useCloudStore loads messages, quick_notes, theses, profile</span><br>
+  <span class="arrow">→</span> <span class="action">SWR loads portfolio summary, goals</span><br>
+  <span class="arrow">→</span> <span class="action">if messages empty: POST /ai/reflect { is_opening: true }</span><br>
+  <span class="arrow">→</span> <span class="action">stream opening message → append → save to cloud KV</span><br>
+  <br>
+  <span class="comment">// User sends message</span><br>
+  <span class="arrow">→</span> <span class="action">append user message to state + cloud KV</span><br>
+  <span class="arrow">→</span> <span class="action">POST /ai/reflect { messages: [...history], ...context }</span><br>
+  <span class="arrow">→</span> <span class="action">stream response, append chunks live</span><br>
+  <span class="arrow">→</span> <span class="action">on done: save final messages to cloud KV</span>
+</div>
+
+<h2>Profile Changes</h2>
+<p>Add <code>sophistication: "beginner" | "intermediate" | "advanced"</code> to <code>UserProfile</code> in <code>useProfile.ts</code>. Default: <strong>intermediate</strong>. Add selector to My Profile page alongside risk tolerance.</p>
+
+<h2>Out of Scope</h2>
+<ul class="out-of-scope">
+  <li>Rich Quick Capture Notes tab (images, links, video embeds) — separate spec</li>
+  <li>Proactive notifications ("yields moved, check your note") — requires background job</li>
+  <li>Per-holding conversation threads</li>
+</ul>
+
+</body>
+</html>

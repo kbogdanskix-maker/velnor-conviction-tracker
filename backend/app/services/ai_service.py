@@ -224,22 +224,72 @@ async def get_earnings_summary(ticker: str) -> AsyncGenerator[str, None]:
 
 # ── Financial plan ────────────────────────────────────────────────────────────
 
+def _plan_years_out(g: dict) -> float:
+    """Years until a goal's target date (large number if unparseable)."""
+    from datetime import date as _date
+    try:
+        td = str(g.get("target_date") or "").split("T")[0]
+        parts = (td.split("-") + ["1", "1"])[:3]
+        target = _date(int(parts[0]), int(parts[1]), int(parts[2]))
+        return max(0.0, (target - _date.today()).days / 365.25)
+    except Exception:
+        return 999.0
+
+
 def _build_plan_prompt(context: dict) -> str:
     nw = context.get("net_worth") or {}
     cf = context.get("cash_flow") or {}
     goals = context.get("goals") or []
     portfolio = context.get("portfolio") or {}
+    profile = context.get("profile") or {}
 
     monthly_savings = (cf.get("total_income") or 0) - (cf.get("total_expenses") or 0)
     savings_rate = (monthly_savings / cf["total_income"] * 100) if cf.get("total_income") else 0
 
+    # ── Investor profile ──────────────────────────────────────────────────────
+    age = profile.get("age", 30)
+    risk = profile.get("riskTolerance", "moderate")
+    sophistication = profile.get("sophistication", "intermediate")
+    objective = profile.get("primaryObjective", "target")
+    horizon = profile.get("timeHorizon", "long")
+    de_emphasize = profile.get("deEmphasize") or []
+    philosophy = (profile.get("philosophy") or "").strip()
+
+    objective_label = {
+        "growth": "maximize growth", "income": "generate income",
+        "preservation": "preserve capital", "target": "reach a target on a timeline",
+        "learning": "learn and build conviction",
+    }.get(objective, str(objective))
+    horizon_label = {"short": "short (under 3 years)", "medium": "medium (3-10 years)", "long": "long (10+ years)"}.get(horizon, str(horizon))
+
+    profile_block = (
+        "Investor profile:\n"
+        f"  • Age: {age}; Risk tolerance: {risk}; Sophistication: {sophistication}\n"
+        f"  • Primary objective: {objective_label}; Time horizon: {horizon_label}"
+    )
+    if de_emphasize:
+        _lbl = {"retirement": "retirement / FI framing", "income": "income & dividends", "tax": "tax optimization", "volatility": "short-term volatility"}
+        profile_block += "\n  • Downplay: " + ", ".join(_lbl.get(d, d) for d in de_emphasize)
+    if philosophy:
+        profile_block += f'\n  • Their philosophy, in their words: "{philosophy}"'
+
+    # ── Goals, segmented by time priority ──────────────────────────────────────
     if goals:
-        goals_block = "\n".join(
-            f"  • {g['name']}: target ${float(g['target_amount']):,.0f} by {g['target_date']} — "
-            f"at ${float(g['current_amount']):,.0f} ({float(g['current_amount']) / float(g['target_amount']) * 100:.0f}%), "
-            f"contributing ${float(g['monthly_contribution']):,.0f}/mo"
-            for g in goals
-        )
+        lines = []
+        for g in sorted(goals, key=_plan_years_out):
+            yrs = _plan_years_out(g)
+            band = "near-term" if yrs < 3 else ("medium-term" if yrs < 10 else "long-term")
+            try:
+                tgt = float(g["target_amount"])
+                pct = (float(g["current_amount"]) / tgt * 100) if tgt else 0
+            except Exception:
+                tgt, pct = 0, 0
+            yrs_txt = f"~{yrs:.0f}y" if yrs < 900 else "no date"
+            lines.append(
+                f"  • [{band}, {yrs_txt}] {g['name']}: target ${tgt:,.0f} by {g.get('target_date')}, "
+                f"at ${float(g['current_amount']):,.0f} ({pct:.0f}%), contributing ${float(g.get('monthly_contribution') or 0):,.0f}/mo"
+            )
+        goals_block = "\n".join(lines)
     else:
         goals_block = "  No goals set yet."
 
@@ -254,9 +304,11 @@ Investment Portfolio:
         if portfolio.get("top_holdings"):
             portfolio_block += "\n  • Top positions: " + ", ".join(portfolio["top_holdings"][:5])
 
-    return f"""You are a thoughtful personal financial advisor. A Vela platform user has asked for their personalised financial plan. Use ONLY the data provided below — do not invent numbers.
+    return f"""You are a sharp personal financial advisor. A Vela user has asked for their personalised financial plan. Use ONLY the data provided below — do not invent numbers.
 
 === FINANCIAL SNAPSHOT ===
+
+{profile_block}
 
 Net Worth:
   • Assets: ${float(nw.get('total_assets') or 0):,.0f}
@@ -269,29 +321,37 @@ Monthly Cash Flow:
   • Savings: ${monthly_savings:,.0f} ({savings_rate:.0f}% savings rate)
 {portfolio_block}
 
-Goals:
+Goals (ordered by time priority — soonest first):
 {goals_block}
+
+=== HOW TO THINK ABOUT THIS PERSON ===
+Anchor EVERY recommendation to their objective ({objective_label}), age ({age}), risk tolerance ({risk}), and time horizon ({horizon_label}). The plan must read as if written for them specifically, not a template.
+
+Asset allocation must FOLLOW from that profile, never a generic default:
+  - A young, aggressive, growth-focused investor with a long horizon should be heavily weighted to equities with little or no bonds. Do NOT recommend a balanced or bond-heavy mix for someone like that — it would be wrong for them.
+  - A preservation-focused, near-term, or older investor warrants more stability and downside protection.
+  - Match the mix to THIS person. If you suggest a bond or cash allocation, you must justify it from their actual age, objective, and horizon.
+
+Segment by goal time priority: near-term goals need funding certainty and stability; long-term goals can take more risk to compound. Do not apply one allocation across goals with very different horizons. Respect their stated philosophy and anything they asked to downplay.
 
 === YOUR TASK ===
 
-Write a personalised financial plan using these exact markdown sections:
+Write the user a financial plan that reads like a sharp advisor who actually looked at their numbers, not a generated report.
 
-## Financial Health Overview
-2–3 sentences assessing their position. Name 1 clear strength and 1 area to improve, citing their numbers.
+Cover these, in a natural flow:
+  - Where they stand: their real position in a couple of sentences, naming one genuine strength and one thing to fix, with their actual figures.
+  - What to do now: the specific moves that matter most, each tied to a real number (an amount, a date, a percentage). Lead with what matters most. No generic advice.
+  - Their goals: address them in time-priority order; for each, are they on track and what single adjustment would close the gap.
+  - How to invest from here: a concrete allocation that follows from their profile per the rules above. Justify it.
+  - What to watch: a couple of real risks given their numbers, and why each matters to them specifically.
 
-## Priority Actions
-5 numbered, specific actions. Each must reference their actual data (amounts, dates, percentages). No generic advice.
+You may use a few short headers to keep it scannable, but write in plain prose, not bullet-point filler.
 
-## Goals Analysis
-For each goal: are they on track? What adjustment (if any) would close the gap?
-
-## Investment Strategy
-Tailored to their portfolio size and savings rate. Be concrete.
-
-## Risks to Watch
-2–3 specific risks given their numbers. Why each matters.
-
-Keep each section tight. Be direct, encouraging, and analytical. Every recommendation must be tied to their actual figures."""
+Voice:
+  - Write like a person talking to one person. Use contractions. Address them directly as "you".
+  - No emojis. Do not use em-dashes; use commas, periods, or separate sentences.
+  - Vary your sentence length. Cut hedging and corporate filler. Be direct and specific, never preachy.
+  - Every number you cite must come from the data above. Do not invent figures."""
 
 
 async def stream_learn_analysis(
@@ -468,6 +528,31 @@ def _build_reflection_system_prompt(
     risk = profile.get("riskTolerance", "moderate")
     sophistication = profile.get("sophistication", "intermediate")
     tax = profile.get("marginalTaxRate", 22)
+    objective = profile.get("primaryObjective", "target")
+    horizon = profile.get("timeHorizon", "long")
+    de_emphasize = profile.get("deEmphasize") or []
+    philosophy = (profile.get("philosophy") or "").strip()
+
+    # Objective shapes how you weigh everything (same facts, different lens).
+    objective_framing = {
+        "growth": "Their objective is maximizing growth. Weigh compounding and capital appreciation above income or drawdown comfort. Concentration and volatility are acceptable to them. It is fair to argue for higher-conviction, higher-growth positioning when the case genuinely supports it.",
+        "income": "Their objective is generating income. Weigh yield, cash flow, and the durability of distributions above raw appreciation.",
+        "preservation": "Their objective is preserving capital. Weigh drawdown risk and downside protection above upside, and be cautious about concentration.",
+        "target": "Their objective is reaching a specific target on a timeline. Frame around whether they are on pace and what adjustments would close the gap.",
+        "learning": "Their objective is learning and building conviction. Favor teaching the reasoning, surfacing tradeoffs, and inviting them to pressure-test their ideas.",
+    }.get(objective, "")
+    horizon_label = {"short": "short (under 3 years)", "medium": "medium (3-10 years)", "long": "long (10+ years)"}.get(horizon, str(horizon))
+
+    de_emphasis_line = ""
+    if de_emphasize:
+        _labels = {"retirement": "retirement / financial-independence framing", "income": "income and dividends", "tax": "tax optimization", "volatility": "short-term volatility"}
+        de_emphasis_line = "\nDownplay (do not steer toward these unless the user raises them first): " + ", ".join(_labels.get(d, d) for d in de_emphasize) + "."
+
+    philosophy_block = (
+        f'\n\nThe user describes their own investing philosophy as:\n"""\n{philosophy}\n"""\n'
+        "Take this seriously. Align your framing, your examples, and the positions you are willing to argue with how they actually think."
+        if philosophy else ""
+    )
 
     # Build sophistication instruction
     if sophistication == "advanced":
@@ -543,8 +628,11 @@ def _build_reflection_system_prompt(
 Investor profile:
   • Age: {age}, Risk tolerance: {risk}, Tax bracket: {tax}%
   • Sophistication: {sophistication}
+  • Primary objective: {objective}; Time horizon: {horizon_label}
 
 Tone instruction: {tone_instruction}
+
+Objective framing: {objective_framing}{de_emphasis_line}{philosophy_block}
 
 Portfolio:
 {holdings_block}
@@ -566,26 +654,49 @@ User's thesis notes:
 Live macro context:
 {macro_block}
 
-Behavioural rules — follow these exactly:
+Behavioural rules (follow these exactly):
   1. Ask one question at a time. Never ask two questions in one message.
   2. Keep responses under 120 words unless the user explicitly asks you to elaborate.
-  3. Never tell the user they made a mistake. Ask questions that help them reach their own conclusions.
+  3. Never scold or tell the user they made a mistake. Help them reason. When they want your view, give it honestly and without judgement.
   4. Never add generic financial disclaimers, "consult a financial advisor", or boilerplate caveats.
   5. When the user's notes mention a market theme, actively connect it to their actual portfolio holdings.
-  6. Reference specific tickers and real numbers from their portfolio — never speak in generalities."""
+  6. Reference specific tickers and real numbers from their portfolio. Never speak in generalities.
+  7. Voice: write like a sharp person talking, not a financial report. Plain language, contractions, varied sentence length. No emojis. Do not use em-dashes; use commas, periods, or separate sentences. Cut filler and hedging.
+  8. Macro timing: bring in rates, the yield curve, or the macro backdrop only when the user's own point connects to it, and prefer to do that later in the conversation. Never steer an early or cold exchange toward macro.
+  9. Be Socratic by default — open by drawing out their thinking. But when they ask a direct question ("is X cheap?", "should I go heavier on tech?"), give a direct, reasoned position. Do not deflect a direct question with another question. You are allowed to hold a view and argue a thesis, weighted to their objective above.
+  10. Never invent figures. Valuation multiples (P/E, P/B), growth rates, price targets, peer comparisons, and current prices must come from data you were actually given. If you do not have a number, say so plainly or reason qualitatively. Never fabricate a specific figure or imply you know a live price you were not provided.
+  11. Drive toward conclusions. Reflection is not an endless interview. After two or three exchanges on a thread, synthesize: say what you have heard, give a clear takeaway or your honest view, and name one concrete next step. Do not end every message with a question, and never manufacture a question just to keep the conversation alive. When a thread has run its course, land it and close cleanly. Questions are a tool to reach a conclusion, not a way to avoid one."""
 
     if is_opening:
         prompt += """
 
 OPENING MESSAGE INSTRUCTIONS:
 Generate a single opening message. Use this priority order for signal selection:
-  1. FIRST: Cross-reference the user's notes (flagged convictions + recent working notes) with live macro data. If any note connects to a current macro signal, open with that connection specifically.
-  2. SECOND: If a position has moved significantly or crossed a notable threshold (e.g. weight > 30%), surface that.
-  3. FALLBACK ONLY: If nothing notable in notes or market, surface the behavioural gap (stated risk tolerance vs. actual avg hold time implied by holdings duration).
-Never open by simply listing the largest position — it is too static and will repeat every session.
+  1. FIRST: The user's own thinking. Open by engaging with a standing conviction, a recent working note, or a thesis they actually wrote.
+  2. SECOND: A concrete observation about their portfolio. A position that has moved, a concentration (e.g. weight > 30%), or a behavioural gap between their stated risk tolerance and what they actually hold.
+  3. ONLY IF a note or position directly ties to a current macro signal may you bring macro in. Never lead a cold open with macro, rates, or the yield curve. Macro is something you reach for once the conversation has a thread, not the opener.
+Never open by simply listing the largest position. It is too static and will repeat every session.
 Start with the observation. End with exactly one focused question. Max 80 words total."""
 
     return prompt
+
+
+def _with_history_cache_breakpoint(convo: list[dict]) -> list[dict]:
+    """Return a copy of the conversation with a prompt-cache breakpoint on the last
+    message. Marking the final content block lets each new turn reuse the cached
+    conversation prefix (history grows append-only, so the prefix stays stable),
+    keeping long chats cheap. All earlier messages stay as plain strings, which the
+    API accepts alongside block-form content."""
+    if not convo:
+        return convo
+    out = [dict(m) for m in convo]
+    last = out[-1]
+    content = last.get("content")
+    if isinstance(content, str):
+        last["content"] = [
+            {"type": "text", "text": content, "cache_control": {"type": "ephemeral"}}
+        ]
+    return out
 
 
 async def stream_reflection(
@@ -602,12 +713,25 @@ async def stream_reflection(
     else:
         convo = [{"role": m["role"], "content": m["content"]} for m in messages]
 
+    # Prompt caching: the system prompt carries the full, session-stable portfolio
+    # context (holdings, goals, notes, thesis, macro). Cache it so every turn after
+    # the first reads it at ~0.1x input cost instead of re-billing the whole block.
+    # (Sonnet 4.6 minimum cacheable prefix is ~2048 tokens; smaller contexts simply
+    # won't cache — no error, no harm.)
+    system_blocks = [
+        {"type": "text", "text": system_prompt, "cache_control": {"type": "ephemeral"}}
+    ]
+
+    # Also cache the rolling conversation prefix: mark the last message's content so
+    # each new turn reuses the cached history instead of re-billing every prior turn.
+    cached_convo = _with_history_cache_breakpoint(convo)
+
     try:
         async with client.messages.stream(
             model="claude-sonnet-4-6",
             max_tokens=300,
-            system=system_prompt,
-            messages=convo,
+            system=system_blocks,
+            messages=cached_convo,
         ) as stream:
             async for text in stream.text_stream:
                 yield f"data: {json.dumps({'text': text, 'done': False})}\n\n"
@@ -616,4 +740,79 @@ async def stream_reflection(
 
     except Exception as e:
         logger.error("Reflection stream failed: %s", e)
+        yield f"data: {json.dumps({'error': str(e), 'done': True})}\n\n"
+
+
+# ── Alert insight ─────────────────────────────────────────────────────────────
+
+async def stream_alert_insight(
+    alert: dict,
+    user_context: dict,
+) -> AsyncGenerator[str, None]:
+    """Stream a 2-4 sentence personalised AI insight for a specific smart alert.
+    Uses Haiku for speed and cost — alert insights are short, high-frequency."""
+    client = _get_client()
+
+    goals = user_context.get("goals", [])
+    portfolio = user_context.get("portfolio", {})
+    cf = user_context.get("cash_flow", {})
+    nw = user_context.get("net_worth", {})
+
+    # Build a compact goal summary
+    goal_lines = []
+    for g in goals[:4]:
+        target = float(g.get("target_amount", 0))
+        current = float(g.get("current_amount", 0))
+        pct = round(current / target * 100, 1) if target > 0 else 0
+        goal_lines.append(f'  • {g["name"]}: {pct}% of ${target:,.0f} target, due {g.get("target_date", "?")}')
+    goals_text = "\n".join(goal_lines) if goal_lines else "  No goals set."
+
+    # Portfolio sector summary
+    sectors = portfolio.get("sectors", [])
+    sector_text = ", ".join(f'{s["name"]} {round(s["weight"]*100)}%' for s in sectors[:5]) if sectors else "Unknown"
+    top_holdings = portfolio.get("top_holdings", [])
+    holdings_text = ", ".join(top_holdings[:5]) if top_holdings else "Unknown"
+    total_value = portfolio.get("total_value", 0)
+
+    savings_rate = cf.get("savings_rate")
+    net_worth = nw.get("net_worth", 0)
+
+    system = f"""You are Vela, a personal wealth intelligence assistant. You are concise, direct, and deeply personalized.
+
+The user has triggered a Smart Alert. Your job is to give a 2–4 sentence insight that:
+1. Explains WHY this alert matters specifically for THEIR situation (reference their goals and holdings by name)
+2. Connects it to their nearest goal if relevant
+3. Gives one concrete, actionable step they can take TODAY
+
+User's financial context:
+- Portfolio value: ${total_value:,.0f} | Top holdings: {holdings_text}
+- Sector exposure: {sector_text}
+- Net worth: ${net_worth:,.0f}
+- Savings rate: {f"{savings_rate:.0%}" if savings_rate else "unknown"}
+- Goals:
+{goals_text}
+
+Rules:
+- Never use generic advice that could apply to anyone
+- Always name specific goals, tickers, or dollar amounts from their data
+- Do NOT repeat the alert title back to them
+- 2–4 sentences max. No bullet points. Conversational tone."""
+
+    try:
+        async with client.messages.stream(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=180,
+            system=system,
+            messages=[{
+                "role": "user",
+                "content": f'Alert: "{alert["title"]}"\nContext: {alert["description"]}',
+            }],
+        ) as stream:
+            async for text in stream.text_stream:
+                yield f"data: {json.dumps({'text': text, 'done': False})}\n\n"
+
+        yield f"data: {json.dumps({'done': True})}\n\n"
+
+    except Exception as e:
+        logger.error("Alert insight stream failed: %s", e)
         yield f"data: {json.dumps({'error': str(e), 'done': True})}\n\n"

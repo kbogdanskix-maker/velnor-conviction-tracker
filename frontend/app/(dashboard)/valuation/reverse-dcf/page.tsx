@@ -173,7 +173,7 @@ export default function ReverseDCFPage() {
     verdictColor = "text-amber-400";
     verdictBg = "bg-amber-400/10";
     verdictLabel = "Aggressive";
-    verdictDesc = "The market is pricing in high growth — any slowdown means downside";
+    verdictDesc = "The market is pricing in high growth  - any slowdown means downside";
   }
   if (isUnrealistic) {
     verdictColor = "text-loss";
@@ -233,18 +233,18 @@ export default function ReverseDCFPage() {
               <p className="text-xs text-zinc-500">{fundamentals.ticker}</p>
             </div>
             <p className="text-lg font-bold tabular text-zinc-100">
-              ${fundamentals.price?.toFixed(2) ?? "—"}
+              ${fundamentals.price?.toFixed(2) ?? " -"}
             </p>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-1 text-[10px]">
-            <FundRow label="Market Cap" value={fundamentals.market_cap ? `$${(fundamentals.market_cap / 1000).toFixed(0)}B` : "—"} />
+            <FundRow label="Market Cap" value={fundamentals.market_cap ? `$${(fundamentals.market_cap / 1000).toFixed(0)}B` : " -"} />
             <FundRow label="FCF (TTM)" value={fundamentals.fcf ? `$${(fundamentals.fcf / 1000).toFixed(1)}B` : "N/A"} warn={!fundamentals.fcf} />
-            <FundRow label="Shares" value={fundamentals.shares_outstanding ? `${(fundamentals.shares_outstanding / 1000).toFixed(1)}B` : "—"} />
-            <FundRow label="Rev Growth" value={fundamentals.revenue_growth != null ? `${fundamentals.revenue_growth.toFixed(1)}%` : "—"} />
+            <FundRow label="Shares" value={fundamentals.shares_outstanding ? `${(fundamentals.shares_outstanding / 1000).toFixed(1)}B` : " -"} />
+            <FundRow label="Rev Growth" value={fundamentals.revenue_growth != null ? `${fundamentals.revenue_growth.toFixed(1)}%` : " -"} />
           </div>
           {!fundamentals.fcf && (
             <p className="text-[10px] text-amber-400 mt-2">
-              FCF data not available — enter it manually below.
+              FCF data not available  - enter it manually below.
             </p>
           )}
         </div>
@@ -283,7 +283,7 @@ export default function ReverseDCFPage() {
             {/* Implied growth */}
             <div className={`vela-card border ${isReasonable ? "border-gain/30" : isAggressive ? "border-amber-400/30" : "border-loss/30"}`}>
               <p className="text-xs text-zinc-500 uppercase tracking-wider font-semibold mb-1">
-                {inputs.ticker} — Implied FCF Growth Rate
+                {inputs.ticker}  - Implied FCF Growth Rate
               </p>
               <div className="flex items-center gap-4">
                 <p className={`text-4xl font-bold tabular ${verdictColor}`}>
@@ -311,8 +311,8 @@ export default function ReverseDCFPage() {
                   </span>
                   <span className="text-zinc-600">
                     {fundamentals.revenue_growth > impliedGrowth
-                      ? " — currently outpacing what the market requires"
-                      : " — below what the market is pricing in"}
+                      ? "  - currently outpacing what the market requires"
+                      : "  - below what the market is pricing in"}
                   </span>
                 </p>
               )}
@@ -424,7 +424,7 @@ function ReverseDCFInsights({ inputs, impliedGrowth, fundamentals }: {
     insights.push({
       icon: <Lightbulb className="w-4 h-4" />,
       title: "Low expectations priced in",
-      body: `${impliedGrowth.toFixed(1)}% is around or below S&P 500 average — typical for mature businesses. `
+      body: `${impliedGrowth.toFixed(1)}% is around or below S&P 500 average  - typical for mature businesses. `
         + `If ${inputs.ticker} can outperform through new products or expansion, there's upside potential. `
         + (fundamentals?.revenue_growth && fundamentals.revenue_growth > impliedGrowth
           ? `Current revenue growth of ${fundamentals.revenue_growth.toFixed(1)}% already exceeds what the market requires.`
@@ -452,7 +452,7 @@ function ReverseDCFInsights({ inputs, impliedGrowth, fundamentals }: {
   if (impliedGrowth > 15 && impliedGrowth <= 30) {
     insights.push({
       icon: <AlertTriangle className="w-4 h-4" />,
-      title: "High growth priced in — elevated risk",
+      title: "High growth priced in  - elevated risk",
       body: `<5% of large caps sustain ${impliedGrowth.toFixed(0)}%+ FCF growth for a decade. `
         + `If growth comes in at 12% instead of ${impliedGrowth.toFixed(0)}%, corrections tend to be sharp (20-30%+). `
         + `Position sizing should reflect this risk.`,
@@ -466,7 +466,7 @@ function ReverseDCFInsights({ inputs, impliedGrowth, fundamentals }: {
       icon: <AlertTriangle className="w-4 h-4" />,
       title: "Near-perfect execution required",
       body: `${impliedGrowth.toFixed(0)}%+ for a decade is almost unheard of at scale. `
-        + `Needs market expansion, margin improvement, and no competitive disruption — simultaneously. `
+        + `Needs market expansion, margin improvement, and no competitive disruption  - simultaneously. `
         + `One bad quarter can trigger 20-30% drawdowns at this valuation.`,
       color: "text-loss",
     });
@@ -476,11 +476,11 @@ function ReverseDCFInsights({ inputs, impliedGrowth, fundamentals }: {
   if (impliedGrowth < 0) {
     insights.push({
       icon: <BookOpen className="w-4 h-4" />,
-      title: "Decline priced in — potential contrarian opportunity",
+      title: "Decline priced in  - potential contrarian opportunity",
       body: `Market expects ${inputs.ticker}'s cash flows to shrink. `
         + `Could be rational (secular decline) or an overreaction. `
         + (fundamentals?.revenue_growth && fundamentals.revenue_growth > 0
-          ? `Interesting: revenue is actually growing at ${fundamentals.revenue_growth.toFixed(1)}% — the market may be pricing in a reversal that hasn't happened yet.`
+          ? `Interesting: revenue is actually growing at ${fundamentals.revenue_growth.toFixed(1)}%  - the market may be pricing in a reversal that hasn't happened yet.`
           : `Understand the bear case before considering a position.`),
       color: "text-zinc-400",
     });
@@ -490,7 +490,7 @@ function ReverseDCFInsights({ inputs, impliedGrowth, fundamentals }: {
   insights.push({
     icon: <BookOpen className="w-4 h-4" />,
     title: "How to use this",
-    body: `Run Reverse DCF on all your holdings. If most require 15%+ growth, your portfolio is growth-heavy — `
+    body: `Run Reverse DCF on all your holdings. If most require 15%+ growth, your portfolio is growth-heavy  - `
       + `strong in bull markets, exposed in corrections. Mix low-implied-growth (5-8%) with moderate growth (10-15%) `
       + `to balance risk. Compare with the forward DCF to form your own view.`,
     color: "text-zinc-400",

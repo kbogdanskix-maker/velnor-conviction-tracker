@@ -1,5 +1,5 @@
 /**
- * Financial Stress Index — composite scoring engine
+ * Financial Stress Index  - composite scoring engine
  *
  * Score: 0 (maximum stress) to 100 (fully healthy)
  * Built from 6 weighted dimensions using real user data.
@@ -234,14 +234,10 @@ function scoreGoalProgress(input: StressInput): StressDimension {
       const deadline = new Date(g.targetDate).getTime();
       if (deadline <= now) return pct < 1 ? 20 : 100; // past due
 
-      // Time-weighted: how far along should you be?
-      const created = deadline - 365 * 24 * 60 * 60 * 1000 * 3; // rough 3yr window
-      const elapsed = (now - created) / (deadline - created);
-      const expected = Math.max(0, Math.min(1, elapsed));
-
-      if (pct >= expected) return 85;
-      if (pct >= expected * 0.7) return 60;
-      return 30;
+      // We don't track a goal's creation date, so we can't honestly establish a
+      // pacing window. Score on funding ratio directly (same basis as goals with
+      // no deadline) rather than fabricating a fixed window that masks under-funding.
+      return pct * 80;
     });
 
     score = Math.round(progressScores.reduce((a, b) => a + b, 0) / progressScores.length);

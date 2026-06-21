@@ -1,9 +1,18 @@
+from pathlib import Path
+
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from functools import lru_cache
 
+# Anchor the .env to backend/.env via an absolute path so it loads regardless of
+# the process CWD. uvicorn is often launched from a parent dir (e.g. with
+# --app-dir), where a relative env_file=".env" would silently resolve to nothing
+# and leave secrets at their placeholder defaults.
+_ENV_PATH = Path(__file__).resolve().parent.parent / ".env"
+
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+    model_config = SettingsConfigDict(env_file=str(_ENV_PATH), env_file_encoding="utf-8", extra="ignore")
 
     # App
     APP_NAME: str = "Vela"
@@ -63,6 +72,23 @@ class Settings(BaseSettings):
     STRIPE_WEBHOOK_SECRET: str = "your-stripe-webhook-secret"
     STRIPE_VOYAGER_PRICE_ID: str = "price_voyager"
     STRIPE_NAVIGATOR_PRICE_ID: str = "price_navigator"
+
+
+    @model_validator(mode="after")
+    def _recover_blank_anthropic_key(self) -> "Settings":
+        """An empty ANTHROPIC_API_KEY env var (e.g. exported blank in a shell
+        profile) takes precedence over the .env file under pydantic's rules,
+        silently disabling AI features. If the resolved key is blank, fall back
+        to the value in the .env file directly."""
+        if not (self.ANTHROPIC_API_KEY or "").strip() and _ENV_PATH.exists():
+            for line in _ENV_PATH.read_text(encoding="utf-8").splitlines():
+                stripped = line.strip()
+                if stripped.startswith("ANTHROPIC_API_KEY=") and not stripped.startswith("#"):
+                    value = stripped.split("=", 1)[1].strip().strip('"').strip("'")
+                    if value:
+                        self.ANTHROPIC_API_KEY = value
+                    break
+        return self
 
 
 @lru_cache

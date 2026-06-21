@@ -1,5 +1,5 @@
 /**
- * Goal preset templates — quick-start options for common financial goals.
+ * Goal preset templates  - quick-start options for common financial goals.
  */
 
 export interface GoalPreset {

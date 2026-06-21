@@ -49,7 +49,7 @@ export interface FeeAnalysisResult {
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
-const LOW_COST_BENCHMARK = 0.0003; // 0.03% — Vanguard VTI / VOO level
+const LOW_COST_BENCHMARK = 0.0003; // 0.03%  - Vanguard VTI / VOO level
 const ASSUMED_RETURN = 0.08; // 8% annual return assumption
 
 // ── Helpers ──────────────────────────────────────────────────────────────────

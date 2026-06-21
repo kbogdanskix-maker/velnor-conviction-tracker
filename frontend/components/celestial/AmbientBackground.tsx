@@ -4,7 +4,7 @@ import { useAnimationPrefs } from "@/contexts/AnimationContext";
 
 /**
  * Static ambient gradient orbs that gently pulse in opacity.
- * No movement, no spin — just a calm colour wash that breathes.
+ * No movement, no spin  - just a calm colour wash that breathes.
  */
 export default function AmbientBackground() {
   const { prefs } = useAnimationPrefs();
@@ -17,7 +17,7 @@ export default function AmbientBackground() {
       className="fixed inset-0 pointer-events-none z-0 overflow-hidden"
       aria-hidden="true"
     >
-      {/* Primary teal wash — top left */}
+      {/* Primary teal wash  - top left */}
       <div
         className="absolute rounded-full"
         style={{
@@ -32,7 +32,7 @@ export default function AmbientBackground() {
         }}
       />
 
-      {/* Deep indigo wash — right side */}
+      {/* Deep indigo wash  - right side */}
       <div
         className="absolute rounded-full"
         style={{
@@ -47,7 +47,7 @@ export default function AmbientBackground() {
         }}
       />
 
-      {/* Warm teal/cyan — bottom */}
+      {/* Warm teal/cyan  - bottom */}
       <div
         className="absolute rounded-full"
         style={{
@@ -62,7 +62,7 @@ export default function AmbientBackground() {
         }}
       />
 
-      {/* Faint purple haze — top right */}
+      {/* Faint purple haze  - top right */}
       <div
         className="absolute rounded-full"
         style={{
@@ -77,7 +77,7 @@ export default function AmbientBackground() {
         }}
       />
 
-      {/* Deep space vignette — bottom */}
+      {/* Deep space vignette  - bottom */}
       <div
         className="absolute inset-x-0 bottom-0 h-[60%]"
         style={{

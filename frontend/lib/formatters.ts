@@ -1,6 +1,6 @@
 /**
  * Financial display formatters.
- * Keep all number formatting logic here — never inline it in components.
+ * Keep all number formatting logic here  - never inline it in components.
  */
 
 /** Format a currency value: $1,234.56 */
@@ -10,7 +10,7 @@ export function formatCurrency(
   compact = false,
 ): string {
   const num = Number(value);
-  if (isNaN(num) || value === null || value === undefined) return "—";
+  if (isNaN(num) || value === null || value === undefined) return " -";
 
   if (compact && Math.abs(num) >= 1_000_000_000) {
     return `${(num / 1_000_000_000).toFixed(2)}B`;
@@ -30,7 +30,7 @@ export function formatCurrency(
 /** Format a percentage: +12.34% */
 export function formatPercent(value: number | string | null | undefined, showSign = true): string {
   const num = Number(value);
-  if (isNaN(num) || value === null || value === undefined) return "—";
+  if (isNaN(num) || value === null || value === undefined) return " -";
   const sign = showSign && num > 0 ? "+" : "";
   return `${sign}${num.toFixed(2)}%`;
 }
@@ -38,7 +38,7 @@ export function formatPercent(value: number | string | null | undefined, showSig
 /** Format a large number with commas: 1,234,567 */
 export function formatNumber(value: number | string | null | undefined, decimals = 2): string {
   const num = Number(value);
-  if (isNaN(num) || value === null || value === undefined) return "—";
+  if (isNaN(num) || value === null || value === undefined) return " -";
   return new Intl.NumberFormat("en-US", {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
@@ -48,7 +48,7 @@ export function formatNumber(value: number | string | null | undefined, decimals
 /** Format a quantity (shares): 1,234.5678 */
 export function formatQuantity(value: number | string | null | undefined): string {
   const num = Number(value);
-  if (isNaN(num) || value === null || value === undefined) return "—";
+  if (isNaN(num) || value === null || value === undefined) return " -";
   // Show up to 8 decimal places, strip trailing zeros
   return new Intl.NumberFormat("en-US", {
     minimumFractionDigits: 0,
@@ -58,7 +58,7 @@ export function formatQuantity(value: number | string | null | undefined): strin
 
 /** Format a date: Mar 4, 2025 */
 export function formatDate(value: string | Date | null | undefined): string {
-  if (!value) return "—";
+  if (!value) return " -";
   try {
     return new Date(value).toLocaleDateString("en-US", {
       month: "short",
@@ -66,7 +66,7 @@ export function formatDate(value: string | Date | null | undefined): string {
       year: "numeric",
     });
   } catch {
-    return "—";
+    return " -";
   }
 }
 
@@ -101,7 +101,7 @@ export function formatTimeAgo(dateStr: string | null | undefined): string {
 /** Compact currency: -$18K, $1.2M, $450 */
 export function formatCompact(value: number | string | null | undefined): string {
   const num = Number(value);
-  if (isNaN(num) || value === null || value === undefined) return "—";
+  if (isNaN(num) || value === null || value === undefined) return " -";
   const sign = num < 0 ? "-" : "";
   const abs = Math.abs(num);
   if (abs >= 1_000_000) return `${sign}$${(abs / 1_000_000).toFixed(1)}M`;
@@ -112,7 +112,7 @@ export function formatCompact(value: number | string | null | undefined): string
 /** Returns a P&L display string: +$1,234.56 */
 export function formatPnl(value: number | string | null | undefined, currency = "USD"): string {
   const num = Number(value);
-  if (isNaN(num) || value === null || value === undefined) return "—";
+  if (isNaN(num) || value === null || value === undefined) return " -";
   const abs = formatCurrency(Math.abs(num), currency);
   return num >= 0 ? `+${abs}` : `-${abs.replace("-", "")}`;
 }

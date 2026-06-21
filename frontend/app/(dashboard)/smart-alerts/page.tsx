@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import Link from "next/link";
 import {
   Zap,
@@ -17,12 +17,16 @@ import {
   CheckCircle2,
   Filter,
   Wallet,
+  Sparkles,
+  Loader2,
 } from "lucide-react";
+import { apiStreamPost } from "@/lib/api";
 import { useDefaultPortfolio } from "@/hooks/usePortfolio";
 import { useNetWorthSummary } from "@/hooks/useNetWorth";
 import { useCashFlowSummary } from "@/hooks/useCashFlow";
 import { useGoals } from "@/hooks/useGoals";
 import { useRiskMetrics } from "@/hooks/useRiskMetrics";
+import { useSectorBreakdown, type SectorEntry } from "@/hooks/useSectors";
 import PageTransition from "@/components/celestial/PageTransition";
 import FloatingCard from "@/components/celestial/FloatingCard";
 import RevealOnScroll from "@/components/celestial/RevealOnScroll";
@@ -79,6 +83,21 @@ const CATEGORY_LABELS: Record<AlertCategory, string> = {
   risk: "Risk",
 };
 
+// ── Goal context helpers ──────────────────────────────────────────────
+
+function moUntil(dateStr: string | null): number {
+  if (!dateStr) return 999;
+  const now = new Date();
+  const t = new Date(dateStr);
+  return Math.max(0, (t.getFullYear() - now.getFullYear()) * 12 + (t.getMonth() - now.getMonth()));
+}
+
+function projectedValue(current: number, monthly: number, months: number, cagr = 0.07): number {
+  const r = Math.pow(1 + cagr, 1 / 12) - 1;
+  if (r === 0) return current + monthly * months;
+  return current * Math.pow(1 + r, months) + monthly * ((Math.pow(1 + r, months) - 1) / r);
+}
+
 // ── Alert generation engine ───────────────────────────────────────────
 
 function generateAlerts(
@@ -87,6 +106,7 @@ function generateAlerts(
   cf: { total_income: number; total_expenses: number; savings_rate: number | null } | null,
   goals: { name: string; target_amount: number; current_amount: number; monthly_contribution: number | null; target_date: string | null }[] | null,
   risk: { annualized_volatility: number | null; max_drawdown: number | null; sharpe_ratio: number | null } | null,
+  sectors: SectorEntry[] | null,
 ): SmartAlert[] {
   const alerts: SmartAlert[] = [];
   let id = 0;
@@ -96,7 +116,7 @@ function generateAlerts(
   if (summary && summary.holdings.length > 0) {
     const totalValue = summary.total_value;
 
-    // Concentration risk — any single holding >25%
+    // Concentration risk  - any single holding >25%
     for (const h of summary.holdings) {
       const mv = h.market_value ?? h.total_cost;
       const pct = totalValue > 0 ? (mv / totalValue) * 100 : 0;
@@ -124,8 +144,8 @@ function generateAlerts(
           severity: dayPct < -5 ? "warning" : "positive",
           title: `${h.ticker} moved ${dayPct > 0 ? "+" : ""}${dayPct.toFixed(1)}% today`,
           description: dayPct < 0
-            ? `Significant drop — review your thesis. If the fundamentals haven't changed, this could be a buying opportunity.`
-            : `Strong rally — consider whether to take partial profits or let it ride based on your thesis.`,
+            ? `Significant drop  - review your thesis. If the fundamentals haven't changed, this could be a buying opportunity.`
+            : `Strong rally  - consider whether to take partial profits or let it ride based on your thesis.`,
           action: "View Portfolio",
           link: "/portfolio",
           icon: dayPct < 0 ? TrendingDown : TrendingUp,
@@ -150,22 +170,70 @@ function generateAlerts(
       });
     }
 
-    // Sector concentration
-    const sectorMap: Record<string, number> = {};
-    for (const h of summary.holdings) {
-      const sec = h.sector || "Other";
-      sectorMap[sec] = (sectorMap[sec] || 0) + (h.market_value ?? h.total_cost ?? 0);
-    }
-    const sectors = Object.entries(sectorMap).sort((a, b) => b[1] - a[1]);
-    if (sectors.length > 0 && totalValue > 0) {
-      const topPct = (sectors[0][1] / totalValue) * 100;
-      if (topPct > 50 && sectors.length < 4) {
+    // Sector concentration — use real sector data if available, fall back to holding-level
+    const sectorSource: Array<{ name: string; value: number }> = sectors && sectors.length > 0
+      ? sectors
+      : (() => {
+          const m: Record<string, number> = {};
+          for (const h of summary.holdings) {
+            const sec = h.sector || "Unknown";
+            m[sec] = (m[sec] || 0) + (h.market_value ?? h.total_cost ?? 0);
+          }
+          return Object.entries(m).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
+        })();
+
+    if (sectorSource.length > 0 && totalValue > 0) {
+      const topSector = sectorSource[0];
+      const topPct = (topSector.value / totalValue) * 100;
+      const sectorCount = sectorSource.filter((s) => s.value > 0).length;
+
+      // Top 2 sectors combined weight
+      const top2Value = sectorSource.slice(0, 2).reduce((s, x) => s + x.value, 0);
+      const top2Pct = (top2Value / totalValue) * 100;
+
+      const isSingleHeavy = topPct > 40;           // one sector over 40%
+      const isDualHeavy = top2Pct > 70 && sectorCount <= 4; // top 2 dominate and few sectors
+
+      if (isSingleHeavy || isDualHeavy) {
+        const dollarExposed = topSector.value;
+        const drop20 = dollarExposed * 0.2;
+        const drop30 = dollarExposed * 0.3;
+
+        // Build goal-aware diversification suggestions filtered to sectors not yet held
+        const SP500_SECTORS = ["Healthcare", "Consumer Defensive", "Utilities", "Energy", "Industrials", "Real Estate", "Communication Services", "Basic Materials"];
+        const heldSectorNames = new Set(sectorSource.map((s) => s.name.toLowerCase()));
+        const missingSectors = SP500_SECTORS.filter((s) => !heldSectorNames.has(s.toLowerCase()));
+
+        const hasRetirement = goals?.some((g) => /retir|pension|fire|independen/i.test(g.name));
+        const hasDebt = goals?.some((g) => /house|home|mortgage|property|debt|loan/i.test(g.name));
+        const prioritySectors = hasRetirement
+          ? ["Healthcare", "Utilities", "Consumer Defensive"]
+          : hasDebt
+            ? ["Consumer Defensive", "Utilities", "Real Estate"]
+            : ["Healthcare", "Consumer Defensive", "Industrials"];
+        const suggestSectors = prioritySectors.filter((s) => missingSectors.includes(s)).slice(0, 3);
+        const suggestText = suggestSectors.length > 0
+          ? `Consider adding ${suggestSectors.join(", ")} — sectors you currently have zero exposure to.`
+          : `Spreading further across the ${missingSectors.length} sectors you don't hold would reduce correlation risk.`;
+
+        // Build a message that references actual sector names and top-2 if relevant
+        let description: string;
+        if (isDualHeavy && sectorSource[1]) {
+          const sec2 = sectorSource[1];
+          const sec2Pct = (sec2.value / totalValue) * 100;
+          description = `${topSector.name} (${topPct.toFixed(0)}%) + ${sec2.name} (${sec2Pct.toFixed(0)}%) = ${top2Pct.toFixed(0)}% of your portfolio. A 20% ${topSector.name} correction alone costs ~$${drop20.toLocaleString(undefined, { maximumFractionDigits: 0 })}. ${suggestText}`;
+        } else {
+          description = `$${dollarExposed.toLocaleString(undefined, { maximumFractionDigits: 0 })} rides on ${topSector.name}. A 20% sector downturn = ~$${drop20.toLocaleString(undefined, { maximumFractionDigits: 0 })} loss; a 30% drop = ~$${drop30.toLocaleString(undefined, { maximumFractionDigits: 0 })}. ${suggestText}`;
+        }
+
         alerts.push({
           id: `sec-${id++}`,
           category: "risk",
-          severity: "warning",
-          title: `${topPct.toFixed(0)}% concentrated in ${sectors[0][0]}`,
-          description: `Your portfolio is heavily weighted toward one sector. A downturn in ${sectors[0][0]} would disproportionately impact you. Consider diversifying across more industries.`,
+          severity: topPct > 60 || top2Pct > 85 ? "critical" : "warning",
+          title: isDualHeavy && sectorSource[1]
+            ? `${topPct.toFixed(0)}% ${topSector.name} + ${((sectorSource[1].value / totalValue) * 100).toFixed(0)}% ${sectorSource[1].name}`
+            : `${topPct.toFixed(0)}% concentrated in ${topSector.name}`,
+          description,
           action: "View Sectors",
           link: "/sectors",
           icon: BarChart2,
@@ -235,7 +303,7 @@ function generateAlerts(
         category: "planning",
         severity: "critical",
         title: "Spending exceeds income",
-        description: `You're spending $${Math.abs(cf.total_income - cf.total_expenses).toFixed(0)}/mo more than you earn. This is unsustainable — review your budget for cuts.`,
+        description: `You're spending $${Math.abs(cf.total_income - cf.total_expenses).toFixed(0)}/mo more than you earn. This is unsustainable  - review your budget for cuts.`,
         action: "View Budget",
         link: "/budget",
         icon: AlertTriangle,
@@ -265,39 +333,89 @@ function generateAlerts(
     }
   }
 
-  // ── Goal alerts ───────────────────────────────────────────────────
+  // ── Goal alerts (deadline-aware + projection-based) ──────────────
 
   if (goals && goals.length > 0) {
+    const hasRetirement = goals.some((g) => /retir|pension|fire|independen/i.test(g.name));
+    const shortestUrgentHorizon = Math.min(...goals.map((g) => moUntil(g.target_date)));
+
     for (const g of goals) {
       if (g.target_amount <= 0) continue;
       const pct = (g.current_amount / g.target_amount) * 100;
+      const mo = moUntil(g.target_date);
+      const monthly = g.monthly_contribution ?? 0;
 
-      // Goal nearly complete
+      // Deadline-urgency severity: escalate based on how late + how far behind
+      const deadlineSeverity: AlertSeverity =
+        mo < 6 && pct < 80 ? "critical" :
+        mo < 12 && pct < 70 ? "critical" :
+        mo < 24 && pct < 40 ? "warning" : "info";
+
+      // Goal nearly complete — positive signal
       if (pct >= 90 && pct < 100) {
         alerts.push({
           id: `goal90-${id++}`,
           category: "opportunity",
           severity: "positive",
           title: `"${g.name}" is ${pct.toFixed(0)}% complete`,
-          description: `You're almost there! Only $${(g.target_amount - g.current_amount).toFixed(0)} left to reach your goal.`,
+          description: `Only $${(g.target_amount - g.current_amount).toLocaleString(undefined, { maximumFractionDigits: 0 })} left. One or two extra contributions could close this out.`,
+          action: "View Goals",
+          link: "/goals",
+          icon: Target,
+        });
+        continue;
+      }
+
+      // Projection shortfall: will current trajectory miss the target?
+      if (mo > 0 && monthly >= 0) {
+        const projected = projectedValue(g.current_amount, monthly, mo);
+        const shortfall = g.target_amount - projected;
+        if (shortfall > g.target_amount * 0.1) {
+          // Projected to miss by >10% of target
+          const extraNeeded = shortfall / Math.max(mo, 1);
+          alerts.push({
+            id: `goalshort-${id++}`,
+            category: "planning",
+            severity: deadlineSeverity,
+            title: `"${g.name}" is on track to fall short`,
+            description: `At current contributions, you'll reach ~$${projected.toLocaleString(undefined, { maximumFractionDigits: 0 })} by ${new Date(g.target_date!).toLocaleDateString("en-US", { month: "short", year: "numeric" })}, missing the $${g.target_amount.toLocaleString(undefined, { maximumFractionDigits: 0 })} target by $${shortfall.toLocaleString(undefined, { maximumFractionDigits: 0 })}. Increase contributions by ~$${extraNeeded.toFixed(0)}/mo.`,
+            action: "View Goals",
+            link: "/goals",
+            icon: Target,
+          });
+          continue;
+        }
+      }
+
+      // Goal with no contribution and behind pace
+      if (monthly === 0 && pct < 50) {
+        alerts.push({
+          id: `goalnoc-${id++}`,
+          category: "planning",
+          severity: mo < 24 ? "warning" : "info",
+          title: `"${g.name}" has no monthly contribution`,
+          description: `At ${pct.toFixed(0)}% with $0/mo recurring and ${mo} months remaining, this goal will likely stall. Set up automatic contributions.`,
           action: "View Goals",
           link: "/goals",
           icon: Target,
         });
       }
+    }
 
-      // Goal with no contribution
-      if ((g.monthly_contribution ?? 0) === 0 && pct < 50) {
-        alerts.push({
-          id: `goalnoc-${id++}`,
-          category: "planning",
-          severity: "info",
-          title: `"${g.name}" has no monthly contribution`,
-          description: `At ${pct.toFixed(0)}% progress with no recurring contribution, this goal may stall. Set up automatic contributions to stay on track.`,
-          action: "View Goals",
-          link: "/goals",
-          icon: Target,
-        });
+    // Upgrade savings-rate warning severity if goals demand more saving
+    // (applied to alerts already pushed above — upgrade the last savings alert)
+    if (shortestUrgentHorizon < 24) {
+      const savIdx = alerts.findIndex((a) => a.id.startsWith("savlow"));
+      if (savIdx >= 0) alerts[savIdx].severity = "critical";
+    }
+
+    // Upgrade volatility warning if retirement or long-term goal
+    if (hasRetirement) {
+      const volIdx = alerts.findIndex((a) => a.id.startsWith("volhi"));
+      if (volIdx >= 0 && alerts[volIdx].severity === "warning") {
+        alerts[volIdx].severity = "critical";
+        alerts[volIdx].description =
+          alerts[volIdx].description.replace("If this exceeds your risk tolerance", "With a retirement goal, sustained high volatility compounds sequence-of-returns risk");
       }
     }
   }
@@ -342,8 +460,8 @@ function generateAlerts(
         severity: "warning",
         title: "Negative Sharpe ratio",
         description: `Your portfolio is underperforming a risk-free asset. Consider reviewing your holdings and whether your strategy is working.`,
-        action: "View Optimizer",
-        link: "/optimizer",
+        action: "Open Reflect",
+        link: "/reflect",
         icon: BarChart2,
       });
     }
@@ -383,24 +501,92 @@ export default function SmartAlertsPage() {
   const { summary: nw, isLoading: nwLoading, error: nwError } = useNetWorthSummary();
   const { summary: cf, isLoading: cfLoading, error: cfError } = useCashFlowSummary();
   const { goals, isLoading: gLoading, error: gError } = useGoals();
-  const portfolioId = portfolio?.id;
-  const { data: risk, isLoading: rLoading, error: rError } = useRiskMetrics(portfolioId);
+  const portfolioId = portfolio?.id ?? null;
+  const { data: risk, isLoading: rLoading, error: rError } = useRiskMetrics(portfolioId ?? undefined);
+  const { breakdown: sectorData, loading: sLoading } = useSectorBreakdown(portfolioId);
 
+  // Sectors data loads separately (yfinance call) — don't block core alerts on it
   const loading = pLoading || nwLoading || cfLoading || gLoading || rLoading;
   const error = pError || nwError || cfError || gError || rError;
 
   const [activeFilter, setActiveFilter] = useState<AlertCategory | "all">("all");
 
+  // ── AI insight state per-alert ────────────────────────────────────────
+  const [insights, setInsights] = useState<Record<string, { text: string; loading: boolean; error?: string }>>({});
+  const [insightQuota, setInsightQuota] = useState<{ remaining: number; limit: number } | null>(null);
+
+  const fetchInsight = useCallback(async (alert: SmartAlert) => {
+    if (insights[alert.id]?.text || insights[alert.id]?.loading) return; // already loaded/loading
+    setInsights((prev) => ({ ...prev, [alert.id]: { text: "", loading: true } }));
+
+    try {
+      const res = await apiStreamPost("/ai/alert-insight", {
+        alert_title: alert.title,
+        alert_description: alert.description,
+        alert_category: alert.category,
+        alert_severity: alert.severity,
+      });
+
+      // Handle rate limit / tier errors before reading body
+      if (res.status === 429) {
+        const data = await res.json().catch(() => ({}));
+        const limit = res.headers.get("X-Insight-Limit") ?? "10";
+        setInsights((prev) => ({ ...prev, [alert.id]: { text: "", loading: false, error: data.detail ?? `Daily limit of ${limit} insights reached. Resets at midnight.` } }));
+        return;
+      }
+      if (res.status === 403) {
+        const data = await res.json().catch(() => ({}));
+        setInsights((prev) => ({ ...prev, [alert.id]: { text: "", loading: false, error: data.detail ?? "AI insights require Voyager or Navigator plan." } }));
+        return;
+      }
+
+      // Read quota headers
+      const remaining = res.headers.get("X-Insight-Remaining");
+      const limit = res.headers.get("X-Insight-Limit");
+      if (remaining !== null && limit !== null) {
+        setInsightQuota({ remaining: parseInt(remaining), limit: parseInt(limit) });
+      }
+
+      if (!res.body) throw new Error("No stream body");
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? "";
+        for (const line of lines) {
+          if (!line.startsWith("data: ")) continue;
+          const raw = line.slice(6).trim();
+          if (!raw) continue;
+          try {
+            const msg = JSON.parse(raw);
+            if (msg.text) setInsights((prev) => ({ ...prev, [alert.id]: { text: (prev[alert.id]?.text ?? "") + msg.text, loading: true } }));
+            if (msg.done) setInsights((prev) => ({ ...prev, [alert.id]: { text: prev[alert.id]?.text ?? "", loading: false } }));
+            if (msg.error) setInsights((prev) => ({ ...prev, [alert.id]: { text: "", loading: false, error: msg.error } }));
+          } catch { /* ignore */ }
+        }
+      }
+    } catch (e) {
+      setInsights((prev) => ({ ...prev, [alert.id]: { text: "", loading: false, error: "Failed to load insight" } }));
+    }
+  }, [insights]);
+
   const allAlerts = useMemo(() => {
     if (loading) return [];
+    // sectorData may arrive after initial render — regenerate alerts when it does
     return generateAlerts(
       summary ? { total_value: summary.total_value, holdings: summary.holdings } : null,
       nw ?? null,
       cf ?? null,
       goals ?? null,
       risk ?? null,
+      sectorData?.sectors ?? null,
     );
-  }, [loading, summary, nw, cf, goals, risk]);
+  }, [loading, summary, nw, cf, goals, risk, sectorData]);
 
   const filteredAlerts = useMemo(() => {
     if (activeFilter === "all") return allAlerts;
@@ -425,14 +611,24 @@ export default function SmartAlertsPage() {
   return (
     <PageTransition className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-display font-bold text-zinc-100 flex items-center gap-2">
-          <Zap className="w-6 h-6 text-amber-400" />
-          Smart Alerts
-        </h1>
-        <p className="text-sm text-zinc-500 mt-0.5">
-          Automated insights from your portfolio, net worth, cash flow, and goals
-        </p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-display font-bold text-zinc-100 flex items-center gap-2">
+            <Zap className="w-6 h-6 text-amber-400" />
+            Smart Alerts
+          </h1>
+          <p className="text-sm text-zinc-500 mt-0.5">
+            Automated insights from your portfolio, net worth, cash flow, and goals
+          </p>
+        </div>
+        {insightQuota && (
+          <div className="shrink-0 flex items-center gap-1.5 text-[11px] text-zinc-500 mt-1 border border-zinc-800 rounded-full px-2.5 py-1">
+            <Sparkles className="w-3 h-3 text-teal-400" />
+            <span className={insightQuota.remaining <= 2 ? "text-amber-400" : "text-zinc-400"}>
+              {insightQuota.remaining}/{insightQuota.limit} AI insights left today
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Summary strip */}
@@ -518,6 +714,7 @@ export default function SmartAlertsPage() {
         <div className="space-y-3">
           {filteredAlerts.map((alert, i) => {
             const style = SEVERITY_STYLES[alert.severity];
+            const insight = insights[alert.id];
             return (
               <RevealOnScroll key={alert.id} delay={i * 0.03}>
                 <div className={`rounded-xl border ${style.border} ${style.bg} p-4 sm:p-5 transition-all hover:scale-[1.005]`}>
@@ -536,12 +733,48 @@ export default function SmartAlertsPage() {
                         </span>
                       </div>
                       <p className="text-xs text-zinc-400 leading-relaxed">{alert.description}</p>
-                      <Link
-                        href={alert.link}
-                        className="inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-teal-400 transition-colors pt-1"
-                      >
-                        {alert.action} <ArrowRight className="w-3 h-3" />
-                      </Link>
+
+                      <div className="flex items-center gap-3 pt-1 flex-wrap">
+                        <Link
+                          href={alert.link}
+                          className="inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-teal-400 transition-colors"
+                        >
+                          {alert.action} <ArrowRight className="w-3 h-3" />
+                        </Link>
+                        {/* AI insight button — only if no insight loaded yet */}
+                        {!insight?.text && (
+                          <button
+                            onClick={() => fetchInsight(alert)}
+                            disabled={insight?.loading}
+                            className="inline-flex items-center gap-1 text-[11px] text-zinc-600 hover:text-teal-400 transition-colors disabled:opacity-50"
+                          >
+                            {insight?.loading
+                              ? <><Loader2 className="w-3 h-3 animate-spin" /> Thinking…</>
+                              : <><Sparkles className="w-3 h-3" /> Get AI insight</>
+                            }
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Streaming AI insight panel */}
+                      {(insight?.text || insight?.error) && (
+                        <div className="mt-3 pt-3 border-t border-zinc-800/60">
+                          {insight.error ? (
+                            <p className="text-xs text-rose-400">{insight.error}</p>
+                          ) : (
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-1.5 mb-1.5">
+                                <Sparkles className="w-3 h-3 text-teal-400" />
+                                <span className="text-[10px] font-medium text-teal-400 uppercase tracking-wider">Velnor AI</span>
+                              </div>
+                              <p className="text-xs text-zinc-300 leading-relaxed">
+                                {insight.text}
+                                {insight.loading && <span className="inline-block w-1 h-3 bg-teal-400 ml-0.5 animate-pulse align-middle" />}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

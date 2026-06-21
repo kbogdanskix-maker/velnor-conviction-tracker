@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useDefaultPortfolio } from "@/hooks/usePortfolio";
 import type { Holding } from "@/hooks/usePortfolio";
+import { useProfile } from "@/hooks/useProfile";
 import { exportCSV } from "@/lib/export";
 import { formatCurrency, formatPercent } from "@/lib/formatters";
 import PageTransition from "@/components/celestial/PageTransition";
@@ -31,8 +32,8 @@ interface HarvestCandidate {
   totalCost: number;
   marketValue: number;
   quantity: number;
-  taxSavings22: number; // at 22% bracket
-  taxSavings35: number; // at 35% bracket
+  taxSavingsUser: number; // at user's marginal rate
+  taxSavings35: number;   // at 35% as high-bracket reference
   washSaleWarning: boolean;
   priority: "high" | "medium" | "low";
 }
@@ -40,15 +41,16 @@ interface HarvestCandidate {
 interface HarvestSummary {
   candidates: HarvestCandidate[];
   totalHarvestable: number;
-  estimatedTaxSavings22: number;
+  estimatedTaxSavingsUser: number;
   estimatedTaxSavings35: number;
   winners: { ticker: string; gain: number; gainPct: number }[];
   netPnl: number;
   offsetCapacity: number; // losses that can offset gains
-  carryforward: number; // excess after offsetting gains + $3K income
+  carryforward: number;   // excess after offsetting gains + $3K income
+  marginalRate: number;   // rate used (decimal)
 }
 
-function analyzeHarvesting(holdings: Holding[]): HarvestSummary {
+function analyzeHarvesting(holdings: Holding[], marginalRate: number): HarvestSummary {
   const losers: HarvestCandidate[] = [];
   const winners: { ticker: string; gain: number; gainPct: number }[] = [];
   let totalGains = 0;
@@ -74,7 +76,7 @@ function analyzeHarvesting(holdings: Holding[]): HarvestSummary {
         totalCost: h.total_cost,
         marketValue: mv,
         quantity: h.quantity,
-        taxSavings22: loss * 0.22,
+        taxSavingsUser: loss * marginalRate,
         taxSavings35: loss * 0.35,
         washSaleWarning: false, // would need transaction history to determine
         priority,
@@ -98,12 +100,13 @@ function analyzeHarvesting(holdings: Holding[]): HarvestSummary {
   return {
     candidates: losers,
     totalHarvestable: totalLosses,
-    estimatedTaxSavings22: totalLosses * 0.22,
+    estimatedTaxSavingsUser: totalLosses * marginalRate,
     estimatedTaxSavings35: totalLosses * 0.35,
     winners,
     netPnl: totalGains - totalLosses,
     offsetCapacity,
     carryforward,
+    marginalRate,
   };
 }
 
@@ -145,11 +148,15 @@ function EmptyHarvest() {
 
 export default function TaxHarvestPage() {
   const { summary, loading, hasHoldings, error } = useDefaultPortfolio();
+  const { profile } = useProfile();
+
+  const marginalRate = profile.marginalTaxRate / 100;
+  const rateLabel = `${profile.marginalTaxRate}%`;
 
   const harvest = useMemo(() => {
     if (!summary) return null;
-    return analyzeHarvesting(summary.holdings);
-  }, [summary]);
+    return analyzeHarvesting(summary.holdings, marginalRate);
+  }, [summary, marginalRate]);
 
   if (error) return <ErrorState message="Failed to load portfolio data for tax harvesting." onRetry={() => window.location.reload()} />;
   if (loading) return <DashboardSkeleton />;
@@ -177,7 +184,7 @@ export default function TaxHarvestPage() {
                   "Loss %": c.lossPct.toFixed(2),
                   "Cost Basis": c.totalCost.toFixed(2),
                   "Market Value": c.marketValue.toFixed(2),
-                  "Tax Savings (22%)": c.taxSavings22.toFixed(2),
+                  [`Tax Savings (${rateLabel})`]: c.taxSavingsUser.toFixed(2),
                   "Tax Savings (35%)": c.taxSavings35.toFixed(2),
                   Priority: c.priority,
                 })),
@@ -217,9 +224,9 @@ export default function TaxHarvestPage() {
               <div>
                 <p className="text-xs text-zinc-500">Potential Tax Savings</p>
                 <p className="text-xl font-display font-bold text-gain tabular-nums">
-                  {formatCurrency(harvest.estimatedTaxSavings22)}
+                  {formatCurrency(harvest.estimatedTaxSavingsUser)}
                 </p>
-                <p className="text-xs text-zinc-600">at 22% tax bracket</p>
+                <p className="text-xs text-zinc-600">at {rateLabel} bracket (your rate)</p>
               </div>
               <div>
                 <p className="text-xs text-zinc-500">Offset Capacity</p>
@@ -253,7 +260,7 @@ export default function TaxHarvestPage() {
                       <th className="text-right py-2 px-3 font-medium">Loss %</th>
                       <th className="text-right py-2 px-3 font-medium">Cost Basis</th>
                       <th className="text-right py-2 px-3 font-medium">Mkt Value</th>
-                      <th className="text-right py-2 px-3 font-medium">Tax Saved (22%)</th>
+                      <th className="text-right py-2 px-3 font-medium">Tax Saved ({rateLabel})</th>
                       <th className="text-right py-2 px-3 font-medium">Tax Saved (35%)</th>
                       <th className="text-center py-2 pl-3 font-medium">Priority</th>
                     </tr>
@@ -266,7 +273,7 @@ export default function TaxHarvestPage() {
                         <td className="py-2.5 px-3 text-right text-loss tabular-nums">{formatPercent(c.lossPct)}</td>
                         <td className="py-2.5 px-3 text-right text-zinc-400 tabular-nums">{formatCurrency(c.totalCost)}</td>
                         <td className="py-2.5 px-3 text-right text-zinc-400 tabular-nums">{formatCurrency(c.marketValue)}</td>
-                        <td className="py-2.5 px-3 text-right text-gain tabular-nums">{formatCurrency(c.taxSavings22)}</td>
+                        <td className="py-2.5 px-3 text-right text-gain tabular-nums">{formatCurrency(c.taxSavingsUser)}</td>
                         <td className="py-2.5 px-3 text-right text-gain tabular-nums">{formatCurrency(c.taxSavings35)}</td>
                         <td className="py-2.5 pl-3 text-center"><PriorityBadge priority={c.priority} /></td>
                       </tr>
@@ -286,7 +293,7 @@ export default function TaxHarvestPage() {
                     <div className="grid grid-cols-2 gap-2 text-xs">
                       <div><span className="text-zinc-500">Loss:</span> <span className="text-loss tabular-nums">{formatCurrency(c.unrealizedLoss)}</span></div>
                       <div><span className="text-zinc-500">Loss %:</span> <span className="text-loss tabular-nums">{formatPercent(c.lossPct)}</span></div>
-                      <div><span className="text-zinc-500">Tax saved:</span> <span className="text-gain tabular-nums">{formatCurrency(c.taxSavings22)}</span></div>
+                      <div><span className="text-zinc-500">Tax saved:</span> <span className="text-gain tabular-nums">{formatCurrency(c.taxSavingsUser)}</span></div>
                       <div><span className="text-zinc-500">Value:</span> <span className="text-zinc-400 tabular-nums">{formatCurrency(c.marketValue)}</span></div>
                     </div>
                   </div>
@@ -321,7 +328,7 @@ export default function TaxHarvestPage() {
                 { icon: AlertTriangle, color: "text-amber-400 border-amber-400/20 bg-amber-400/5", text: "Wash sale rule: You cannot repurchase the same or substantially identical security within 30 days before or after selling at a loss." },
                 { icon: Info, color: "text-teal-400 border-teal-400/20 bg-teal-400/5", text: "Capital losses first offset capital gains. Excess losses can offset up to $3,000 of ordinary income per year, with the rest carried forward." },
                 { icon: DollarSign, color: "text-teal-400 border-teal-400/20 bg-teal-400/5", text: "Tax savings are estimated. Your actual savings depend on your tax bracket, filing status, and other factors. Consult a tax professional." },
-                { icon: TrendingDown, color: "text-zinc-400 border-zinc-700 bg-zinc-800/50", text: "Harvesting doesn't change your economic position — you're selling low and can reinvest. The benefit is purely from the tax deduction timing." },
+                { icon: TrendingDown, color: "text-zinc-400 border-zinc-700 bg-zinc-800/50", text: "Harvesting doesn't change your economic position  - you're selling low and can reinvest. The benefit is purely from the tax deduction timing." },
               ].map((note, i) => (
                 <div key={i} className={`flex gap-3 p-3 rounded-lg border ${note.color}`}>
                   <note.icon className="w-4 h-4 shrink-0 mt-0.5" />

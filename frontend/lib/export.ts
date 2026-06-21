@@ -1,5 +1,5 @@
 /**
- * Export utilities — CSV download for financial data.
+ * Export utilities  - CSV download for financial data.
  * No dependencies required.
  */
 

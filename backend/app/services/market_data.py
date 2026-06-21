@@ -31,16 +31,29 @@ async def get_quotes(tickers: list[str], ttl: int = 60) -> dict[str, dict]:
 
     for ticker in tickers:
         cached = await cache_get(f"quote:{ticker}")
-        if cached is not None:
+        if cached:  # non-empty hit only (never treat a cached failure as valid)
             results[ticker] = cached
         else:
             misses.append(ticker)
 
     if misses:
         fresh = await _fetch_quotes_yfinance(misses)
-        for ticker, data in fresh.items():
-            results[ticker] = data
-            await cache_set(f"quote:{ticker}", data, ttl=ttl)
+        for ticker in misses:
+            data = fresh.get(ticker) or {}
+            if data.get("price"):
+                # Good quote: cache short-term, and remember as the last-known
+                # price for a long window so failures can fall back to it.
+                results[ticker] = data
+                await cache_set(f"quote:{ticker}", data, ttl=ttl)
+                await cache_set(f"quote_last:{ticker}", data, ttl=7 * 24 * 3600)
+            else:
+                # Fetch failed (commonly a yfinance rate-limit). Fall back to the
+                # last-known good price rather than returning 0 — a 0 would show the
+                # holding as worth nothing (-100%) and corrupt every downstream
+                # total. Do NOT cache the failure (that would poison the cache for
+                # the whole TTL and block recovery).
+                last = await cache_get(f"quote_last:{ticker}")
+                results[ticker] = {**last, "stale": True} if last else {}
 
     return results
 
@@ -68,8 +81,11 @@ async def _fetch_quotes_yfinance(tickers: list[str]) -> dict[str, dict]:
 
             for ticker in tickers:
                 try:
-                    # Extract last 2 trading days from download data
-                    if single:
+                    # yfinance 1.x: level 0 = price type, level 1 = ticker (for both single and multi)
+                    if data.columns.nlevels == 2:
+                        lvl1 = data.columns.get_level_values(1)
+                        ticker_data = data.xs(ticker, axis=1, level=1) if ticker in lvl1 else None
+                    elif single:
                         ticker_data = data
                     else:
                         ticker_data = data[ticker] if ticker in data.columns.get_level_values(0) else None
@@ -295,7 +311,7 @@ async def get_ticker_info(ticker: str) -> dict[str, Any] | None:
                 "dividend_yield": (
                     lambda dy: dy if dy is None or dy <= 0.20 else None
                 )(_ratio(raw.get("dividendYield"))),
-                "dividend_rate": _f(raw.get("dividendRate")),  # annual $/share
+                "dividend_rate": _f(raw.get("dividendRate")) or _f(raw.get("trailingAnnualDividendRate")),  # annual $/share
                 "payout_ratio": _f(raw.get("payoutRatio")),
                 "ex_dividend_date": _epoch_to_iso(raw.get("exDividendDate")),
                 "last_dividend_value": _f(raw.get("lastDividendValue")),
@@ -313,6 +329,22 @@ async def get_ticker_info(ticker: str) -> dict[str, Any] | None:
                 "gross_margins": _f(raw.get("grossMargins")),
                 "operating_margins": _f(raw.get("operatingMargins")),
                 "profit_margins": _f(raw.get("profitMargins")),
+                # Extended valuation ratios
+                "peg_ratio": _f(raw.get("trailingPegRatio")) or _f(raw.get("pegRatio")),
+                "price_to_sales": _f(raw.get("priceToSalesTrailing12Months")),
+                "price_to_book": _f(raw.get("priceToBook")),
+                "ev_to_ebitda": _f(raw.get("enterpriseToEbitda")),
+                "ev_to_revenue": _f(raw.get("enterpriseToRevenue")),
+                # Profitability & returns
+                "return_on_equity": _f(raw.get("returnOnEquity")),
+                "return_on_assets": _f(raw.get("returnOnAssets")),
+                # Balance-sheet health
+                "debt_to_equity": _f(raw.get("debtToEquity")),
+                "current_ratio": _f(raw.get("currentRatio")),
+                "quick_ratio": _f(raw.get("quickRatio")),
+                # Growth
+                "revenue_growth": _f(raw.get("revenueGrowth")),
+                "earnings_growth": _f(raw.get("earningsGrowth")),
             }
         except Exception as e:
             logger.error("Ticker info fetch failed for %s: %s", ticker, e)
@@ -350,26 +382,37 @@ async def get_dcf_fundamentals(ticker: str) -> dict[str, Any] | None:
                 except (TypeError, ValueError):
                     return None
 
-            # Try to get FCF from cashflow statement
-            fcf = None
-            try:
-                cf = t.cashflow
-                if cf is not None and not cf.empty:
-                    if "Free Cash Flow" in cf.index:
-                        fcf = float(cf.loc["Free Cash Flow"].iloc[0])
-                    elif "Operating Cash Flow" in cf.index and "Capital Expenditure" in cf.index:
-                        ocf = float(cf.loc["Operating Cash Flow"].iloc[0])
-                        capex = float(cf.loc["Capital Expenditure"].iloc[0])
-                        fcf = ocf + capex  # capex is negative
-            except Exception:
-                pass
+            # FCF: prefer info.freeCashflow (TTM) over annual cash flow statement,
+            # since TTM is more current and avoids one-time CapEx distortions.
+            fcf = _safe(raw.get("freeCashflow"))
+            if fcf is None:
+                try:
+                    cf = t.cashflow
+                    if cf is not None and not cf.empty:
+                        if "Free Cash Flow" in cf.index:
+                            fcf = float(cf.loc["Free Cash Flow"].iloc[0])
+                        elif "Operating Cash Flow" in cf.index and "Capital Expenditure" in cf.index:
+                            ocf = float(cf.loc["Operating Cash Flow"].iloc[0])
+                            capex = float(cf.loc["Capital Expenditure"].iloc[0])
+                            fcf = ocf + capex
+                except Exception:
+                    pass
 
             # Revenue growth
             revenue_growth = _safe(raw.get("revenueGrowth"))
             earnings_growth = _safe(raw.get("earningsGrowth"))
 
-            # Net cash = total cash - total debt
-            total_cash = _safe(raw.get("totalCash"))
+            # Cash: use End Cash Position from cash flow statement (actual cash & equivalents),
+            # not info.totalCash which inflates with short-term investments.
+            total_cash = None
+            try:
+                cf = t.cashflow
+                if cf is not None and not cf.empty and "End Cash Position" in cf.index:
+                    total_cash = float(cf.loc["End Cash Position"].iloc[0])
+            except Exception:
+                pass
+            if total_cash is None:
+                total_cash = _safe(raw.get("totalCash"))
             total_debt = _safe(raw.get("totalDebt"))
             net_cash = None
             if total_cash is not None and total_debt is not None:
@@ -404,6 +447,296 @@ async def get_dcf_fundamentals(ticker: str) -> dict[str, Any] | None:
     data = await asyncio.to_thread(_sync_fetch)
     if data is not None:
         await cache_set(cache_key, data, ttl=86400)
+    return data
+
+
+# Curated line items per statement. Order is presentation order.
+# Each entry is (yfinance row label, display label).
+class MarketDataUnavailable(Exception):
+    """The upstream source (Yahoo/yfinance) could not be reached or returned a
+    throttled/empty response. Distinct from data the source simply does not
+    publish for a ticker — that is signalled by returning None. Callers should
+    treat this as transient and retryable (typically rate-limiting)."""
+
+
+_INCOME_ROWS = [
+    ("Total Revenue", "Revenue"),
+    ("Cost Of Revenue", "Cost of Revenue"),
+    ("Gross Profit", "Gross Profit"),
+    ("Research And Development", "R&D"),
+    ("Selling General And Administration", "SG&A"),
+    ("Operating Income", "Operating Income"),
+    ("EBITDA", "EBITDA"),
+    ("Pretax Income", "Pretax Income"),
+    ("Tax Provision", "Tax Provision"),
+    ("Net Income", "Net Income"),
+    ("Diluted EPS", "Diluted EPS"),
+    ("Diluted Average Shares", "Diluted Shares"),
+]
+_BALANCE_ROWS = [
+    ("Cash And Cash Equivalents", "Cash & Equivalents"),
+    ("Cash Cash Equivalents And Short Term Investments", "Cash & ST Investments"),
+    ("Total Assets", "Total Assets"),
+    ("Total Liabilities Net Minority Interest", "Total Liabilities"),
+    ("Total Debt", "Total Debt"),
+    ("Net Debt", "Net Debt"),
+    ("Working Capital", "Working Capital"),
+    ("Stockholders Equity", "Shareholder Equity"),
+    ("Retained Earnings", "Retained Earnings"),
+    ("Ordinary Shares Number", "Shares Outstanding"),
+]
+_CASHFLOW_ROWS = [
+    ("Operating Cash Flow", "Operating Cash Flow"),
+    ("Capital Expenditure", "CapEx"),
+    ("Free Cash Flow", "Free Cash Flow"),
+    ("Cash Dividends Paid", "Dividends Paid"),
+    ("Repurchase Of Capital Stock", "Buybacks"),
+    ("Issuance Of Debt", "Debt Issued"),
+    ("Repayment Of Debt", "Debt Repaid"),
+    ("End Cash Position", "Ending Cash"),
+]
+
+
+async def get_financials(ticker: str) -> dict[str, Any] | None:
+    """
+    Multi-year income statement, balance sheet, and cash flow statement.
+    Returns curated line items as raw values (USD) keyed by fiscal year.
+    Factual reporting only — no derived opinion. Cached 24 hours.
+    """
+    cache_key = f"financials:{ticker}"
+    cached = await cache_get(cache_key)
+    if cached is not None:
+        return cached
+
+    def _extract(df, rows: list[tuple[str, str]]) -> dict[str, Any] | None:
+        """Pull named rows from a yfinance statement DataFrame.
+
+        Always emits the full curated row set so the table is standardised
+        across companies — a line a given filer doesn't report comes back as
+        all-None (rendered as "-"), never silently dropped."""
+        if df is None or df.empty:
+            return None
+        periods = [str(c.year) for c in df.columns]
+        n = len(periods)
+        line_items = []
+        for yf_label, display in rows:
+            if yf_label in df.index:
+                series = df.loc[yf_label]
+                values: list[float | None] = []
+                for v in series:
+                    try:
+                        values.append(round(float(v), 2) if v == v else None)  # v==v filters NaN
+                    except (TypeError, ValueError):
+                        values.append(None)
+            else:
+                # Row not in this filer's statement — keep it, fill with None.
+                values = [None] * n
+            line_items.append({"label": display, "values": values})
+        return {"periods": periods, "rows": line_items}
+
+    def _sync_fetch() -> dict[str, Any] | None:
+        try:
+            t = yf.Ticker(ticker)
+            # quoteType lets us classify an empty result: non-equity
+            # instruments genuinely have no statements, whereas an equity
+            # returning nothing almost always means the source was throttled.
+            try:
+                quote_type = (t.info or {}).get("quoteType")
+            except Exception:
+                quote_type = None
+            income = _extract(t.income_stmt, _INCOME_ROWS)
+            balance = _extract(t.balance_sheet, _BALANCE_ROWS)
+            cashflow = _extract(t.cashflow, _CASHFLOW_ROWS)
+            if income is None and balance is None and cashflow is None:
+                if quote_type and quote_type.upper() not in ("EQUITY", "NONE", ""):
+                    return None  # not covered — ETF / index / fund, expected
+                # An equity with no statements at all → upstream empty/throttled.
+                raise MarketDataUnavailable(f"No statement data returned for {ticker}")
+            return {
+                "ticker": ticker,
+                "income": income,
+                "balance": balance,
+                "cashflow": cashflow,
+            }
+        except MarketDataUnavailable:
+            raise
+        except Exception as e:
+            logger.error("Financials fetch failed for %s: %s", ticker, e)
+            raise MarketDataUnavailable(str(e)) from e
+
+    data = await asyncio.to_thread(_sync_fetch)
+    if data is not None:
+        await cache_set(cache_key, data, ttl=86400)
+    return data
+
+
+async def get_company_management(ticker: str) -> dict[str, Any] | None:
+    """
+    Factual management & governance data: officers (name/title/age/pay),
+    governance risk scores (ISS-derived, 1=low risk … 10=high), insider &
+    institutional ownership, headcount. No opinion. Cached 24 hours.
+    """
+    cache_key = f"mgmt:{ticker}"
+    cached = await cache_get(cache_key)
+    if cached is not None:
+        return cached
+
+    def _sync_fetch() -> dict[str, Any] | None:
+        try:
+            raw = yf.Ticker(ticker).info
+            if not raw or not raw.get("longName"):
+                # No identity for a real lookup → upstream empty/rate-limited.
+                raise MarketDataUnavailable(f"No company info returned for {ticker}")
+
+            def _f(v: Any) -> float | None:
+                try:
+                    return float(v) if v is not None else None
+                except (TypeError, ValueError):
+                    return None
+
+            officers = []
+            for o in (raw.get("companyOfficers") or []):
+                if not o.get("name"):
+                    continue
+                officers.append({
+                    "name": o.get("name"),
+                    "title": o.get("title"),
+                    "age": o.get("age"),
+                    "year_born": o.get("yearBorn"),
+                    "total_pay": _f(o.get("totalPay")),
+                    "fiscal_year": o.get("fiscalYear"),
+                })
+
+            # Governance risk scores: only present for many large caps.
+            gov_keys = {
+                "audit": "auditRisk",
+                "board": "boardRisk",
+                "compensation": "compensationRisk",
+                "shareholder_rights": "shareHolderRightsRisk",
+                "overall": "overallRisk",
+            }
+            governance = {k: raw.get(v) for k, v in gov_keys.items() if raw.get(v) is not None} or None
+
+            return {
+                "ticker": ticker,
+                "name": raw.get("longName") or raw.get("shortName"),
+                "sector": raw.get("sector"),
+                "industry": raw.get("industry"),
+                "website": raw.get("website"),
+                "full_time_employees": raw.get("fullTimeEmployees"),
+                "officers": officers or None,
+                "governance": governance,
+                # ISS publishes an as-of/validity date for the QualityScore.
+                "governance_as_of": _epoch_to_iso(raw.get("governanceEpochDate")),
+                "held_percent_insiders": _f(raw.get("heldPercentInsiders")),
+                "held_percent_institutions": _f(raw.get("heldPercentInstitutions")),
+            }
+        except MarketDataUnavailable:
+            raise
+        except Exception as e:
+            logger.error("Management fetch failed for %s: %s", ticker, e)
+            raise MarketDataUnavailable(str(e)) from e
+
+    data = await asyncio.to_thread(_sync_fetch)
+    if data is not None:
+        await cache_set(cache_key, data, ttl=86400)
+    return data
+
+
+def _classify_insider_txn(text: str) -> str:
+    """Map yfinance transaction text to a neutral category. Factual, no opinion."""
+    t = (text or "").lower()
+    if "purchase" in t or t.startswith("buy"):
+        return "buy"
+    if "sale" in t or "sold" in t:
+        return "sell"
+    if "gift" in t:
+        return "gift"
+    if "exercise" in t or "conversion" in t or "option" in t:
+        return "option"
+    if "grant" in t or "award" in t:
+        return "grant"
+    return "other"
+
+
+async def get_insider_activity(ticker: str) -> dict[str, Any] | None:
+    """
+    Insider trading activity: 6-month buy/sell summary plus recent
+    individual transactions (insider, role, shares, value, date, type).
+    Sourced from SEC Form 4 filings via yfinance. Factual, no opinion.
+    Cached 12 hours.
+    """
+    cache_key = f"insiders:{ticker}"
+    cached = await cache_get(cache_key)
+    if cached is not None:
+        return cached
+
+    def _sync_fetch() -> dict[str, Any] | None:
+        try:
+            t = yf.Ticker(ticker)
+
+            # 6-month summary
+            summary = None
+            summary_err = False
+            try:
+                sdf = t.insider_purchases
+                if sdf is not None and not sdf.empty:
+                    label_col = sdf.columns[0]
+                    s = {str(sdf[label_col].iloc[i]): {
+                        "shares": (lambda v: round(float(v), 0) if v == v and v is not None else None)(
+                            sdf["Shares"].iloc[i] if "Shares" in sdf.columns else None),
+                        "trans": (lambda v: int(v) if v == v and v is not None else None)(
+                            sdf["Trans"].iloc[i] if "Trans" in sdf.columns else None),
+                    } for i in range(len(sdf))}
+                    summary = s
+            except Exception:
+                summary = None
+                summary_err = True
+
+            # Recent transactions
+            txns = []
+            txns_err = False
+            try:
+                idf = t.insider_transactions
+                if idf is not None and not idf.empty:
+                    for _, row in idf.head(25).iterrows():
+                        def _g(col):
+                            try:
+                                v = row.get(col)
+                                return v if v == v else None
+                            except Exception:
+                                return None
+                        shares = _g("Shares")
+                        value = _g("Value")
+                        start = _g("Start Date")
+                        txns.append({
+                            "insider": _g("Insider"),
+                            "position": _g("Position"),
+                            "shares": int(shares) if shares is not None else None,
+                            "value": round(float(value), 0) if value not in (None, 0) else None,
+                            "text": _g("Text"),
+                            "type": _classify_insider_txn(_g("Text") or _g("Transaction") or ""),
+                            "date": str(start.date()) if hasattr(start, "date") else (str(start) if start is not None else None),
+                        })
+            except Exception:
+                txns = []
+                txns_err = True
+
+            # Both data sources threw → upstream rate-limit, retryable.
+            # Reaching here otherwise (even with empty results) means the
+            # company genuinely has no recent filings in the window.
+            if summary_err and txns_err:
+                raise MarketDataUnavailable(f"Insider data sources unavailable for {ticker}")
+            return {"ticker": ticker, "summary": summary, "transactions": txns}
+        except MarketDataUnavailable:
+            raise
+        except Exception as e:
+            logger.error("Insider activity fetch failed for %s: %s", ticker, e)
+            raise MarketDataUnavailable(str(e)) from e
+
+    data = await asyncio.to_thread(_sync_fetch)
+    if data is not None:
+        await cache_set(cache_key, data, ttl=43200)  # 12h
     return data
 
 

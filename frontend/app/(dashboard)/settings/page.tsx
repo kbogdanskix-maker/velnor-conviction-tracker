@@ -92,10 +92,10 @@ export default function SettingsPage() {
           <div>
             <label className="text-xs text-zinc-500 mb-1 block">Base Currency</label>
             <select className="input-field w-full" defaultValue="USD">
-              <option value="USD">USD — US Dollar</option>
-              <option value="EUR">EUR — Euro</option>
-              <option value="GBP">GBP — British Pound</option>
-              <option value="PLN">PLN — Polish Zloty</option>
+              <option value="USD">USD  - US Dollar</option>
+              <option value="EUR">EUR  - Euro</option>
+              <option value="GBP">GBP  - British Pound</option>
+              <option value="PLN">PLN  - Polish Zloty</option>
             </select>
           </div>
         </div>
@@ -140,7 +140,7 @@ export default function SettingsPage() {
           <h2 className="text-sm font-medium text-zinc-300">AI Style &amp; Debrief</h2>
         </div>
         <p className="text-xs text-zinc-500 mb-4">
-          Customize how Vela communicates with you and what appears in your daily debrief.
+          Customize how Velnor communicates with you and what appears in your daily debrief.
         </p>
 
         {/* Tone selector */}
@@ -279,14 +279,14 @@ export default function SettingsPage() {
           <div className="flex items-center justify-between py-2 border-b border-vela-border">
             <div>
               <p className="text-sm text-zinc-200">Plan</p>
-              <p className="text-xs text-zinc-500">Free tier — all features included during beta</p>
+              <p className="text-xs text-zinc-500">Free tier  - all features included during beta</p>
             </div>
             <span className="text-[10px] font-medium bg-vela-teal/15 text-vela-teal px-2 py-0.5 rounded-full">Beta</span>
           </div>
           <div className="flex items-center justify-between py-2">
             <div>
               <p className="text-sm text-zinc-200">Member since</p>
-              <p className="text-xs text-zinc-500">{user?.created_at ? new Date(user.created_at).toLocaleDateString("en-US", { month: "long", year: "numeric" }) : "—"}</p>
+              <p className="text-xs text-zinc-500">{user?.created_at ? new Date(user.created_at).toLocaleDateString("en-US", { month: "long", year: "numeric" }) : " -"}</p>
             </div>
           </div>
         </div>

@@ -53,7 +53,7 @@ export default function GoalDetailPanel({ goal, open, onOpenChange }: Props) {
     ? Math.min(100, (Number(goal.current_amount) / targetAmount) * 100)
     : 0;
 
-  // Thin down chart data for performance — show ~60 points max
+  // Thin down chart data for performance  - show ~60 points max
   const step = Math.max(1, Math.floor(projection.length / 60));
   const chartData = projection.filter((_, i) => i % step === 0 || i === projection.length - 1);
 

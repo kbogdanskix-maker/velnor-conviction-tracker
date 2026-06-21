@@ -96,7 +96,7 @@ export default function SplashScreen({ children }: { children: React.ReactNode }
               animate={{ opacity: 1, y: 0, letterSpacing: "0.2em" }}
               transition={{ delay: 0.6, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             >
-              VELA
+              VELNOR
             </motion.h1>
 
             {/* Tagline */}

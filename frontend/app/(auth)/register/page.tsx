@@ -63,7 +63,7 @@ export default function RegisterPage() {
     <div className="vela-card space-y-6">
       <div className="text-center space-y-1">
         <div className="text-3xl font-bold tracking-tight text-zinc-100">
-          <span className="text-vela-teal">V</span>ela
+          <span className="text-vela-teal">V</span>elnor
         </div>
         <p className="text-zinc-400 text-sm">Start your journey.</p>
       </div>

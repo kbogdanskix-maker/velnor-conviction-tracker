@@ -1,6 +1,7 @@
 """
 Vela — FastAPI application entry point.
 """
+import asyncio
 import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
@@ -9,7 +10,7 @@ from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from app.config import settings
-from app.routers import auth, portfolio, watchlist, markets, macro, imports, quotes, goals, news, networth, cashflow, screener, journal, fx, kv
+from app.routers import auth, portfolio, watchlist, markets, macro, imports, quotes, goals, news, networth, cashflow, screener, journal, fx, kv, ai, sentiment
 
 logging.basicConfig(
     level=logging.DEBUG if settings.DEBUG else logging.INFO,
@@ -64,6 +65,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("Vela API starting up — env: %s", settings.APP_ENV)
+    asyncio.create_task(screener._warm_screener_cache())
     yield
     logger.info("Vela API shutting down")
 
@@ -117,6 +119,8 @@ app.include_router(screener.router, prefix=PREFIX, tags=["screener"])
 app.include_router(journal.router,  prefix=PREFIX, tags=["journal"])
 app.include_router(fx.router,       prefix=PREFIX, tags=["fx"])
 app.include_router(kv.router,       prefix=PREFIX, tags=["kv"])
+app.include_router(ai.router,       prefix=PREFIX, tags=["ai"])
+app.include_router(sentiment.router, prefix=PREFIX, tags=["sentiment"])
 
 
 # ── Health check ─────────────────────────────────────────────────────────────

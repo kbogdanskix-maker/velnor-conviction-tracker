@@ -176,7 +176,7 @@ export default function ExpensesPage() {
                   className={`text-2xl font-bold tabular ${totalExpensePctOfIncome > 80 ? "text-rose-400" : totalExpensePctOfIncome > 60 ? "text-amber-400" : "text-emerald-400"}`}
                 />
               ) : (
-                <p className="text-2xl font-bold tabular text-emerald-400">—</p>
+                <p className="text-2xl font-bold tabular text-emerald-400"> -</p>
               )}
               <p className="text-xs text-zinc-500 mt-1">of Income</p>
             </div>
@@ -381,17 +381,17 @@ export default function ExpensesPage() {
               {totalIncome > 0 ? (
                 totalExpensePctOfIncome > 80 ? (
                   <>
-                    <span className="text-rose-400 font-medium">High expense ratio</span> — you&apos;re spending {totalExpensePctOfIncome.toFixed(0)}% of income.
+                    <span className="text-rose-400 font-medium">High expense ratio</span>  - you&apos;re spending {totalExpensePctOfIncome.toFixed(0)}% of income.
                     The 50/30/20 rule suggests keeping total expenses under 80% to maintain a healthy savings rate.
                   </>
                 ) : totalExpensePctOfIncome > 60 ? (
                   <>
-                    <span className="text-amber-400 font-medium">Moderate spending</span> — {totalExpensePctOfIncome.toFixed(0)}% of income goes to expenses.
+                    <span className="text-amber-400 font-medium">Moderate spending</span>  - {totalExpensePctOfIncome.toFixed(0)}% of income goes to expenses.
                     {biggestCat && <> Your biggest category is {cfCategoryLabel(biggestCat.category)} at {biggestPct.toFixed(0)}% of expenses.</>}
                   </>
                 ) : (
                   <>
-                    <span className="text-emerald-400 font-medium">Well controlled</span> — only {totalExpensePctOfIncome.toFixed(0)}% of income goes to expenses.
+                    <span className="text-emerald-400 font-medium">Well controlled</span>  - only {totalExpensePctOfIncome.toFixed(0)}% of income goes to expenses.
                     Your savings rate of {formatPercent(summary?.savings_rate ?? 0, false)} is above the recommended 20%.
                   </>
                 )

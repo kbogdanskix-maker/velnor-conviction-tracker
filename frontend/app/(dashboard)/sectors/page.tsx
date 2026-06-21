@@ -74,7 +74,7 @@ function TreemapContent(props: any) {
       <text x={x + 6} y={y + 16} fill="#fafafa" fontSize={11} fontWeight={500}>
         {width > 70 ? name : name?.slice(0, 6)}
       </text>
-      {height > 40 && (
+      {height > 40 && Number.isFinite(weight) && (
         <text x={x + 6} y={y + 30} fill="#a1a1aa" fontSize={10}>
           {pctWeight(weight)}
         </text>
@@ -418,7 +418,7 @@ function ConcentrationInsight({ sectors }: { sectors: SectorEntry[] }) {
           </>
         ) : concentration === "moderate" ? (
           <>
-            <span className="text-zinc-300 font-medium">Moderate concentration</span> — {top.name} is your largest sector at {pctWeight(top.weight)}.
+            <span className="text-zinc-300 font-medium">Moderate concentration</span>  - {top.name} is your largest sector at {pctWeight(top.weight)}.
             {sectors.length >= 4 ? " Good spread across multiple sectors." : " Adding exposure to more sectors could help."}
           </>
         ) : (

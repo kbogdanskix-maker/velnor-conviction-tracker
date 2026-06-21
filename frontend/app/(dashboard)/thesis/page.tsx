@@ -115,7 +115,7 @@ export default function ThesisPage() {
     if (stats.accuracy >= 70) {
       msgs.push({ icon: Target, text: `Strong conviction accuracy at ${stats.accuracy.toFixed(0)}%. Your research process is working.`, color: "text-gain" });
     } else if (stats.accuracy >= 50) {
-      msgs.push({ icon: Brain, text: `${stats.accuracy.toFixed(0)}% accuracy — around a coin flip. Consider tightening your thesis criteria.`, color: "text-amber-400" });
+      msgs.push({ icon: Brain, text: `${stats.accuracy.toFixed(0)}% accuracy  - around a coin flip. Consider tightening your thesis criteria.`, color: "text-amber-400" });
     } else {
       msgs.push({ icon: AlertTriangle, text: `${stats.accuracy.toFixed(0)}% accuracy is below chance. Review what's going wrong in your analysis.`, color: "text-loss" });
     }
@@ -125,7 +125,7 @@ export default function ThesisPage() {
       if (diff > 20) {
         msgs.push({ icon: TrendingUp, text: `You're better at spotting winners (${stats.bullishAcc.toFixed(0)}%) than shorts (${stats.bearishAcc.toFixed(0)}%). Consider reducing bearish bets.`, color: "text-vela-teal" });
       } else if (diff < -20) {
-        msgs.push({ icon: TrendingDown, text: `Stronger at bearish calls (${stats.bearishAcc.toFixed(0)}%) than bullish (${stats.bullishAcc.toFixed(0)}%). You may have a negativity edge — or a confirmation bias on longs.`, color: "text-vela-teal" });
+        msgs.push({ icon: TrendingDown, text: `Stronger at bearish calls (${stats.bearishAcc.toFixed(0)}%) than bullish (${stats.bullishAcc.toFixed(0)}%). You may have a negativity edge  - or a confirmation bias on longs.`, color: "text-vela-teal" });
       }
     }
 
@@ -198,14 +198,14 @@ export default function ThesisPage() {
             <div className="vela-card">
               <p className="text-[10px] text-zinc-500 uppercase tracking-wider mb-1">Bullish Calls</p>
               <p className={`text-xl font-bold tabular ${stats.bullishAcc !== null ? (stats.bullishAcc >= 50 ? "text-gain" : "text-loss") : "text-zinc-600"}`}>
-                {stats.bullishAcc !== null ? `${stats.bullishAcc.toFixed(0)}%` : "—"}
+                {stats.bullishAcc !== null ? `${stats.bullishAcc.toFixed(0)}%` : " -"}
               </p>
               <p className="text-[10px] text-zinc-600 mt-0.5">hit rate</p>
             </div>
             <div className="vela-card">
               <p className="text-[10px] text-zinc-500 uppercase tracking-wider mb-1">Bearish Calls</p>
               <p className={`text-xl font-bold tabular ${stats.bearishAcc !== null ? (stats.bearishAcc >= 50 ? "text-gain" : "text-loss") : "text-zinc-600"}`}>
-                {stats.bearishAcc !== null ? `${stats.bearishAcc.toFixed(0)}%` : "—"}
+                {stats.bearishAcc !== null ? `${stats.bearishAcc.toFixed(0)}%` : " -"}
               </p>
               <p className="text-[10px] text-zinc-600 mt-0.5">hit rate</p>
             </div>
@@ -517,7 +517,7 @@ function ThesisModal({ open, onClose, editing, onSave }: {
               <textarea value={body} onChange={(e) => setBody(e.target.value)} rows={5} placeholder="Why are you bullish/bearish? What's your edge? What would change your mind?" required className="input-field w-full resize-none" />
             </div>
 
-            {/* Outcome section — only when editing */}
+            {/* Outcome section  - only when editing */}
             {showOutcomeSection && (
               <div className="border-t border-zinc-800 pt-4 space-y-3">
                 <p className="text-xs text-zinc-400 font-medium">Evaluate this thesis</p>

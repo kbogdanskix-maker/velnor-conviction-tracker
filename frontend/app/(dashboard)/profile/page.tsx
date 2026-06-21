@@ -1,6 +1,6 @@
 "use client";
 
-import { User, Home, Shield, DollarSign, Globe, TrendingUp, Users, CheckCircle2 } from "lucide-react";
+import { User, Home, Shield, DollarSign, Globe, TrendingUp, Users, CheckCircle2, Target } from "lucide-react";
 import { useProfile, US_TAX_BRACKETS, type Sophistication } from "@/hooks/useProfile";
 import { useCashFlowSummary } from "@/hooks/useCashFlow";
 import PageTransition from "@/components/celestial/PageTransition";
@@ -55,13 +55,34 @@ const SOPHISTICATION_OPTIONS = [
   },
 ];
 
+const OBJECTIVE_OPTIONS = [
+  { value: "growth" as const, label: "Maximize growth", desc: "Compounding and capital appreciation come first. Comfortable with concentration and volatility.", color: "border-emerald-500/40 bg-emerald-500/5 text-emerald-400", inactive: "border-zinc-700 hover:border-zinc-600" },
+  { value: "income" as const, label: "Generate income", desc: "Dividends and cash flow matter most. Favor yield and durability.", color: "border-teal-500/40 bg-teal-500/5 text-teal-400", inactive: "border-zinc-700 hover:border-zinc-600" },
+  { value: "preservation" as const, label: "Preserve capital", desc: "Protecting what you have outweighs upside. Low drawdown tolerance.", color: "border-blue-500/40 bg-blue-500/5 text-blue-400", inactive: "border-zinc-700 hover:border-zinc-600" },
+  { value: "target" as const, label: "Reach a target", desc: "Working toward a goal or financial independence on a timeline.", color: "border-indigo-500/40 bg-indigo-500/5 text-indigo-400", inactive: "border-zinc-700 hover:border-zinc-600" },
+  { value: "learning" as const, label: "Learn & experiment", desc: "Building skill and conviction. Open to ideas, comfortable being wrong.", color: "border-amber-500/40 bg-amber-500/5 text-amber-400", inactive: "border-zinc-700 hover:border-zinc-600" },
+];
+
+const HORIZON_OPTIONS = [
+  { value: "short" as const, label: "Short", desc: "< 3 yrs" },
+  { value: "medium" as const, label: "Medium", desc: "3–10 yrs" },
+  { value: "long" as const, label: "Long", desc: "10+ yrs" },
+];
+
+const DEEMPHASIS_OPTIONS = [
+  { value: "retirement" as const, label: "Retirement / FI framing" },
+  { value: "income" as const, label: "Income & dividends" },
+  { value: "tax" as const, label: "Tax optimization" },
+  { value: "volatility" as const, label: "Short-term volatility" },
+];
+
 function Toggle({ on, onToggle }: { on: boolean; onToggle: () => void }) {
   return (
     <button
       onClick={onToggle}
       className={`w-11 h-6 rounded-full transition-colors relative shrink-0 ${on ? "bg-teal-500" : "bg-zinc-700"}`}
     >
-      <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${on ? "translate-x-5" : "translate-x-0.5"}`} />
+      <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${on ? "translate-x-5" : "translate-x-0"}`} />
     </button>
   );
 }
@@ -244,7 +265,7 @@ export default function ProfilePage() {
             ))}
           </div>
           <p className="text-[11px] text-zinc-600 mt-3">
-            Sets the default scenario in Monte Carlo simulations and influences portfolio suggestions.
+            Sets the default scenario in Monte Carlo simulations and informs the AI&apos;s reasoning.
           </p>
         </FloatingCard>
       </RevealOnScroll>
@@ -279,6 +300,98 @@ export default function ProfilePage() {
         </FloatingCard>
       </RevealOnScroll>
 
+      {/* Investor Profile */}
+      <RevealOnScroll delay={0.1}>
+        <FloatingCard glowColor="rgba(16,185,129,0.08)" tilt={false}>
+          <div className="flex items-center gap-2 mb-1">
+            <Target className="w-4 h-4 text-emerald-400" />
+            <h2 className="text-sm font-semibold text-zinc-200 uppercase tracking-wider">Investor Profile</h2>
+          </div>
+          <p className="text-[11px] text-zinc-600 mb-5">
+            Tells Velnor&apos;s AI how to think about your money — your objective and philosophy shape its framing and what it emphasizes.
+          </p>
+
+          {/* Primary objective */}
+          <label className="text-xs text-zinc-500 mb-2 block">Primary objective</label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {OBJECTIVE_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => update({ primaryObjective: opt.value })}
+                className={`p-4 rounded-lg border text-left transition-all ${
+                  profile.primaryObjective === opt.value ? opt.color : opt.inactive + " text-zinc-400"
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-sm font-semibold">{opt.label}</p>
+                  {profile.primaryObjective === opt.value && <CheckCircle2 className="w-4 h-4" />}
+                </div>
+                <p className="text-[11px] leading-relaxed opacity-70">{opt.desc}</p>
+              </button>
+            ))}
+          </div>
+
+          {/* Time horizon */}
+          <label className="text-xs text-zinc-500 mb-2 mt-5 block">Time horizon</label>
+          <div className="grid grid-cols-3 gap-3">
+            {HORIZON_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => update({ timeHorizon: opt.value })}
+                className={`p-3 rounded-lg border text-center transition-all ${
+                  profile.timeHorizon === opt.value
+                    ? "border-emerald-500/40 bg-emerald-500/5 text-emerald-400"
+                    : "border-zinc-700 hover:border-zinc-600 text-zinc-400"
+                }`}
+              >
+                <p className="text-sm font-semibold">{opt.label}</p>
+                <p className="text-[10px] opacity-70 mt-0.5">{opt.desc}</p>
+              </button>
+            ))}
+          </div>
+
+          {/* De-emphasize */}
+          <label className="text-xs text-zinc-500 mb-2 mt-5 block">Downplay (optional)</label>
+          <div className="flex flex-wrap gap-2">
+            {DEEMPHASIS_OPTIONS.map((opt) => {
+              const on = profile.deEmphasize.includes(opt.value);
+              return (
+                <button
+                  key={opt.value}
+                  onClick={() =>
+                    update({
+                      deEmphasize: on
+                        ? profile.deEmphasize.filter((d) => d !== opt.value)
+                        : [...profile.deEmphasize, opt.value],
+                    })
+                  }
+                  className={`text-xs px-3 py-1.5 rounded-full border transition-all ${
+                    on
+                      ? "border-rose-500/40 bg-rose-500/10 text-rose-300"
+                      : "border-zinc-700 hover:border-zinc-600 text-zinc-400"
+                  }`}
+                >
+                  {on ? "Hiding · " : ""}{opt.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Philosophy */}
+          <label className="text-xs text-zinc-500 mb-2 mt-5 block">Your investing philosophy</label>
+          <textarea
+            value={profile.philosophy}
+            onChange={(e) => update({ philosophy: e.target.value.slice(0, 1200) })}
+            placeholder="How do you think about investing? What are you trying to achieve, and how do you approach it? e.g. 'I look for mispriced growth — companies the market mis-classifies. I'll hold through volatility if the thesis holds. I don't care about dividends or matching an index.'"
+            rows={5}
+            className="w-full bg-[#0c0c0c] border border-zinc-800 focus:border-emerald-500/40 rounded-lg px-3 py-2.5 text-[13px] text-zinc-200 placeholder-zinc-700 resize-none outline-none transition-colors leading-relaxed"
+          />
+          <p className="text-[10px] text-zinc-600 mt-1.5">
+            {profile.philosophy.length}/1200 · Reflect and My Plan read this to sound like your advisor, not a generic one. The AI never invents figures.
+          </p>
+        </FloatingCard>
+      </RevealOnScroll>
+
       {/* Summary */}
       <RevealOnScroll delay={0.1}>
         <div className="vela-card">
@@ -291,6 +404,7 @@ export default function ProfilePage() {
               { label: "Tax Status", value: profile.isUsCitizen ? "US Taxpayer" : "Non-US" },
               { label: "Marginal Rate", value: `${profile.marginalTaxRate}%` },
               { label: "Risk Tolerance", value: profile.riskTolerance.charAt(0).toUpperCase() + profile.riskTolerance.slice(1) },
+              { label: "Objective", value: (OBJECTIVE_OPTIONS.find((o) => o.value === profile.primaryObjective)?.label) ?? "—" },
             ].map((item) => (
               <div key={item.label}>
                 <p className="text-xs text-zinc-500">{item.label}</p>

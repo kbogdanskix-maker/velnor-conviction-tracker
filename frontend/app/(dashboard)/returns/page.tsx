@@ -15,6 +15,19 @@ import {
 } from "recharts";
 import { TrendingUp, TrendingDown, Calendar, Percent, ArrowUpRight, ArrowDownRight, Clock } from "lucide-react";
 
+/* ── custom tooltip ────────────────────────────────────────── */
+
+function MonthlyReturnTooltip({ active, payload, label }: any) {
+  if (!active || !payload?.length) return null;
+  const val = payload[0].value as number;
+  return (
+    <div style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 8, padding: "8px 12px", fontSize: 12 }}>
+      <p style={{ color: "#71717a", marginBottom: 2 }}>{label}</p>
+      <p style={{ color: val >= 0 ? "#34d399" : "#fb7185" }}>Return: {val.toFixed(2)}%</p>
+    </div>
+  );
+}
+
 /* ── types ─────────────────────────────────────────────────── */
 
 interface PerfPoint { date: string; value: number; cost_basis: number }
@@ -320,7 +333,8 @@ export default function ReturnsPage() {
                       <XAxis dataKey="date" tickFormatter={shortDate} tick={{ fill: "#71717a", fontSize: 11 }} axisLine={false} tickLine={false} interval="preserveStartEnd" minTickGap={60} />
                       <YAxis tick={{ fill: "#71717a", fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v: number) => `$${(v / 1000).toFixed(0)}k`} width={48} />
                       <Tooltip
-                        contentStyle={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 8, fontSize: 12 }}
+                        contentStyle={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 8, fontSize: 12, color: "#e4e4e7" }}
+                        labelStyle={{ color: "#71717a" }}
                         labelFormatter={shortDate}
                         formatter={(v: number) => [formatCurrency(v), "Value"]}
                       />
@@ -346,10 +360,7 @@ export default function ReturnsPage() {
                       <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
                       <XAxis dataKey="month" tick={{ fill: "#71717a", fontSize: 11 }} axisLine={false} tickLine={false} />
                       <YAxis tick={{ fill: "#71717a", fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}%`} />
-                      <Tooltip cursor={false}
-                        contentStyle={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 8 }}
-                        formatter={(v: number) => [`${v.toFixed(2)}%`, "Return"]}
-                      />
+                      <Tooltip cursor={false} content={<MonthlyReturnTooltip />} />
                       <ReferenceLine y={0} stroke="#3f3f46" />
                       <Bar dataKey="return_pct" radius={[4, 4, 0, 0]}>
                         {monthlyData.map((d, i) => (

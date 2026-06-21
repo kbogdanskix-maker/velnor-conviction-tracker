@@ -61,18 +61,22 @@ async def recompute_holdings(portfolio_id: uuid.UUID, db: AsyncSession) -> None:
             }
 
         pos = position[ticker]
-        cost_in_base = (tx.price * tx.quantity + tx.fees) * tx.fx_rate
+        qty = Decimal(str(tx.quantity))
+        price = Decimal(str(tx.price))
+        fees = Decimal(str(tx.fees))
+        fx_rate = Decimal(str(tx.fx_rate))
+        cost_in_base = (price * qty + fees) * fx_rate
 
         if tx.transaction_type == "buy":
-            pos["quantity"] += tx.quantity
+            pos["quantity"] += qty
             pos["total_cost"] += cost_in_base
         elif tx.transaction_type == "sell":
             if pos["quantity"] > ZERO:
                 # Reduce cost proportionally
-                if pos["quantity"] >= tx.quantity:
+                if pos["quantity"] >= qty:
                     cost_per_unit = pos["total_cost"] / pos["quantity"]
-                    pos["total_cost"] -= cost_per_unit * tx.quantity
-                    pos["quantity"] -= tx.quantity
+                    pos["total_cost"] -= cost_per_unit * qty
+                    pos["quantity"] -= qty
                 else:
                     # Oversell — clamp (shouldn't happen in normal use)
                     pos["quantity"] = ZERO
@@ -317,8 +321,14 @@ async def compute_risk_metrics(
     tasks = {t: get_historical_prices(t, period=period) for t in tickers}
     tasks["^GSPC"] = get_historical_prices("^GSPC", period=period)
 
-    results = await asyncio.gather(*tasks.values())
-    history = dict(zip(tasks.keys(), results))
+    # Tolerate per-ticker fetch failures (a single yfinance rate-limit/network
+    # error must not 500 the whole endpoint). Failed tickers degrade to empty
+    # history, which the guards below handle gracefully (_empty_risk fallback).
+    results = await asyncio.gather(*tasks.values(), return_exceptions=True)
+    history = {
+        t: (r if isinstance(r, list) else [])
+        for t, r in zip(tasks.keys(), results)
+    }
 
     # Build daily returns per ticker
     ticker_returns: dict[str, dict[str, float]] = {}

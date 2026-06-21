@@ -24,7 +24,7 @@ export default function WatchlistPage() {
       await api.delete(`/watchlist/${ticker}`);
       mutate();
     } catch {
-      // silently fail — SWR will re-fetch
+      // silently fail  - SWR will re-fetch
     } finally {
       setDeleting(null);
     }
@@ -133,11 +133,11 @@ function WatchlistCard({
             {item.ticker}
           </span>
           <span className={changePillClass(changePct)}>
-            {item.day_change_pct != null ? formatPercent(changePct) : "—"}
+            {item.day_change_pct != null ? formatPercent(changePct) : " -"}
           </span>
         </div>
         <p className="text-sm text-zinc-400 tabular">
-          {item.current_price != null ? formatCurrency(item.current_price) : "—"}
+          {item.current_price != null ? formatCurrency(item.current_price) : " -"}
           {item.notes && (
             <span className="text-zinc-500 ml-2 truncate">· {item.notes}</span>
           )}

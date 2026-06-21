@@ -17,7 +17,7 @@ export function createServerClient() {
               cookieStore.set(name, value, options),
             );
           } catch {
-            // Server component — cookies can only be set in middleware
+            // Server component  - cookies can only be set in middleware
           }
         },
       },

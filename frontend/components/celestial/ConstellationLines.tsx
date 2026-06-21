@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Decorative constellation line pattern — renders faint connected dots
+ * Decorative constellation line pattern  - renders faint connected dots
  * in a fixed position as atmospheric background detail.
  */
 export default function ConstellationLines() {
@@ -16,7 +16,7 @@ export default function ConstellationLines() {
           <stop offset="100%" stopColor="#14b8a6" stopOpacity="0" />
         </linearGradient>
       </defs>
-      {/* Vela constellation approximate pattern */}
+      {/* Velnor constellation approximate pattern */}
       <g stroke="url(#constellation-grad)" strokeWidth="1" fill="none">
         <line x1="15%" y1="20%" x2="22%" y2="35%" />
         <line x1="22%" y1="35%" x2="18%" y2="55%" />

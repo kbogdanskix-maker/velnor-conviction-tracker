@@ -151,7 +151,7 @@ export default function FxPage() {
                 className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2.5 text-sm text-zinc-100 focus:outline-none focus:ring-1 focus:ring-vela-teal min-w-[140px]"
               >
                 {CURRENCIES.map((c) => (
-                  <option key={c.code} value={c.code}>{c.flag} {c.code} — {c.name}</option>
+                  <option key={c.code} value={c.code}>{c.flag} {c.code}  - {c.name}</option>
                 ))}
               </select>
               <input
@@ -181,7 +181,7 @@ export default function FxPage() {
                 className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2.5 text-sm text-zinc-100 focus:outline-none focus:ring-1 focus:ring-vela-teal min-w-[140px]"
               >
                 {CURRENCIES.map((c) => (
-                  <option key={c.code} value={c.code}>{c.flag} {c.code} — {c.name}</option>
+                  <option key={c.code} value={c.code}>{c.flag} {c.code}  - {c.name}</option>
                 ))}
               </select>
               <div className="flex-1 bg-zinc-800/50 border border-zinc-700 rounded-lg px-3 py-2.5 text-sm text-vela-teal font-semibold tabular-nums">
@@ -240,7 +240,7 @@ export default function FxPage() {
                   const isSelf = row.code === col;
                   return (
                     <td key={col} className={`text-right tabular-nums py-2 px-2 ${isSelf ? "text-zinc-600" : "text-zinc-300"}`}>
-                      {isSelf ? "—" : val < 1 ? val.toFixed(4) : val.toFixed(2)}
+                      {isSelf ? " -" : val < 1 ? val.toFixed(4) : val.toFixed(2)}
                     </td>
                   );
                 })}

@@ -68,7 +68,7 @@ export default function LearningCard({ card, onDismiss, compact }: LearningCardP
   return content;
 }
 
-/** Horizontal scrollable row of compact cards — for dashboard */
+/** Horizontal scrollable row of compact cards  - for dashboard */
 export function LearningCardRow({
   cards,
   onDismiss,

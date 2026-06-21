@@ -25,6 +25,7 @@ import PageTransition from "@/components/celestial/PageTransition";
 import FloatingCard from "@/components/celestial/FloatingCard";
 import RevealOnScroll from "@/components/celestial/RevealOnScroll";
 import AnimatedNumber from "@/components/celestial/AnimatedNumber";
+import GoalsStrip from "@/components/shared/GoalsStrip";
 
 // ── Category icon map ───────────────────────────────────────────────────────
 
@@ -90,7 +91,7 @@ export default function NetWorthPage() {
                     Value: a.value,
                     Currency: a.currency,
                   })),
-                  `vela-net-worth-${new Date().toISOString().slice(0, 10)}.csv`,
+                  `velnor-net-worth-${new Date().toISOString().slice(0, 10)}.csv`,
                 )
               }
               className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs text-zinc-400 hover:text-zinc-200 bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700/50 transition-colors"
@@ -134,6 +135,9 @@ export default function NetWorthPage() {
         </div>
       )}
 
+      {/* Goals in context */}
+      <GoalsStrip />
+
       {/* Assets Section */}
       <section className="space-y-3">
         <h2 className="section-heading">Assets</h2>
@@ -168,7 +172,7 @@ export default function NetWorthPage() {
         {userLiabilities.length === 0 ? (
           <div className="vela-card text-center py-8">
             <CreditCard className="w-6 h-6 text-zinc-600 mx-auto mb-2" />
-            <p className="text-sm text-zinc-500">No liabilities — nice!</p>
+            <p className="text-sm text-zinc-500">No liabilities  - nice!</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -632,7 +636,7 @@ function ConfirmDeleteDialog({
           </Dialog.Title>
           <p className="text-sm text-zinc-400 mb-1">
             <span className="font-medium text-zinc-200">{item?.name}</span>{" "}
-            — {formatCurrency(item?.value)}
+             - {formatCurrency(item?.value)}
           </p>
           <p className="text-xs text-zinc-500 mb-5">
             This cannot be undone.

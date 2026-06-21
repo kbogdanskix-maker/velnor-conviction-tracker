@@ -415,6 +415,9 @@ async def get_portfolio_dividends(
         # Fallback: calculate yield from rate / price when yield is missing
         if div_yield is None and div_rate and price and price > 0:
             div_yield = round(div_rate / price, 4)
+        # Fallback: calculate rate from yield * price when rate is missing
+        if div_rate is None and div_yield and price and price > 0:
+            div_rate = round(div_yield * price, 4)
         ex_date = info.get("ex_dividend_date") if info else None
         payout = info.get("payout_ratio") if info else None
         five_yr = info.get("five_year_avg_yield") if info else None

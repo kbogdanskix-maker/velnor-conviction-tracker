@@ -7,12 +7,13 @@ import { useState, useEffect } from "react";
 import { createBrowserClient } from "@/lib/supabase-browser";
 import { useRouter } from "next/navigation";
 import { useAdmin } from "@/contexts/AdminContext";
+import { useProfile } from "@/hooks/useProfile";
 import {
   LayoutDashboard, PieChart, Eye, BarChart2, TrendingUp, TrendingDown,
   FileText, BookOpen, Newspaper, Globe, ChevronLeft, ChevronRight, ChevronDown,
   LogOut, Settings, Menu, X, Target, Wallet, Calculator, DollarSign, Sparkles,
-  RotateCcw, Coins, Receipt, GraduationCap, Activity, Bell, Umbrella,
-  Banknote, Brain, Users, Search, Scale, BadgePercent, LayoutGrid, Calendar, GitBranch, CreditCard, Shield, Repeat, Trophy, ArrowLeftRight, Compass, Flame, Dice5, Scissors, LineChart, MapPin, Star, GitCompare, HeartPulse, Zap, MessageCircle, StickyNote,
+  RotateCcw, Coins, Receipt, GraduationCap, Activity, Umbrella,
+  Banknote, Brain, Users, Search, Scale, BadgePercent, LayoutGrid, Calendar, GitBranch, CreditCard, Shield, Repeat, Trophy, ArrowLeftRight, Compass, Flame, Dice5, Scissors, LineChart, MapPin, Star, GitCompare, HeartPulse, Zap, MessageCircle, StickyNote, Building2,
 } from "lucide-react";
 
 // ── Icon animation + color map ──────────────────────────────────────────────
@@ -32,18 +33,18 @@ const ICON_STYLE: Record<string, { anim: IconAnim; color: string }> = {
   "/sectors":         { anim: "pulse",  color: "text-indigo-400" },
   "/position-size":   { anim: "bounce", color: "text-sky-400" },
   "/correlation":     { anim: "pulse",  color: "text-emerald-400" },
-  "/risk":            { anim: "pulse",  color: "text-red-400" },
+  "/risk":            { anim: "pulse",  color: "text-rose-400" },
   "/attribution":     { anim: "bounce", color: "text-blue-400" },
-  "/optimizer":       { anim: "pulse",  color: "text-cyan-400" },
+  "/reflect":         { anim: "pulse",  color: "text-cyan-400" },
   "/tax-harvest":     { anim: "wiggle", color: "text-emerald-400" },
   // Financial Planning
   "/net-worth":       { anim: "pulse",  color: "text-emerald-400" },
-  "/cash-flow":       { anim: "bounce", color: "text-green-400" },
+  "/cash-flow":       { anim: "bounce", color: "text-emerald-400" },
   "/expenses":        { anim: "wiggle", color: "text-rose-400" },
   "/budget":          { anim: "pulse",  color: "text-orange-400" },
   "/affordability":   { anim: "wiggle", color: "text-cyan-400" },
-  "/debt-payoff":     { anim: "bounce", color: "text-red-400" },
-  "/tax":             { anim: "wiggle", color: "text-yellow-400" },
+  "/debt-payoff":     { anim: "bounce", color: "text-rose-400" },
+  "/tax":             { anim: "wiggle", color: "text-amber-400" },
   "/income":          { anim: "bounce", color: "text-emerald-400" },
   "/insurance":       { anim: "pulse",  color: "text-blue-400" },
   "/stress-index":    { anim: "pulse",  color: "text-orange-400" },
@@ -56,7 +57,7 @@ const ICON_STYLE: Record<string, { anim: IconAnim; color: string }> = {
   "/compare":         { anim: "wiggle", color: "text-indigo-400" },
   "/benchmark":       { anim: "bounce", color: "text-blue-400" },
   "/what-if":         { anim: "pulse",  color: "text-fuchsia-400" },
-  "/emergency-fund":  { anim: "pulse",  color: "text-red-400" },
+  "/emergency-fund":  { anim: "pulse",  color: "text-rose-400" },
   "/milestones":      { anim: "bounce", color: "text-amber-400" },
   "/learn":           { anim: "wiggle", color: "text-cyan-400" },
   "/fi":              { anim: "pulse",  color: "text-orange-400" },
@@ -72,7 +73,7 @@ const ICON_STYLE: Record<string, { anim: IconAnim; color: string }> = {
   "/smart-alerts":    { anim: "ring",   color: "text-amber-400" },
   "/earnings-insights": { anim: "bounce", color: "text-amber-400" },
   // News & Markets
-  "/fx":              { anim: "wiggle", color: "text-green-400" },
+  "/fx":              { anim: "wiggle", color: "text-emerald-400" },
   "/markets":         { anim: "spin",   color: "text-blue-400" },
   "/macro":           { anim: "bounce", color: "text-teal-400" },
   "/news":            { anim: "wiggle", color: "text-sky-400" },
@@ -141,7 +142,7 @@ const NAV_GROUPS: NavGroup[] = [
       { href: "/correlation", label: "Diversification", icon: Shield, tier: "navigator" },
       { href: "/risk", label: "Risk", icon: Activity },
       { href: "/attribution", label: "Attribution", icon: BarChart2, tier: "voyager" },
-      { href: "/optimizer", label: "Reflect", icon: Brain, tier: "navigator" },
+      { href: "/reflect", label: "Reflect", icon: Brain, tier: "navigator" },
       { href: "/returns", label: "Returns", icon: TrendingUp },
     ],
   },
@@ -160,7 +161,6 @@ const NAV_GROUPS: NavGroup[] = [
       { href: "/income", label: "Income", icon: Banknote },
       { href: "/insurance", label: "Insurance", icon: Shield, tier: "voyager" },
       { href: "/stress-index", label: "Stress Index", icon: Activity },
-      { href: "/alerts", label: "Alerts", icon: Bell, tier: "voyager" },
       { href: "/subscriptions", label: "Subscriptions", icon: Repeat },
       { href: "/asset-location", label: "Asset Location", icon: MapPin, tier: "voyager" },
       { href: "/behavior", label: "Behavior", icon: Brain, tier: "voyager" },
@@ -173,7 +173,7 @@ const NAV_GROUPS: NavGroup[] = [
       { href: "/monte-carlo", label: "Monte Carlo", icon: Dice5, tier: "navigator" },
       { href: "/goals", label: "Goals", icon: Target },
       { href: "/retirement", label: "Retirement", icon: Umbrella, tier: "voyager" },
-      { href: "/compare", label: "Compare", icon: GitBranch, tier: "voyager" },
+      { href: "/compare", label: "Portfolio Comparison", icon: GitBranch, tier: "voyager" },
       { href: "/benchmark", label: "Benchmark", icon: Users, tier: "voyager" },
       { href: "/what-if", label: "What If", icon: Sparkles, tier: "navigator" },
       { href: "/emergency-fund", label: "Emergency Fund", icon: Shield, tier: "voyager" },
@@ -203,9 +203,20 @@ const NAV_GROUPS: NavGroup[] = [
       { href: "/valuation/dcf", label: "DCF", icon: FileText, tier: "voyager" },
       { href: "/valuation/reverse-dcf", label: "Reverse DCF", icon: RotateCcw, tier: "voyager" },
       { href: "/stock-compare", label: "Stock Compare", icon: GitCompare, tier: "voyager" },
+      { href: "/company", label: "Company Deep-Dive", icon: Building2, tier: "navigator" },
     ],
   },
 ];
+
+// Curated "core" pages shown in Simple view. Everything else is Advanced.
+// (Dashboard, Guide, and Profile are standalone and always shown.)
+const CORE_HREFS = new Set<string>([
+  "/health-score",
+  "/portfolio", "/watchlist", "/reflect",
+  "/net-worth", "/cash-flow",
+  "/goals", "/learn",
+  "/markets", "/news",
+]);
 
 // ── Component ───────────────────────────────────────────────────────────────
 
@@ -216,6 +227,24 @@ export default function Sidebar() {
   const { adminMode } = useAdmin();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Simple vs Advanced navigation. Beginners/intermediate default to a curated
+  // core; advanced users see everything. A manual toggle is remembered.
+  const { profile } = useProfile();
+  const [showAdvanced, setShowAdvanced] = useState(true);
+  useEffect(() => {
+    const stored = typeof window !== "undefined" ? localStorage.getItem("vela_nav_advanced") : null;
+    if (stored === "true") { setShowAdvanced(true); return; }
+    if (stored === "false") { setShowAdvanced(false); return; }
+    setShowAdvanced(profile.sophistication === "advanced");
+  }, [profile.sophistication]);
+  function toggleAdvanced() {
+    setShowAdvanced((v) => {
+      const next = !v;
+      try { localStorage.setItem("vela_nav_advanced", String(next)); } catch { /* ignore */ }
+      return next;
+    });
+  }
 
   // Auto-open the group that contains the active page
   const initialOpen = NAV_GROUPS
@@ -272,7 +301,7 @@ export default function Sidebar() {
           </div>
           <span className="text-lg font-display font-bold tracking-tight">
             <span className="text-vela-teal">V</span>
-            <span className="text-zinc-100">ela</span>
+            <span className="text-zinc-100">elnor</span>
           </span>
         </Link>
         <button
@@ -314,7 +343,7 @@ export default function Sidebar() {
               </div>
               <span className="text-xl font-display font-bold tracking-tight">
                 <span className="text-vela-teal">V</span>
-                <span className="text-zinc-100">ela</span>
+                <span className="text-zinc-100">elnor</span>
               </span>
             </Link>
           ) : (
@@ -359,8 +388,16 @@ export default function Sidebar() {
 
           {/* Grouped sections */}
           {NAV_GROUPS.map((group) => {
+            // In Simple view, show only core items (plus whichever page is active,
+            // so the current page never disappears from the nav).
+            const visibleItems = showAdvanced
+              ? group.items
+              : group.items.filter(
+                  (it) => CORE_HREFS.has(it.href) || pathname === it.href || pathname.startsWith(`${it.href}/`),
+                );
+            if (visibleItems.length === 0) return null;
             const isOpen = openGroups.has(group.label);
-            const hasActive = group.items.some((item) => pathname === item.href || pathname.startsWith(`${item.href}/`));
+            const hasActive = visibleItems.some((item) => pathname === item.href || pathname.startsWith(`${item.href}/`));
 
             return (
               <div key={group.label}>
@@ -383,7 +420,7 @@ export default function Sidebar() {
                 {/* Group items */}
                 {(isOpen || !showLabels) && (
                   <div className="space-y-0.5">
-                    {group.items.map((item) => (
+                    {visibleItems.map((item) => (
                       <NavLink
                         key={item.href}
                         item={item}
@@ -399,6 +436,16 @@ export default function Sidebar() {
               </div>
             );
           })}
+
+          {showLabels && (
+            <button
+              onClick={toggleAdvanced}
+              className="w-full flex items-center gap-2 px-3 py-2 mt-3 rounded-md text-[11px] font-medium text-zinc-500 hover:text-vela-teal transition-colors border-t border-white/[0.04] pt-3"
+            >
+              <LayoutGrid className="w-3.5 h-3.5" />
+              {showAdvanced ? "Switch to Simple view" : "Show all tools"}
+            </button>
+          )}
         </nav>
 
         {/* Bottom actions */}

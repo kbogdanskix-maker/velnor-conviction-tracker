@@ -269,7 +269,7 @@ export default function MilestonesPage() {
                   return inner;
                 }
 
-                // Locked milestone — simple staggered entrance
+                // Locked milestone  - simple staggered entrance
                 return (
                   <motion.div
                     key={m.id}

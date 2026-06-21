@@ -51,7 +51,7 @@ export interface BehaviorResult {
 export function analyzeBehavior(input: BehaviorInput): BehaviorResult {
   const biases: BiasDetection[] = [];
 
-  // 1. Loss Aversion — holding losers too long
+  // 1. Loss Aversion  - holding losers too long
   const losers = input.holdings.filter((h) => h.unrealizedPnlPct < -15);
   const bigLosers = losers.filter((h) => h.unrealizedPnlPct < -30);
   biases.push({
@@ -67,7 +67,7 @@ export function analyzeBehavior(input: BehaviorInput): BehaviorResult {
     emoji: "😰",
   });
 
-  // 2. Disposition Effect — selling winners too early
+  // 2. Disposition Effect  - selling winners too early
   const sellEntries = input.journalEntries.filter((e) => e.action === "sell" || e.action === "trim");
   const winSells = sellEntries.filter(
     (e) => e.priceAtDecision && e.priceAtReview && e.priceAtReview > e.priceAtDecision
@@ -109,7 +109,7 @@ export function analyzeBehavior(input: BehaviorInput): BehaviorResult {
     emoji: "🎲",
   });
 
-  // 4. Recency Bias — overreacting to recent moves
+  // 4. Recency Bias  - overreacting to recent moves
   const recentBuys = input.journalEntries.filter((e) => {
     const daysAgo = (Date.now() - new Date(e.decidedAt).getTime()) / (1000 * 60 * 60 * 24);
     return e.action === "buy" && daysAgo < 7;
@@ -128,7 +128,7 @@ export function analyzeBehavior(input: BehaviorInput): BehaviorResult {
     emoji: "⏰",
   });
 
-  // 5. Overconfidence — high conviction on losing trades
+  // 5. Overconfidence  - high conviction on losing trades
   const highConvLosses = input.journalEntries.filter(
     (e) => e.conviction >= 4 && e.outcome === "loss"
   );
@@ -148,7 +148,7 @@ export function analyzeBehavior(input: BehaviorInput): BehaviorResult {
     emoji: "🦚",
   });
 
-  // 6. Anchoring — holding because of cost basis
+  // 6. Anchoring  - holding because of cost basis
   const anchoredPositions = input.holdings.filter((h) => {
     const pnl = h.unrealizedPnlPct;
     return pnl < -20 && h.weight > 0.05;

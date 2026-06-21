@@ -22,8 +22,8 @@ from app.models.db import User
 
 class Tier(IntEnum):
     HORIZON = 0    # free
-    VOYAGER = 1    # $9/mo
-    NAVIGATOR = 2  # $49/mo
+    VOYAGER = 1    # $9.99/mo or $99.99/yr
+    NAVIGATOR = 2  # $29.99/mo or $250/yr
 
 
 TIER_NAME_MAP = {

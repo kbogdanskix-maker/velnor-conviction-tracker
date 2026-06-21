@@ -45,7 +45,7 @@ export default function GoalsPage() {
                     Deadline: g.target_date ?? "",
                     "Monthly Contribution": g.monthly_contribution ?? "",
                   })),
-                  `vela-goals-${new Date().toISOString().slice(0, 10)}.csv`,
+                  `velnor-goals-${new Date().toISOString().slice(0, 10)}.csv`,
                 )
               }
               className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs text-zinc-400 hover:text-zinc-200 bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700/50 transition-colors"

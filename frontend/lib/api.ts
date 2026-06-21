@@ -1,5 +1,5 @@
 /**
- * Typed API client — thin wrapper over fetch.
+ * Typed API client  - thin wrapper over fetch.
  * Attaches the Supabase session token to every request.
  * All API calls go through /api/v1/* which Next.js proxies to the FastAPI backend.
  */
@@ -42,6 +42,27 @@ async function request<T>(
 
   if (res.status === 204) return undefined as T;
   return res.json() as Promise<T>;
+}
+
+/** Open an SSE stream, returning the raw Response (check .body for ReadableStream). */
+export async function apiStream(path: string): Promise<Response> {
+  const token = await getToken();
+  return fetch(`${BASE}${path}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+}
+
+/** POST with a JSON body and return an SSE stream Response. */
+export async function apiStreamPost(path: string, body: unknown): Promise<Response> {
+  const token = await getToken();
+  return fetch(`${BASE}${path}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify(body),
+  });
 }
 
 export const api = {

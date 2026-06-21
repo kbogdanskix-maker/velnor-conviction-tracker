@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import {
-  TrendingDown, CreditCard, Plus, Zap, Layers, Check, ChevronDown, ChevronUp,
+  TrendingDown, CreditCard, Plus, Zap, Layers, Check, ChevronDown, ChevronUp, AlertTriangle,
 } from "lucide-react";
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend,
@@ -45,6 +45,7 @@ function simulatePayoff(
   const balances = sorted.map((d) => d.balance);
   const rates = sorted.map((d) => d.rate / 100 / 12);
   const mins = sorted.map((d) => d.minPayment);
+  const totalMins = mins.reduce((s, m) => s + m, 0);
 
   const steps: PayoffStep[] = [];
   let cumInterest = 0;
@@ -67,31 +68,31 @@ function simulatePayoff(
       }
     }
 
-    // Pay minimums first — freed minimums from paid-off debts roll into budget
-    let budget = extraMonthly;
+    // Fixed monthly commitment: extra + every debt's original minimum. As debts
+    // clear, their freed minimums stay in the pool and cascade to the priority
+    // debt — the core snowball/avalanche mechanic. (Previously the freed minimum
+    // was only captured in the month a debt cleared and lost thereafter, which
+    // understated payoff speed.)
+    let pool = extraMonthly + totalMins;
+
+    // Minimum payment on each still-active debt.
     for (let i = 0; i < balances.length; i++) {
       if (balances[i] > 0) {
         const payment = Math.min(mins[i], balances[i]);
         balances[i] -= payment;
-        if (balances[i] < 0.01) {
-          balances[i] = 0;
-          budget += mins[i] - payment; // overpayment + freed minimum
-        }
+        pool -= payment;
+        if (balances[i] < 0.01) balances[i] = 0;
       }
     }
 
-    // Throw extra + freed minimums at the priority debt (cascade if it pays off)
+    // Throw everything left at the priority debt; cascade as debts clear.
     for (let i = 0; i < balances.length; i++) {
-      if (balances[i] > 0 && budget > 0) {
-        const payment = Math.min(budget, balances[i]);
+      if (balances[i] > 0 && pool > 0.0001) {
+        const payment = Math.min(pool, balances[i]);
         balances[i] -= payment;
-        budget -= payment;
-        if (balances[i] < 0.01) {
-          balances[i] = 0;
-          budget += mins[i]; // this debt's minimum is now freed too
-        } else {
-          break; // only continue cascading if debt was fully paid off
-        }
+        pool -= payment;
+        if (balances[i] < 0.01) balances[i] = 0;
+        else break;
       }
     }
   }
@@ -110,13 +111,13 @@ const STRATEGY_INFO = {
     ],
     cons: [
       "First payoff can take a while if the highest-rate balance is large",
-      "No quick wins early — all math, no momentum",
+      "No quick wins early  - all math, no momentum",
       "Progress on individual debts is slow until one clears",
     ],
   },
   snowball: {
     pros: [
-      "Smallest balances clear first — reduces number of accounts fast",
+      "Smallest balances clear first  - reduces number of accounts fast",
       "Psychological momentum from early wins",
       "Simpler to track as accounts drop off",
     ],
@@ -149,6 +150,11 @@ export default function DebtPayoffPage() {
         rate: Number(l.interest_rate ?? 0),
         minPayment: Number(l.minimum_payment ?? 50),
       })),
+    [liabilities],
+  );
+
+  const debtsWithMissingData = useMemo(
+    () => liabilities.filter((l) => !l.interest_rate || !l.minimum_payment),
     [liabilities],
   );
 
@@ -239,6 +245,30 @@ export default function DebtPayoffPage() {
         </p>
       </div>
 
+      {/* Missing data warning */}
+      {debtsWithMissingData.length > 0 && (
+        <div className="flex items-start gap-3 p-3 rounded-lg border border-amber-400/20 bg-amber-400/5">
+          <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+          <div className="text-xs text-zinc-300 leading-relaxed">
+            <span className="font-medium text-amber-400">Estimates may be inaccurate —</span>{" "}
+            {debtsWithMissingData.map((l) => (
+              <span key={l.id}>
+                <span className="font-medium">{l.name}</span> is missing{" "}
+                {!l.interest_rate && !l.minimum_payment
+                  ? "an interest rate and minimum payment"
+                  : !l.interest_rate
+                  ? "an interest rate"
+                  : "a minimum payment"}
+              </span>
+            )).reduce<React.ReactNode[]>((acc, el, i) => i === 0 ? [el] : [...acc, ", ", el], [])}
+            .{" "}
+            <Link href="/net-worth" className="text-amber-400 underline underline-offset-2 hover:text-amber-300">
+              Update in Net Worth
+            </Link>
+          </div>
+        </div>
+      )}
+
       {/* Debts overview + extra payment slider */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2 vela-card">
@@ -294,7 +324,7 @@ export default function DebtPayoffPage() {
         </div>
       </div>
 
-      {/* Strategy selection — clickable cards */}
+      {/* Strategy selection  - clickable cards */}
       <div>
         <h2 className="text-sm font-medium text-zinc-300 mb-3">Choose Your Strategy</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

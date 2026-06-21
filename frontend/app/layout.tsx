@@ -6,14 +6,14 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "Vela",
-    template: "%s — Vela",
+    default: "Velnor",
+    template: "%s  - Velnor",
   },
   description: "Your wealth, in motion. Portfolio tracking, valuation tools, and market intelligence for investors.",
   openGraph: {
-    title: "Vela",
+    title: "Velnor",
     description: "Your wealth, in motion.",
-    siteName: "Vela",
+    siteName: "Velnor",
     type: "website",
   },
 };

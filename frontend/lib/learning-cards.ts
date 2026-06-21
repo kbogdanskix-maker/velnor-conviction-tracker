@@ -1,5 +1,5 @@
 /**
- * Contextual Learning Cards — definitions & trigger logic
+ * Contextual Learning Cards  - definitions & trigger logic
  *
  * Each card has:
  *  - id:        unique key (also used for dismiss persistence)
@@ -381,7 +381,7 @@ export const LEARNING_CARDS: LearningCard[] = [
     category: "fundamentals",
     priority: 1,
     emoji: "✨",
-    trigger: () => true, // universal — always available on /learn page
+    trigger: () => true, // universal  - always available on /learn page
   },
 ];
 

@@ -52,7 +52,7 @@ export const GUIDE_STEPS: GuideStep[] = [
     id: "goals",
     title: "Create a financial goal",
     description:
-      "Set targets with timelines and monthly contributions. Vela projects your progress and shows how purchases or debts delay your goals.",
+      "Set targets with timelines and monthly contributions. Velnor projects your progress and shows how purchases or debts delay your goals.",
     href: "/goals",
     icon: Target,
     cta: "Set a Goal",

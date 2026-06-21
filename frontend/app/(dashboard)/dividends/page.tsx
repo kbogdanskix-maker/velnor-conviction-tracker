@@ -269,7 +269,7 @@ function Header({ holdings }: { holdings?: DividendHolding[] }) {
           Dividends
         </h1>
         <p className="text-zinc-500 text-sm mt-0.5">
-          Projected income from your holdings — yields, ex-dates, and payout ratios
+          Projected income from your holdings  - yields, ex-dates, and payout ratios
         </p>
       </div>
       {holdings && holdings.length > 0 && (
@@ -286,7 +286,7 @@ function Header({ holdings }: { holdings?: DividendHolding[] }) {
                 "Ex-Date": h.ex_dividend_date ?? "",
                 "Payout Ratio": h.payout_ratio != null ? (h.payout_ratio * 100).toFixed(0) + "%" : "",
               })),
-              `vela-dividends-${new Date().toISOString().slice(0, 10)}.csv`,
+              `velnor-dividends-${new Date().toISOString().slice(0, 10)}.csv`,
             )
           }
           className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs text-zinc-400 hover:text-zinc-200 bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700/50 transition-colors"
@@ -342,7 +342,7 @@ function HoldingRow({ holding: h }: { holding: DividendHolding }) {
         <div className="flex items-center gap-1.5">
           <span className="text-zinc-100 font-medium">{h.ticker}</span>
           {highYield && (
-            <span title="Yield above 8% — may be unsustainable">
+            <span title="Yield above 8%  - may be unsustainable">
               <AlertTriangle className="w-3 h-3 text-amber-400" />
             </span>
           )}
@@ -355,19 +355,19 @@ function HoldingRow({ holding: h }: { holding: DividendHolding }) {
         {formatCurrency(h.current_price)}
       </td>
       <td className="py-2 tabular text-right text-zinc-300">
-        {h.dividend_rate != null ? `$${h.dividend_rate.toFixed(2)}` : "—"}
+        {h.dividend_rate != null ? `$${h.dividend_rate.toFixed(2)}` : " -"}
       </td>
       <td className={`py-2 tabular text-right ${yieldPct != null && yieldPct > 0 ? (highYield ? "text-amber-400" : "text-gain") : "text-zinc-500"}`}>
-        {yieldPct != null ? `${yieldPct.toFixed(2)}%` : "—"}
+        {yieldPct != null ? `${yieldPct.toFixed(2)}%` : " -"}
       </td>
       <td className={`py-2 tabular text-right font-medium ${h.annual_income > 0 ? "text-gain" : "text-zinc-500"}`}>
-        {h.annual_income > 0 ? formatCurrency(h.annual_income) : "—"}
+        {h.annual_income > 0 ? formatCurrency(h.annual_income) : " -"}
       </td>
       <td className="py-2 tabular text-right text-zinc-400">
-        {h.ex_dividend_date ? formatDate(h.ex_dividend_date) : "—"}
+        {h.ex_dividend_date ? formatDate(h.ex_dividend_date) : " -"}
       </td>
       <td className={`py-2 tabular text-right ${payoutHigh ? "text-amber-400" : "text-zinc-400"}`}>
-        {h.payout_ratio != null ? `${(h.payout_ratio * 100).toFixed(0)}%` : "—"}
+        {h.payout_ratio != null ? `${(h.payout_ratio * 100).toFixed(0)}%` : " -"}
       </td>
     </tr>
   );

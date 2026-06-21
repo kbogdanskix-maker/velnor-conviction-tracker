@@ -12,7 +12,7 @@ interface TypewriterProps {
 }
 
 /**
- * Typewriter effect — types text one character at a time.
+ * Typewriter effect  - types text one character at a time.
  * Renders a blinking cursor that disappears after completion.
  */
 export default function Typewriter({

@@ -10,10 +10,13 @@ interface AdminState {
 const AdminContext = createContext<AdminState>({ adminMode: false, toggleAdmin: () => {} });
 
 export function AdminProvider({ children }: { children: ReactNode }) {
+  // Default to false — real users see only what their tier unlocks.
+  // Admin mode (unlock-all) is opt-in via Settings and persisted in storage.
   const [adminMode, setAdminMode] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem("vela_admin_mode");
+    // Only enable if explicitly turned on previously.
     if (stored === "true") setAdminMode(true);
   }, []);
 

@@ -219,7 +219,7 @@ export default function GuidePage() {
       {/* Disclaimer */}
       <div className="text-center pt-4 pb-8 border-t border-zinc-800">
         <p className="text-xs text-zinc-600">
-          Vela is a personal finance dashboard. All data stays in your account. Not financial advice.
+          Velnor is a personal finance dashboard. All data stays in your account. Not financial advice.
         </p>
       </div>
     </PageTransition>

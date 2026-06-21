@@ -58,7 +58,7 @@ const METRICS: MetricDef[] = [
   {
     key: "sharpe_ratio",
     label: "Sharpe Ratio",
-    description: "Risk-adjusted return — higher means better returns per unit of risk taken",
+    description: "Risk-adjusted return  - higher means better returns per unit of risk taken",
     format: (v) => v.toFixed(2),
     grade: (v) => {
       if (v >= 1.5) return gradeFromScore(90);
@@ -73,7 +73,7 @@ const METRICS: MetricDef[] = [
   {
     key: "annualized_volatility",
     label: "Annualized Volatility",
-    description: "Standard deviation of returns — measures how much your portfolio swings",
+    description: "Standard deviation of returns  - measures how much your portfolio swings",
     format: (v) => `${v.toFixed(1)}%`,
     grade: (v) => {
       // v is already a percentage (e.g., 15.0 = 15%)
@@ -89,7 +89,7 @@ const METRICS: MetricDef[] = [
   {
     key: "max_drawdown",
     label: "Max Drawdown",
-    description: "Largest peak-to-trough decline — the worst loss from a high point",
+    description: "Largest peak-to-trough decline  - the worst loss from a high point",
     format: (v) => `${v.toFixed(1)}%`,
     grade: (v) => {
       // v is already a percentage (e.g., -12.3 = -12.3%)
@@ -106,7 +106,7 @@ const METRICS: MetricDef[] = [
   {
     key: "beta",
     label: "Portfolio Beta",
-    description: "Sensitivity to market movements — 1.0 = moves like the market",
+    description: "Sensitivity to market movements  - 1.0 = moves like the market",
     format: (v) => v.toFixed(2),
     grade: (v) => {
       const diff = Math.abs(v - 1);
@@ -214,7 +214,7 @@ function generateInsights(risk: RiskMetrics, holdings: Holding[]): Insight[] {
 
   if (risk.sharpe_ratio != null) {
     if (risk.sharpe_ratio >= 1.0) {
-      insights.push({ type: "success", text: `Your risk-adjusted returns are strong — Sharpe of ${risk.sharpe_ratio.toFixed(2)} indicates efficient risk usage.` });
+      insights.push({ type: "success", text: `Your risk-adjusted returns are strong  - Sharpe of ${risk.sharpe_ratio.toFixed(2)} indicates efficient risk usage.` });
     } else if (risk.sharpe_ratio < 0.5) {
       insights.push({ type: "warning", text: "Low Sharpe ratio suggests you're not being adequately compensated for the risk you're taking." });
     }
@@ -222,21 +222,21 @@ function generateInsights(risk: RiskMetrics, holdings: Holding[]): Insight[] {
 
   if (risk.annualized_volatility != null) {
     if (risk.annualized_volatility > 25) {
-      insights.push({ type: "warning", text: `Volatility of ${risk.annualized_volatility.toFixed(0)}% is high — consider adding lower-volatility assets like bonds or dividend stocks.` });
+      insights.push({ type: "warning", text: `Volatility of ${risk.annualized_volatility.toFixed(0)}% is high  - consider adding lower-volatility assets like bonds or dividend stocks.` });
     } else if (risk.annualized_volatility < 12) {
-      insights.push({ type: "success", text: "Your portfolio has low volatility — smooth sailing through market turbulence." });
+      insights.push({ type: "success", text: "Your portfolio has low volatility  - smooth sailing through market turbulence." });
     }
   }
 
   if (risk.max_drawdown != null && Math.abs(risk.max_drawdown) > 20) {
-    insights.push({ type: "warning", text: `Your worst drawdown was ${Math.abs(risk.max_drawdown).toFixed(0)}% — make sure you can tolerate this level of decline psychologically and financially.` });
+    insights.push({ type: "warning", text: `Your worst drawdown was ${Math.abs(risk.max_drawdown).toFixed(0)}%  - make sure you can tolerate this level of decline psychologically and financially.` });
   }
 
   if (risk.beta != null) {
     if (risk.beta > 1.3) {
-      insights.push({ type: "info", text: `Your portfolio amplifies market moves by ${((risk.beta - 1) * 100).toFixed(0)}% — it will fall harder in downturns.` });
+      insights.push({ type: "info", text: `Your portfolio amplifies market moves by ${((risk.beta - 1) * 100).toFixed(0)}%  - it will fall harder in downturns.` });
     } else if (risk.beta < 0.7) {
-      insights.push({ type: "info", text: "Low beta means your portfolio is defensive — it won't keep pace in strong bull markets but offers downside protection." });
+      insights.push({ type: "info", text: "Low beta means your portfolio is defensive  - it won't keep pace in strong bull markets but offers downside protection." });
     }
   }
 
@@ -245,7 +245,7 @@ function generateInsights(risk: RiskMetrics, holdings: Holding[]): Insight[] {
   }
 
   if (holdings.length < 5) {
-    insights.push({ type: "warning", text: `Only ${holdings.length} holding${holdings.length === 1 ? "" : "s"} — consider diversifying across more positions.` });
+    insights.push({ type: "warning", text: `Only ${holdings.length} holding${holdings.length === 1 ? "" : "s"}  - consider diversifying across more positions.` });
   } else if (holdings.length >= 15) {
     insights.push({ type: "success", text: `Well-diversified across ${holdings.length} positions.` });
   }
@@ -253,7 +253,7 @@ function generateInsights(risk: RiskMetrics, holdings: Holding[]): Insight[] {
   if (risk.annualized_return != null && risk.annualized_volatility != null) {
     const efficiency = risk.annualized_return / risk.annualized_volatility;
     if (efficiency > 0.8) {
-      insights.push({ type: "success", text: "Your return-to-volatility ratio is efficient — you're getting strong returns relative to the risk." });
+      insights.push({ type: "success", text: "Your return-to-volatility ratio is efficient  - you're getting strong returns relative to the risk." });
     }
   }
 
@@ -433,7 +433,7 @@ function ConcentrationCard({ holdings }: { holdings: Holding[] }) {
         <div>
           <p className="text-xs text-zinc-500">Top holding</p>
           <p className="text-sm font-medium text-zinc-200 tabular-nums">
-            {conc.topHolding ? `${conc.topHolding.ticker} (${conc.topHolding.pct.toFixed(0)}%)` : "—"}
+            {conc.topHolding ? `${conc.topHolding.ticker} (${conc.topHolding.pct.toFixed(0)}%)` : " -"}
           </p>
         </div>
         <div>
@@ -530,7 +530,7 @@ export default function RiskDashboardPage() {
         <EmptyRisk />
       ) : (
         <>
-          {/* Hero — Overall Score + Annualized Return */}
+          {/* Hero  - Overall Score + Annualized Return */}
           <FloatingCard glowColor="rgba(20, 184, 166, 0.12)" tilt={false}>
             <div className="flex flex-col sm:flex-row items-center gap-6 sm:gap-10 py-2">
               {overallScore != null && <RiskGauge score={overallScore} />}
@@ -579,12 +579,12 @@ export default function RiskDashboardPage() {
           {/* Concentration + Insights */}
           <RevealOnScroll delay={0.05}>
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-              {/* Concentration — takes 3 cols */}
+              {/* Concentration  - takes 3 cols */}
               <div className="lg:col-span-3">
                 {summary && <ConcentrationCard holdings={summary.holdings} />}
               </div>
 
-              {/* Insights — takes 2 cols */}
+              {/* Insights  - takes 2 cols */}
               <div className="lg:col-span-2 space-y-3">
                 <h2 className="section-heading">Insights</h2>
                 {insights.length === 0 ? (

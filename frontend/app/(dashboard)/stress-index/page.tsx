@@ -198,7 +198,7 @@ export default function StressIndexPage() {
         ))}
       </div>
 
-      {/* Detailed breakdown — worst first */}
+      {/* Detailed breakdown  - worst first */}
       <div className="space-y-3">
         <h2 className="section-heading">Breakdown</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -217,7 +217,7 @@ export default function StressIndexPage() {
             <p className="text-xs text-zinc-400 leading-relaxed">
               Your stress index combines six dimensions of your financial life: debt load (20%),
               savings rate (20%), emergency buffer (20%), diversification (15%), portfolio
-              performance (15%), and goal progress (10%). The more data you add to Vela, the
+              performance (15%), and goal progress (10%). The more data you add to Velnor, the
               more accurate this score becomes. This is for educational purposes only and not
               financial advice.
             </p>

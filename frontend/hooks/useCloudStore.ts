@@ -5,7 +5,7 @@ import { api } from "@/lib/api";
 import { useCallback, useRef } from "react";
 
 /**
- * Cloud-synced JSON store — replaces localStorage for persistent data.
+ * Cloud-synced JSON store  - replaces localStorage for persistent data.
  *
  * Uses the backend /kv/{key} endpoint with SWR caching.
  * Falls back to localStorage if the API call fails (offline mode).
@@ -68,7 +68,7 @@ export function useCloudStore<T = unknown[]>(key: string) {
         try {
           await api.put(`/kv/${key}`, { data: newData });
         } catch {
-          // API unavailable — localStorage already has the data
+          // API unavailable  - localStorage already has the data
         }
       }, 300);
     },

@@ -64,11 +64,11 @@ FRED_SERIES: dict[str, dict] = {
         "context": "The Fed's official target measure (2% target). Below 2% supports rate cuts; above sustains higher-for-longer rates.",
     },
     # Fed / Policy
-    "FEDFUNDS": {
-        "name": "Fed Funds Rate",
+    "DFEDTARU": {
+        "name": "Fed Funds Rate (Target Upper)",
         "unit": "%",
         "group": "fed",
-        "context": "The policy rate set by the FOMC. Directly impacts borrowing costs, mortgage rates, and equity discount rates.",
+        "context": "The FOMC target upper bound — updates the day of each Fed decision. Directly impacts borrowing costs, mortgage rates, and equity discount rates.",
     },
     "UNRATE": {
         "name": "Unemployment Rate",

@@ -13,14 +13,14 @@ const config: Config = {
       colors: {
         // Vela brand palette
         vela: {
-          teal: "#14b8a6",       // teal-500 — primary accent
-          "teal-dim": "#0d9488", // teal-600 — hover state
+          teal: "#14b8a6",       // teal-500  - primary accent
+          "teal-dim": "#0d9488", // teal-600  - hover state
           bg: "#030712",         // deep space blue-black
           card: "#0f1729",       // navy-tinted card background
           "card-hover": "#141d33", // slightly lighter on hover
-          border: "#1e293b",     // slate-800 — cooler borders
-          muted: "#64748b",      // slate-500 — muted text
-          subtle: "#475569",     // slate-600 — very muted
+          border: "#1e293b",     // slate-800  - cooler borders
+          muted: "#64748b",      // slate-500  - muted text
+          subtle: "#475569",     // slate-600  - very muted
         },
         // P&L colours
         gain: "#34d399",   // emerald-400

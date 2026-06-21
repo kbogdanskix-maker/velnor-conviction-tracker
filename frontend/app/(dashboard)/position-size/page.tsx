@@ -159,7 +159,7 @@ export default function PositionSizePage() {
               </div>
               <div className="flex justify-between border-t border-zinc-800 pt-2">
                 <span className="text-xs text-zinc-400">Risk/Reward</span>
-                <span className={`text-sm font-bold tabular-nums ${analysis.riskReward >= 2 ? "text-gain" : analysis.riskReward >= 1 ? "text-yellow-400" : "text-loss"}`}>
+                <span className={`text-sm font-bold tabular-nums ${analysis.riskReward >= 2 ? "text-gain" : analysis.riskReward >= 1 ? "text-amber-400" : "text-loss"}`}>
                   1:{analysis.riskReward.toFixed(1)}
                 </span>
               </div>
@@ -167,10 +167,10 @@ export default function PositionSizePage() {
           </div>
 
           {/* Risk assessment */}
-          <div className={`vela-card p-4 border-l-4 ${riskLevel === "conservative" ? "border-l-gain" : riskLevel === "moderate" ? "border-l-yellow-400" : "border-l-loss"}`}>
+          <div className={`vela-card p-4 border-l-4 ${riskLevel === "conservative" ? "border-l-gain" : riskLevel === "moderate" ? "border-l-amber-400" : "border-l-loss"}`}>
             <div className="flex items-center gap-2 mb-1">
-              {riskLevel === "conservative" ? <CheckCircle2 className="w-4 h-4 text-gain" /> : <AlertTriangle className="w-4 h-4 text-yellow-400" />}
-              <span className={`text-sm font-semibold ${riskLevel === "conservative" ? "text-gain" : riskLevel === "moderate" ? "text-yellow-400" : "text-loss"}`}>
+              {riskLevel === "conservative" ? <CheckCircle2 className="w-4 h-4 text-gain" /> : <AlertTriangle className="w-4 h-4 text-amber-400" />}
+              <span className={`text-sm font-semibold ${riskLevel === "conservative" ? "text-gain" : riskLevel === "moderate" ? "text-amber-400" : "text-loss"}`}>
                 {riskLevel.charAt(0).toUpperCase() + riskLevel.slice(1)} Position
               </span>
             </div>
@@ -207,10 +207,10 @@ export default function PositionSizePage() {
       <div className="vela-card p-5">
         <h3 className="text-sm font-semibold text-zinc-300 mb-3">Position Sizing Rules</h3>
         <div className="space-y-2 text-sm text-zinc-400">
-          <p><span className="text-zinc-200 font-medium">1-2% Rule</span> — never risk more than 1-2% of your total account on a single trade. Professional traders often use 0.5-1%.</p>
-          <p><span className="text-zinc-200 font-medium">Risk/Reward minimum</span> — aim for at least 1:2 risk/reward ratio. A 1:3 or better ratio means you can be wrong 60%+ of the time and still profit.</p>
-          <p><span className="text-zinc-200 font-medium">Position concentration</span> — keep individual positions under 5-10% of your portfolio to avoid catastrophic losses from single stocks.</p>
-          <p><span className="text-zinc-200 font-medium">Correlation matters</span> — if you hold multiple correlated positions, your true risk is higher than individual position sizes suggest.</p>
+          <p><span className="text-zinc-200 font-medium">1-2% Rule</span>  - never risk more than 1-2% of your total account on a single trade. Professional traders often use 0.5-1%.</p>
+          <p><span className="text-zinc-200 font-medium">Risk/Reward minimum</span>  - aim for at least 1:2 risk/reward ratio. A 1:3 or better ratio means you can be wrong 60%+ of the time and still profit.</p>
+          <p><span className="text-zinc-200 font-medium">Position concentration</span>  - keep individual positions under 5-10% of your portfolio to avoid catastrophic losses from single stocks.</p>
+          <p><span className="text-zinc-200 font-medium">Correlation matters</span>  - if you hold multiple correlated positions, your true risk is higher than individual position sizes suggest.</p>
         </div>
       </div>
     </PageTransition>

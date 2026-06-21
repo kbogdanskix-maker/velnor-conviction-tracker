@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useDefaultPortfolio } from "@/hooks/usePortfolio";
 import type { Holding } from "@/hooks/usePortfolio";
+import { useProfile } from "@/hooks/useProfile";
 import PageTransition from "@/components/celestial/PageTransition";
 import FloatingCard from "@/components/celestial/FloatingCard";
 import RevealOnScroll from "@/components/celestial/RevealOnScroll";
@@ -29,9 +30,18 @@ interface AssetClassification {
   taxEfficiency: TaxEfficiency;
   recommendedAccount: RecommendedAccount;
   reason: string;
-  currentAccount: string; // placeholder — user's portfolio has account_type
+  category: string;
+  description: string; // plain-English one-liner for beginners
+  estimatedYield: number | null; // for tax drag calc
+  currentAccount: string;
   marketValue: number;
   dividendYield: number | null;
+}
+
+// Annual tax drag if a tax-inefficient asset sits in a taxable account.
+// Uses the user's marginal tax rate as the differential (ordinary income vs 0% in IRA).
+function taxDragEstimate(mv: number, yield_: number, marginalRate: number): number {
+  return mv * yield_ * marginalRate;
 }
 
 // ── Heuristic classification ─────────────────────────────────────────
@@ -41,57 +51,107 @@ interface AssetClassification {
 function classifyHolding(h: Holding): AssetClassification {
   const ticker = h.ticker.toUpperCase();
   const mv = Number(h.market_value) || 0;
-  const dy = h.unrealized_pnl_pct; // using as proxy; real app would have div yield
+  const assetType = (h.asset_type || "stock").toLowerCase();
 
-  // Bond ETFs/funds
-  if (["AGG", "BND", "TLT", "IEF", "SHY", "VCIT", "LQD", "HYG", "TIP", "TIPS"].some((t) => ticker.includes(t))) {
+  // ── Use asset_type set at trade entry as primary signal ──────────────
+  if (assetType === "bond_etf") {
     return {
       ticker, taxEfficiency: "tax-inefficient", recommendedAccount: "tax-advantaged",
+      category: "Bond ETF", estimatedYield: 0.035,
+      description: "A fund holding bonds that pay regular interest income.",
       reason: "Bond interest is taxed as ordinary income. Placing in a tax-advantaged account avoids this.",
       currentAccount: h.asset_type, marketValue: mv, dividendYield: null,
     };
   }
 
-  // REITs
-  if (["VNQ", "SCHH", "IYR", "XLRE", "RWR", "REIT"].some((t) => ticker.includes(t))) {
+  if (assetType === "reit") {
     return {
       ticker, taxEfficiency: "tax-inefficient", recommendedAccount: "tax-advantaged",
+      category: "REIT", estimatedYield: 0.035,
+      description: "Owns real estate and must pay out 90%+ of income as dividends.",
       reason: "REIT dividends are taxed as ordinary income (no qualified dividend treatment).",
       currentAccount: h.asset_type, marketValue: mv, dividendYield: null,
     };
   }
 
-  // High-dividend stocks/ETFs
-  if (["SCHD", "VYM", "DVY", "HDV", "SPYD", "SPHD"].some((t) => ticker.includes(t))) {
+  if (assetType === "etf") {
+    return {
+      ticker, taxEfficiency: "tax-efficient", recommendedAccount: "taxable",
+      category: "ETF", estimatedYield: null,
+      description: "A basket of stocks or assets that trades like a single share.",
+      reason: "Index/growth ETFs with low turnover are tax-efficient in taxable accounts.",
+      currentAccount: h.asset_type, marketValue: mv, dividendYield: null,
+    };
+  }
+
+  if (assetType === "crypto") {
+    return {
+      ticker, taxEfficiency: "tax-inefficient", recommendedAccount: "tax-advantaged",
+      category: "Crypto", estimatedYield: null,
+      description: "Digital asset taxed as property — every trade is a taxable event.",
+      reason: "Crypto gains are taxed as property. Tax-advantaged accounts shelter frequent rebalancing.",
+      currentAccount: h.asset_type, marketValue: mv, dividendYield: null,
+    };
+  }
+
+  // ── Fallback for legacy "stock" entries: exact-ticker match against known
+  // ETF lists. (Exact, not substring — substring false-matched real stocks,
+  // e.g. SHYF→SHY, SPYG→SPY, QQQM→QQQ.) ─────────────────────────────────────
+  if (["AGG", "BND", "TLT", "IEF", "SHY", "VCIT", "LQD", "HYG", "TIP", "TIPS"].includes(ticker)) {
+    return {
+      ticker, taxEfficiency: "tax-inefficient", recommendedAccount: "tax-advantaged",
+      category: "Bond ETF", estimatedYield: 0.035,
+      description: "A fund holding bonds that pay regular interest income.",
+      reason: "Bond interest is taxed as ordinary income. Placing in a tax-advantaged account avoids this.",
+      currentAccount: h.asset_type, marketValue: mv, dividendYield: null,
+    };
+  }
+
+  if (["VNQ", "SCHH", "IYR", "XLRE", "RWR"].includes(ticker)) {
+    return {
+      ticker, taxEfficiency: "tax-inefficient", recommendedAccount: "tax-advantaged",
+      category: "REIT ETF", estimatedYield: 0.035,
+      description: "Owns real estate and must pay out 90%+ of income as dividends.",
+      reason: "REIT dividends are taxed as ordinary income (no qualified dividend treatment).",
+      currentAccount: h.asset_type, marketValue: mv, dividendYield: null,
+    };
+  }
+
+  if (["SCHD", "VYM", "DVY", "HDV", "SPYD", "SPHD"].includes(ticker)) {
     return {
       ticker, taxEfficiency: "tax-neutral", recommendedAccount: "either",
-      reason: "Qualified dividends get preferential tax rates, but high-yield positions may benefit from tax-advantaged accounts.",
+      category: "Dividend ETF", estimatedYield: 0.03,
+      description: "ETF focused on stocks that pay above-average dividends.",
+      reason: "Qualified dividends get preferential tax rates, but high-yield positions may benefit from shelter.",
       currentAccount: h.asset_type, marketValue: mv, dividendYield: null,
     };
   }
 
-  // International stocks/ETFs (foreign tax credit consideration)
-  if (["VXUS", "VEA", "VWO", "IEFA", "EEM", "IXUS", "EFA"].some((t) => ticker.includes(t))) {
+  if (["VXUS", "VEA", "VWO", "IEFA", "EEM", "IXUS", "EFA"].includes(ticker)) {
     return {
       ticker, taxEfficiency: "tax-efficient", recommendedAccount: "taxable",
-      reason: "International stocks in taxable accounts let you claim the foreign tax credit, which is lost in tax-advantaged accounts.",
+      category: "International ETF", estimatedYield: null,
+      description: "Holds stocks from non-US markets — earns a foreign tax credit in taxable accounts.",
+      reason: "International stocks in taxable accounts let you claim the foreign tax credit.",
       currentAccount: h.asset_type, marketValue: mv, dividendYield: null,
     };
   }
 
-  // Growth / low-dividend ETFs
-  if (["VOO", "VTI", "SPY", "QQQ", "IVV", "VUG", "SCHG", "VGT", "IWF"].some((t) => ticker.includes(t))) {
+  if (["VOO", "VTI", "SPY", "QQQ", "IVV", "VUG", "SCHG", "VGT", "IWF"].includes(ticker)) {
     return {
       ticker, taxEfficiency: "tax-efficient", recommendedAccount: "taxable",
-      reason: "Index funds with low turnover and qualified dividends are tax-efficient in taxable accounts.",
+      category: "Index / Growth ETF", estimatedYield: null,
+      description: "Low-cost fund tracking a broad market index with minimal tax events.",
+      reason: "Low turnover, qualified dividends — tax-efficient in taxable accounts.",
       currentAccount: h.asset_type, marketValue: mv, dividendYield: null,
     };
   }
 
-  // Individual stocks — generally tax-efficient in taxable
   return {
     ticker, taxEfficiency: "tax-efficient", recommendedAccount: "taxable",
-    reason: "Individual stocks can benefit from tax-loss harvesting and long-term capital gains rates in taxable accounts.",
+    category: "Individual Stock", estimatedYield: null,
+    description: "Shares in a single company — eligible for tax-loss harvesting and long-term rates.",
+    reason: "Individual stocks can benefit from tax-loss harvesting and long-term capital gains rates.",
     currentAccount: h.asset_type, marketValue: mv, dividendYield: null,
   };
 }
@@ -114,6 +174,7 @@ const ACCOUNT_ICONS: Record<RecommendedAccount, typeof Building2> = {
 
 export default function AssetLocationPage() {
   const { summary, loading, hasHoldings } = useDefaultPortfolio();
+  const { profile } = useProfile();
 
   const classifications = useMemo(() => {
     if (!summary) return [];
@@ -241,13 +302,21 @@ export default function AssetLocationPage() {
                       return (
                         <div key={c.ticker} className="flex items-start gap-3 py-2 border-b border-zinc-800/50 last:border-0">
                           <span className="w-14 text-sm font-mono font-medium text-zinc-200 mt-0.5">{c.ticker}</span>
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-0.5">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
                               <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded border ${eff.bg} ${eff.text} ${eff.border}`}>
-                                {c.taxEfficiency.replace("-", " ")}
+                                {c.taxEfficiency.replace(/-/g, " ")}
+                              </span>
+                              <span className="text-[10px] text-zinc-400 font-medium">
+                                {c.category}
                               </span>
                             </div>
-                            <p className="text-xs text-zinc-500 leading-relaxed">{c.reason}</p>
+                            <p className="text-[11px] text-zinc-600 mt-0.5 leading-relaxed">{c.description}</p>
+                            {c.taxEfficiency === "tax-inefficient" && c.estimatedYield && (
+                              <p className="text-[10px] text-amber-500/80 mt-1">
+                                est. ~${Math.round(taxDragEstimate(c.marketValue, c.estimatedYield, profile.marginalTaxRate / 100)).toLocaleString()}/yr tax drag if held in taxable
+                              </p>
+                            )}
                           </div>
                           <span className="text-sm font-medium text-zinc-300 tabular-nums shrink-0">
                             {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(c.marketValue)}

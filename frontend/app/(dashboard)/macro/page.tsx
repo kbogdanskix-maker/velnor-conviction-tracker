@@ -35,7 +35,7 @@ export default function MacroPage() {
           Macro
         </h1>
         <p className="text-zinc-500 text-sm mt-0.5">
-          Bond yields, inflation, and Fed policy — how they affect your portfolio
+          Bond yields, inflation, and Fed policy  - how they affect your portfolio
         </p>
       </div>
 
@@ -243,9 +243,13 @@ function MacroGroup({ title, series }: { title: string; series: MacroSeries[] })
               </div>
               <div className="text-right">
                 <p className="text-sm font-bold tabular text-zinc-100">
-                  {s.value !== null ? `${s.value}${s.unit === "%" ? "%" : ""}` : "—"}
+                  {s.value !== null ? `${s.value}${s.unit === "%" ? "%" : ""}` : " -"}
                 </p>
-                {s.date && <p className="text-[10px] text-zinc-600">{s.date}</p>}
+                {s.date && (
+                  <p className="text-[10px] text-zinc-600">
+                    {new Date(s.date + "T12:00:00").toLocaleDateString("en-US", { month: "short", year: "numeric" })}
+                  </p>
+                )}
               </div>
             </div>
             {expandedId === s.series_id && (

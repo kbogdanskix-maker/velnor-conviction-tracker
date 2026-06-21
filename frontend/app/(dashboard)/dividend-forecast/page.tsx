@@ -207,7 +207,7 @@ export default function DividendForecastPage() {
               "Cumulative": f.cumulativeIncome.toFixed(2),
               "Portfolio Value": f.portfolioValue.toFixed(2),
               "Yield %": f.yield.toFixed(2),
-            })), `vela-dividend-forecast-${new Date().toISOString().slice(0, 10)}.csv`)}
+            })), `velnor-dividend-forecast-${new Date().toISOString().slice(0, 10)}.csv`)}
             className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs text-zinc-400 hover:text-zinc-200 bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700/50 transition-colors"
           >
             <Download className="w-3.5 h-3.5" />

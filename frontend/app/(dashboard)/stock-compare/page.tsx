@@ -29,11 +29,14 @@ const COLORS = ["#14b8a6", "#f59e0b", "#a78bfa", "#f43f5e", "#38bdf8", "#84cc16"
 
 interface StockData {
   ticker: string;
+  name: string | null;
+  sector: string | null;
   price: number;
   change: number;
   changePct: number;
   marketCap: number;
   pe: number | null;
+  forwardPe: number | null;
   dividendYield: number | null;
   beta: number | null;
   yearHigh: number;
@@ -41,7 +44,29 @@ interface StockData {
   volume: number;
   avgVolume: number;
   dayReturn: number;
+  operatingMargin: number | null;
+  profitMargin: number | null;
+  // Extended fundamentals
+  pegRatio: number | null;
+  priceToSales: number | null;
+  priceToBook: number | null;
+  evToEbitda: number | null;
+  roe: number | null;          // %  (returnOnEquity × 100)
+  roa: number | null;          // %  (returnOnAssets × 100)
+  debtToEquity: number | null; // yfinance value (total debt / equity × 100)
+  currentRatio: number | null;
+  quickRatio: number | null;
+  revenueGrowth: number | null;  // %  (yoy)
+  earningsGrowth: number | null; // %  (yoy)
 }
+
+/** Median of the non-null numbers in an array; null if none. */
+const median = (vals: (number | null)[]): number | null => {
+  const xs = vals.filter((v): v is number => v != null).sort((a, b) => a - b);
+  if (xs.length === 0) return null;
+  const mid = Math.floor(xs.length / 2);
+  return xs.length % 2 ? xs[mid] : (xs[mid - 1] + xs[mid]) / 2;
+};
 
 /* ── component ──────────────────────────────────────────────── */
 
@@ -58,8 +83,9 @@ export default function StockComparePage() {
 
   const tickers = selected.length > 0 ? selected : [];
   const tickerParam = tickers.join(",");
+  // Bulk endpoint returns fundamentals + live quote merged per ticker
   const { data: quotesData } = useSWR(
-    tickerParam ? `/quotes?tickers=${tickerParam}` : null,
+    tickerParam ? `/markets/info/bulk?tickers=${tickerParam}` : null,
     api.get,
     { revalidateOnFocus: false, dedupingInterval: 30_000 },
   );
@@ -78,41 +104,122 @@ export default function StockComparePage() {
   const stocks: StockData[] = useMemo(() => {
     if (!quotesData) return [];
     return tickers.map((ticker) => {
-      const q = (quotesData as Record<string, Record<string, number | null>>)?.[ticker];
+      const q = (quotesData as Record<string, Record<string, number | string | null>>)?.[ticker];
       if (!q) return null;
+      // dividend_yield from yfinance is a decimal (0.0035 = 0.35%)  - multiply by 100 for display
+      const rawYield = q.dividend_yield as number | null;
       return {
         ticker,
+        name: q.name as string | null,
+        sector: q.sector as string | null,
         price: (q.price as number) ?? 0,
         change: (q.change as number) ?? 0,
         changePct: (q.change_pct as number) ?? 0,
         marketCap: (q.market_cap as number) ?? 0,
-        pe: q.pe as number | null,
-        dividendYield: q.dividend_yield as number | null,
+        pe: (q.trailing_pe ?? q.pe) as number | null,
+        forwardPe: q.forward_pe as number | null,
+        dividendYield: rawYield != null ? rawYield * 100 : null,
         beta: q.beta as number | null,
-        yearHigh: (q.year_high as number) ?? 0,
-        yearLow: (q.year_low as number) ?? 0,
+        yearHigh: (q.fifty_two_week_high as number) ?? 0,
+        yearLow: (q.fifty_two_week_low as number) ?? 0,
         volume: (q.volume as number) ?? 0,
-        avgVolume: (q.avg_volume as number) ?? 0,
+        avgVolume: (q.average_volume as number) ?? 0,
         dayReturn: (q.change_pct as number) ?? 0,
+        operatingMargin: q.operating_margins != null ? (q.operating_margins as number) * 100 : null,
+        profitMargin: q.profit_margins != null ? (q.profit_margins as number) * 100 : null,
+        pegRatio: q.peg_ratio as number | null,
+        priceToSales: q.price_to_sales as number | null,
+        priceToBook: q.price_to_book as number | null,
+        evToEbitda: q.ev_to_ebitda as number | null,
+        roe: q.return_on_equity != null ? (q.return_on_equity as number) * 100 : null,
+        roa: q.return_on_assets != null ? (q.return_on_assets as number) * 100 : null,
+        debtToEquity: q.debt_to_equity as number | null,
+        currentRatio: q.current_ratio as number | null,
+        quickRatio: q.quick_ratio as number | null,
+        revenueGrowth: q.revenue_growth != null ? (q.revenue_growth as number) * 100 : null,
+        earningsGrowth: q.earnings_growth != null ? (q.earnings_growth as number) * 100 : null,
       };
     }).filter(Boolean) as StockData[];
   }, [quotesData, tickers]);
 
-  // Radar chart data (normalize metrics to 0-100)
+  // Profile scores (0–100). Each metric uses a transparent, finance-grounded formula.
+  const PROFILE_METRICS: { key: string; desc: string; fn: (s: StockData) => number }[] = [
+    {
+      key: "Value",
+      desc: "Based on Forward P/E. Score = 100 × 15 / (fwdPE + 1). P/E 15 → ~94, P/E 30 → ~48, P/E 60 → ~25. No P/E data = 50.",
+      fn: (s) => s.forwardPe != null && s.forwardPe > 0
+        ? Math.round(Math.max(0, Math.min(100, 100 * 15 / (s.forwardPe + 1))))
+        : s.pe != null && s.pe > 0
+          ? Math.round(Math.max(0, Math.min(100, 100 * 15 / (s.pe + 1))))
+          : 50,
+    },
+    {
+      key: "Momentum",
+      desc: "52-week range position: (Price − 52W Low) / (52W High − 52W Low) × 100. 100 = at 52W high, 0 = at 52W low.",
+      fn: (s) => {
+        const range = s.yearHigh - s.yearLow;
+        return range > 0 ? Math.round(Math.max(0, Math.min(100, ((s.price - s.yearLow) / range) * 100))) : 50;
+      },
+    },
+    {
+      key: "Quality",
+      desc: "Operating margin score: margin × 2.5. 40% margin → 100, 20% → 50, 0% → 0. Measures operational efficiency.",
+      fn: (s) => s.operatingMargin != null
+        ? Math.round(Math.max(0, Math.min(100, s.operatingMargin * 2.5)))
+        : 50,
+    },
+    {
+      key: "Stability",
+      desc: "Beta proximity to 1.0: 100 − |beta − 1| × 50. Beta 1.0 = 100 (moves with market). Beta 0 or 2 = 50. Beta 3 = 0.",
+      fn: (s) => s.beta != null
+        ? Math.round(Math.max(0, Math.min(100, 100 - Math.abs(s.beta - 1) * 50)))
+        : 50,
+    },
+    {
+      key: "Yield",
+      desc: "Dividend yield score: yield% × 20. 5% yield → 100, 2.5% → 50, 0% → 0. Higher is better for income investors.",
+      fn: (s) => Math.round(Math.min(100, (s.dividendYield ?? 0) * 20)),
+    },
+    {
+      key: "Size",
+      desc: "Market cap score: cap / $500B × 100, capped at 100. $500B+ = 100, $250B = 50, $100B = 20. Larger = more established.",
+      fn: (s) => Math.round(Math.min(100, (s.marketCap / 5e11) * 100)),
+    },
+  ];
+
+  // Config-driven fundamentals table. `better` drives winner highlighting:
+  // "low" = smaller value wins (cheaper / less leverage), "high" = larger wins,
+  // null = informational only (no winner).
+  type Row = { label: string; get: (s: StockData) => number | null; fmt: (v: number) => string; better: "high" | "low" | null };
+  const pct = (v: number) => `${v.toFixed(1)}%`;
+  const x1 = (v: number) => v.toFixed(1);
+  const x2 = (v: number) => v.toFixed(2);
+  const METRIC_ROWS: Row[] = [
+    { label: "Market Cap", get: (s) => s.marketCap || null, fmt: fmtB, better: null },
+    { label: "P/E (TTM)", get: (s) => s.pe, fmt: x1, better: "low" },
+    { label: "P/E (Fwd)", get: (s) => s.forwardPe, fmt: x1, better: "low" },
+    { label: "PEG", get: (s) => (s.pegRatio != null && s.pegRatio > 0 ? s.pegRatio : null), fmt: x2, better: "low" },
+    { label: "P/S", get: (s) => s.priceToSales, fmt: x2, better: "low" },
+    { label: "P/B", get: (s) => s.priceToBook, fmt: x2, better: "low" },
+    { label: "EV/EBITDA", get: (s) => s.evToEbitda, fmt: x1, better: "low" },
+    { label: "ROE", get: (s) => s.roe, fmt: pct, better: "high" },
+    { label: "ROA", get: (s) => s.roa, fmt: pct, better: "high" },
+    { label: "Op. Margin", get: (s) => s.operatingMargin, fmt: pct, better: "high" },
+    { label: "Profit Margin", get: (s) => s.profitMargin, fmt: pct, better: "high" },
+    { label: "Rev. Growth", get: (s) => s.revenueGrowth, fmt: pct, better: "high" },
+    { label: "Earnings Growth", get: (s) => s.earningsGrowth, fmt: pct, better: "high" },
+    { label: "Debt/Equity", get: (s) => s.debtToEquity, fmt: x1, better: "low" },
+    { label: "Current Ratio", get: (s) => s.currentRatio, fmt: x2, better: "high" },
+    { label: "Quick Ratio", get: (s) => s.quickRatio, fmt: x2, better: "high" },
+    { label: "Dividend Yield", get: (s) => s.dividendYield, fmt: pct, better: "high" },
+    { label: "Beta", get: (s) => s.beta, fmt: x2, better: null },
+  ];
+
   const radarData = useMemo(() => {
     if (stocks.length === 0) return [];
-    const metrics = [
-      { key: "Value", fn: (s: StockData) => s.pe ? Math.max(0, 100 - s.pe * 2) : 50 },
-      { key: "Yield", fn: (s: StockData) => Math.min(100, (s.dividendYield ?? 0) * 20) },
-      { key: "Momentum", fn: (s: StockData) => Math.max(0, Math.min(100, 50 + s.changePct * 5)) },
-      { key: "Stability", fn: (s: StockData) => s.beta ? Math.max(0, 100 - Math.abs(s.beta - 1) * 50) : 50 },
-      { key: "Liquidity", fn: (s: StockData) => Math.min(100, (s.avgVolume / 10_000_000) * 100) },
-      { key: "Size", fn: (s: StockData) => Math.min(100, (s.marketCap / 3e12) * 100) },
-    ];
-
-    return metrics.map((m) => {
+    return PROFILE_METRICS.map((m) => {
       const row: Record<string, string | number> = { metric: m.key };
-      stocks.forEach((s) => { row[s.ticker] = Math.round(m.fn(s)); });
+      stocks.forEach((s) => { row[s.ticker] = m.fn(s); });
       return row;
     });
   }, [stocks]);
@@ -204,7 +311,14 @@ export default function StockComparePage() {
             <RevealOnScroll>
               <FloatingCard delay={0.2}>
                 <div className="p-5 overflow-x-auto">
-                  <h2 className="font-display font-semibold text-zinc-100 mb-4">Fundamentals</h2>
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="font-display font-semibold text-zinc-100">Fundamentals</h2>
+                    {stocks.length > 1 && (
+                      <span className="text-[11px] text-zinc-500 flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-emerald-400/70 inline-block" /> best in row
+                      </span>
+                    )}
+                  </div>
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="text-zinc-400 text-xs">
@@ -214,49 +328,64 @@ export default function StockComparePage() {
                             {s.ticker}
                           </th>
                         ))}
+                        {stocks.length > 1 && (
+                          <th className="text-right pb-3 font-medium text-zinc-500">Median</th>
+                        )}
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-zinc-800">
+                      {/* Identity rows (no winner) */}
                       <tr>
                         <td className="py-2.5 text-zinc-400">Price</td>
                         {stocks.map((s) => <td key={s.ticker} className="py-2.5 text-right text-zinc-100 tabular-nums">{formatCurrency(s.price)}</td>)}
+                        {stocks.length > 1 && <td className="py-2.5" />}
                       </tr>
                       <tr>
-                        <td className="py-2.5 text-zinc-400">Market Cap</td>
-                        {stocks.map((s) => <td key={s.ticker} className="py-2.5 text-right text-zinc-100 tabular-nums">{fmtB(s.marketCap)}</td>)}
-                      </tr>
-                      <tr>
-                        <td className="py-2.5 text-zinc-400">P/E Ratio</td>
+                        <td className="py-2.5 text-zinc-400">Sector</td>
                         {stocks.map((s) => (
-                          <td key={s.ticker} className="py-2.5 text-right tabular-nums text-zinc-100">
-                            {s.pe != null ? s.pe.toFixed(1) : "—"}
-                          </td>
+                          <td key={s.ticker} className="py-2.5 text-right text-zinc-400 text-xs">{s.sector ?? " -"}</td>
                         ))}
+                        {stocks.length > 1 && <td className="py-2.5" />}
                       </tr>
-                      <tr>
-                        <td className="py-2.5 text-zinc-400">Dividend Yield</td>
-                        {stocks.map((s) => (
-                          <td key={s.ticker} className="py-2.5 text-right tabular-nums text-zinc-100">
-                            {formatPercent(s.dividendYield, false)}
-                          </td>
-                        ))}
-                      </tr>
-                      <tr>
-                        <td className="py-2.5 text-zinc-400">Beta</td>
-                        {stocks.map((s) => (
-                          <td key={s.ticker} className="py-2.5 text-right tabular-nums text-zinc-100">
-                            {s.beta != null ? s.beta.toFixed(2) : "—"}
-                          </td>
-                        ))}
-                      </tr>
-                      <tr>
-                        <td className="py-2.5 text-zinc-400">52W High</td>
-                        {stocks.map((s) => <td key={s.ticker} className="py-2.5 text-right text-zinc-100 tabular-nums">{formatCurrency(s.yearHigh)}</td>)}
-                      </tr>
-                      <tr>
-                        <td className="py-2.5 text-zinc-400">52W Low</td>
-                        {stocks.map((s) => <td key={s.ticker} className="py-2.5 text-right text-zinc-100 tabular-nums">{formatCurrency(s.yearLow)}</td>)}
-                      </tr>
+
+                      {/* Config-driven metric rows with per-row winner + median */}
+                      {METRIC_ROWS.map((row) => {
+                        const vals = stocks.map((s) => row.get(s));
+                        const present = vals.filter((v): v is number => v != null);
+                        const best =
+                          row.better && present.length > 1
+                            ? row.better === "low"
+                              ? Math.min(...present)
+                              : Math.max(...present)
+                            : null;
+                        const med = median(vals);
+                        return (
+                          <tr key={row.label}>
+                            <td className="py-2.5 text-zinc-400">{row.label}</td>
+                            {stocks.map((s) => {
+                              const v = row.get(s);
+                              const isWinner = best != null && v != null && v === best;
+                              return (
+                                <td
+                                  key={s.ticker}
+                                  className={`py-2.5 text-right tabular-nums ${
+                                    isWinner ? "text-emerald-400 font-semibold" : "text-zinc-100"
+                                  }`}
+                                >
+                                  {v != null ? row.fmt(v) : " -"}
+                                </td>
+                              );
+                            })}
+                            {stocks.length > 1 && (
+                              <td className="py-2.5 text-right text-zinc-500 tabular-nums">
+                                {med != null ? row.fmt(med) : " -"}
+                              </td>
+                            )}
+                          </tr>
+                        );
+                      })}
+
+                      {/* 52-week range position bar (no winner) */}
                       <tr>
                         <td className="py-2.5 text-zinc-400">52W Range</td>
                         {stocks.map((s) => {
@@ -270,14 +399,7 @@ export default function StockComparePage() {
                             </td>
                           );
                         })}
-                      </tr>
-                      <tr>
-                        <td className="py-2.5 text-zinc-400">Volume</td>
-                        {stocks.map((s) => (
-                          <td key={s.ticker} className="py-2.5 text-right text-zinc-100 tabular-nums">
-                            {s.volume > 1e6 ? `${(s.volume / 1e6).toFixed(1)}M` : `${(s.volume / 1e3).toFixed(0)}K`}
-                          </td>
-                        ))}
+                        {stocks.length > 1 && <td className="py-2.5" />}
                       </tr>
                       <tr>
                         <td className="py-2.5 text-zinc-400">Day Change</td>
@@ -288,6 +410,7 @@ export default function StockComparePage() {
                             {s.changePct > 0 ? "+" : ""}{s.changePct.toFixed(2)}%
                           </td>
                         ))}
+                        {stocks.length > 1 && <td className="py-2.5" />}
                       </tr>
                     </tbody>
                   </table>
@@ -296,34 +419,46 @@ export default function StockComparePage() {
             </RevealOnScroll>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* ── Radar Chart ────────────────────────────────── */}
+              {/* ── Profile Comparison ─────────────────────────── */}
               {radarData.length > 0 && (
                 <RevealOnScroll>
                   <FloatingCard delay={0.3}>
                     <div className="p-5">
-                      <h2 className="font-display font-semibold text-zinc-100 mb-4">Profile Comparison</h2>
-                      <div className="h-64">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <RadarChart data={radarData}>
-                            <PolarGrid stroke="#27272a" />
-                            <PolarAngleAxis dataKey="metric" tick={{ fill: "#71717a", fontSize: 10 }} />
-                            <PolarRadiusAxis tick={false} axisLine={false} domain={[0, 100]} />
-                            {stocks.map((s, i) => (
-                              <Radar key={s.ticker} name={s.ticker} dataKey={s.ticker}
-                                stroke={COLORS[i % COLORS.length]} fill={COLORS[i % COLORS.length]}
-                                fillOpacity={0.1} strokeWidth={2} />
-                            ))}
-                            <Tooltip cursor={false} contentStyle={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 8 }} />
-                          </RadarChart>
-                        </ResponsiveContainer>
-                      </div>
-                      <div className="flex flex-wrap gap-3 mt-2 justify-center">
-                        {stocks.map((s, i) => (
-                          <span key={s.ticker} className="flex items-center gap-1.5 text-xs" style={{ color: COLORS[i % COLORS.length] }}>
-                            <span className="w-2.5 h-2.5 rounded-full" style={{ background: COLORS[i % COLORS.length] }} />
-                            {s.ticker}
-                          </span>
-                        ))}
+                      <h2 className="font-display font-semibold text-zinc-100 mb-1">Profile Comparison</h2>
+                      <p className="text-[11px] text-zinc-500 mb-4">Normalized scores 0–100</p>
+                      <div className="space-y-3">
+                        {radarData.map((row) => {
+                          const meta = PROFILE_METRICS.find((m) => m.key === row.metric);
+                          return (
+                          <div key={row.metric as string}>
+                            <div className="flex items-center gap-1 mb-1 group/metric relative">
+                              <p className="text-[11px] text-zinc-400">{row.metric as string}</p>
+                              <span className="text-[10px] text-zinc-600 cursor-help select-none">ⓘ</span>
+                              {meta && (
+                                <div className="absolute left-0 top-5 z-20 hidden group-hover/metric:block w-56 bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-[10px] text-zinc-300 shadow-xl leading-relaxed">
+                                  {meta.desc}
+                                </div>
+                              )}
+                            </div>
+                            <div className="space-y-1">
+                              {stocks.map((s, i) => {
+                                const score = row[s.ticker] as number;
+                                return (
+                                  <div key={s.ticker} className="flex items-center gap-2">
+                                    <span className="text-[10px] w-10 shrink-0 tabular-nums" style={{ color: COLORS[i % COLORS.length] }}>{s.ticker}</span>
+                                    <div className="flex-1 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+                                      <div
+                                        className="h-full rounded-full transition-all duration-500"
+                                        style={{ width: `${score}%`, background: COLORS[i % COLORS.length], opacity: 0.75 }}
+                                      />
+                                    </div>
+                                    <span className="text-[10px] text-zinc-500 w-6 text-right tabular-nums">{score}</span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        ); })}
                       </div>
                     </div>
                   </FloatingCard>
@@ -343,8 +478,13 @@ export default function StockComparePage() {
                             <XAxis type="number" tick={{ fill: "#71717a", fontSize: 11 }} axisLine={false} tickLine={false}
                               tickFormatter={(v) => v >= 1e12 ? `$${(v / 1e12).toFixed(1)}T` : `$${(v / 1e9).toFixed(0)}B`} />
                             <YAxis type="category" dataKey="ticker" tick={{ fill: "#71717a", fontSize: 11 }} axisLine={false} tickLine={false} width={50} />
-                            <Tooltip cursor={false} contentStyle={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 8 }}
-                              formatter={(v: number) => [fmtB(v), "Market Cap"]} />
+                            <Tooltip
+                              cursor={false}
+                              contentStyle={{ background: "#18181b", border: "1px solid #3f3f46", borderRadius: 8, fontSize: 12 }}
+                              labelStyle={{ color: "#a1a1aa" }}
+                              itemStyle={{ color: "#e4e4e7" }}
+                              formatter={(v: number) => [fmtB(v), "Market Cap"]}
+                            />
                             <Bar dataKey="marketCap" radius={[0, 4, 4, 0]}>
                               {capData.map((_, i) => (
                                 <Cell key={i} fill={COLORS[i % COLORS.length]} fillOpacity={0.6} />

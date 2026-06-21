@@ -16,6 +16,7 @@ import { useDefaultPortfolio } from "@/hooks/usePortfolio";
 import { useNetWorthSummary } from "@/hooks/useNetWorth";
 import { useCashFlowSummary } from "@/hooks/useCashFlow";
 import { useRiskMetrics } from "@/hooks/useRiskMetrics";
+import { useProfile } from "@/hooks/useProfile";
 import { formatCurrency, formatCompact } from "@/lib/formatters";
 import PageTransition from "@/components/celestial/PageTransition";
 import FloatingCard from "@/components/celestial/FloatingCard";
@@ -68,8 +69,6 @@ interface SimResult {
   medianFinal: number;
   p10Final: number;
   p90Final: number;
-  bestCase: number;
-  worstCase: number;
 }
 
 function runSimulation(params: SimParams): SimResult {
@@ -79,20 +78,26 @@ function runSimulation(params: SimParams): SimResult {
   const paths: number[][] = [];
   let failures = 0;
 
+  // Use real return (nominal - inflation) so all output values are in today's purchasing power.
+  // Contributions stay flat — models "I save X in today's dollars each year."
+  // Withdrawals inflate — to maintain purchasing power in retirement.
+  const realReturn = expectedReturn - inflationRate;
+
   for (let s = 0; s < simulations; s++) {
     const path: number[] = [startingBalance];
     let balance = startingBalance;
     let failed = false;
 
     for (let y = 1; y <= years; y++) {
-      const inflationAdj = Math.pow(1 + inflationRate, y);
-      const yearReturn = expectedReturn + volatility * randNormal();
+      const yearReturn = realReturn + volatility * randNormal();
       balance = balance * (1 + yearReturn);
 
       if (phase === "accumulation") {
-        balance += annualContribution * inflationAdj;
+        balance += annualContribution; // flat in real terms
       } else {
-        balance -= annualWithdrawal * inflationAdj;
+        // Withdrawals inflate to maintain purchasing power, then deflate back to real
+        // Net effect: flat withdrawal in today's dollars
+        balance -= annualWithdrawal;
       }
 
       if (balance < 0) {
@@ -128,8 +133,6 @@ function runSimulation(params: SimParams): SimResult {
     medianFinal: finals[Math.floor(finals.length * 0.5)],
     p10Final: finals[Math.floor(finals.length * 0.1)],
     p90Final: finals[Math.floor(finals.length * 0.9)],
-    bestCase: finals[finals.length - 1],
-    worstCase: finals[0],
   };
 }
 
@@ -150,7 +153,7 @@ function ConfidenceBadge({ rate }: { rate: number }) {
   return (
     <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full ${bg} ${color} text-xs font-medium`}>
       <Icon className="w-3.5 h-3.5" />
-      {label} — {rate.toFixed(0)}% success
+      {label}  - {rate.toFixed(0)}% success
     </div>
   );
 }
@@ -211,17 +214,39 @@ export default function MonteCarloPage() {
   const { summary: cfSummary, isLoading: cfLoading } = useCashFlowSummary();
   const { loading: pLoading, portfolio } = useDefaultPortfolio();
   const { data: risk } = useRiskMetrics(portfolio?.id);
+  const { profile } = useProfile();
 
-  // Parameters — seeded from real risk metrics when available
+  // Market scenario - maps to internal volatility
+  type Scenario = "conservative" | "moderate" | "aggressive" | "custom";
+  const SCENARIO_VOLATILITY: Record<Scenario, number> = {
+    conservative: 12,
+    moderate: 18,
+    aggressive: 28,
+    custom: 15, // overridden when seeded from portfolio
+  };
+  const SCENARIO_LABELS: Record<Scenario, { label: string; desc: string; color: string }> = {
+    conservative: { label: "Conservative", desc: "Low-volatility portfolio", color: "text-teal-400" },
+    moderate: { label: "Moderate", desc: "Balanced growth", color: "text-purple-400" },
+    aggressive: { label: "Aggressive", desc: "High growth, high swings", color: "text-amber-400" },
+    custom: { label: "From Your Portfolio", desc: "Live risk metrics", color: "text-zinc-300" },
+  };
+
+  // Parameters - seeded from real risk metrics when available
   const [phase, setPhase] = useState<"accumulation" | "withdrawal">("accumulation");
-  const [years, setYears] = useState(30);
+  const [years, setYears] = useState(20);
   const [expectedReturn, setExpectedReturn] = useState(7);
-  const [volatility, setVolatility] = useState(15);
+  // Default scenario seeded from profile risk tolerance
+  const [scenario, setScenario] = useState<Scenario>(profile.riskTolerance as Scenario);
+  const [customVolatility, setCustomVolatility] = useState(15);
   const [inflationRate, setInflationRate] = useState(3);
   const [simCount, setSimCount] = useState(1000);
+  const [annualContribOverride, setAnnualContribOverride] = useState<number | null>(null);
   const [annualWithdrawal, setAnnualWithdrawal] = useState(40000);
   const [seed, setSeed] = useState(0); // to force re-run
   const [seededFromRisk, setSeededFromRisk] = useState(false);
+
+  // Resolve effective volatility from current scenario
+  const volatility = scenario === "custom" ? customVolatility : SCENARIO_VOLATILITY[scenario];
 
   // Auto-seed from real portfolio risk metrics once
   if (risk && !seededFromRisk) {
@@ -229,7 +254,8 @@ export default function MonteCarloPage() {
       setExpectedReturn(parseFloat(Number(risk.annualized_return).toFixed(1)));
     }
     if (risk.annualized_volatility != null && Number(risk.annualized_volatility) > 0) {
-      setVolatility(parseFloat(Number(risk.annualized_volatility).toFixed(1)));
+      setCustomVolatility(parseFloat(Number(risk.annualized_volatility).toFixed(1)));
+      setScenario("custom");
     }
     setSeededFromRisk(true);
   }
@@ -237,14 +263,16 @@ export default function MonteCarloPage() {
   const loading = nwLoading || cfLoading || pLoading;
   const hasData = nwSummary && cfSummary && cfSummary.total_income > 0;
 
+  const cfAnnualSavings = cfSummary ? (cfSummary.total_income - cfSummary.total_expenses) * 12 : 0;
+  const effectiveAnnualContrib = annualContribOverride ?? cfAnnualSavings;
+
   const result = useMemo(() => {
     if (!nwSummary || !cfSummary) return null;
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     seed; // dependency to re-run
-    const annualSavings = (cfSummary.total_income - cfSummary.total_expenses) * 12;
     return runSimulation({
       startingBalance: nwSummary.net_worth,
-      annualContribution: phase === "accumulation" ? annualSavings : 0,
+      annualContribution: phase === "accumulation" ? effectiveAnnualContrib : 0,
       annualWithdrawal: phase === "withdrawal" ? annualWithdrawal : 0,
       expectedReturn: expectedReturn / 100,
       volatility: volatility / 100,
@@ -253,7 +281,7 @@ export default function MonteCarloPage() {
       simulations: simCount,
       phase,
     });
-  }, [nwSummary, cfSummary, phase, years, expectedReturn, volatility, inflationRate, simCount, annualWithdrawal, seed]);
+  }, [nwSummary, cfSummary, phase, years, expectedReturn, volatility, scenario, customVolatility, inflationRate, simCount, effectiveAnnualContrib, annualWithdrawal, seed]);
 
   const handleRerun = useCallback(() => setSeed((s) => s + 1), []);
 
@@ -332,6 +360,7 @@ export default function MonteCarloPage() {
                     </p>
                   </div>
                 </div>
+                <p className="text-[10px] text-zinc-600 sm:ml-auto">in today&apos;s dollars</p>
               </div>
             </div>
           </FloatingCard>
@@ -339,7 +368,10 @@ export default function MonteCarloPage() {
           {/* Fan chart */}
           <RevealOnScroll>
             <div className="vela-card">
-              <h2 className="section-heading mb-4">Probability Fan</h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="section-heading !mb-0">Probability Fan</h2>
+                <span className="text-[10px] text-zinc-600">in today&apos;s purchasing power</span>
+              </div>
               <div className="h-[320px] sm:h-[400px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={result.percentiles} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
@@ -414,11 +446,81 @@ export default function MonteCarloPage() {
                 <h2 className="section-heading !mb-0">Simulation Parameters</h2>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                {/* Scenario selector - full width */}
+                <div className="sm:col-span-2 lg:col-span-3">
+                  <label className="text-xs text-zinc-400 font-medium block mb-2">Market Scenario</label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {(["conservative", "moderate", "aggressive", "custom"] as Scenario[]).map((s) => {
+                      const meta = SCENARIO_LABELS[s];
+                      const vol = s === "custom" ? customVolatility : SCENARIO_VOLATILITY[s];
+                      const isActive = scenario === s;
+                      // Hide custom if not seeded from portfolio
+                      if (s === "custom" && !seededFromRisk) return null;
+                      return (
+                        <button
+                          key={s}
+                          onClick={() => setScenario(s)}
+                          className={`flex flex-col items-start p-3 rounded-lg border text-left transition-all ${
+                            isActive
+                              ? "border-purple-500/60 bg-purple-500/10"
+                              : "border-zinc-700/50 bg-zinc-800/40 hover:border-zinc-600"
+                          }`}
+                        >
+                          <span className={`text-xs font-semibold ${isActive ? meta.color : "text-zinc-300"}`}>
+                            {meta.label}
+                          </span>
+                          <span className="text-[10px] text-zinc-500 mt-0.5">{meta.desc}</span>
+                          <span className="text-[10px] text-zinc-600 mt-1">{vol}% vol.</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Annual contribution slider */}
+                {phase === "accumulation" && (
+                  <div className="sm:col-span-2 lg:col-span-3">
+                    <div className="flex items-baseline justify-between mb-1.5">
+                      <label className="text-xs text-zinc-400 font-medium flex items-center gap-1.5">
+                        Annual Contribution
+                        {annualContribOverride === null && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-teal-500/10 text-teal-400 font-normal">from cash flow</span>
+                        )}
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-display font-bold text-zinc-200 tabular-nums">
+                          {fmt(effectiveAnnualContrib)}
+                        </span>
+                        {annualContribOverride !== null && (
+                          <button
+                            onClick={() => setAnnualContribOverride(null)}
+                            className="text-[10px] text-zinc-500 hover:text-zinc-300 underline"
+                          >
+                            reset
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    <input
+                      type="range"
+                      min={0}
+                      max={300000}
+                      step={1200}
+                      value={effectiveAnnualContrib}
+                      onChange={(e) => setAnnualContribOverride(Number(e.target.value))}
+                      className="w-full accent-purple-500 h-1.5"
+                    />
+                    <p className="text-[10px] text-zinc-600 mt-1">
+                      {fmt(effectiveAnnualContrib / 12)}/mo &mdash; adjust if your actual investment contributions differ from net savings
+                    </p>
+                  </div>
+                )}
+
+                {/* Numeric sliders */}
                 {[
                   { label: "Time Horizon", value: years, set: setYears, min: 5, max: 50, step: 1, suffix: " yrs", desc: "How far ahead to simulate" },
                   { label: seededFromRisk ? "Expected Return (live)" : "Expected Return", value: expectedReturn, set: setExpectedReturn, min: -10, max: 30, step: 0.5, suffix: "%", desc: "Average annual return" },
-                  { label: seededFromRisk ? "Volatility (live)" : "Volatility", value: volatility, set: setVolatility, min: 5, max: 60, step: 1, suffix: "%", desc: "Annual standard deviation" },
-                  { label: "Inflation", value: inflationRate, set: setInflationRate, min: 0, max: 8, step: 0.5, suffix: "%", desc: "Annual price increases" },
+                  { label: "Inflation", value: inflationRate, set: setInflationRate, min: 0, max: 8, step: 0.5, suffix: "%", desc: `Reduces your real return to ${(expectedReturn - inflationRate).toFixed(1)}%` },
                   { label: "Simulations", value: simCount, set: setSimCount, min: 100, max: 5000, step: 100, suffix: "", desc: "More = smoother, slower" },
                   ...(phase === "withdrawal"
                     ? [{ label: "Annual Withdrawal", value: annualWithdrawal, set: setAnnualWithdrawal, min: 10000, max: 200000, step: 5000, suffix: "", desc: "Yearly spending in today's dollars", isMoney: true }]
@@ -447,25 +549,6 @@ export default function MonteCarloPage() {
             </div>
           </RevealOnScroll>
 
-          {/* Outcome distribution */}
-          <RevealOnScroll delay={0.1}>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              {[
-                { label: "Best Case", value: result.bestCase, color: "text-gain" },
-                { label: "90th Percentile", value: result.p90Final, color: "text-zinc-200" },
-                { label: "10th Percentile", value: result.p10Final, color: "text-zinc-400" },
-                { label: "Worst Case", value: result.worstCase, color: result.worstCase === 0 ? "text-loss" : "text-zinc-500" },
-              ].map((s) => (
-                <div key={s.label} className="vela-card text-center">
-                  <p className="text-xs text-zinc-500 mb-1">{s.label}</p>
-                  <p className={`text-lg font-display font-bold tabular-nums ${s.color}`}>
-                    {fmt(s.value, true)}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </RevealOnScroll>
-
           {/* Insights */}
           <RevealOnScroll delay={0.15}>
             <div className="vela-card">
@@ -476,7 +559,7 @@ export default function MonteCarloPage() {
 
                   if (phase === "withdrawal") {
                     if (result.successRate >= 95) {
-                      insights.push({ type: "success", text: `Your plan has a ${result.successRate.toFixed(0)}% success rate — very strong. You could potentially increase withdrawals or retire earlier.` });
+                      insights.push({ type: "success", text: `Your plan has a ${result.successRate.toFixed(0)}% success rate  - very strong. You could potentially increase withdrawals or retire earlier.` });
                     } else if (result.successRate >= 80) {
                       insights.push({ type: "info", text: `${result.successRate.toFixed(0)}% success rate is generally considered acceptable, but consider having a fallback plan for the ${(100 - result.successRate).toFixed(0)}% where funds run out.` });
                     } else {
@@ -485,21 +568,29 @@ export default function MonteCarloPage() {
                   }
 
                   if (result.medianFinal > (nwSummary?.net_worth ?? 0) * 3) {
-                    insights.push({ type: "success", text: `The median outcome grows your wealth to ${fmt(result.medianFinal, true)} — more than 3x your current net worth.` });
+                    insights.push({ type: "success", text: `The median outcome grows your wealth to ${fmt(result.medianFinal, true)}  - more than 3x your current net worth.` });
                   }
 
                   const spread = result.p90Final - result.p10Final;
                   if (spread > result.medianFinal * 2) {
-                    insights.push({ type: "info", text: `Wide range of outcomes — the spread between optimistic and pessimistic is ${fmt(spread, true)}. Higher volatility means more uncertainty.` });
+                    insights.push({ type: "info", text: `Wide range of outcomes in today's dollars  - the gap between optimistic and pessimistic is ${fmt(spread, true)}. This reflects market uncertainty over ${years} years, not a flaw in the projection.` });
                   }
 
                   if (volatility > 20) {
-                    insights.push({ type: "warning", text: "Volatility above 20% significantly increases the range of outcomes. Consider diversifying to reduce portfolio volatility." });
+                    insights.push({ type: "warning", text: `The ${SCENARIO_LABELS[scenario].label} scenario uses ${volatility}% volatility, which significantly widens the range of outcomes. A diversified portfolio typically sits closer to 12-18%.` });
                   }
 
                   if (phase === "accumulation" && cfSummary && cfSummary.total_income > cfSummary.total_expenses) {
                     const savingsRate = ((cfSummary.total_income - cfSummary.total_expenses) / cfSummary.total_income) * 100;
-                    insights.push({ type: "info", text: `Your ${savingsRate.toFixed(0)}% savings rate compounds powerfully over ${years} years of growth.` });
+                    if (expectedReturn < 0) {
+                      insights.push({ type: "warning", text: `Even with a negative expected return of ${expectedReturn}%, your ${savingsRate.toFixed(0)}% savings rate keeps the portfolio growing in the median case. The projected growth here comes from contributions, not investment returns.` });
+                    } else {
+                      insights.push({ type: "info", text: `Your ${savingsRate.toFixed(0)}% savings rate compounds powerfully over ${years} years of growth.` });
+                    }
+                  }
+
+                  if (expectedReturn < 0 && phase === "accumulation" && !(cfSummary && cfSummary.total_income > cfSummary.total_expenses)) {
+                    insights.push({ type: "warning", text: `A negative expected return of ${expectedReturn}% means investment losses each year. Any nominal growth in projections comes purely from contributions being added, not from market gains.` });
                   }
 
                   return insights.map((ins, i) => {

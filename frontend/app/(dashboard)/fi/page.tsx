@@ -12,10 +12,13 @@ import {
   DollarSign,
   Info,
   Target,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { useDefaultPortfolio } from "@/hooks/usePortfolio";
 import { useNetWorthSummary } from "@/hooks/useNetWorth";
 import { useCashFlowSummary } from "@/hooks/useCashFlow";
+import { useProfile } from "@/hooks/useProfile";
 import PageTransition from "@/components/celestial/PageTransition";
 import FloatingCard from "@/components/celestial/FloatingCard";
 import RevealOnScroll from "@/components/celestial/RevealOnScroll";
@@ -251,18 +254,114 @@ function EmptyFi() {
   );
 }
 
+// ── Methodology breakdown ─────────────────────────────────────────────
+
+function MethodologyCard({
+  monthlyExpenses,
+  withdrawalRate,
+  fiNumber,
+  coastFiNumber,
+  currentAge,
+  retirementAge,
+  realReturn,
+}: {
+  monthlyExpenses: number;
+  withdrawalRate: number;
+  fiNumber: number;
+  coastFiNumber: number;
+  currentAge: number;
+  retirementAge: number;
+  realReturn: number;
+}) {
+  const [open, setOpen] = useState(false);
+  const annualExpenses = monthlyExpenses * 12;
+  const multiplier = (100 / withdrawalRate).toFixed(1);
+
+  return (
+    <div className="vela-card">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="w-full flex items-center justify-between text-left"
+      >
+        <div className="flex items-center gap-2">
+          <Info className="w-4 h-4 text-zinc-500" />
+          <span className="text-sm font-medium text-zinc-300">How your FI number is calculated</span>
+        </div>
+        {open ? <ChevronUp className="w-4 h-4 text-zinc-500" /> : <ChevronDown className="w-4 h-4 text-zinc-500" />}
+      </button>
+
+      {open && (
+        <div className="mt-4 space-y-5 text-xs text-zinc-400">
+
+          {/* FI Number formula */}
+          <div className="space-y-2">
+            <p className="text-zinc-300 font-medium">FI Number - the {withdrawalRate}% rule</p>
+            <div className="bg-zinc-800/60 rounded-lg p-3 font-mono text-zinc-300 space-y-1 leading-relaxed">
+              <p>FI Number = Annual Expenses / Safe Withdrawal Rate</p>
+              <p className="text-zinc-500">
+                = {formatCurrency(annualExpenses)} / {withdrawalRate}%
+              </p>
+              <p className="text-teal-400 font-semibold">= {formatCompact(fiNumber)} ({multiplier}x your annual expenses)</p>
+            </div>
+            <p className="text-zinc-500 leading-relaxed">
+              The safe withdrawal rate is the percentage of your portfolio you can spend each year without running out of money.
+              4% is the traditional figure from the Trinity Study — based on a 30-year retirement with a 60/40 portfolio.
+              Lowering it (e.g. 3.5%) is more conservative and suits longer retirements.
+            </p>
+          </div>
+
+          <div className="border-t border-zinc-800" />
+
+          {/* Coast FI */}
+          <div className="space-y-2">
+            <p className="text-zinc-300 font-medium">Coast FI Number</p>
+            <div className="bg-zinc-800/60 rounded-lg p-3 font-mono text-zinc-300 space-y-1 leading-relaxed">
+              <p>Coast FI = FI Number / (1 + real return)^years to retirement</p>
+              <p className="text-zinc-500">
+                = {formatCompact(fiNumber)} / (1 + {(realReturn * 100).toFixed(1)}%)^{retirementAge - currentAge}
+              </p>
+              <p className="text-teal-400 font-semibold">= {formatCompact(coastFiNumber)}</p>
+            </div>
+            <p className="text-zinc-500 leading-relaxed">
+              Coast FI is the amount you need invested today so that, even if you stop contributing entirely,
+              compound growth alone will get you to your FI number by retirement age.
+              Once you hit this milestone you can theoretically coast - cover your living costs from income
+              without investing another dollar.
+            </p>
+          </div>
+
+          <div className="border-t border-zinc-800" />
+
+          {/* Data sources */}
+          <div className="space-y-1.5">
+            <p className="text-zinc-300 font-medium">Where the numbers come from</p>
+            <ul className="space-y-1 text-zinc-500">
+              <li><span className="text-zinc-400">Monthly expenses</span> - pulled from your Cash Flow entries ({formatCurrency(monthlyExpenses)}/mo)</li>
+              <li><span className="text-zinc-400">Starting net worth</span> - from your Net Worth tracker (assets minus liabilities)</li>
+              <li><span className="text-zinc-400">Annual savings</span> - income minus expenses from Cash Flow, used to model contributions</li>
+              <li><span className="text-zinc-400">Projection</span> - uses real return (expected return minus inflation) with flat annual contributions</li>
+            </ul>
+          </div>
+
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Main page ────────────────────────────────────────────────────────
 
 export default function FinancialIndependencePage() {
   const { summary: nwSummary, isLoading: nwLoading, error: nwError } = useNetWorthSummary();
   const { summary: cfSummary, isLoading: cfLoading, error: cfError } = useCashFlowSummary();
   const { summary: pSummary, loading: pLoading, error: pError } = useDefaultPortfolio();
+  const { profile } = useProfile();
 
-  // Assumptions (user-adjustable)
+  // Assumptions (user-adjustable) — seeded from profile where applicable
   const [withdrawalRate, setWithdrawalRate] = useState(4);
   const [expectedReturn, setExpectedReturn] = useState(7);
   const [inflationRate, setInflationRate] = useState(3);
-  const [currentAge, setCurrentAge] = useState(30);
+  const [currentAge, setCurrentAge] = useState(profile.age);
   const [retirementAge, setRetirementAge] = useState(65);
 
   const loading = nwLoading || cfLoading || pLoading;
@@ -313,7 +412,7 @@ export default function FinancialIndependencePage() {
         <EmptyFi />
       ) : fi ? (
         <>
-          {/* Hero — Progress ring + key stats */}
+          {/* Hero  - Progress ring + key stats */}
           <FloatingCard glowColor="rgba(251, 146, 60, 0.10)" tilt={false}>
             <div className="flex flex-col md:flex-row items-center gap-6 md:gap-10 py-2">
               <ProgressRing pct={fi.currentProgress} label="to FI" />
@@ -340,7 +439,7 @@ export default function FinancialIndependencePage() {
                 <div className="text-center md:text-left">
                   <p className="text-xs text-zinc-500">FI Age</p>
                   <p className="text-lg font-display font-bold text-zinc-200 tabular-nums">
-                    {fi.yearsToFi != null ? currentAge + fi.yearsToFi : "—"}
+                    {fi.yearsToFi != null ? currentAge + fi.yearsToFi : " -"}
                   </p>
                 </div>
               </div>
@@ -378,6 +477,19 @@ export default function FinancialIndependencePage() {
                 color={fi.fiRatio >= 1 ? "text-gain" : fi.fiRatio >= 0.5 ? "text-teal-400" : "text-zinc-200"}
               />
             </div>
+          </RevealOnScroll>
+
+          {/* Methodology */}
+          <RevealOnScroll delay={0.02}>
+            <MethodologyCard
+              monthlyExpenses={fi.monthlyExpenses}
+              withdrawalRate={withdrawalRate}
+              fiNumber={fi.fiNumber}
+              coastFiNumber={fi.coastFiNumber}
+              currentAge={currentAge}
+              retirementAge={retirementAge}
+              realReturn={(1 + expectedReturn / 100) / (1 + inflationRate / 100) - 1}
+            />
           </RevealOnScroll>
 
           {/* Projection chart */}
@@ -454,30 +566,46 @@ export default function FinancialIndependencePage() {
                 <Info className="w-4 h-4 text-zinc-500" />
                 <h2 className="section-heading !mb-0">Assumptions</h2>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
                 {[
-                  { label: "Withdrawal Rate", value: withdrawalRate, set: setWithdrawalRate, min: 2, max: 6, step: 0.5, suffix: "%" },
-                  { label: "Expected Return", value: expectedReturn, set: setExpectedReturn, min: 3, max: 12, step: 0.5, suffix: "%" },
-                  { label: "Inflation", value: inflationRate, set: setInflationRate, min: 1, max: 6, step: 0.5, suffix: "%" },
-                  { label: "Current Age", value: currentAge, set: setCurrentAge, min: 18, max: 70, step: 1, suffix: "" },
-                  { label: "Target Retirement", value: retirementAge, set: setRetirementAge, min: 40, max: 80, step: 1, suffix: "" },
+                  {
+                    label: "Withdrawal Rate", value: withdrawalRate, set: setWithdrawalRate, min: 2, max: 6, step: 0.5, suffix: "%",
+                    desc: `${(100 / withdrawalRate).toFixed(1)}x expenses needed - lower = more conservative`,
+                  },
+                  {
+                    label: "Expected Return", value: expectedReturn, set: setExpectedReturn, min: 3, max: 12, step: 0.5, suffix: "%",
+                    desc: "Nominal annual return from your investments",
+                  },
+                  {
+                    label: "Inflation", value: inflationRate, set: setInflationRate, min: 1, max: 6, step: 0.5, suffix: "%",
+                    desc: `Real return: ${((1 + expectedReturn / 100) / (1 + inflationRate / 100) - 1) * 100 > 0 ? "+" : ""}${(((1 + expectedReturn / 100) / (1 + inflationRate / 100) - 1) * 100).toFixed(1)}%/yr`,
+                  },
+                  {
+                    label: "Current Age", value: currentAge, set: setCurrentAge, min: 18, max: 70, step: 1, suffix: "",
+                    desc: "Used to calculate Coast FI and projection timeline",
+                  },
+                  {
+                    label: "Target Retirement", value: retirementAge, set: setRetirementAge, min: 40, max: 80, step: 1, suffix: "",
+                    desc: `${retirementAge - currentAge} years away - affects your Coast FI number`,
+                  },
                 ].map((s) => (
                   <div key={s.label}>
-                    <label className="text-xs text-zinc-500 block mb-1.5">{s.label}</label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="range"
-                        min={s.min}
-                        max={s.max}
-                        step={s.step}
-                        value={s.value}
-                        onChange={(e) => s.set(Number(e.target.value))}
-                        className="flex-1 accent-teal-500 h-1.5"
-                      />
-                      <span className="text-sm font-medium text-zinc-200 tabular-nums w-10 text-right">
+                    <div className="flex items-baseline justify-between mb-1.5">
+                      <label className="text-xs text-zinc-400 font-medium">{s.label}</label>
+                      <span className="text-sm font-display font-bold text-zinc-200 tabular-nums">
                         {s.value}{s.suffix}
                       </span>
                     </div>
+                    <input
+                      type="range"
+                      min={s.min}
+                      max={s.max}
+                      step={s.step}
+                      value={s.value}
+                      onChange={(e) => s.set(Number(e.target.value))}
+                      className="w-full accent-teal-500 h-1.5"
+                    />
+                    <p className="text-[10px] text-zinc-600 mt-1">{s.desc}</p>
                   </div>
                 ))}
               </div>

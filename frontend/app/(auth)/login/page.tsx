@@ -48,7 +48,7 @@ export default function LoginPage() {
             <span className="text-xl font-display font-black text-zinc-950 leading-none">V</span>
           </div>
           <span className="text-3xl font-display font-bold tracking-tight text-zinc-100">
-            <span className="text-vela-teal">V</span>ela
+            <span className="text-vela-teal">V</span>elnor
           </span>
         </div>
         <p className="text-zinc-400 text-sm">Your wealth, in motion.</p>

@@ -51,7 +51,7 @@ type SortDir = "asc" | "desc";
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatMarketCap(v: number | null): string {
-  if (v == null) return " -";
+  if (v == null || !Number.isFinite(v)) return " -";
   if (v >= 1e12) return `$${(v / 1e12).toFixed(2)}T`;
   if (v >= 1e9) return `$${(v / 1e9).toFixed(1)}B`;
   if (v >= 1e6) return `$${(v / 1e6).toFixed(0)}M`;
@@ -59,7 +59,7 @@ function formatMarketCap(v: number | null): string {
 }
 
 function capLabel(v: number | null): string {
-  if (v == null) return "";
+  if (v == null || !Number.isFinite(v)) return "";
   if (v >= 200e9) return "Mega";
   if (v >= 10e9) return "Large";
   if (v >= 2e9) return "Mid";
@@ -68,17 +68,17 @@ function capLabel(v: number | null): string {
 }
 
 function formatRatio(v: number | null, decimals = 1): string {
-  if (v == null) return " -";
+  if (v == null || !Number.isFinite(v)) return " -";
   return v.toFixed(decimals);
 }
 
 function formatYield(v: number | null): string {
-  if (v == null) return " -";
+  if (v == null || !Number.isFinite(v)) return " -";
   return `${(v * 100).toFixed(2)}%`;
 }
 
 function formatMargin(v: number | null): string {
-  if (v == null) return " -";
+  if (v == null || !Number.isFinite(v)) return " -";
   return `${(v * 100).toFixed(1)}%`;
 }
 

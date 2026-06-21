@@ -120,7 +120,11 @@ export function usePortfolioSummary(portfolioId: string | undefined) {
   return useSWR<PortfolioSummary>(
     portfolioId ? `/portfolios/${portfolioId}/summary` : null,
     async (url: string) => parseSummary(await api.get(url)),
-    { refreshInterval: 60_000, revalidateOnFocus: true },
+    // The summary endpoint fetches live quotes server-side and is consumed by
+    // many components at once. Dedupe within 30s so simultaneous mounts and
+    // focus revalidations share one request instead of each firing a fresh
+    // (expensive, rate-limit-prone) quote fetch.
+    { refreshInterval: 60_000, revalidateOnFocus: true, dedupingInterval: 30_000 },
   );
 }
 
@@ -164,7 +168,7 @@ export async function takePortfolioSnapshot(portfolioId: string) {
 }
 
 /**
- * Convenience wrapper — fetches portfolio list, picks the default,
+ * Convenience wrapper  - fetches portfolio list, picks the default,
  * and returns the summary for it.
  */
 export function useDefaultPortfolio() {
