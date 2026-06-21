@@ -105,7 +105,7 @@
 
   /* ── Colored change pills — reusable across all pages ────────── */
   .change-pill {
-    @apply inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full tabular;
+    @apply inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded tabular;
   }
   .change-pill-gain {
     @apply change-pill bg-gain/15 text-gain;
@@ -147,56 +147,41 @@
     @apply text-zinc-400 tabular;
   }
 
-  /* Teal CTA button — ambient glow */
+  /* Teal CTA button — flat, no glow */
   .btn-primary {
-    @apply relative bg-vela-teal text-zinc-950 font-medium px-4 py-2 rounded-lg transition-all duration-300;
-    box-shadow:
-      0 0 20px rgba(20, 184, 166, 0.25),
-      0 0 60px rgba(20, 184, 166, 0.1),
-      inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    @apply relative bg-vela-teal text-zinc-950 font-medium px-4 py-2 rounded transition-colors duration-200;
   }
 
   .btn-primary:hover {
     @apply bg-vela-teal-dim;
-    transform: translateY(-1px);
-    box-shadow:
-      0 0 30px rgba(20, 184, 166, 0.4),
-      0 0 80px rgba(20, 184, 166, 0.15),
-      inset 0 1px 0 rgba(255, 255, 255, 0.2);
   }
 
   .btn-primary:active {
-    transform: translateY(0px) scale(0.98);
-    box-shadow:
-      0 0 15px rgba(20, 184, 166, 0.2),
-      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    transform: scale(0.98);
   }
 
-  /* Ghost button — glass ambient */
+  /* Ghost button — flat, no glass */
   .btn-ghost {
-    @apply text-zinc-400 px-3 py-2 rounded-lg transition-all duration-300;
+    @apply text-zinc-400 px-3 py-2 rounded transition-colors duration-200;
     border: 1px solid transparent;
   }
 
   .btn-ghost:hover {
     @apply text-zinc-100;
-    background: rgba(15, 23, 41, 0.6);
-    border-color: rgba(30, 41, 59, 0.5);
-    backdrop-filter: blur(8px);
-    box-shadow: 0 0 20px rgba(20, 184, 166, 0.04);
+    background: #0B1322;
+    border-color: #1B2638;
   }
 
-  /* Form inputs — glass ambient */
+  /* Form inputs — solid, 1px teal focus ring */
   .input-field {
-    @apply rounded-lg px-3 py-2 text-sm text-zinc-100 placeholder-slate-500 outline-none transition-all duration-300;
-    background: rgba(15, 23, 41, 0.5);
-    border: 1px solid rgba(30, 41, 59, 0.5);
-    backdrop-filter: blur(8px);
+    @apply rounded px-3 py-2 text-sm text-zinc-100 placeholder-slate-500 outline-none transition-colors duration-200;
+    background: #0B1322;
+    border: 1px solid #1B2638;
   }
 
   .input-field:focus {
-    border-color: rgba(20, 184, 166, 0.4);
-    box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.08), 0 0 20px rgba(20, 184, 166, 0.06);
+    border-color: rgba(20, 184, 166, 0.6);
+    box-shadow: 0 0 0 1px rgba(20, 184, 166, 0.5);
   }
 
   select.input-field {
@@ -207,17 +192,16 @@
     padding-right: 2rem;
   }
 
-  /* ── Glass morphism input ────────────────────────────────────── */
+  /* ── Solid input (was glass-input) ──────────────────────────── */
   .glass-input {
-    @apply rounded-lg px-3 py-2 text-sm text-zinc-100 placeholder-slate-500 outline-none transition-all;
-    background: rgba(15, 23, 41, 0.6);
-    border: 1px solid rgba(30, 41, 59, 0.5);
-    backdrop-filter: blur(8px);
+    @apply rounded px-3 py-2 text-sm text-zinc-100 placeholder-slate-500 outline-none transition-colors;
+    background: #0B1322;
+    border: 1px solid #1B2638;
   }
 
   .glass-input:focus {
-    border-color: rgba(20, 184, 166, 0.5);
-    box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1), 0 0 20px rgba(20, 184, 166, 0.05);
+    border-color: rgba(20, 184, 166, 0.6);
+    box-shadow: 0 0 0 1px rgba(20, 184, 166, 0.5);
   }
 }
 
@@ -240,7 +224,7 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #030712;
+  background: #050A16;
 }
 
 ::-webkit-scrollbar-thumb {
