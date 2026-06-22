@@ -51,7 +51,7 @@ export default function SplashScreen({ children }: { children: React.ReactNode }
               style={{
                 width: 300,
                 height: 300,
-                background: "radial-gradient(circle, rgba(12, 181, 201,0.12) 0%, transparent 70%)",
+                background: "radial-gradient(circle, rgba(26, 168, 187,0.12) 0%, transparent 70%)",
               }}
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: [0, 1.5, 1.2], opacity: [0, 0.8, 0.5] }}

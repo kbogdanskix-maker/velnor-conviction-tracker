@@ -509,8 +509,8 @@ function OptionsOIChart({ chain, expiry }: { chain: OptionsChain; expiry: string
               width={36}
             />
             <Tooltip cursor={false}
-              contentStyle={{ background: "#0c1a19", border: "1px solid rgba(12, 181, 201,0.35)", borderRadius: 8, fontSize: 11 }}
-              labelStyle={{ color: "#0CB5C9", fontSize: 10, fontWeight: 600 }}
+              contentStyle={{ background: "#0c1a19", border: "1px solid rgba(26, 168, 187,0.35)", borderRadius: 8, fontSize: 11 }}
+              labelStyle={{ color: "#1AA8BB", fontSize: 10, fontWeight: 600 }}
               itemStyle={{ color: "#5eead4" }}
               formatter={(value: number, name: string) => [
                 value.toLocaleString(),
@@ -518,7 +518,7 @@ function OptionsOIChart({ chain, expiry }: { chain: OptionsChain; expiry: string
               ]}
               labelFormatter={(label: number) => `Strike $${label}`}
             />
-            <ReferenceLine x={Number(chartData.reduce((best, d) => Math.abs(d.strike - price) < Math.abs(best - price) ? d.strike : best, chartData[0].strike))} stroke="#0CB5C9" strokeDasharray="3 3" strokeWidth={1} />
+            <ReferenceLine x={Number(chartData.reduce((best, d) => Math.abs(d.strike - price) < Math.abs(best - price) ? d.strike : best, chartData[0].strike))} stroke="#1AA8BB" strokeDasharray="3 3" strokeWidth={1} />
             <Bar
               dataKey="callOI"
               name="callOI"
@@ -532,7 +532,7 @@ function OptionsOIChart({ chain, expiry }: { chain: OptionsChain; expiry: string
                   key={i}
                   fill={
                     d.strike === activeStrike
-                      ? "rgba(12, 181, 201, 0.85)"
+                      ? "rgba(26, 168, 187, 0.85)"
                       : d.strike <= price ? "rgba(52, 211, 153, 0.6)" : "rgba(52, 211, 153, 0.3)"
                   }
                 />
@@ -551,7 +551,7 @@ function OptionsOIChart({ chain, expiry }: { chain: OptionsChain; expiry: string
                   key={i}
                   fill={
                     d.strike === activeStrike
-                      ? "rgba(12, 181, 201, 0.85)"
+                      ? "rgba(26, 168, 187, 0.85)"
                       : d.strike >= price ? "rgba(244, 63, 94, 0.6)" : "rgba(244, 63, 94, 0.3)"
                   }
                 />
@@ -614,13 +614,13 @@ function IVByStrike({ chain, expiry }: { chain: OptionsChain; expiry: string }) 
               domain={["dataMin - 5", "dataMax + 5"]}
             />
             <Tooltip cursor={false}
-              contentStyle={{ background: "#0c1a19", border: "1px solid rgba(12, 181, 201,0.35)", borderRadius: 8, fontSize: 11 }}
-              labelStyle={{ color: "#0CB5C9", fontSize: 10, fontWeight: 600 }}
+              contentStyle={{ background: "#0c1a19", border: "1px solid rgba(26, 168, 187,0.35)", borderRadius: 8, fontSize: 11 }}
+              labelStyle={{ color: "#1AA8BB", fontSize: 10, fontWeight: 600 }}
               itemStyle={{ color: "#5eead4" }}
               formatter={(value: number) => [`${value}%`, "IV"]}
               labelFormatter={(label: number) => `Strike $${label}`}
             />
-            <Bar dataKey="iv" fill="rgba(12, 181, 201, 0.5)" activeBar={{ fill: "rgba(12, 181, 201, 0.85)" }} radius={[2, 2, 0, 0]} />
+            <Bar dataKey="iv" fill="rgba(26, 168, 187, 0.5)" activeBar={{ fill: "rgba(26, 168, 187, 0.85)" }} radius={[2, 2, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>

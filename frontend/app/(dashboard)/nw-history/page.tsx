@@ -475,7 +475,7 @@ export default function NwHistoryPage() {
         <>
           {/* Stats row */}
           {stats && (
-            <FloatingCard glowColor="rgba(12, 181, 201, 0.10)" tilt={false}>
+            <FloatingCard glowColor="rgba(26, 168, 187, 0.10)" tilt={false}>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
                 <div>
                   <p className="text-xs text-zinc-500">Total Change</p>
@@ -524,8 +524,8 @@ export default function NwHistoryPage() {
                     <AreaChart data={chartData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
                       <defs>
                         <linearGradient id="nwGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="rgb(12, 181, 201)" stopOpacity={0.3} />
-                          <stop offset="100%" stopColor="rgb(12, 181, 201)" stopOpacity={0} />
+                          <stop offset="0%" stopColor="rgb(26, 168, 187)" stopOpacity={0.3} />
+                          <stop offset="100%" stopColor="rgb(26, 168, 187)" stopOpacity={0} />
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="rgb(39, 39, 42)" />
@@ -545,7 +545,7 @@ export default function NwHistoryPage() {
                       />
                       <Tooltip content={<ChartTooltip />} />
                       <ReferenceLine y={0} stroke="rgb(63, 63, 70)" />
-                      <Area type="monotone" dataKey="netWorth" stroke="rgb(12, 181, 201)" strokeWidth={2.5} fill="url(#nwGrad)" animationDuration={1200} />
+                      <Area type="monotone" dataKey="netWorth" stroke="rgb(26, 168, 187)" strokeWidth={2.5} fill="url(#nwGrad)" animationDuration={1200} />
                       <Area type="monotone" dataKey="assets" stroke="rgb(52, 211, 153)" strokeWidth={1} strokeDasharray="4 4" fill="none" animationDuration={1200} />
                       <Area type="monotone" dataKey="liabilities" stroke="rgb(244, 63, 94)" strokeWidth={1} strokeDasharray="4 4" fill="none" animationDuration={1200} />
                     </AreaChart>

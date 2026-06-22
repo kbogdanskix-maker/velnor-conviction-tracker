@@ -34,7 +34,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   transport: "#3b82f6",
   entertainment: "#a855f7",
   shopping: "#ec4899",
-  health: "#0CB5C9",
+  health: "#1AA8BB",
   travel: "#06b6d4",
   other_variable: "#6b7280",
 };

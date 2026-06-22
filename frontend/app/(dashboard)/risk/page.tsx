@@ -531,7 +531,7 @@ export default function RiskDashboardPage() {
       ) : (
         <>
           {/* Hero  - Overall Score + Annualized Return */}
-          <FloatingCard glowColor="rgba(12, 181, 201, 0.12)" tilt={false}>
+          <FloatingCard glowColor="rgba(26, 168, 187, 0.12)" tilt={false}>
             <div className="flex flex-col sm:flex-row items-center gap-6 sm:gap-10 py-2">
               {overallScore != null && <RiskGauge score={overallScore} />}
 

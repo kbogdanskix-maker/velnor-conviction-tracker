@@ -19,12 +19,12 @@ function DivTooltip({ active, payload, label }: any) {
   return (
     <div style={{
       background: "#0c1a19",
-      border: "1px solid rgba(12, 181, 201,0.35)",
+      border: "1px solid rgba(26, 168, 187,0.35)",
       borderRadius: 8,
       padding: "6px 10px",
       fontSize: 11,
     }}>
-      <p style={{ color: "#0CB5C9", fontWeight: 600, marginBottom: 2 }}>{label}</p>
+      <p style={{ color: "#1AA8BB", fontWeight: 600, marginBottom: 2 }}>{label}</p>
       <p style={{ color: "#5eead4" }}>{formatCurrency(payload[0].value)}</p>
     </div>
   );
@@ -215,7 +215,7 @@ export default function DividendCalendarPage() {
                         key={i}
                         fill={
                           selectedMonth === i
-                            ? "#0CB5C9"
+                            ? "#1AA8BB"
                             : i === currentMonth
                               ? "#34d399"
                               : d.total > 0

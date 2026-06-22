@@ -29,7 +29,7 @@ export default function GlowBorder({
         className={`absolute -inset-[1px] rounded-2xl ${hoverOnly ? "opacity-0 group-hover:opacity-60" : ""} transition-opacity duration-500`}
         style={{
           background:
-            "linear-gradient(135deg, rgba(12, 181, 201,0.35) 0%, rgba(6,182,212,0.2) 50%, rgba(12, 181, 201,0.35) 100%)",
+            "linear-gradient(135deg, rgba(26, 168, 187,0.35) 0%, rgba(6,182,212,0.2) 50%, rgba(26, 168, 187,0.35) 100%)",
         }}
         animate={hoverOnly ? undefined : { opacity: [0.3, 0.7, 0.3] }}
         transition={{

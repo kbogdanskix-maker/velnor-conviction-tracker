@@ -222,7 +222,7 @@ export default function AttributionPage() {
       ) : (
         <>
           {/* Summary cards */}
-          <FloatingCard glowColor="rgba(12, 181, 201, 0.12)" tilt={false}>
+          <FloatingCard glowColor="rgba(26, 168, 187, 0.12)" tilt={false}>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
               <div>
                 <p className="text-xs text-zinc-500">Total P&L</p>

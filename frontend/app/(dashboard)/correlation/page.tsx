@@ -568,7 +568,7 @@ function ConstellationViz({
           const holding = avgMap.get(ticker);
           const avgCorr = holding?.avg ?? 0;
           const starSize = 4 + avgCorr * 4; // 4-8px based on how correlated
-          const starColor = holding?.color ?? "#0CB5C9";
+          const starColor = holding?.color ?? "#1AA8BB";
 
           return (
             <g key={ticker}>

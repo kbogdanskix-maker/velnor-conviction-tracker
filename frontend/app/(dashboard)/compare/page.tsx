@@ -156,11 +156,11 @@ export default function ComparePage() {
     });
   }, [userReturn, selected]);
 
-  const COLORS = ["#0CB5C9", "#f59e0b", "#a855f7", "#f43f5e", "#3b82f6"];
+  const COLORS = ["#1AA8BB", "#f59e0b", "#a855f7", "#f43f5e", "#3b82f6"];
 
   // Colours for return bars relative to user's own return
   function returnBarColor(returnVal: number, isUser: boolean): string {
-    if (isUser) return "#0CB5C9";          // teal  - your portfolio
+    if (isUser) return "#1AA8BB";          // teal  - your portfolio
     if (returnVal > userReturn) return "#f43f5e";  // rose  - benchmark beats you
     if (returnVal < userReturn) return "#34d399";  // emerald - you beat benchmark
     return "#71717a";
@@ -184,7 +184,7 @@ export default function ComparePage() {
   }, [displaySharpe, selected]);
 
   function sharpeBarColor(sharpe: number, isUser: boolean): string {
-    if (isUser) return "#0CB5C9";
+    if (isUser) return "#1AA8BB";
     if (sharpe >= 0.8) return "#34d399";
     if (sharpe >= 0.5) return "#f59e0b";
     return "#f43f5e";
@@ -278,7 +278,7 @@ export default function ComparePage() {
             ))}
           </select>
         </div>
-        <FloatingCard glowColor="rgba(12, 181, 201, 0.12)" delay={0.2}>
+        <FloatingCard glowColor="rgba(26, 168, 187, 0.12)" delay={0.2}>
           <div className="p-4">
             <label className="text-xs text-zinc-500 block mb-1">Final Value (You)</label>
             <AnimatedNumber

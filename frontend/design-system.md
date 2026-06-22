@@ -81,14 +81,14 @@ One brand accent. Teal. That's it. Everything else is a neutral or a semantic si
 | Text primary | `zinc-100` | `#F4F5F7` |
 | Text muted | `vela-muted` | `#8A97AC` |
 | Text faint | `vela-subtle` | `#5A6678` |
-| **Accent (only)** | `vela-teal` | `#0CB5C9` |
-| Accent hover | `vela-teal-dim` | `#0A97A8` |
+| **Accent (only)** | `vela-teal` | `#1AA8BB` |
+| Accent hover | `vela-teal-dim` | `#157E8C` |
 | Gain (semantic) | `gain` | `#34D399` |
 | Loss (semantic) | `loss` | `#F43F5E` |
 | Warning (semantic) | `amber` | `#F59E0B` |
 
 **Rules:**
-- The accent is a **cyan-teal `#0CB5C9`** (slightly blue) — the token is still named `vela-teal`.
+- The accent is a **cyan-teal `#1AA8BB`** (slightly blue) — the token is still named `vela-teal`.
   It is the **single** decorative/brand accent. Gain/loss/warning are **semantic only** —
   never use emerald or rose as decoration.
 - Functional color always pairs with text or an icon — never color alone.
@@ -262,7 +262,7 @@ These are the bugs that keep biting Velnor. Every phase must verify them on the 
   the **landing/marketing** surfaces (Phase 4); our system governs the **app**.
 - **2026-06-22** — Consistency fixes: flagship FloatingCard glows de-indigo'd → teal; health-score
   grade backgrounds gradient → solid tint; command-palette overlay de-glowed (blur kept, glow/ring dropped).
-- **2026-06-22** — Accent shifted teal `#14B8A6` → **cyan-teal `#0CB5C9`** (slightly bluer), app-wide
+- **2026-06-22** — Accent shifted teal `#14B8A6` → **cyan-teal `#1AA8BB`** (slightly bluer), app-wide
   (token `vela-teal` + all literals + `--accent` HSL + glows). Brand mark rebuilt as inline SVG
   `components/shared/VelnorMark.tsx` (the chart-line "peaks" logo, recolors via currentColor), now used
   in the sidebar + splash instead of the boxed "V".

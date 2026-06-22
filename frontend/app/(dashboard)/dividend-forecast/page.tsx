@@ -284,7 +284,7 @@ export default function DividendForecastPage() {
                     <YAxis tick={{ fill: "#71717a", fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v: number) => formatCompact(v)} width={55} />
                     <Tooltip cursor={false} content={<ForecastTooltip />} />
                     <Area type="monotone" dataKey="annualIncome" stroke="rgb(245, 158, 11)" strokeWidth={2.5} fill="url(#divGrad)" animationDuration={1200} />
-                    <Area type="monotone" dataKey="cumulativeIncome" stroke="rgb(12, 181, 201)" strokeWidth={1.5} strokeDasharray="4 4" fill="none" animationDuration={1200} />
+                    <Area type="monotone" dataKey="cumulativeIncome" stroke="rgb(26, 168, 187)" strokeWidth={1.5} strokeDasharray="4 4" fill="none" animationDuration={1200} />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>

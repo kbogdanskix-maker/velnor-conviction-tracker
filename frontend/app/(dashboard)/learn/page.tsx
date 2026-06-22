@@ -150,7 +150,7 @@ function DeepDiveCard({ item, onClick }: { item: DeepDive; onClick: () => void }
       {/* Subtle gradient mesh bg */}
       <div className="relative p-5">
         <div className="absolute top-0 right-0 w-32 h-32 opacity-5 pointer-events-none"
-          style={{ background: "radial-gradient(circle at top right, #0CB5C9, transparent 70%)" }} />
+          style={{ background: "radial-gradient(circle at top right, #1AA8BB, transparent 70%)" }} />
 
         {/* Header */}
         <div className="flex items-start justify-between gap-3 mb-3">
@@ -909,7 +909,7 @@ export default function LearnPage() {
       <div className="relative">
         {/* Ambient glow */}
         <div className="absolute -top-4 -left-4 w-64 h-32 opacity-[0.04] pointer-events-none"
-          style={{ background: "radial-gradient(ellipse, #0CB5C9, transparent 70%)" }} />
+          style={{ background: "radial-gradient(ellipse, #1AA8BB, transparent 70%)" }} />
 
         <div className="flex flex-col sm:flex-row sm:items-end gap-4">
           <div className="flex-1">

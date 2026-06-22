@@ -39,7 +39,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   Streaming: "#f43f5e",
   Music: "#a855f7",
   "Cloud Storage": "#3b82f6",
-  Software: "#0CB5C9",
+  Software: "#1AA8BB",
   Gaming: "#f59e0b",
   "News & Media": "#6366f1",
   Fitness: "#22c55e",
@@ -297,7 +297,7 @@ export default function SubscriptionsPage() {
                     contentStyle={{ backgroundColor: "#18181b", border: "1px solid #3f3f46", borderRadius: "0.5rem" }}
                     formatter={(v: number) => [formatCurrency(v) + "/mo"]}
                   />
-                  <Bar dataKey="monthly" fill="#0CB5C9" radius={[0, 4, 4, 0]} />
+                  <Bar dataKey="monthly" fill="#1AA8BB" radius={[0, 4, 4, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>

@@ -206,7 +206,7 @@ export default function CommandPalette() {
                         transition={{ delay: i * 0.02, duration: 0.2 }}
                         className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-all duration-150 ${
                           isSelected
-                            ? "bg-vela-teal/10 text-vela-teal shadow-[inset_2px_0_0_0_rgb(12, 181, 201)]"
+                            ? "bg-vela-teal/10 text-vela-teal shadow-[inset_2px_0_0_0_rgb(26, 168, 187)]"
                             : "text-zinc-300 hover:bg-white/[0.03]"
                         }`}
                       >

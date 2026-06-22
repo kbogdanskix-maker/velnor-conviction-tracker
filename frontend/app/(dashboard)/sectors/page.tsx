@@ -18,7 +18,7 @@ import ErrorState from "@/components/shared/ErrorState";
 // ── Constants ────────────────────────────────────────────────────────────────
 
 const SECTOR_COLORS: Record<string, string> = {
-  "Technology":            "#0CB5C9",
+  "Technology":            "#1AA8BB",
   "Healthcare":            "#22d3ee",
   "Financial Services":    "#a78bfa",
   "Consumer Cyclical":     "#f472b6",
@@ -34,7 +34,7 @@ const SECTOR_COLORS: Record<string, string> = {
 };
 
 const FALLBACK_COLORS = [
-  "#0CB5C9", "#22d3ee", "#a78bfa", "#f472b6", "#fbbf24",
+  "#1AA8BB", "#22d3ee", "#a78bfa", "#f472b6", "#fbbf24",
   "#34d399", "#fb923c", "#ef4444", "#818cf8", "#2dd4bf",
   "#a3e635", "#71717a",
 ];

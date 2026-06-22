@@ -35,7 +35,7 @@ export default function NewsPage() {
       </div>
 
       {isEmpty ? (
-        <FloatingCard glowColor="rgba(12, 181, 201, 0.08)">
+        <FloatingCard glowColor="rgba(26, 168, 187, 0.08)">
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <div className="w-12 h-12 rounded-full bg-vela-teal/10 flex items-center justify-center mb-4">
               <Newspaper className="w-6 h-6 text-vela-teal" />

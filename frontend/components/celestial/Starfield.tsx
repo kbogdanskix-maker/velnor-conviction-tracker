@@ -98,8 +98,8 @@ export default function Starfield({ count = 150 }: { count?: number }) {
             star.x, star.y, 0,
             star.x, star.y, star.radius * 4,
           );
-          grad.addColorStop(0, `rgba(12, 181, 201, ${alpha * 0.3})`);
-          grad.addColorStop(1, "rgba(12, 181, 201, 0)");
+          grad.addColorStop(0, `rgba(26, 168, 187, ${alpha * 0.3})`);
+          grad.addColorStop(1, "rgba(26, 168, 187, 0)");
           ctx!.beginPath();
           ctx!.arc(star.x, star.y, star.radius * 4, 0, Math.PI * 2);
           ctx!.fillStyle = grad;
@@ -137,7 +137,7 @@ export default function Starfield({ count = 150 }: { count?: number }) {
         const tailY = s.y - Math.sin(s.angle) * s.length;
 
         const grad = ctx!.createLinearGradient(tailX, tailY, s.x, s.y);
-        grad.addColorStop(0, "rgba(12, 181, 201, 0)");
+        grad.addColorStop(0, "rgba(26, 168, 187, 0)");
         grad.addColorStop(0.7, `rgba(200, 230, 255, ${s.opacity * 0.4})`);
         grad.addColorStop(1, `rgba(255, 255, 255, ${s.opacity * 0.9})`);
 

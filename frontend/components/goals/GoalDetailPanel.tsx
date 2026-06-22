@@ -163,8 +163,8 @@ export default function GoalDetailPanel({ goal, open, onOpenChange }: Props) {
                   <AreaChart data={chartData} margin={{ top: 5, right: 5, bottom: 0, left: 0 }}>
                     <defs>
                       <linearGradient id="projGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#0CB5C9" stopOpacity={0.3} />
-                        <stop offset="100%" stopColor="#0CB5C9" stopOpacity={0} />
+                        <stop offset="0%" stopColor="#1AA8BB" stopOpacity={0.3} />
+                        <stop offset="100%" stopColor="#1AA8BB" stopOpacity={0} />
                       </linearGradient>
                       <linearGradient id="contribGrad" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="0%" stopColor="#a1a1aa" stopOpacity={0.15} />
@@ -216,7 +216,7 @@ export default function GoalDetailPanel({ goal, open, onOpenChange }: Props) {
                     <Area
                       type="monotone"
                       dataKey="value"
-                      stroke="#0CB5C9"
+                      stroke="#1AA8BB"
                       strokeWidth={2}
                       fill="url(#projGrad)"
                       dot={false}

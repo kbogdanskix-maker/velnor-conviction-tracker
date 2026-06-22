@@ -167,7 +167,7 @@ export default function DailyDebrief() {
   // Loading state
   if (newsLoading) {
     return (
-      <FloatingCard glowColor="rgba(12, 181, 201, 0.06)">
+      <FloatingCard glowColor="rgba(26, 168, 187, 0.06)">
         <div className="p-5 space-y-3">
           <div className="flex items-center gap-2">
             <div className="skeleton h-4 w-4 rounded" />
@@ -190,7 +190,7 @@ export default function DailyDebrief() {
   const greeting = getDebriefGreeting(prefs.tone, debriefItems.length);
 
   return (
-    <FloatingCard glowColor="rgba(12, 181, 201, 0.08)">
+    <FloatingCard glowColor="rgba(26, 168, 187, 0.08)">
       <div className="p-5">
         {/* Header */}
         <div className="flex items-center justify-between mb-3">

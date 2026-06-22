@@ -13,8 +13,8 @@ const config: Config = {
       colors: {
         // Velnor brand palette — Instrument design system
         vela: {
-          teal: "#0CB5C9",        // primary accent — the ONLY brand accent (cyan-teal)
-          "teal-dim": "#0A97A8",  // hover state
+          teal: "#1AA8BB",        // primary accent — the ONLY brand accent (cyan-teal)
+          "teal-dim": "#157E8C",  // hover state
           bg: "#050A16",          // page background
           card: "#0B1322",        // solid card surface
           "card-hover": "#111A2E",// raised surface
@@ -82,8 +82,8 @@ const config: Config = {
         xs: "2px",
       },
       boxShadow: {
-        glow: "0 0 20px rgba(12, 181, 201, 0.15)",
-        "glow-lg": "0 0 40px rgba(12, 181, 201, 0.2)",
+        glow: "0 0 20px rgba(26, 168, 187, 0.15)",
+        "glow-lg": "0 0 40px rgba(26, 168, 187, 0.2)",
         "inner-glow": "inset 0 1px 0 rgba(255, 255, 255, 0.05)",
       },
     },

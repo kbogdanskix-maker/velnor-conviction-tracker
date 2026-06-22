@@ -295,7 +295,7 @@ export default function EmergencyFundPage() {
                       contentStyle={{ backgroundColor: "#18181b", border: "1px solid #27272a", borderRadius: 8, fontSize: 12 }}
                       formatter={(val: number) => [formatCurrency(val), "Saved"]}
                     />
-                    <ReferenceLine y={analysis.targetAmount} stroke="#0CB5C9" strokeDasharray="4 4" label={{ value: "Target", fill: "#0CB5C9", fontSize: 10, position: "right" }} />
+                    <ReferenceLine y={analysis.targetAmount} stroke="#1AA8BB" strokeDasharray="4 4" label={{ value: "Target", fill: "#1AA8BB", fontSize: 10, position: "right" }} />
                     <Bar dataKey="Saved" radius={[3, 3, 0, 0]} fill="#34d399" />
                   </BarChart>
                 </ResponsiveContainer>

@@ -25,7 +25,7 @@ const fmtB = (n: number) => {
   return formatCurrency(n);
 };
 
-const COLORS = ["#0CB5C9", "#f59e0b", "#a78bfa", "#f43f5e", "#38bdf8", "#84cc16"];
+const COLORS = ["#1AA8BB", "#f59e0b", "#a78bfa", "#f43f5e", "#38bdf8", "#84cc16"];
 
 interface StockData {
   ticker: string;

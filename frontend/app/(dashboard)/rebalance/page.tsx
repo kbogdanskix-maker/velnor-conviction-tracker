@@ -319,7 +319,7 @@ export default function RebalancePage() {
                 ]}
               />
               <Bar dataKey="current" fill="#71717a" radius={[4, 4, 0, 0]} name="current" />
-              <Bar dataKey="target" fill="rgb(12, 181, 201)" radius={[4, 4, 0, 0]} name="target" />
+              <Bar dataKey="target" fill="rgb(26, 168, 187)" radius={[4, 4, 0, 0]} name="target" />
             </BarChart>
           </ResponsiveContainer>
         </div>

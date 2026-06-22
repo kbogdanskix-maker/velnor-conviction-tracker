@@ -61,8 +61,8 @@ const PLANS: Plan[] = [
     yearlyPrice: 99.99,
     icon: Telescope,
     accent: "text-vela-teal",
-    glowFrom: "rgba(12, 181, 201,0.25)",
-    glowTo: "rgba(12, 181, 201,0.05)",
+    glowFrom: "rgba(26, 168, 187,0.25)",
+    glowTo: "rgba(26, 168, 187,0.05)",
     buttonClass: "bg-vela-teal hover:bg-teal-400 text-zinc-950 font-semibold",
     features: [
       "Everything in Horizon, plus:",

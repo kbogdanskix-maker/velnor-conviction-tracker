@@ -401,8 +401,8 @@ export default function DebtPayoffPage() {
             <AreaChart data={chartData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
               <defs>
                 <linearGradient id="gradAvalanche" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#0CB5C9" stopOpacity={0.3} />
-                  <stop offset="100%" stopColor="#0CB5C9" stopOpacity={0} />
+                  <stop offset="0%" stopColor="#1AA8BB" stopOpacity={0.3} />
+                  <stop offset="100%" stopColor="#1AA8BB" stopOpacity={0} />
                 </linearGradient>
                 <linearGradient id="gradSnowball" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="#f43f5e" stopOpacity={0.2} />
@@ -445,7 +445,7 @@ export default function DebtPayoffPage() {
                 type="monotone"
                 dataKey="avalanche"
                 name={strategiesDiffer ? "avalanche" : "Balance"}
-                stroke="#0CB5C9"
+                stroke="#1AA8BB"
                 fill="url(#gradAvalanche)"
                 strokeWidth={2}
               />

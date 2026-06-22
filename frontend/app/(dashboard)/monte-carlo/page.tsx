@@ -385,8 +385,8 @@ export default function MonteCarloPage() {
                         <stop offset="100%" stopColor="rgb(168, 85, 247)" stopOpacity={0.02} />
                       </linearGradient>
                       <linearGradient id="mcP50" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="rgb(12, 181, 201)" stopOpacity={0.25} />
-                        <stop offset="100%" stopColor="rgb(12, 181, 201)" stopOpacity={0.02} />
+                        <stop offset="0%" stopColor="rgb(26, 168, 187)" stopOpacity={0.25} />
+                        <stop offset="100%" stopColor="rgb(26, 168, 187)" stopOpacity={0.02} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgb(39, 39, 42)" />
@@ -415,7 +415,7 @@ export default function MonteCarloPage() {
                     <Area type="monotone" dataKey="p25" stackId="none" stroke="rgb(113, 113, 122)" strokeWidth={0.5} strokeDasharray="2 2" fill="none" />
 
                     {/* Median */}
-                    <Area type="monotone" dataKey="p50" stackId="none" stroke="rgb(12, 181, 201)" strokeWidth={2.5} fill="url(#mcP50)" />
+                    <Area type="monotone" dataKey="p50" stackId="none" stroke="rgb(26, 168, 187)" strokeWidth={2.5} fill="url(#mcP50)" />
 
                     {/* Zero line for withdrawal phase */}
                     {phase === "withdrawal" && (

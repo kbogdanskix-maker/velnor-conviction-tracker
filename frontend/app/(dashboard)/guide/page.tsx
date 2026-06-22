@@ -53,8 +53,8 @@ export default function GuidePage() {
             style={{
               width: `${percentComplete}%`,
               background: allDone
-                ? "linear-gradient(90deg, #34d399, #0CB5C9)"
-                : "linear-gradient(90deg, #0CB5C9, #6366f1)",
+                ? "linear-gradient(90deg, #34d399, #1AA8BB)"
+                : "linear-gradient(90deg, #1AA8BB, #6366f1)",
             }}
           />
         </div>
