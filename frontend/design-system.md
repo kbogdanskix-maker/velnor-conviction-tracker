@@ -25,6 +25,10 @@ Engineering manual* / *FT Weekend* than *Linear clone #4,000*.
 
 **Signature motifs** (use these to make any surface unmistakably Velnor):
 - **Mono eyebrow labels** — JetBrains Mono, 11px, uppercase, `letter-spacing: .16em`, teal or muted.
+  **Ration them.** An eyebrow above *every* card/section is a templated AI tell — the single most
+  over-used slop pattern. Use eyebrows for genuine section/group headers and key figures, not reflexively
+  on every element. If a heading reads fine alone, drop the eyebrow. (In-app cockpit density tolerates more
+  functional labels than a landing page, but the discipline still applies.)
 - **Hairline rules** — 1px low-alpha dividers separating sections instead of cards-in-cards.
 - **Tabular figures everywhere** — all money/percentages in JetBrains Mono, `tabular-nums`.
 - **Bearing/heading framing** — navigation language for state ("set your bearing", "the read").
@@ -127,6 +131,16 @@ glow. 21st supplies the mechanics; this file governs the feel. The one place mot
 to be a *showpiece* is the landing celestial interaction (see §1) — that respects reduced-motion
 but can be richer than in-app micro-motion.
 
+**Motion rules of thumb** (from the taste-skill, the authority for the landing/marketing surfaces):
+- **Motion must be motivated** — every animation communicates hierarchy, sequence, feedback, or a state
+  change. "It looked cool" is not a reason. If you can't name the reason in one sentence, cut it.
+- Animate **transform/opacity only**; never `top/left/width/height`. Drive continuous values (scroll,
+  pointer) with motion values, never React `useState`.
+- Prefer importing from **`motion/react`** in new code (`framer-motion` is the legacy alias we currently
+  use — fine, but migrate new work).
+- Full-height sections use **`min-h-[100dvh]`**, never `h-screen` (prevents mobile address-bar jump).
+- One marquee per page max; reduced-motion collapses every loop/parallax/scroll-hijack to static.
+
 ---
 
 ## 6. Component Conventions
@@ -167,6 +181,18 @@ hero illustrations that don't carry data.
 - ❌ Hover card-lift (`translateY`/scale); springy framer-motion bounces.
 - ❌ Emoji as icons (use a single consistent outline icon set).
 - ❌ Emerald/rose as decoration (semantic P&L only).
+- ❌ **Em-dashes (`—`) and en-dashes (`–`) in any visible UI copy.** Use a period, comma, colon, or a
+  spaced hyphen ` - `. (This is the #1 AI-writing tell. Applies to labels, headings, body, buttons,
+  empty states — everywhere a user reads. This `.md` is internal, so it doesn't count.)
+- ❌ **Middle-dot `·` as a default separator** — max one per line in a metadata strip; don't chain
+  `a · b · c · d`. Prefer hairlines, columns, or line breaks.
+- ❌ **Decorative status dots** (a coloured dot before every nav item / row / badge). Allowed only when
+  the dot encodes real state (live indicator, availability), used sparingly.
+- ❌ **Eyebrow above every section** (see §1 — ration them).
+- ❌ Hand-rolled SVG icon paths — use the project's lucide set (one family). The brand mark
+  (`VelnorMark`) is the allowed exception: a single, simple, intentional geometric mark.
+- ❌ Fake-perfect / fake-precise numbers in mockups & empty states (`99.99%`, `$1,234,567`,
+  "Jane Doe", "Acme") — use realistic, slightly-messy sample data.
 
 ---
 
@@ -228,6 +254,12 @@ These are the bugs that keep biting Velnor. Every phase must verify them on the 
 - **2026-06-22** — Initial system. Direction: "Instrument" (anti-slop). Display = Bricolage
   Grotesque (working pick; Chakra Petch / Clash Display documented as swaps). Teal as sole
   accent; glass/glow/indigo/rounded-2xl retired.
+- **2026-06-22** — Audited the system against the installed **taste-skill** (anti-slop frontend). Most of
+  our system validated (sans display, single accent, no glass/glow, hairlines-over-cards). Tightened real
+  slop risks it surfaced: **ration eyebrows** (§1 — eyebrow-on-everything is the #1 AI tell), banned
+  **em/en-dashes**, **`·` overuse**, and **decorative status dots** in UI copy (§8), and added motion
+  rules of thumb (§5: motivated-only, `motion/react`, `min-h-[100dvh]`). taste-skill is the authority for
+  the **landing/marketing** surfaces (Phase 4); our system governs the **app**.
 - **2026-06-22** — Consistency fixes: flagship FloatingCard glows de-indigo'd → teal; health-score
   grade backgrounds gradient → solid tint; command-palette overlay de-glowed (blur kept, glow/ring dropped).
 - **2026-06-22** — Accent shifted teal `#14B8A6` → **cyan-teal `#0CB5C9`** (slightly bluer), app-wide
