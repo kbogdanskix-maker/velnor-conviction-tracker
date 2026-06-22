@@ -164,7 +164,7 @@ export default function CommandPalette() {
           {/* Palette */}
           <div className="fixed inset-x-0 top-[15%] z-[61] mx-auto w-full max-w-lg px-4">
             <motion.div
-              className="bg-zinc-900/80 backdrop-blur-xl border border-white/[0.08] rounded-2xl shadow-[0_25px_60px_-12px_rgba(0,0,0,0.7),0_0_40px_-8px_rgba(12, 181, 201,0.08)] overflow-hidden ring-1 ring-vela-teal/10"
+              className="bg-vela-card/95 backdrop-blur-md border border-vela-border rounded-lg shadow-[0_24px_60px_-12px_rgba(0,0,0,0.7)] overflow-hidden"
               initial={{ opacity: 0, scale: 0.95, y: -10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.97, y: -8 }}
