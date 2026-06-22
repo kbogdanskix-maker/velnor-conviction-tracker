@@ -3,7 +3,6 @@ import { createServerClient } from "@/lib/supabase-server";
 import Sidebar from "@/components/shared/Sidebar";
 import CommandPalette from "@/components/shared/CommandPalette";
 import Starfield from "@/components/celestial/Starfield";
-import AmbientBackground from "@/components/celestial/AmbientBackground";
 import SplashScreen from "@/components/celestial/SplashScreen";
 import Providers from "@/components/shared/Providers";
 
@@ -19,9 +18,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
     <Providers>
       <SplashScreen>
         <div className="flex min-h-screen bg-vela-bg atmospheric-bg noise-overlay">
-          {/* Celestial background layers */}
-          <AmbientBackground />
-          <Starfield count={100} />
+          {/* Celestial backdrop: animated teal aurora (.atmospheric-bg) + subtle starfield */}
+          <Starfield count={70} />
 
           <Sidebar />
           <main className="flex-1 min-w-0 overflow-auto pt-14 md:pt-0 relative z-10">
