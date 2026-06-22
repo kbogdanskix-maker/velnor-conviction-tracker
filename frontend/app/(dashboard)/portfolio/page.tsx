@@ -94,7 +94,7 @@ export default function PortfolioPage() {
         <EmptyPortfolio onAddTrade={handleAddTrade} />
       ) : summary ? (
         <>
-          <FloatingCard glowColor="rgba(20, 184, 166, 0.15)" tilt={false}>
+          <FloatingCard glowColor="rgba(12, 181, 201, 0.15)" tilt={false}>
             <PnLSummary summary={summary} />
           </FloatingCard>
 

@@ -412,8 +412,8 @@ export default function DCFPage() {
                       <AreaChart data={fcfChartData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
                         <defs>
                           <linearGradient id="gradFCF" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="#14b8a6" stopOpacity={0.25} />
-                            <stop offset="100%" stopColor="#14b8a6" stopOpacity={0} />
+                            <stop offset="0%" stopColor="#0CB5C9" stopOpacity={0.25} />
+                            <stop offset="100%" stopColor="#0CB5C9" stopOpacity={0} />
                           </linearGradient>
                           <linearGradient id="gradPV" x1="0" y1="0" x2="0" y2="1">
                             <stop offset="0%" stopColor="#71717a" stopOpacity={0.15} />
@@ -428,7 +428,7 @@ export default function DCFPage() {
                           labelStyle={{ color: "#a1a1aa" }}
                         />
                         <Area type="monotone" dataKey="pv" stroke="#71717a" fill="url(#gradPV)" strokeWidth={1.5} strokeDasharray="4 4" />
-                        <Area type="monotone" dataKey="fcf" stroke="#14b8a6" fill="url(#gradFCF)" strokeWidth={2} />
+                        <Area type="monotone" dataKey="fcf" stroke="#0CB5C9" fill="url(#gradFCF)" strokeWidth={2} />
                       </AreaChart>
                     </ResponsiveContainer>
                   </div>

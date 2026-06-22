@@ -453,8 +453,8 @@ export default function WhatIfPage() {
                   <AreaChart data={(impact as any).chartData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
                     <defs>
                       <linearGradient id="gradValue" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#14b8a6" stopOpacity={0.3} />
-                        <stop offset="100%" stopColor="#14b8a6" stopOpacity={0} />
+                        <stop offset="0%" stopColor="#0CB5C9" stopOpacity={0.3} />
+                        <stop offset="100%" stopColor="#0CB5C9" stopOpacity={0} />
                       </linearGradient>
                       <linearGradient id="gradContrib" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="0%" stopColor="#71717a" stopOpacity={0.2} />
@@ -469,7 +469,7 @@ export default function WhatIfPage() {
                       labelStyle={{ color: "#a1a1aa" }}
                     />
                     <Area type="monotone" dataKey="contributed" stroke="#71717a" fill="url(#gradContrib)" strokeWidth={1.5} strokeDasharray="4 4" />
-                    <Area type="monotone" dataKey="value" stroke="#14b8a6" fill="url(#gradValue)" strokeWidth={2} />
+                    <Area type="monotone" dataKey="value" stroke="#0CB5C9" fill="url(#gradValue)" strokeWidth={2} />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>

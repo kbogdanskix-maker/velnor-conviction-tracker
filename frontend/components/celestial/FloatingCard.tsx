@@ -22,7 +22,7 @@ interface FloatingCardProps {
 export default function FloatingCard({
   children,
   className = "",
-  glowColor = "rgba(20, 184, 166, 0.12)",
+  glowColor = "rgba(12, 181, 201, 0.12)",
   pressable = false,
   delay = 0,
   onClick,
@@ -57,7 +57,7 @@ export default function FloatingCard({
         <div
           className="absolute top-0 left-0 right-0 h-px opacity-0 group-hover:opacity-100 transition-opacity duration-500"
           style={{
-            background: "linear-gradient(90deg, transparent 0%, rgba(20,184,166,0.3) 50%, transparent 100%)",
+            background: "linear-gradient(90deg, transparent 0%, rgba(12, 181, 201,0.3) 50%, transparent 100%)",
           }}
         />
         {children}

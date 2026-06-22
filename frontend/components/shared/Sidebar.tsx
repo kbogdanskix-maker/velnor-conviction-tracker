@@ -8,6 +8,7 @@ import { createBrowserClient } from "@/lib/supabase-browser";
 import { useRouter } from "next/navigation";
 import { useAdmin } from "@/contexts/AdminContext";
 import { useProfile } from "@/hooks/useProfile";
+import VelnorMark from "@/components/shared/VelnorMark";
 import {
   LayoutDashboard, PieChart, Eye, BarChart2, TrendingUp, TrendingDown,
   FileText, BookOpen, Newspaper, Globe, ChevronLeft, ChevronRight, ChevronDown,
@@ -213,9 +214,7 @@ export default function Sidebar() {
           <Menu className="w-5 h-5" />
         </button>
         <Link href="/dashboard" className="flex items-center gap-2 ml-3 group">
-          <div className="w-6 h-6 rounded-md bg-vela-teal/15 border border-vela-teal/30 flex items-center justify-center">
-            <span className="text-xs font-display font-extrabold text-vela-teal leading-none">V</span>
-          </div>
+          <VelnorMark className="w-6 h-6 text-vela-teal shrink-0" />
           <span className="text-lg font-display font-bold tracking-tight">
             <span className="text-vela-teal">V</span>
             <span className="text-zinc-100">elnor</span>
@@ -255,9 +254,7 @@ export default function Sidebar() {
         <div className="flex items-center justify-between h-14 px-4 border-b border-vela-border">
           {showLabels ? (
             <Link href="/dashboard" className="flex items-center gap-2 group">
-              <div className="w-7 h-7 rounded-lg bg-vela-teal/15 border border-vela-teal/30 flex items-center justify-center">
-                <span className="text-sm font-display font-extrabold text-vela-teal leading-none">V</span>
-              </div>
+              <VelnorMark className="w-7 h-7 text-vela-teal shrink-0" />
               <span className="text-xl font-display font-bold tracking-tight">
                 <span className="text-vela-teal">V</span>
                 <span className="text-zinc-100">elnor</span>
@@ -265,9 +262,7 @@ export default function Sidebar() {
             </Link>
           ) : (
             <Link href="/dashboard" className="mx-auto group">
-              <div className="w-7 h-7 rounded-lg bg-vela-teal/15 border border-vela-teal/30 flex items-center justify-center">
-                <span className="text-sm font-display font-extrabold text-vela-teal leading-none">V</span>
-              </div>
+              <VelnorMark className="w-7 h-7 text-vela-teal shrink-0" />
             </Link>
           )}
           <button

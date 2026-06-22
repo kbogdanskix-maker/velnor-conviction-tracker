@@ -501,8 +501,8 @@ export default function FinancialIndependencePage() {
                   <AreaChart data={fi.projectionData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
                     <defs>
                       <linearGradient id="fiGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="rgb(20, 184, 166)" stopOpacity={0.3} />
-                        <stop offset="100%" stopColor="rgb(20, 184, 166)" stopOpacity={0} />
+                        <stop offset="0%" stopColor="rgb(12, 181, 201)" stopOpacity={0.3} />
+                        <stop offset="100%" stopColor="rgb(12, 181, 201)" stopOpacity={0} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgb(39, 39, 42)" />
@@ -523,7 +523,7 @@ export default function FinancialIndependencePage() {
                     <Area
                       type="monotone"
                       dataKey="netWorth"
-                      stroke="rgb(20, 184, 166)"
+                      stroke="rgb(12, 181, 201)"
                       strokeWidth={2}
                       fill="url(#fiGrad)"
                       animationDuration={1200}

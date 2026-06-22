@@ -164,7 +164,7 @@ function ContextPanel() {
         <div className="bg-[#0f0f0f] border border-[#161616] rounded-[9px] p-2.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5">
-              <div className="w-[5px] h-[5px] rounded-full bg-teal-500 shadow-[0_0_6px_#14b8a660]" />
+              <div className="w-[5px] h-[5px] rounded-full bg-teal-500 shadow-[0_0_6px_#0CB5C960]" />
               <span className="text-[12px] text-zinc-300">Thesis notes</span>
             </div>
             <Link href="/thesis" className="text-[10px] text-teal-500 hover:text-teal-400 transition-colors">
@@ -239,7 +239,7 @@ function MessageBubble({ msg }: { msg: ChatMessage }) {
     <div className={`flex gap-2.5 max-w-[88%] ${msg.role === "user" ? "ml-auto flex-row-reverse" : ""}`}>
       <div className={`w-[25px] h-[25px] min-w-[25px] rounded-full flex items-center justify-center text-[10px] font-semibold mt-0.5 shrink-0 ${
         msg.role === "assistant"
-          ? "bg-gradient-to-br from-teal-600 to-indigo-500 text-white shadow-[0_0_10px_#14b8a628]"
+          ? "bg-gradient-to-br from-teal-600 to-indigo-500 text-white shadow-[0_0_10px_#0CB5C928]"
           : "bg-zinc-900 text-zinc-500 border border-zinc-800"
       }`}>
         {msg.role === "assistant" ? "V" : ""}
@@ -260,7 +260,7 @@ function MessageBubble({ msg }: { msg: ChatMessage }) {
 function TypingIndicator() {
   return (
     <div className="flex gap-2.5 max-w-[88%]">
-      <div className="w-[25px] h-[25px] min-w-[25px] rounded-full flex items-center justify-center bg-gradient-to-br from-teal-600 to-indigo-500 text-white text-[10px] font-semibold shadow-[0_0_10px_#14b8a628] shrink-0">V</div>
+      <div className="w-[25px] h-[25px] min-w-[25px] rounded-full flex items-center justify-center bg-gradient-to-br from-teal-600 to-indigo-500 text-white text-[10px] font-semibold shadow-[0_0_10px_#0CB5C928] shrink-0">V</div>
       <div className="px-3.5 py-3 rounded-[13px] rounded-tl-[4px] bg-[#0f0f0f] border border-[#181818]">
         <div className="flex gap-1 items-center h-[14px]">
           {[0, 1, 2].map((i) => (
@@ -404,12 +404,12 @@ export default function ReflectPage() {
       `}</style>
 
       {/* Shell */}
-      <div className="flex-1 flex flex-col border border-zinc-900 rounded-xl overflow-hidden shadow-[0_0_0_1px_#ffffff06,0_32px_64px_-16px_#000000cc,0_0_120px_-40px_#14b8a612] min-h-0">
+      <div className="flex-1 flex flex-col border border-zinc-900 rounded-xl overflow-hidden shadow-[0_0_0_1px_#ffffff06,0_32px_64px_-16px_#000000cc,0_0_120px_-40px_#0CB5C912] min-h-0">
 
         {/* Top bar */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-900 bg-gradient-to-b from-zinc-950 to-transparent shrink-0">
           <div className="flex items-center gap-2">
-            <div className="w-[7px] h-[7px] rounded-full bg-teal-500 shadow-[0_0_10px_#14b8a670]" />
+            <div className="w-[7px] h-[7px] rounded-full bg-teal-500 shadow-[0_0_10px_#0CB5C970]" />
             <span className="text-[14px] font-semibold text-zinc-100 tracking-tight">Reflect</span>
           </div>
           <div className="flex items-center gap-3">
@@ -440,13 +440,13 @@ export default function ReflectPage() {
           {/* Chat area */}
           <div className="flex-1 flex flex-col min-w-0 relative">
             {/* Ambient glow */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-[radial-gradient(ellipse_at_top_right,#14b8a609_0%,transparent_70%)] pointer-events-none" />
+            <div className="absolute top-0 right-0 w-64 h-64 bg-[radial-gradient(ellipse_at_top_right,#0CB5C909_0%,transparent_70%)] pointer-events-none" />
 
             {/* Messages */}
             <div className="flex-1 overflow-y-auto px-4 pt-5 pb-2 flex flex-col gap-4 relative z-10">
               {messages.length === 0 && !streaming && (
                 <div className="flex-1 flex flex-col items-center justify-center text-center px-6 py-10 gap-5">
-                  <div className="w-11 h-11 rounded-full bg-gradient-to-br from-teal-600 to-indigo-500 flex items-center justify-center text-white text-[15px] font-semibold shadow-[0_0_18px_#14b8a633]">
+                  <div className="w-11 h-11 rounded-full bg-gradient-to-br from-teal-600 to-indigo-500 flex items-center justify-center text-white text-[15px] font-semibold shadow-[0_0_18px_#0CB5C933]">
                     V
                   </div>
                   <div className="max-w-md space-y-1.5">
@@ -507,7 +507,7 @@ export default function ReflectPage() {
               <button
                 onClick={() => handleSend()}
                 disabled={!input.trim() || streaming}
-                className="w-[34px] h-[34px] bg-teal-500 hover:bg-teal-400 disabled:bg-zinc-800 disabled:text-zinc-600 rounded-[8px] flex items-center justify-center transition-colors shrink-0 shadow-[0_0_14px_#14b8a628] disabled:shadow-none"
+                className="w-[34px] h-[34px] bg-teal-500 hover:bg-teal-400 disabled:bg-zinc-800 disabled:text-zinc-600 rounded-[8px] flex items-center justify-center transition-colors shrink-0 shadow-[0_0_14px_#0CB5C928] disabled:shadow-none"
               >
                 <Send className="w-[14px] h-[14px] text-white" />
               </button>

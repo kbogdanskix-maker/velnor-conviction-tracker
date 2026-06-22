@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import VelnorMark from "@/components/shared/VelnorMark";
 
 
 /**
@@ -50,7 +51,7 @@ export default function SplashScreen({ children }: { children: React.ReactNode }
               style={{
                 width: 300,
                 height: 300,
-                background: "radial-gradient(circle, rgba(20,184,166,0.12) 0%, transparent 70%)",
+                background: "radial-gradient(circle, rgba(12, 181, 201,0.12) 0%, transparent 70%)",
               }}
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: [0, 1.5, 1.2], opacity: [0, 0.8, 0.5] }}
@@ -84,9 +85,7 @@ export default function SplashScreen({ children }: { children: React.ReactNode }
               transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
               className="relative z-10"
             >
-              <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center shadow-2xl shadow-teal-500/30">
-                <span className="text-5xl font-display font-black text-zinc-950 leading-none">V</span>
-              </div>
+              <VelnorMark className="w-28 h-20 text-vela-teal" />
             </motion.div>
 
             {/* Wordmark */}

@@ -164,7 +164,7 @@ export default function CommandPalette() {
           {/* Palette */}
           <div className="fixed inset-x-0 top-[15%] z-[61] mx-auto w-full max-w-lg px-4">
             <motion.div
-              className="bg-zinc-900/80 backdrop-blur-xl border border-white/[0.08] rounded-2xl shadow-[0_25px_60px_-12px_rgba(0,0,0,0.7),0_0_40px_-8px_rgba(20,184,166,0.08)] overflow-hidden ring-1 ring-vela-teal/10"
+              className="bg-zinc-900/80 backdrop-blur-xl border border-white/[0.08] rounded-2xl shadow-[0_25px_60px_-12px_rgba(0,0,0,0.7),0_0_40px_-8px_rgba(12, 181, 201,0.08)] overflow-hidden ring-1 ring-vela-teal/10"
               initial={{ opacity: 0, scale: 0.95, y: -10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.97, y: -8 }}
@@ -206,7 +206,7 @@ export default function CommandPalette() {
                         transition={{ delay: i * 0.02, duration: 0.2 }}
                         className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-all duration-150 ${
                           isSelected
-                            ? "bg-vela-teal/10 text-vela-teal shadow-[inset_2px_0_0_0_rgb(20,184,166)]"
+                            ? "bg-vela-teal/10 text-vela-teal shadow-[inset_2px_0_0_0_rgb(12, 181, 201)]"
                             : "text-zinc-300 hover:bg-white/[0.03]"
                         }`}
                       >

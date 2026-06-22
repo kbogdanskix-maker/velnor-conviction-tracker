@@ -118,7 +118,7 @@ export default function DashboardPage() {
       ) : (
         <>
           <MotionSection>
-            <FloatingCard glowColor="rgba(20, 184, 166, 0.15)" tilt={false}>
+            <FloatingCard glowColor="rgba(12, 181, 201, 0.15)" tilt={false}>
               <PnLSummary summary={summary} />
             </FloatingCard>
           </MotionSection>
@@ -126,7 +126,7 @@ export default function DashboardPage() {
           {nwSummary && (
             <MotionSection className="grid grid-cols-3 gap-3">
               {[
-                { label: "Net Worth", raw: nwSummary.net_worth, color: "text-vela-teal", href: "/net-worth", glow: "rgba(20, 184, 166, 0.12)" },
+                { label: "Net Worth", raw: nwSummary.net_worth, color: "text-vela-teal", href: "/net-worth", glow: "rgba(12, 181, 201, 0.12)" },
                 { label: "Assets", raw: nwSummary.total_assets, color: "text-zinc-100", href: "/net-worth", glow: "rgba(99, 102, 241, 0.10)" },
                 { label: "Liabilities", raw: nwSummary.total_liabilities, color: "text-loss", href: "/net-worth", glow: "rgba(244, 63, 94, 0.10)" },
               ].map((stat, i) => (
@@ -137,7 +137,7 @@ export default function DashboardPage() {
                       value={stat.raw}
                       format={shortCurrency}
                       duration={1000}
-                      className={`text-sm sm:text-lg font-bold tabular ${stat.color} group-hover:drop-shadow-[0_0_12px_rgba(20,184,166,0.3)] transition-all duration-300`}
+                      className={`text-sm sm:text-lg font-bold tabular ${stat.color} group-hover:drop-shadow-[0_0_12px_rgba(12, 181, 201,0.3)] transition-all duration-300`}
                     />
                   </Link>
                 </FloatingCard>
@@ -190,7 +190,7 @@ export default function DashboardPage() {
           )}
 
           <MotionSection className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <FloatingCard className="lg:col-span-2" glowColor="rgba(20, 184, 166, 0.08)" tilt={false}>
+            <FloatingCard className="lg:col-span-2" glowColor="rgba(12, 181, 201, 0.08)" tilt={false}>
               <div className="p-5 space-y-2">
                 <h2 className="section-heading">Holdings</h2>
                 <HoldingsTable
@@ -320,7 +320,7 @@ export default function DashboardPage() {
             </FloatingCard>
           )}
           {goals.length > 0 && (
-            <FloatingCard glowColor="rgba(20, 184, 166, 0.08)" pressable>
+            <FloatingCard glowColor="rgba(12, 181, 201, 0.08)" pressable>
             <Link href="/goals" className="block group p-5">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
@@ -379,7 +379,7 @@ export default function DashboardPage() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {newsArticles.slice(0, 3).map((a, i) => (
-                <FloatingCard key={a.url} delay={i * 0.08} glowColor="rgba(20, 184, 166, 0.06)" pressable>
+                <FloatingCard key={a.url} delay={i * 0.08} glowColor="rgba(12, 181, 201, 0.06)" pressable>
                   <div className="p-4">
                     <NewsCard article={a} compact />
                   </div>
@@ -454,7 +454,7 @@ function EmptyPortfolio() {
         <div className="relative">
           <motion.div
             className="absolute -inset-8 rounded-full"
-            style={{ background: "radial-gradient(circle, rgba(20,184,166,0.2) 0%, transparent 70%)" }}
+            style={{ background: "radial-gradient(circle, rgba(12, 181, 201,0.2) 0%, transparent 70%)" }}
             animate={{ scale: [1, 1.4, 1], opacity: [0.4, 1, 0.4] }}
             transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
           />

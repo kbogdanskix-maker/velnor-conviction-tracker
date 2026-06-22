@@ -11,7 +11,7 @@ interface Props {
 }
 
 const COLORS = [
-  "#14b8a6", // teal-500
+  "#0CB5C9", // teal-500
   "#34d399", // emerald-400
   "#60a5fa", // blue-400
   "#a78bfa", // violet-400

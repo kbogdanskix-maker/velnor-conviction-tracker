@@ -62,8 +62,8 @@ function WindCurrents() {
     >
       <defs>
         <linearGradient id="wind" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor="#14b8a6" stopOpacity="0" />
-          <stop offset="45%" stopColor="#14b8a6" stopOpacity="0.55" />
+          <stop offset="0%" stopColor="#0CB5C9" stopOpacity="0" />
+          <stop offset="45%" stopColor="#0CB5C9" stopOpacity="0.55" />
           <stop offset="100%" stopColor="#34d399" stopOpacity="0" />
         </linearGradient>
       </defs>
@@ -263,7 +263,7 @@ function BearingDemo() {
 
       {/* the read */}
       <div className="mt-4 flex gap-3">
-        <div className="w-7 h-7 min-w-7 rounded-full bg-gradient-to-br from-teal-600 to-indigo-500 flex items-center justify-center text-white text-[11px] font-semibold mt-0.5 shadow-[0_0_12px_#14b8a633]">
+        <div className="w-7 h-7 min-w-7 rounded-full bg-gradient-to-br from-teal-600 to-indigo-500 flex items-center justify-center text-white text-[11px] font-semibold mt-0.5 shadow-[0_0_12px_#0CB5C933]">
           V
         </div>
         <p key={b.key} className="bearing-reply text-[13.5px] leading-relaxed text-zinc-300">
@@ -378,7 +378,7 @@ export default function LandingPage() {
           {/* hero stage — slot for the show-stopper animation; minimal guiding-star placeholder for now */}
           <Reveal delay={200} className="relative hidden lg:block">
             <div className="relative h-[440px]">
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_60%_45%,#14b8a610_0%,transparent_65%)]" />
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_60%_45%,#0CB5C910_0%,transparent_65%)]" />
               <HeroVoyage />
               <div className="absolute left-2 top-6 font-mono text-[10px] text-zinc-600 tabular-nums z-10">N 41.2°</div>
               <div className="absolute left-0 bottom-8 font-mono text-[10px] text-zinc-600 tabular-nums z-10">↑ in motion</div>
@@ -417,7 +417,7 @@ export default function LandingPage() {
           {/* the merge node */}
           <Reveal delay={160} className="flex md:flex-col items-center justify-center gap-2">
             <div className="hidden md:block w-px h-12 bg-gradient-to-b from-transparent to-vela-teal/40" />
-            <div className="w-12 h-12 rounded-xl bg-vela-teal/15 border border-vela-teal/40 flex items-center justify-center text-vela-teal shadow-[0_0_24px_#14b8a633] shrink-0">
+            <div className="w-12 h-12 rounded-xl bg-vela-teal/15 border border-vela-teal/40 flex items-center justify-center text-vela-teal shadow-[0_0_24px_#0CB5C933] shrink-0">
               {icons.compass}
             </div>
             <div className="hidden md:block w-px h-12 bg-gradient-to-b from-vela-teal/40 to-transparent" />
@@ -460,7 +460,7 @@ export default function LandingPage() {
         <div className="relative">
           {/* charted course line */}
           <svg className="absolute left-[19px] md:left-1/2 md:-translate-x-1/2 top-2 bottom-2 h-[calc(100%-1rem)] w-6 z-0" viewBox="0 0 8 600" preserveAspectRatio="none" aria-hidden>
-            <path d="M4 0 L4 600" stroke="#14b8a6" strokeOpacity="0.3" strokeWidth="1.4" strokeDasharray="2 7" strokeLinecap="round" />
+            <path d="M4 0 L4 600" stroke="#0CB5C9" strokeOpacity="0.3" strokeWidth="1.4" strokeDasharray="2 7" strokeLinecap="round" />
           </svg>
 
           <div className="space-y-5 relative z-10">
@@ -472,8 +472,8 @@ export default function LandingPage() {
               <Reveal key={w.title} delay={i * 90}>
                 <div className="flex gap-4 md:gap-6 md:even:flex-row-reverse md:text-right md:even:text-left">
                   <div className="relative shrink-0">
-                    <div className="w-10 h-10 rounded-full bg-vela-bg border border-vela-teal/40 flex items-center justify-center shadow-[0_0_18px_#14b8a626]">
-                      <span className="w-2 h-2 rounded-full bg-vela-teal shadow-[0_0_8px_#14b8a6]" />
+                    <div className="w-10 h-10 rounded-full bg-vela-bg border border-vela-teal/40 flex items-center justify-center shadow-[0_0_18px_#0CB5C926]">
+                      <span className="w-2 h-2 rounded-full bg-vela-teal shadow-[0_0_8px_#0CB5C9]" />
                     </div>
                   </div>
                   <div className="vela-card flex-1 md:max-w-[440px]">

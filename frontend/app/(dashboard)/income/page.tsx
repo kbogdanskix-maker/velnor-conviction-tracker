@@ -16,7 +16,7 @@ import ErrorState from "@/components/shared/ErrorState";
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 const STREAM_COLORS: Record<string, string> = {
-  salary: "#14b8a6",       // teal
+  salary: "#0CB5C9",       // teal
   freelance: "#22d3ee",    // cyan
   rental: "#a78bfa",       // purple
   dividends: "#34d399",    // emerald

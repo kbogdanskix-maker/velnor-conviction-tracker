@@ -113,7 +113,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Personal */}
-      <FloatingCard glowColor="rgba(20,184,166,0.08)" tilt={false}>
+      <FloatingCard glowColor="rgba(12, 181, 201,0.08)" tilt={false}>
         <div className="flex items-center gap-2 mb-5">
           <Users className="w-4 h-4 text-teal-400" />
           <h2 className="text-sm font-semibold text-zinc-200 uppercase tracking-wider">Personal</h2>

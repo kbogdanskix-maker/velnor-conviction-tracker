@@ -12,8 +12,8 @@ export default function ConstellationLines() {
     >
       <defs>
         <linearGradient id="constellation-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#14b8a6" />
-          <stop offset="100%" stopColor="#14b8a6" stopOpacity="0" />
+          <stop offset="0%" stopColor="#0CB5C9" />
+          <stop offset="100%" stopColor="#0CB5C9" stopOpacity="0" />
         </linearGradient>
       </defs>
       {/* Velnor constellation approximate pattern */}
@@ -24,7 +24,7 @@ export default function ConstellationLines() {
         <line x1="22%" y1="35%" x2="35%" y2="30%" />
         <line x1="35%" y1="30%" x2="40%" y2="45%" />
       </g>
-      <g fill="#14b8a6" fillOpacity="0.6">
+      <g fill="#0CB5C9" fillOpacity="0.6">
         <circle cx="15%" cy="20%" r="2" />
         <circle cx="22%" cy="35%" r="2.5" />
         <circle cx="18%" cy="55%" r="1.5" />

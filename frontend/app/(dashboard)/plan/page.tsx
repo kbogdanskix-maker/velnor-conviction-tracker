@@ -252,7 +252,7 @@ export default function PlanPage() {
       <TierGate requiredTier="voyager">
       {/* Empty state */}
       {!planText && !generating && !error && (
-        <FloatingCard glowColor="rgba(20,184,166,0.08)" tilt={false}>
+        <FloatingCard glowColor="rgba(12, 181, 201,0.08)" tilt={false}>
           <div className="text-center py-12 space-y-4">
             <div className="w-16 h-16 rounded-2xl bg-teal-500/10 flex items-center justify-center mx-auto">
               <Sparkles className="w-8 h-8 text-teal-400" />

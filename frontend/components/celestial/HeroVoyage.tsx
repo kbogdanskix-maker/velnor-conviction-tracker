@@ -22,7 +22,7 @@ export default function HeroVoyage() {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
-    const TEAL = "20,184,166";
+    const TEAL = "12, 181, 201";
     const BRIGHT = "94,234,212";
     const EMER = "52,211,153";
 

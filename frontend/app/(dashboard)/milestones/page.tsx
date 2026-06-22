@@ -148,7 +148,7 @@ export default function MilestonesPage() {
               <circle cx="50" cy="50" r="42" fill="none" stroke="#27272a" strokeWidth="8" />
               <circle
                 cx="50" cy="50" r="42" fill="none"
-                stroke="#14b8a6" strokeWidth="8"
+                stroke="#0CB5C9" strokeWidth="8"
                 strokeDasharray={`${progressPct * 2.64} ${264 - progressPct * 2.64}`}
                 strokeLinecap="round"
               />
@@ -236,9 +236,9 @@ export default function MilestonesPage() {
                         animate={isLatestUnlock ? {
                           scale: [1, 1.03, 1],
                           boxShadow: [
-                            "0 0 0px rgba(20,184,166,0)",
-                            "0 0 20px rgba(20,184,166,0.3)",
-                            "0 0 0px rgba(20,184,166,0)",
+                            "0 0 0px rgba(12, 181, 201,0)",
+                            "0 0 20px rgba(12, 181, 201,0.3)",
+                            "0 0 0px rgba(12, 181, 201,0)",
                           ],
                         } : undefined}
                         transition={isLatestUnlock ? {

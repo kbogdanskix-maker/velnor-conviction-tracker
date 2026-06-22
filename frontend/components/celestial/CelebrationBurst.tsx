@@ -15,7 +15,7 @@ interface Particle {
 }
 
 const COLORS = [
-  "#14b8a6", // teal-500
+  "#0CB5C9", // teal-500
   "#34d399", // emerald-400
   "#fbbf24", // amber-400
   "#a78bfa", // violet-400

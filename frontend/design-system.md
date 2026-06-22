@@ -77,14 +77,15 @@ One brand accent. Teal. That's it. Everything else is a neutral or a semantic si
 | Text primary | `zinc-100` | `#F4F5F7` |
 | Text muted | `vela-muted` | `#8A97AC` |
 | Text faint | `vela-subtle` | `#5A6678` |
-| **Accent (only)** | `vela-teal` | `#14B8A6` |
-| Accent hover | `vela-teal-dim` | `#0D9488` |
+| **Accent (only)** | `vela-teal` | `#0CB5C9` |
+| Accent hover | `vela-teal-dim` | `#0A97A8` |
 | Gain (semantic) | `gain` | `#34D399` |
 | Loss (semantic) | `loss` | `#F43F5E` |
 | Warning (semantic) | `amber` | `#F59E0B` |
 
 **Rules:**
-- Teal is the **single** decorative/brand accent. Gain/loss/warning are **semantic only** —
+- The accent is a **cyan-teal `#0CB5C9`** (slightly blue) — the token is still named `vela-teal`.
+  It is the **single** decorative/brand accent. Gain/loss/warning are **semantic only** —
   never use emerald or rose as decoration.
 - Functional color always pairs with text or an icon — never color alone.
 - Contrast: body text ≥ 4.5:1, large/figures ≥ 3:1, on the dark surfaces above.
@@ -227,6 +228,10 @@ These are the bugs that keep biting Velnor. Every phase must verify them on the 
 - **2026-06-22** — Initial system. Direction: "Instrument" (anti-slop). Display = Bricolage
   Grotesque (working pick; Chakra Petch / Clash Display documented as swaps). Teal as sole
   accent; glass/glow/indigo/rounded-2xl retired.
+- **2026-06-22** — Accent shifted teal `#14B8A6` → **cyan-teal `#0CB5C9`** (slightly bluer), app-wide
+  (token `vela-teal` + all literals + `--accent` HSL + glows). Brand mark rebuilt as inline SVG
+  `components/shared/VelnorMark.tsx` (the chart-line "peaks" logo, recolors via currentColor), now used
+  in the sidebar + splash instead of the boxed "V".
 - **2026-06-22** — Added celestial-motif policy (disciplined in-app accent; expressive landing
   showpiece — interactive sail/constellation). Added 21st.dev animation-sourcing rule (borrow
   mechanics, re-skin to our motion tokens). Priority confirmed **app-first**: shared layer →
