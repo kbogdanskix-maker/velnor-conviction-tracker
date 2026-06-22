@@ -137,7 +137,7 @@ export default function DashboardPage() {
                       value={stat.raw}
                       format={shortCurrency}
                       duration={1000}
-                      className={`text-sm sm:text-lg font-bold tabular ${stat.color} group-hover:drop-shadow-[0_0_12px_rgba(26, 168, 187,0.3)] transition-all duration-300`}
+                      className={`text-sm sm:text-lg font-bold tabular ${stat.color} transition-colors duration-300`}
                     />
                   </Link>
                 </FloatingCard>
@@ -404,7 +404,7 @@ export default function DashboardPage() {
                 <FloatingCard key={rec.credential} delay={i * 0.1} glowColor="rgba(26, 168, 187, 0.06)">
                   <div className="p-4 space-y-2">
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-bold bg-violet-500/15 text-violet-400 px-2 py-0.5 rounded-full">{rec.credential}</span>
+                      <span className="text-[10px] font-mono uppercase tracking-wide bg-vela-teal/10 text-vela-teal border border-vela-teal/20 px-2 py-0.5 rounded">{rec.credential}</span>
                     </div>
                     <p className="text-sm font-medium text-zinc-200">{rec.title}</p>
                     <p className="text-xs text-zinc-500 leading-relaxed">{rec.reason}</p>
