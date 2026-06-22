@@ -324,7 +324,7 @@ export default function Sidebar() {
                     onClick={() => toggleGroup(group.label)}
                     className={`
                       w-full flex items-center justify-between px-3 py-1.5 mt-2 rounded-md font-mono text-[10px] uppercase tracking-[0.16em] transition-colors
-                      ${hasActive ? "text-vela-teal" : "text-zinc-500 hover:text-zinc-300"}
+                      ${hasActive ? "text-vela-teal" : "text-vela-muted hover:text-zinc-200"}
                     `}
                   >
                     <span>{group.label}</span>
@@ -424,14 +424,14 @@ function NavLink({ item, active, showLabel, collapsed, mobileOpen, adminMode }: 
     >
       <Icon
         className={`w-4 h-4 shrink-0 transition-colors duration-150 ${
-          active ? "text-vela-teal" : "text-vela-subtle group-hover:text-zinc-300"
+          active ? "text-vela-teal" : "text-vela-muted group-hover:text-zinc-200"
         }`}
       />
       {showLabel && (
         <>
           <span className="truncate">{item.label}</span>
           {item.tier && !adminMode && (
-            <span className="ml-auto shrink-0 font-mono text-[9px] uppercase tracking-wide px-1.5 py-0.5 rounded border border-vela-border text-vela-subtle">
+            <span className="ml-auto shrink-0 font-mono text-[9px] uppercase tracking-wide px-1.5 py-0.5 rounded border border-vela-border text-vela-muted">
               {item.tier === "voyager" ? "V+" : item.tier === "navigator" ? "N+" : item.tier}
             </span>
           )}
