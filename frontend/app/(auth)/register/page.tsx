@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createBrowserClient } from "@/lib/supabase-browser";
+import VelnorMark from "@/components/shared/VelnorMark";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -62,7 +63,8 @@ export default function RegisterPage() {
   return (
     <div className="vela-card space-y-6">
       <div className="text-center space-y-1">
-        <div className="text-3xl font-bold tracking-tight text-zinc-100">
+        <VelnorMark className="w-11 h-8 text-vela-teal mx-auto mb-2" />
+        <div className="text-3xl font-display font-bold tracking-tight text-zinc-100">
           <span className="text-vela-teal">V</span>elnor
         </div>
         <p className="text-zinc-400 text-sm">Start your journey.</p>

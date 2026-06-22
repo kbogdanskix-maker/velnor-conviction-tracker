@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { createBrowserClient } from "@/lib/supabase-browser";
 import HeroVoyage from "@/components/celestial/HeroVoyage";
+import VelnorMark from "@/components/shared/VelnorMark";
 
 /* ─── icons ─────────────────────────────────────────────────────────────── */
 const icons = {
@@ -328,9 +329,7 @@ export default function LandingPage() {
       {/* ── Nav ───────────────────────────────────────────────────────── */}
       <nav className="relative z-10 flex items-center justify-between px-6 md:px-12 py-5">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-vela-teal/15 flex items-center justify-center text-vela-teal font-bold text-sm border border-vela-teal/30">
-            V
-          </div>
+          <VelnorMark className="w-8 h-6 text-vela-teal" />
           <div className="leading-none">
             <span className="text-xl font-display font-semibold tracking-tight">Velnor</span>
           </div>
@@ -540,7 +539,7 @@ export default function LandingPage() {
       <footer className="relative z-10 border-t border-zinc-800/40 px-6 py-8">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-zinc-600 text-xs">
           <div className="flex items-center gap-2">
-            <div className="w-5 h-5 rounded bg-vela-teal/15 flex items-center justify-center text-vela-teal font-bold text-[10px]">V</div>
+            <VelnorMark className="w-5 h-4 text-vela-teal" />
             <span>Velnor &copy; {new Date().getFullYear()}</span>
           </div>
           <p className="font-mono tracking-wide">Your wealth, in motion.</p>

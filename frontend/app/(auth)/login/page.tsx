@@ -5,6 +5,7 @@ import Link from "next/link";
 
 import { useRouter } from "next/navigation";
 import { createBrowserClient } from "@/lib/supabase-browser";
+import VelnorMark from "@/components/shared/VelnorMark";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -44,9 +45,7 @@ export default function LoginPage() {
       {/* Logo + brand */}
       <div className="text-center space-y-2">
         <div className="flex items-center justify-center gap-2.5">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center shadow-lg shadow-teal-500/20">
-            <span className="text-xl font-display font-black text-zinc-950 leading-none">V</span>
-          </div>
+          <VelnorMark className="w-11 h-8 text-vela-teal" />
           <span className="text-3xl font-display font-bold tracking-tight text-zinc-100">
             <span className="text-vela-teal">V</span>elnor
           </span>
