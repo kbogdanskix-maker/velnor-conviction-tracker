@@ -69,39 +69,6 @@ const config: Config = {
           "0%": { transform: "rotate(0deg) translateX(var(--orbit-radius, 60px)) rotate(0deg)" },
           "100%": { transform: "rotate(360deg) translateX(var(--orbit-radius, 60px)) rotate(-360deg)" },
         },
-        // Nav icon micro-animations
-        "icon-blink": {
-          "0%, 30%, 50%, 100%": { transform: "scaleY(1)" },
-          "40%": { transform: "scaleY(0.1)" },
-        },
-        "icon-wiggle": {
-          "0%, 100%": { transform: "rotate(0deg)" },
-          "20%": { transform: "rotate(-12deg)" },
-          "40%": { transform: "rotate(10deg)" },
-          "60%": { transform: "rotate(-6deg)" },
-          "80%": { transform: "rotate(4deg)" },
-        },
-        "icon-bounce": {
-          "0%, 100%": { transform: "translateY(0)" },
-          "40%": { transform: "translateY(-3px)" },
-          "60%": { transform: "translateY(-1px)" },
-        },
-        "icon-pulse": {
-          "0%, 100%": { transform: "scale(1)" },
-          "50%": { transform: "scale(1.2)" },
-        },
-        "icon-spin": {
-          "0%": { transform: "rotate(0deg)" },
-          "100%": { transform: "rotate(360deg)" },
-        },
-        "icon-ring": {
-          "0%": { transform: "rotate(0deg)" },
-          "10%": { transform: "rotate(14deg)" },
-          "20%": { transform: "rotate(-12deg)" },
-          "30%": { transform: "rotate(10deg)" },
-          "40%": { transform: "rotate(-8deg)" },
-          "50%, 100%": { transform: "rotate(0deg)" },
-        },
       },
       animation: {
         shimmer: "shimmer 1.5s infinite linear",
@@ -110,12 +77,6 @@ const config: Config = {
         twinkle: "twinkle 4s ease-in-out infinite",
         drift: "drift 20s ease-in-out infinite",
         orbit: "orbit var(--orbit-duration, 30s) linear infinite",
-        "icon-blink": "icon-blink 0.6s ease-in-out",
-        "icon-wiggle": "icon-wiggle 0.5s ease-in-out",
-        "icon-bounce": "icon-bounce 0.4s ease-out",
-        "icon-pulse": "icon-pulse 0.4s ease-in-out",
-        "icon-spin": "icon-spin 0.6s ease-in-out",
-        "icon-ring": "icon-ring 0.6s ease-in-out",
       },
       backdropBlur: {
         xs: "2px",

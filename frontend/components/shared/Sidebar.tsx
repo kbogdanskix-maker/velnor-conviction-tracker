@@ -16,89 +16,6 @@ import {
   Banknote, Brain, Users, Search, Scale, BadgePercent, LayoutGrid, Calendar, GitBranch, CreditCard, Shield, Repeat, Trophy, ArrowLeftRight, Compass, Flame, Dice5, Scissors, LineChart, MapPin, Star, GitCompare, HeartPulse, Zap, MessageCircle, StickyNote, Building2,
 } from "lucide-react";
 
-// ── Icon animation + color map ──────────────────────────────────────────────
-// Each icon gets a hover animation and accent color for personality
-
-type IconAnim = "blink" | "wiggle" | "bounce" | "pulse" | "spin" | "ring";
-
-const ICON_STYLE: Record<string, { anim: IconAnim; color: string }> = {
-  // Equities
-  "/portfolio":       { anim: "pulse",  color: "text-teal-400" },
-  "/dividends":       { anim: "spin",   color: "text-amber-400" },
-  "/dividend-calendar": { anim: "bounce", color: "text-amber-300" },
-  "/dividend-forecast": { anim: "pulse", color: "text-amber-400" },
-  "/watchlist":       { anim: "blink",  color: "text-violet-400" },
-  "/rebalance":       { anim: "wiggle", color: "text-blue-400" },
-  "/fees":            { anim: "bounce", color: "text-rose-400" },
-  "/sectors":         { anim: "pulse",  color: "text-indigo-400" },
-  "/position-size":   { anim: "bounce", color: "text-sky-400" },
-  "/correlation":     { anim: "pulse",  color: "text-emerald-400" },
-  "/risk":            { anim: "pulse",  color: "text-rose-400" },
-  "/attribution":     { anim: "bounce", color: "text-blue-400" },
-  "/reflect":         { anim: "pulse",  color: "text-cyan-400" },
-  "/tax-harvest":     { anim: "wiggle", color: "text-emerald-400" },
-  // Financial Planning
-  "/net-worth":       { anim: "pulse",  color: "text-emerald-400" },
-  "/cash-flow":       { anim: "bounce", color: "text-emerald-400" },
-  "/expenses":        { anim: "wiggle", color: "text-rose-400" },
-  "/budget":          { anim: "pulse",  color: "text-orange-400" },
-  "/affordability":   { anim: "wiggle", color: "text-cyan-400" },
-  "/debt-payoff":     { anim: "bounce", color: "text-rose-400" },
-  "/tax":             { anim: "wiggle", color: "text-amber-400" },
-  "/income":          { anim: "bounce", color: "text-emerald-400" },
-  "/insurance":       { anim: "pulse",  color: "text-blue-400" },
-  "/stress-index":    { anim: "pulse",  color: "text-orange-400" },
-  "/alerts":          { anim: "ring",   color: "text-amber-400" },
-  "/subscriptions":   { anim: "spin",   color: "text-violet-400" },
-  "/behavior":        { anim: "pulse",  color: "text-purple-400" },
-  // Projections
-  "/goals":           { anim: "pulse",  color: "text-teal-400" },
-  "/retirement":      { anim: "wiggle", color: "text-sky-400" },
-  "/compare":         { anim: "wiggle", color: "text-indigo-400" },
-  "/benchmark":       { anim: "bounce", color: "text-blue-400" },
-  "/what-if":         { anim: "pulse",  color: "text-fuchsia-400" },
-  "/emergency-fund":  { anim: "pulse",  color: "text-rose-400" },
-  "/milestones":      { anim: "bounce", color: "text-amber-400" },
-  "/learn":           { anim: "wiggle", color: "text-cyan-400" },
-  "/fi":              { anim: "pulse",  color: "text-orange-400" },
-  "/monte-carlo":     { anim: "bounce", color: "text-purple-400" },
-  "/nw-history":      { anim: "pulse",  color: "text-teal-400" },
-  "/asset-location":  { anim: "bounce", color: "text-sky-400" },
-  "/returns":         { anim: "spin",   color: "text-emerald-400" },
-  "/annual-review":   { anim: "bounce", color: "text-amber-400" },
-  "/stock-compare":   { anim: "wiggle", color: "text-indigo-400" },
-  // Intelligence
-  "/plan":            { anim: "pulse",  color: "text-teal-400" },
-  "/health-score":    { anim: "pulse",  color: "text-rose-400" },
-  "/smart-alerts":    { anim: "ring",   color: "text-amber-400" },
-  "/earnings-insights": { anim: "bounce", color: "text-amber-400" },
-  // News & Markets
-  "/fx":              { anim: "wiggle", color: "text-emerald-400" },
-  "/markets":         { anim: "spin",   color: "text-blue-400" },
-  "/macro":           { anim: "bounce", color: "text-teal-400" },
-  "/news":            { anim: "wiggle", color: "text-sky-400" },
-  "/sentiment":       { anim: "pulse",  color: "text-violet-400" },
-  // Research
-  "/thesis":          { anim: "bounce", color: "text-violet-400" },
-  "/notes":           { anim: "wiggle", color: "text-amber-400" },
-  "/journal":         { anim: "wiggle", color: "text-slate-300" },
-  "/screener":        { anim: "pulse",  color: "text-cyan-400" },
-  "/valuation/dcf":   { anim: "bounce", color: "text-emerald-400" },
-  "/valuation/reverse-dcf": { anim: "spin", color: "text-orange-400" },
-  // Top-level
-  "/dashboard":       { anim: "pulse",  color: "text-teal-400" },
-  "/guide":           { anim: "spin",   color: "text-cyan-400" },
-  "/profile":         { anim: "pulse",  color: "text-teal-400" },
-};
-
-const ANIM_CLASS: Record<IconAnim, string> = {
-  blink:  "animate-icon-blink",
-  wiggle: "animate-icon-wiggle",
-  bounce: "animate-icon-bounce",
-  pulse:  "animate-icon-pulse",
-  spin:   "animate-icon-spin",
-  ring:   "animate-icon-ring",
-};
 
 // ── Nav structure ───────────────────────────────────────────────────────────
 
@@ -296,8 +213,8 @@ export default function Sidebar() {
           <Menu className="w-5 h-5" />
         </button>
         <Link href="/dashboard" className="flex items-center gap-2 ml-3 group">
-          <div className="w-6 h-6 rounded-md bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center shadow-sm shadow-teal-500/20 group-hover:shadow-teal-500/40 transition-shadow">
-            <span className="text-xs font-display font-black text-zinc-950 leading-none">V</span>
+          <div className="w-6 h-6 rounded-md bg-vela-teal/15 border border-vela-teal/30 flex items-center justify-center">
+            <span className="text-xs font-display font-extrabold text-vela-teal leading-none">V</span>
           </div>
           <span className="text-lg font-display font-bold tracking-tight">
             <span className="text-vela-teal">V</span>
@@ -335,11 +252,11 @@ export default function Sidebar() {
         `}
       >
         {/* Logo */}
-        <div className="flex items-center justify-between h-14 px-4 border-b border-white/[0.04]">
+        <div className="flex items-center justify-between h-14 px-4 border-b border-vela-border">
           {showLabels ? (
             <Link href="/dashboard" className="flex items-center gap-2 group">
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center shadow-sm shadow-teal-500/20 group-hover:shadow-teal-500/40 transition-shadow">
-                <span className="text-sm font-display font-black text-zinc-950 leading-none">V</span>
+              <div className="w-7 h-7 rounded-lg bg-vela-teal/15 border border-vela-teal/30 flex items-center justify-center">
+                <span className="text-sm font-display font-extrabold text-vela-teal leading-none">V</span>
               </div>
               <span className="text-xl font-display font-bold tracking-tight">
                 <span className="text-vela-teal">V</span>
@@ -348,8 +265,8 @@ export default function Sidebar() {
             </Link>
           ) : (
             <Link href="/dashboard" className="mx-auto group">
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center shadow-sm shadow-teal-500/20 group-hover:shadow-teal-500/40 transition-shadow">
-                <span className="text-sm font-display font-black text-zinc-950 leading-none">V</span>
+              <div className="w-7 h-7 rounded-lg bg-vela-teal/15 border border-vela-teal/30 flex items-center justify-center">
+                <span className="text-sm font-display font-extrabold text-vela-teal leading-none">V</span>
               </div>
             </Link>
           )}
@@ -406,7 +323,7 @@ export default function Sidebar() {
                   <button
                     onClick={() => toggleGroup(group.label)}
                     className={`
-                      w-full flex items-center justify-between px-3 py-1.5 mt-2 rounded-md text-[11px] font-semibold uppercase tracking-wider transition-colors
+                      w-full flex items-center justify-between px-3 py-1.5 mt-2 rounded-md font-mono text-[10px] uppercase tracking-[0.16em] transition-colors
                       ${hasActive ? "text-vela-teal" : "text-zinc-500 hover:text-zinc-300"}
                     `}
                   >
@@ -414,7 +331,7 @@ export default function Sidebar() {
                     <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isOpen ? "" : "-rotate-90"}`} />
                   </button>
                 ) : (
-                  <div className="h-px bg-white/[0.04] mx-2 my-2" />
+                  <div className="h-px bg-vela-border mx-2 my-2" />
                 )}
 
                 {/* Group items */}
@@ -440,7 +357,7 @@ export default function Sidebar() {
           {showLabels && (
             <button
               onClick={toggleAdvanced}
-              className="w-full flex items-center gap-2 px-3 py-2 mt-3 rounded-md text-[11px] font-medium text-zinc-500 hover:text-vela-teal transition-colors border-t border-white/[0.04] pt-3"
+              className="w-full flex items-center gap-2 px-3 py-2 mt-3 rounded-md text-[11px] font-medium text-zinc-500 hover:text-vela-teal transition-colors border-t border-vela-border pt-3"
             >
               <LayoutGrid className="w-3.5 h-3.5" />
               {showAdvanced ? "Switch to Simple view" : "Show all tools"}
@@ -449,7 +366,7 @@ export default function Sidebar() {
         </nav>
 
         {/* Bottom actions */}
-        <div className="p-2 border-t border-white/[0.04] space-y-0.5">
+        <div className="p-2 border-t border-vela-border space-y-0.5">
           <Link
             href="/settings"
             className="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-zinc-400 hover:text-zinc-100 hover:bg-white/5 transition-colors"
@@ -469,8 +386,9 @@ export default function Sidebar() {
         {/* Collapse toggle  - desktop only */}
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="hidden md:flex absolute -right-3 top-16 w-6 h-6 rounded-full items-center justify-center text-zinc-500 hover:text-zinc-100 transition-all
-            bg-zinc-900/80 border border-white/[0.06] backdrop-blur-md shadow-lg hover:shadow-glow"
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          className="hidden md:flex absolute -right-2.5 top-16 z-50 w-5 h-5 rounded items-center justify-center text-vela-muted hover:text-zinc-100 transition-colors
+            bg-vela-card border border-vela-border hover:border-vela-teal/40"
         >
           {collapsed ? <ChevronRight className="w-3 h-3" /> : <ChevronLeft className="w-3 h-3" />}
         </button>
@@ -490,47 +408,30 @@ function NavLink({ item, active, showLabel, collapsed, mobileOpen, adminMode }: 
   mobileOpen: boolean;
   adminMode?: boolean;
 }) {
-  const [hovered, setHovered] = useState(false);
   const Icon = item.icon;
-  const style = ICON_STYLE[item.href];
-  const hoverColor = style?.color || "text-zinc-100";
-  const animClass = style ? ANIM_CLASS[style.anim] : "";
 
   return (
     <Link
       href={item.href}
       title={collapsed && !mobileOpen ? item.label : undefined}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
       className={`
-        group relative flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-all duration-200
+        group flex items-center gap-3 pl-2.5 pr-3 py-2 text-sm border-l-2 rounded-r transition-colors duration-150
         ${active
-          ? "text-vela-teal font-medium"
-          : "text-zinc-400 hover:text-zinc-100 hover:bg-white/5"
+          ? "border-vela-teal bg-vela-teal/[0.06] text-zinc-100 font-medium"
+          : "border-transparent text-vela-muted hover:text-zinc-100 hover:bg-white/[0.03]"
         }
       `}
     >
-      {/* Active indicator glow */}
-      {active && (
-        <div className="absolute inset-0 rounded-md bg-vela-teal/8 border border-vela-teal/15" />
-      )}
       <Icon
-        className={`
-          w-4 h-4 shrink-0 relative z-10 transition-colors duration-200
-          ${active ? "drop-shadow-[0_0_6px_rgba(20,184,166,0.4)]" : ""}
-          ${!active && hovered ? hoverColor : ""}
-          ${!active && hovered ? animClass : ""}
-        `}
+        className={`w-4 h-4 shrink-0 transition-colors duration-150 ${
+          active ? "text-vela-teal" : "text-vela-subtle group-hover:text-zinc-300"
+        }`}
       />
       {showLabel && (
         <>
-          <span className="truncate relative z-10">{item.label}</span>
+          <span className="truncate">{item.label}</span>
           {item.tier && !adminMode && (
-            <span className={`ml-auto text-[8px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded shrink-0 relative z-10 ${
-              item.tier === "navigator"
-                ? "text-violet-400/70 bg-violet-500/10"
-                : "text-vela-teal/70 bg-vela-teal/10"
-            }`}>
+            <span className="ml-auto shrink-0 font-mono text-[9px] uppercase tracking-wide px-1.5 py-0.5 rounded border border-vela-border text-vela-subtle">
               {item.tier === "voyager" ? "V+" : item.tier === "navigator" ? "N+" : item.tier}
             </span>
           )}

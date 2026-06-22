@@ -202,7 +202,27 @@ If a snippet can't survive the checklist without becoming generic, build it from
 
 ---
 
-## 11. Changelog
+## 11. Legibility & QA invariants (recurring failure modes — ALWAYS check)
+
+These are the bugs that keep biting Velnor. Every phase must verify them on the real render, not by assumption.
+
+1. **No invisible elements.** Text, figures, icons, axis ticks and data labels must NEVER be the same
+   (or near-same) value as their background. Body ≥ 4.5:1, large text / figures ≥ 3:1. A number on a
+   dark surface uses `zinc-100`/`vela-muted` — never a dark fill, `currentColor` that resolves to the bg,
+   or an unset color.
+2. **Charts use explicit colors.** Every series, axis, gridline, tick and label gets an explicit color
+   from the palette (teal / `gain` / `loss` + zinc neutrals). Never rely on a charting-lib default that
+   can resolve to the background. Gridlines low-contrast but visible (~`#1B2638`); data text ≥ 4.5:1;
+   tooltips solid `vela-card`, not transparent. Don't encode meaning by color alone.
+3. **Icons fit.** Use fixed size tokens (nav 16px `w-4 h-4`, always `shrink-0`) so an icon never
+   collapses to 0 or overflows its row. One consistent stroke weight. No icon wider than its container.
+4. **Fixed/absolute controls stay in bounds.** Collapse toggles, FABs, badges, tooltips must remain fully
+   visible and clickable — check at the **collapsed** width and on **mobile**; never clipped by an
+   `overflow` parent or pushed off-screen. The sidebar collapse toggle is the classic offender.
+5. **Verify, don't assume.** Confirm contrast and fit in the running app (or a faithful mockup), not from
+   the diff.
+
+## 12. Changelog
 
 - **2026-06-22** — Initial system. Direction: "Instrument" (anti-slop). Display = Bricolage
   Grotesque (working pick; Chakra Petch / Clash Display documented as swaps). Teal as sole
