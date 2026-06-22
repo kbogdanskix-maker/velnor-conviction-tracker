@@ -1,6 +1,6 @@
 "use client";
 
-import { X, ExternalLink } from "lucide-react";
+import { X, ExternalLink, Lightbulb } from "lucide-react";
 import Link from "next/link";
 import type { LearningCard as LearningCardType } from "@/lib/learning-cards";
 import { CATEGORY_LABELS, CATEGORY_COLORS } from "@/lib/learning-cards";
@@ -82,7 +82,7 @@ export function LearningCardRow({
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <h2 className="section-heading flex items-center gap-2">
-          <span>💡</span> Insights
+          <Lightbulb className="w-4 h-4" /> Insights
         </h2>
         <Link
           href="/learn"

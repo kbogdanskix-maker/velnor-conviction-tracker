@@ -433,7 +433,7 @@ export default function FinancialIndependencePage() {
                 <div className="text-center md:text-left">
                   <p className="text-xs text-zinc-500">Years to FI</p>
                   <p className={`text-lg font-display font-bold tabular-nums ${fi.yearsToFi === 0 ? "text-gain" : fi.yearsToFi && fi.yearsToFi < 15 ? "text-teal-400" : "text-zinc-200"}`}>
-                    {fi.yearsToFi != null ? (fi.yearsToFi === 0 ? "🎉 Now!" : `${fi.yearsToFi} yrs`) : "N/A"}
+                    {fi.yearsToFi != null ? (fi.yearsToFi === 0 ? "Now!" : `${fi.yearsToFi} yrs`) : "N/A"}
                   </p>
                 </div>
                 <div className="text-center md:text-left">

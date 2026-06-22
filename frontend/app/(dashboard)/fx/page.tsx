@@ -15,30 +15,29 @@ interface CurrencyMeta {
   code: string;
   name: string;
   symbol: string;
-  flag: string;
 }
 
 const CURRENCIES: CurrencyMeta[] = [
-  { code: "USD", name: "US Dollar", symbol: "$", flag: "🇺🇸" },
-  { code: "EUR", name: "Euro", symbol: "€", flag: "🇪🇺" },
-  { code: "GBP", name: "British Pound", symbol: "£", flag: "🇬🇧" },
-  { code: "JPY", name: "Japanese Yen", symbol: "¥", flag: "🇯🇵" },
-  { code: "CHF", name: "Swiss Franc", symbol: "Fr", flag: "🇨🇭" },
-  { code: "CAD", name: "Canadian Dollar", symbol: "C$", flag: "🇨🇦" },
-  { code: "AUD", name: "Australian Dollar", symbol: "A$", flag: "🇦🇺" },
-  { code: "NZD", name: "New Zealand Dollar", symbol: "NZ$", flag: "🇳🇿" },
-  { code: "CNY", name: "Chinese Yuan", symbol: "¥", flag: "🇨🇳" },
-  { code: "INR", name: "Indian Rupee", symbol: "₹", flag: "🇮🇳" },
-  { code: "KRW", name: "South Korean Won", symbol: "₩", flag: "🇰🇷" },
-  { code: "SGD", name: "Singapore Dollar", symbol: "S$", flag: "🇸🇬" },
-  { code: "HKD", name: "Hong Kong Dollar", symbol: "HK$", flag: "🇭🇰" },
-  { code: "SEK", name: "Swedish Krona", symbol: "kr", flag: "🇸🇪" },
-  { code: "NOK", name: "Norwegian Krone", symbol: "kr", flag: "🇳🇴" },
-  { code: "MXN", name: "Mexican Peso", symbol: "$", flag: "🇲🇽" },
-  { code: "BRL", name: "Brazilian Real", symbol: "R$", flag: "🇧🇷" },
-  { code: "PLN", name: "Polish Zloty", symbol: "zł", flag: "🇵🇱" },
-  { code: "TRY", name: "Turkish Lira", symbol: "₺", flag: "🇹🇷" },
-  { code: "ZAR", name: "South African Rand", symbol: "R", flag: "🇿🇦" },
+  { code: "USD", name: "US Dollar", symbol: "$" },
+  { code: "EUR", name: "Euro", symbol: "€" },
+  { code: "GBP", name: "British Pound", symbol: "£" },
+  { code: "JPY", name: "Japanese Yen", symbol: "¥" },
+  { code: "CHF", name: "Swiss Franc", symbol: "Fr" },
+  { code: "CAD", name: "Canadian Dollar", symbol: "C$" },
+  { code: "AUD", name: "Australian Dollar", symbol: "A$" },
+  { code: "NZD", name: "New Zealand Dollar", symbol: "NZ$" },
+  { code: "CNY", name: "Chinese Yuan", symbol: "¥" },
+  { code: "INR", name: "Indian Rupee", symbol: "₹" },
+  { code: "KRW", name: "South Korean Won", symbol: "₩" },
+  { code: "SGD", name: "Singapore Dollar", symbol: "S$" },
+  { code: "HKD", name: "Hong Kong Dollar", symbol: "HK$" },
+  { code: "SEK", name: "Swedish Krona", symbol: "kr" },
+  { code: "NOK", name: "Norwegian Krone", symbol: "kr" },
+  { code: "MXN", name: "Mexican Peso", symbol: "$" },
+  { code: "BRL", name: "Brazilian Real", symbol: "R$" },
+  { code: "PLN", name: "Polish Zloty", symbol: "zł" },
+  { code: "TRY", name: "Turkish Lira", symbol: "₺" },
+  { code: "ZAR", name: "South African Rand", symbol: "R" },
 ];
 
 // Fallback static rates (1 unit → USD) used when API is unavailable
@@ -151,7 +150,7 @@ export default function FxPage() {
                 className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2.5 text-sm text-zinc-100 focus:outline-none focus:ring-1 focus:ring-vela-teal min-w-[140px]"
               >
                 {CURRENCIES.map((c) => (
-                  <option key={c.code} value={c.code}>{c.flag} {c.code}  - {c.name}</option>
+                  <option key={c.code} value={c.code}>{c.code} - {c.name}</option>
                 ))}
               </select>
               <input
@@ -181,7 +180,7 @@ export default function FxPage() {
                 className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2.5 text-sm text-zinc-100 focus:outline-none focus:ring-1 focus:ring-vela-teal min-w-[140px]"
               >
                 {CURRENCIES.map((c) => (
-                  <option key={c.code} value={c.code}>{c.flag} {c.code}  - {c.name}</option>
+                  <option key={c.code} value={c.code}>{c.code} - {c.name}</option>
                 ))}
               </select>
               <div className="flex-1 bg-zinc-800/50 border border-zinc-700 rounded-lg px-3 py-2.5 text-sm text-vela-teal font-semibold tabular-nums">
@@ -266,7 +265,7 @@ export default function FxPage() {
                   c.code === toCode ? "bg-vela-teal/10 border border-vela-teal/30" : "bg-zinc-800/30 hover:bg-zinc-800 border border-transparent"
                 }`}
               >
-                <span className="text-base">{c.flag}</span>
+                <span className="text-xs font-mono text-zinc-500 w-8 text-center">{c.code}</span>
                 <div className="flex-1 min-w-0">
                   <span className="text-xs text-zinc-400">{c.code}</span>
                   <p className="text-sm font-medium text-zinc-200 tabular-nums truncate">

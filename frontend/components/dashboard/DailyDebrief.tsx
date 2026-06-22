@@ -93,7 +93,7 @@ function formatHeadline(title: string, tone: string): string {
 function getDebriefGreeting(tone: string, itemCount: number): string {
   if (itemCount === 0) {
     switch (tone) {
-      case "casual": return "Nothing major happening right now. Enjoy the calm! 🧘";
+      case "casual": return "Nothing major happening right now. Enjoy the calm.";
       case "concise": return "No notable updates.";
       case "encouraging": return "All quiet on the market front  - a good time to review your strategy!";
       default: return "No significant developments to report at this time.";

@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import {
   BookOpen, Plus, Pencil, Trash2, MoreHorizontal, TrendingUp, TrendingDown,
   Minus, Cloud, CloudOff, CheckCircle2, XCircle, CircleDashed, CircleDot,
-  Target, BarChart3, Brain, AlertTriangle,
+  Target, BarChart3, Brain, AlertTriangle, Check,
 } from "lucide-react";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
@@ -334,7 +334,7 @@ export default function ThesisPage() {
                             >
                               <OIcon className={`w-3.5 h-3.5 ${outcome === o ? m.color : ""}`} />
                               {m.label}
-                              {outcome === o && <span className="ml-auto text-[10px]">✓</span>}
+                              {outcome === o && <Check className="ml-auto w-3 h-3" />}
                             </DropdownMenu.Item>
                           );
                         })}

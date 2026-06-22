@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
-import { Send } from "lucide-react";
+import { Send, AlertTriangle, X, Check } from "lucide-react";
 import { useDefaultPortfolio } from "@/hooks/usePortfolio";
 import { useRiskMetrics } from "@/hooks/useRiskMetrics";
 import { useProfile } from "@/hooks/useProfile";
@@ -216,7 +216,7 @@ function ContextPanel() {
               disabled={!quickInput.trim()}
               className="absolute bottom-2 right-2 text-[10px] text-teal-500 disabled:text-zinc-700 hover:text-teal-400 transition-colors"
             >
-              {saved ? "Saved ✓" : "Save"}
+              {saved ? <><Check className="w-3 h-3 inline -mt-0.5" /> Saved</> : "Save"}
             </button>
           </div>
           {(notes.flagged.length > 0 || recentEphemeral.length > 0) && (
@@ -481,9 +481,9 @@ export default function ReflectPage() {
             {/* Error banner */}
             {error && (
               <div className="mx-3.5 mb-1 flex items-start gap-2 rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-[12px] text-rose-300">
-                <span className="shrink-0 mt-px">⚠</span>
+                <AlertTriangle className="w-4 h-4 shrink-0 mt-px" />
                 <span className="flex-1">{error}</span>
-                <button onClick={() => setError(null)} className="text-rose-400/70 hover:text-rose-300 shrink-0">✕</button>
+                <button onClick={() => setError(null)} className="text-rose-400/70 hover:text-rose-300 shrink-0"><X className="w-3.5 h-3.5" /></button>
               </div>
             )}
 
