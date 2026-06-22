@@ -228,6 +228,8 @@ These are the bugs that keep biting Velnor. Every phase must verify them on the 
 - **2026-06-22** — Initial system. Direction: "Instrument" (anti-slop). Display = Bricolage
   Grotesque (working pick; Chakra Petch / Clash Display documented as swaps). Teal as sole
   accent; glass/glow/indigo/rounded-2xl retired.
+- **2026-06-22** — Consistency fixes: flagship FloatingCard glows de-indigo'd → teal; health-score
+  grade backgrounds gradient → solid tint; command-palette overlay de-glowed (blur kept, glow/ring dropped).
 - **2026-06-22** — Accent shifted teal `#14B8A6` → **cyan-teal `#0CB5C9`** (slightly bluer), app-wide
   (token `vela-teal` + all literals + `--accent` HSL + glows). Brand mark rebuilt as inline SVG
   `components/shared/VelnorMark.tsx` (the chart-line "peaks" logo, recolors via currentColor), now used
