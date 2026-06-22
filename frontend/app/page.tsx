@@ -140,12 +140,17 @@ function Reveal({ children, className = "", delay = 0 }: { children: React.React
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+    // Reveal above-the-fold content immediately (robust to flaky/slow observers);
+    // only defer to the scroll observer for content that starts below the fold.
+    if (el.getBoundingClientRect().top < window.innerHeight * 0.92) { setVisible(true); return; }
     const obs = new IntersectionObserver(
       ([entry]) => { if (entry.isIntersecting) { setVisible(true); obs.disconnect(); } },
       { threshold: 0.15 },
     );
     obs.observe(el);
-    return () => obs.disconnect();
+    // Safety net: never leave content hidden if the observer never fires.
+    const t = setTimeout(() => setVisible(true), 1200);
+    return () => { obs.disconnect(); clearTimeout(t); };
   }, []);
   return (
     <div ref={ref} className={`transition-all duration-700 ease-out ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"} ${className}`} style={{ transitionDelay: `${delay}ms` }}>
@@ -345,7 +350,7 @@ export default function LandingPage() {
           {/* copy */}
           <div className="relative">
             <Reveal>
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-vela-teal/10 border border-vela-teal/20 text-vela-teal text-[11px] font-medium tracking-wide mb-7">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded bg-vela-teal/10 border border-vela-teal/20 text-vela-teal text-[11px] font-medium tracking-wide mb-7">
                 <span className="w-1.5 h-1.5 rounded-full bg-vela-teal animate-[ambient-pulse_2s_ease-in-out_infinite]" />
                 Pre-launch · charting the course
               </div>
@@ -353,9 +358,7 @@ export default function LandingPage() {
             <Reveal delay={90}>
               <h1 className="font-display text-[2.6rem] sm:text-5xl md:text-6xl font-bold tracking-tight leading-[1.05] mb-6">
                 Your investments{" "}
-                <span className="relative inline-block">
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-vela-teal via-emerald-400 to-teal-300">and</span>
-                </span>{" "}
+                <span className="text-vela-teal italic">and</span>{" "}
                 your life finances.
                 <br />
                 <span className="text-zinc-500">Finally on one heading.</span>
@@ -400,13 +403,13 @@ export default function LandingPage() {
         </Reveal>
         <div className="grid md:grid-cols-[1fr_auto_1fr] gap-4 md:gap-6 items-stretch">
           <Reveal delay={80}>
-            <div className="h-full rounded-2xl p-5 border border-zinc-800/60 bg-zinc-900/30">
+            <div className="h-full rounded-lg p-5 border border-zinc-800/60 bg-zinc-900/30">
               <p className="text-[11px] font-mono uppercase tracking-wider text-zinc-500 mb-4">Markets &amp; research</p>
               <div className="space-y-2.5">
                 {["Brokerage apps", "Stock screeners", "Valuation spreadsheets", "Research subscriptions"].map((x) => (
-                  <div key={x} className="flex items-center justify-between py-2 px-3 rounded-lg bg-zinc-800/30 border border-zinc-800/50">
+                  <div key={x} className="flex items-center justify-between py-2 px-3 rounded bg-zinc-800/30 border border-zinc-800/50">
                     <span className="text-sm text-zinc-300">{x}</span>
-                    <span className="text-[10px] text-loss/80 bg-loss/10 px-2 py-0.5 rounded-full">no life context</span>
+                    <span className="text-[10px] text-loss/80 bg-loss/10 px-2 py-0.5 rounded">no life context</span>
                   </div>
                 ))}
               </div>
@@ -423,13 +426,13 @@ export default function LandingPage() {
           </Reveal>
 
           <Reveal delay={240}>
-            <div className="h-full rounded-2xl p-5 border border-zinc-800/60 bg-zinc-900/30">
+            <div className="h-full rounded-lg p-5 border border-zinc-800/60 bg-zinc-900/30">
               <p className="text-[11px] font-mono uppercase tracking-wider text-zinc-500 mb-4">Life &amp; planning</p>
               <div className="space-y-2.5">
                 {["Budgeting apps", "Net-worth trackers", "Retirement calculators", "Goal planners"].map((x) => (
-                  <div key={x} className="flex items-center justify-between py-2 px-3 rounded-lg bg-zinc-800/30 border border-zinc-800/50">
+                  <div key={x} className="flex items-center justify-between py-2 px-3 rounded bg-zinc-800/30 border border-zinc-800/50">
                     <span className="text-sm text-zinc-300">{x}</span>
-                    <span className="text-[10px] text-loss/80 bg-loss/10 px-2 py-0.5 rounded-full">no markets</span>
+                    <span className="text-[10px] text-loss/80 bg-loss/10 px-2 py-0.5 rounded">no markets</span>
                   </div>
                 ))}
               </div>
