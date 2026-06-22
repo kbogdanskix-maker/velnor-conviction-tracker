@@ -127,7 +127,7 @@ export default function DashboardPage() {
             <MotionSection className="grid grid-cols-3 gap-3">
               {[
                 { label: "Net Worth", raw: nwSummary.net_worth, color: "text-vela-teal", href: "/net-worth", glow: "rgba(12, 181, 201, 0.12)" },
-                { label: "Assets", raw: nwSummary.total_assets, color: "text-zinc-100", href: "/net-worth", glow: "rgba(99, 102, 241, 0.10)" },
+                { label: "Assets", raw: nwSummary.total_assets, color: "text-zinc-100", href: "/net-worth", glow: "rgba(12, 181, 201, 0.10)" },
                 { label: "Liabilities", raw: nwSummary.total_liabilities, color: "text-loss", href: "/net-worth", glow: "rgba(244, 63, 94, 0.10)" },
               ].map((stat, i) => (
                 <FloatingCard key={stat.label} delay={0.3 + i * 0.1} glowColor={stat.glow} pressable>
@@ -204,7 +204,7 @@ export default function DashboardPage() {
                 )}
               </div>
             </FloatingCard>
-            <FloatingCard className="lg:col-span-1" glowColor="rgba(99, 102, 241, 0.08)" delay={0.15}>
+            <FloatingCard className="lg:col-span-1" glowColor="rgba(12, 181, 201, 0.08)" delay={0.15}>
               <div className="p-5">
                 <AllocationPie holdings={summary.holdings} />
               </div>
@@ -250,7 +250,7 @@ export default function DashboardPage() {
                 ))}
               </div>
             ) : watchlistPreview.length === 0 ? (
-              <FloatingCard glowColor="rgba(99, 102, 241, 0.08)">
+              <FloatingCard glowColor="rgba(12, 181, 201, 0.08)">
                 <div className="flex flex-col items-center py-8 text-center">
                   <Eye className="w-6 h-6 text-zinc-600 mb-2" />
                   <p className="text-sm text-zinc-500 mb-3">No tickers yet</p>
@@ -258,7 +258,7 @@ export default function DashboardPage() {
                 </div>
               </FloatingCard>
             ) : (
-              <FloatingCard glowColor="rgba(99, 102, 241, 0.08)" tilt={false}>
+              <FloatingCard glowColor="rgba(12, 181, 201, 0.08)" tilt={false}>
                 <div className="p-0 divide-y divide-white/[0.04] overflow-hidden">
                   {watchlistPreview.map((item, i) => {
                     const changePct = Number(item.day_change_pct);
@@ -401,7 +401,7 @@ export default function DashboardPage() {
             <p className="text-xs text-zinc-500 -mt-1">Based on your goals and financial profile</p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {advisorRecs.map((rec, i) => (
-                <FloatingCard key={rec.credential} delay={i * 0.1} glowColor="rgba(139, 92, 246, 0.06)">
+                <FloatingCard key={rec.credential} delay={i * 0.1} glowColor="rgba(12, 181, 201, 0.06)">
                   <div className="p-4 space-y-2">
                     <div className="flex items-center gap-2">
                       <span className="text-[10px] font-bold bg-violet-500/15 text-violet-400 px-2 py-0.5 rounded-full">{rec.credential}</span>

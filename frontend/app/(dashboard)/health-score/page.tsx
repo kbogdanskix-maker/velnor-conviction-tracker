@@ -55,11 +55,11 @@ const GRADE_COLORS: Record<string, string> = {
 };
 
 const GRADE_BG: Record<string, string> = {
-  A: "from-emerald-500/20 to-emerald-500/5",
-  B: "from-teal-500/20 to-teal-500/5",
-  C: "from-amber-500/20 to-amber-500/5",
-  D: "from-orange-500/20 to-orange-500/5",
-  F: "from-rose-500/20 to-rose-500/5",
+  A: "bg-emerald-500/10",
+  B: "bg-vela-teal/10",
+  C: "bg-amber-500/10",
+  D: "bg-orange-500/10",
+  F: "bg-rose-500/10",
 };
 
 const GRADE_RING: Record<string, string> = {
@@ -530,7 +530,7 @@ export default function HealthScorePage() {
           <RevealOnScroll key={d.key} delay={i * 0.05}>
             <div className={`vela-card relative overflow-hidden`}>
               {/* Gradient accent */}
-              <div className={`absolute inset-0 bg-gradient-to-br ${GRADE_BG[d.grade]} pointer-events-none`} />
+              <div className={`absolute inset-0 ${GRADE_BG[d.grade]} pointer-events-none`} />
               <div className="relative space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
