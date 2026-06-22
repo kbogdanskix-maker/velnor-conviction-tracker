@@ -226,7 +226,7 @@ export default function MonteCarloPage() {
   };
   const SCENARIO_LABELS: Record<Scenario, { label: string; desc: string; color: string }> = {
     conservative: { label: "Conservative", desc: "Low-volatility portfolio", color: "text-teal-400" },
-    moderate: { label: "Moderate", desc: "Balanced growth", color: "text-purple-400" },
+    moderate: { label: "Moderate", desc: "Balanced growth", color: "text-vela-teal" },
     aggressive: { label: "Aggressive", desc: "High growth, high swings", color: "text-amber-400" },
     custom: { label: "From Your Portfolio", desc: "Live risk metrics", color: "text-zinc-300" },
   };
@@ -293,7 +293,7 @@ export default function MonteCarloPage() {
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-display font-bold text-zinc-100 flex items-center gap-2">
-            <Dice5 className="w-6 h-6 text-purple-400" />
+            <Dice5 className="w-6 h-6 text-vela-teal" />
             Monte Carlo Simulator
           </h1>
           <p className="text-sm text-zinc-500 mt-0.5">
@@ -462,7 +462,7 @@ export default function MonteCarloPage() {
                           onClick={() => setScenario(s)}
                           className={`flex flex-col items-start p-3 rounded-lg border text-left transition-all ${
                             isActive
-                              ? "border-purple-500/60 bg-purple-500/10"
+                              ? "border-vela-teal/60 bg-vela-teal/10"
                               : "border-zinc-700/50 bg-zinc-800/40 hover:border-zinc-600"
                           }`}
                         >
@@ -617,8 +617,8 @@ export default function MonteCarloPage() {
                 { href: "/risk", label: "Risk Dashboard", desc: "Portfolio risk metrics", icon: Shield },
               ].map((link) => (
                 <Link key={link.href} href={link.href} className="vela-card group hover:border-zinc-600 transition-colors flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-zinc-800 group-hover:bg-purple-500/10 transition-colors">
-                    <link.icon className="w-4 h-4 text-zinc-500 group-hover:text-purple-400 transition-colors" />
+                  <div className="p-2 rounded-lg bg-zinc-800 group-hover:bg-vela-teal/10 transition-colors">
+                    <link.icon className="w-4 h-4 text-zinc-500 group-hover:text-vela-teal transition-colors" />
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-medium text-zinc-200">{link.label}</p>

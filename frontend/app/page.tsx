@@ -264,7 +264,7 @@ function BearingDemo() {
 
       {/* the read */}
       <div className="mt-4 flex gap-3">
-        <div className="w-7 h-7 min-w-7 rounded-full bg-gradient-to-br from-teal-600 to-indigo-500 flex items-center justify-center text-white text-[11px] font-semibold mt-0.5 shadow-[0_0_12px_#1AA8BB33]">
+        <div className="w-7 h-7 min-w-7 rounded-full bg-teal-700 flex items-center justify-center text-white text-[11px] font-semibold mt-0.5">
           V
         </div>
         <p key={b.key} className="bearing-reply text-[13.5px] leading-relaxed text-zinc-300">
@@ -416,7 +416,7 @@ export default function LandingPage() {
           {/* the merge node */}
           <Reveal delay={160} className="flex md:flex-col items-center justify-center gap-2">
             <div className="hidden md:block w-px h-12 bg-gradient-to-b from-transparent to-vela-teal/40" />
-            <div className="w-12 h-12 rounded-xl bg-vela-teal/15 border border-vela-teal/40 flex items-center justify-center text-vela-teal shadow-[0_0_24px_#1AA8BB33] shrink-0">
+            <div className="w-12 h-12 rounded-xl bg-vela-teal/15 border border-vela-teal/40 flex items-center justify-center text-vela-teal shrink-0">
               {icons.compass}
             </div>
             <div className="hidden md:block w-px h-12 bg-gradient-to-b from-vela-teal/40 to-transparent" />
@@ -471,8 +471,8 @@ export default function LandingPage() {
               <Reveal key={w.title} delay={i * 90}>
                 <div className="flex gap-4 md:gap-6 md:even:flex-row-reverse md:text-right md:even:text-left">
                   <div className="relative shrink-0">
-                    <div className="w-10 h-10 rounded-full bg-vela-bg border border-vela-teal/40 flex items-center justify-center shadow-[0_0_18px_#1AA8BB26]">
-                      <span className="w-2 h-2 rounded-full bg-vela-teal shadow-[0_0_8px_#1AA8BB]" />
+                    <div className="w-10 h-10 rounded-full bg-vela-bg border border-vela-teal/40 flex items-center justify-center">
+                      <span className="w-2 h-2 rounded-full bg-vela-teal" />
                     </div>
                   </div>
                   <div className="vela-card flex-1 md:max-w-[440px]">
@@ -527,7 +527,7 @@ export default function LandingPage() {
       <section className="relative z-10 px-6 pb-32">
         <Reveal>
           <div className="max-w-xl mx-auto text-center relative">
-            <span className="inline-block w-1.5 h-1.5 rounded-full bg-teal-200 shadow-[0_0_14px_5px_#5eead455] mb-6 animate-[ambient-pulse_3s_ease-in-out_infinite]" />
+            <span className="inline-block w-1.5 h-1.5 rounded-full bg-teal-200 mb-6 animate-[ambient-pulse_3s_ease-in-out_infinite]" />
             <h3 className="font-display text-2xl md:text-3xl font-bold tracking-tight mb-3 relative">Come aboard before we sail.</h3>
             <p className="text-zinc-500 mb-8">Join the waitlist for early access when Velnor launches.</p>
             <div className="flex justify-center"><WaitlistForm id="bottom-email" /></div>

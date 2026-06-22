@@ -288,7 +288,7 @@ export default function SectorsPage() {
                         <div className="mt-2 flex items-center gap-2">
                           <div className="flex-1 h-1.5 bg-zinc-800 rounded-full overflow-hidden relative">
                             <div
-                              className="h-full rounded-full transition-all group-hover/sector:shadow-[0_0_8px_var(--bar-color)]"
+                              className="h-full rounded-full transition-all"
                               style={{
                                 width: `${Math.min(sector.weight * 100, 100)}%`,
                                 backgroundColor: color,
@@ -307,7 +307,7 @@ export default function SectorsPage() {
                           {overweight != null && (
                             <span className={`text-[10px] tabular w-16 text-right ${
                               overweight > 0.05 ? "text-amber-400" :
-                              overweight < -0.05 ? "text-sky-400" :
+                              overweight < -0.05 ? "text-zinc-400" :
                               "text-zinc-500"
                             }`}>
                               {overweight > 0 ? "+" : ""}{(overweight * 100).toFixed(1)}%

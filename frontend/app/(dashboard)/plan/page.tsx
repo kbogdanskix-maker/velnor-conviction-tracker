@@ -77,8 +77,8 @@ function PlanSection({ content, icon: Icon, color }: {
 const SECTION_CONFIG: Record<string, { icon: typeof Sparkles; color: string; bg: string }> = {
   "Financial Health Overview": { icon: CheckCircle2, color: "text-emerald-400", bg: "bg-emerald-400/5 border-emerald-400/10" },
   "Priority Actions":          { icon: Target,       color: "text-teal-400",    bg: "bg-teal-400/5 border-teal-400/10" },
-  "Goals Analysis":             { icon: TrendingUp,   color: "text-sky-400",     bg: "bg-sky-400/5 border-sky-400/10" },
-  "Investment Strategy":        { icon: BarChart2,    color: "text-violet-400",  bg: "bg-violet-400/5 border-violet-400/10" },
+  "Goals Analysis":             { icon: TrendingUp,   color: "text-vela-teal",   bg: "bg-vela-teal/5 border-vela-teal/10" },
+  "Investment Strategy":        { icon: BarChart2,    color: "text-vela-teal",   bg: "bg-vela-teal/5 border-vela-teal/10" },
   "Risks to Watch":             { icon: AlertTriangle, color: "text-amber-400",  bg: "bg-amber-400/5 border-amber-400/10" },
 };
 
@@ -235,7 +235,7 @@ export default function PlanPage() {
                 label: "Active Goals",
                 value: String(goals.length),
                 sub: "goals set",
-                color: "text-sky-400",
+                color: "text-vela-teal",
               },
             ].map((card) => (
               <div key={card.label} className="vela-card text-center py-4">

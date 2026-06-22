@@ -91,10 +91,10 @@ const PLANS: Plan[] = [
     interval: "mo",
     yearlyPrice: 250,
     icon: Orbit,
-    accent: "text-violet-400",
-    glowFrom: "rgba(139,92,246,0.25)",
-    glowTo: "rgba(139,92,246,0.05)",
-    buttonClass: "bg-violet-500 hover:bg-violet-400 text-white font-semibold",
+    accent: "text-vela-teal",
+    glowFrom: "rgba(26,168,187,0.15)",
+    glowTo: "rgba(26,168,187,0.03)",
+    buttonClass: "bg-vela-teal hover:bg-teal-400 text-white font-semibold",
     features: [
       "Everything in Voyager, plus:",
       "Unlimited AI insights",
@@ -179,7 +179,7 @@ export default function PricingPage() {
                       <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 ${
                         plan.id === "horizon" ? "bg-zinc-800" :
                         plan.id === "voyager" ? "bg-vela-teal/15" :
-                        "bg-violet-500/15"
+                        "bg-vela-teal/15"
                       }`}>
                         <Icon className={`w-5 h-5 ${plan.accent}`} />
                       </div>
@@ -223,7 +223,7 @@ export default function PricingPage() {
                                 <Check className={`w-4 h-4 mt-0.5 shrink-0 ${
                                   plan.id === "horizon" ? "text-zinc-500" :
                                   plan.id === "voyager" ? "text-vela-teal/70" :
-                                  "text-violet-400/70"
+                                  "text-vela-teal/70"
                                 }`} />
                                 <span className="text-sm text-zinc-300">{f}</span>
                               </>

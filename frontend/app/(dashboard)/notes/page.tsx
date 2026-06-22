@@ -66,7 +66,7 @@ function NoteCard({
         : "bg-[#0d0d0d] border-[#1a1a1a] hover:border-zinc-700/60"
     }`}>
       {isFlagged && (
-        <div className="absolute top-3 left-3.5 w-[5px] h-[5px] rounded-full bg-teal-500 shadow-[0_0_6px_#1AA8BB60]" />
+        <div className="absolute top-3 left-3.5 w-[5px] h-[5px] rounded-full bg-teal-500" />
       )}
 
       {editing ? (

@@ -62,7 +62,7 @@ function getItemIcon(category: string): { icon: typeof TrendingUp; color: string
     case "portfolio":
       return { icon: Briefcase, color: "text-vela-teal" };
     case "macro":
-      return { icon: Globe, color: "text-violet-400" };
+      return { icon: Globe, color: "text-vela-teal" };
     default:
       return { icon: TrendingUp, color: "text-amber-400" };
   }

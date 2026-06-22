@@ -164,7 +164,7 @@ export default function GuidePage() {
                               {item.label}
                             </span>
                             {item.tier && (
-                              <span className="text-[9px] uppercase tracking-wider font-semibold bg-violet-500/15 text-violet-400 px-1.5 py-0.5 rounded">
+                              <span className="text-[9px] uppercase tracking-wider font-semibold bg-vela-teal/15 text-vela-teal px-1.5 py-0.5 rounded">
                                 {item.tier}
                               </span>
                             )}

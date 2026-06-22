@@ -587,7 +587,7 @@ export default function NwHistoryPage() {
                   return (
                     <div key={snap.id} className="flex gap-4 group">
                       <div className="flex flex-col items-center">
-                        <div className={`w-2.5 h-2.5 rounded-full border-2 border-zinc-900 mt-1.5 shrink-0 ${snap.note === "Auto-snapshot" ? "bg-teal-500" : "bg-violet-400"}`} />
+                        <div className={`w-2.5 h-2.5 rounded-full border-2 border-zinc-900 mt-1.5 shrink-0 ${snap.note === "Auto-snapshot" ? "bg-teal-500" : "bg-zinc-400"}`} />
                         {i < sorted.length - 1 && <div className="w-px flex-1 bg-zinc-800" />}
                       </div>
                       <div className="flex-1 pb-6">

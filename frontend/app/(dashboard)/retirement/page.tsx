@@ -111,7 +111,7 @@ export default function RetirementPage() {
     <PageTransition className="space-y-6">
       <div>
         <h1 className="text-2xl font-display font-bold text-zinc-100 flex items-center gap-2">
-          <Umbrella className="w-6 h-6 text-sky-400" />
+          <Umbrella className="w-6 h-6 text-vela-teal" />
           Retirement Projection
         </h1>
         <p className="text-sm text-zinc-500 mt-0.5">
@@ -270,7 +270,7 @@ export default function RetirementPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {[
                 { href: "/fi", label: "FI Tracker", desc: "Track your path to financial independence", icon: Flame, hoverColor: "group-hover:bg-orange-500/10", iconColor: "group-hover:text-orange-400" },
-                { href: "/monte-carlo", label: "Monte Carlo", desc: "Simulate thousands of market scenarios", icon: TrendingUp, hoverColor: "group-hover:bg-purple-500/10", iconColor: "group-hover:text-purple-400" },
+                { href: "/monte-carlo", label: "Monte Carlo", desc: "Simulate thousands of market scenarios", icon: TrendingUp, hoverColor: "group-hover:bg-vela-teal/10", iconColor: "group-hover:text-vela-teal" },
               ].map((link) => (
                 <Link key={link.href} href={link.href} className="vela-card group hover:border-zinc-600 transition-colors flex items-center gap-3">
                   <div className={`p-2 rounded-lg bg-zinc-800 ${link.hoverColor} transition-colors`}>

@@ -164,9 +164,9 @@ export default function AnnualReviewPage() {
 
           <FloatingCard delay={0.3}>
             <div className="p-5 text-center">
-              <PieChart className="w-5 h-5 mx-auto text-sky-400 mb-2" />
+              <PieChart className="w-5 h-5 mx-auto text-vela-teal mb-2" />
               <p className="text-xs text-zinc-400 font-medium mb-1">SAVINGS RATE</p>
-              <p className="text-xl font-display font-bold text-sky-400 tabular-nums">{savingsRate.toFixed(0)}%</p>
+              <p className="text-xl font-display font-bold text-vela-teal tabular-nums">{savingsRate.toFixed(0)}%</p>
             </div>
           </FloatingCard>
         </div>

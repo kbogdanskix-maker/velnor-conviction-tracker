@@ -59,7 +59,7 @@ const OBJECTIVE_OPTIONS = [
   { value: "growth" as const, label: "Maximize growth", desc: "Compounding and capital appreciation come first. Comfortable with concentration and volatility.", color: "border-emerald-500/40 bg-emerald-500/5 text-emerald-400", inactive: "border-zinc-700 hover:border-zinc-600" },
   { value: "income" as const, label: "Generate income", desc: "Dividends and cash flow matter most. Favor yield and durability.", color: "border-teal-500/40 bg-teal-500/5 text-teal-400", inactive: "border-zinc-700 hover:border-zinc-600" },
   { value: "preservation" as const, label: "Preserve capital", desc: "Protecting what you have outweighs upside. Low drawdown tolerance.", color: "border-blue-500/40 bg-blue-500/5 text-blue-400", inactive: "border-zinc-700 hover:border-zinc-600" },
-  { value: "target" as const, label: "Reach a target", desc: "Working toward a goal or financial independence on a timeline.", color: "border-indigo-500/40 bg-indigo-500/5 text-indigo-400", inactive: "border-zinc-700 hover:border-zinc-600" },
+  { value: "target" as const, label: "Reach a target", desc: "Working toward a goal or financial independence on a timeline.", color: "border-vela-teal/40 bg-vela-teal/5 text-vela-teal", inactive: "border-zinc-700 hover:border-zinc-600" },
   { value: "learning" as const, label: "Learn & experiment", desc: "Building skill and conviction. Open to ideas, comfortable being wrong.", color: "border-amber-500/40 bg-amber-500/5 text-amber-400", inactive: "border-zinc-700 hover:border-zinc-600" },
 ];
 

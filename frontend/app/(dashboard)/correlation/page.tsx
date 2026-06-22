@@ -300,7 +300,7 @@ export default function CorrelationPage() {
             </FloatingCard>
             <FloatingCard delay={0.26}>
               <div className="text-center py-3 px-3">
-                <p className="text-2xl font-bold tabular text-sky-400">{analysis.negativePairs}</p>
+                <p className="text-2xl font-bold tabular text-vela-teal">{analysis.negativePairs}</p>
                 <p className="text-[10px] text-zinc-500 mt-1">
                   Natural Hedges
                 </p>
@@ -623,12 +623,12 @@ function PairCard({ pair }: { pair: OverlapPair }) {
   const barColor =
     pair.severity === "danger" ? "bg-rose-500" :
     pair.severity === "warning" ? "bg-amber-500" :
-    pair.correlation < -0.2 ? "bg-sky-500" :
+    pair.correlation < -0.2 ? "bg-zinc-500" :
     "bg-emerald-500";
   const textColor =
     pair.severity === "danger" ? "text-rose-400" :
     pair.severity === "warning" ? "text-amber-400" :
-    pair.correlation < -0.2 ? "text-sky-400" :
+    pair.correlation < -0.2 ? "text-zinc-400" :
     "text-emerald-400";
 
   return (

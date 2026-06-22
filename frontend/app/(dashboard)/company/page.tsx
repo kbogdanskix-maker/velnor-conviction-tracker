@@ -75,7 +75,7 @@ const TXN_STYLE: Record<string, { color: string; bg: string; label: string; Icon
   sell: { color: "text-rose-400", bg: "bg-rose-400/10", label: "Sell", Icon: ArrowDownRight },
   gift: { color: "text-zinc-400", bg: "bg-zinc-700/40", label: "Gift", Icon: Gift },
   option: { color: "text-amber-400", bg: "bg-amber-400/10", label: "Option", Icon: FileText },
-  grant: { color: "text-violet-400", bg: "bg-violet-400/10", label: "Grant", Icon: FileText },
+  grant: { color: "text-vela-teal", bg: "bg-vela-teal/10", label: "Grant", Icon: FileText },
   other: { color: "text-zinc-400", bg: "bg-zinc-700/40", label: "Other", Icon: FileText },
 };
 
