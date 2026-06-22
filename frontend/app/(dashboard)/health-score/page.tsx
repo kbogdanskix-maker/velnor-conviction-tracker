@@ -292,13 +292,13 @@ function computeHealthScore(
     const urgent = goalData.filter((g) => g.mo < 12 && g.pct < 70);
 
     if (ctx.hasUrgentUnderfunded && urgent.length > 0) {
-      goalInsight = `"${urgent[0].name}" is due within a year at ${urgent[0].pct.toFixed(0)}% — urgently increase contributions.`;
+      goalInsight = `"${urgent[0].name}" is due within a year at ${urgent[0].pct.toFixed(0)}%. Urgently increase contributions.`;
     } else if (goalScore >= 75) {
-      goalInsight = `${onTrack}/${goals.length} goals over 50% complete — excellent progress.`;
+      goalInsight = `${onTrack}/${goals.length} goals over 50% complete. Excellent progress.`;
     } else if (goalScore >= 40) {
-      goalInsight = `${onTrack}/${goals.length} goals over 50% — making progress. Keep contributing.`;
+      goalInsight = `${onTrack}/${goals.length} goals over 50%. Making progress. Keep contributing.`;
     } else {
-      goalInsight = `Goals averaging ${weightedProgress.toFixed(0)}% completion — consider increasing monthly contributions.`;
+      goalInsight = `Goals averaging ${weightedProgress.toFixed(0)}% completion. Consider increasing monthly contributions.`;
     }
   }
   dims.push({
@@ -615,7 +615,7 @@ export default function HealthScorePage() {
             </div>
             <div className="space-y-1">
               <p className="text-zinc-300 font-medium">Overall Score</p>
-              <p>Weighted average across dimensions — weights shift based on your goals (retirement, home, horizon). A = 90+, B = 75+, C = 60+, D = 40+.</p>
+              <p>Weighted average across dimensions. Weights shift based on your goals (retirement, home, horizon). A = 90+, B = 75+, C = 60+, D = 40+.</p>
             </div>
           </div>
         </div>

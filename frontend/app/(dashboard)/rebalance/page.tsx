@@ -190,7 +190,7 @@ export default function RebalancePage() {
         {strategy === "custom" && (
           <div className="space-y-3 pt-2 border-t border-zinc-800">
             <div className="flex items-center justify-between">
-              <p className="text-xs text-zinc-500">Set target weights — effective targets shown in teal</p>
+              <p className="text-xs text-zinc-500">Set target weights. Effective targets shown in teal.</p>
               <span className={`text-xs tabular font-medium px-2 py-0.5 rounded ${
                 Math.abs(rawInputSum - 100) < 1
                   ? "text-zinc-500"
@@ -232,7 +232,7 @@ export default function RebalancePage() {
             </div>
             {Math.abs(rawInputSum - 100) >= 1 && (
               <p className="text-[11px] text-amber-400/70">
-                Inputs don&apos;t sum to 100% — teal values show effective targets after normalization.
+                Inputs don&apos;t sum to 100%. Teal values show effective targets after normalization.
               </p>
             )}
           </div>
@@ -270,7 +270,7 @@ export default function RebalancePage() {
           </span>
           {cashToInvest === 0 && (
             <span className="ml-1 text-zinc-700">
-              — sells fund the buys; add cash above to deploy new capital
+              (sells fund the buys; add cash above to deploy new capital)
             </span>
           )}
         </span>

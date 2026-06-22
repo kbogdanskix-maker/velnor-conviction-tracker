@@ -65,7 +65,7 @@ const GOV_LABELS: Record<string, string> = {
 const GOV_PILLAR_DESC: Record<string, string> = {
   audit: "Audit & accounting risk: financial-reporting quality, restatements, auditor independence and tenure.",
   board: "Board structure & accountability: independence, classified/staggered boards, a combined chair/CEO, attendance and over-boarding. Concentrated or founder control raises this score.",
-  compensation: "Pay-for-performance alignment — whether executive pay tracks results, not the dollar size of pay. Stock-heavy pay against weak or negative earnings scores higher.",
+  compensation: "Pay-for-performance alignment: whether executive pay tracks results, not the dollar size of pay. Stock-heavy pay against weak or negative earnings scores higher.",
   shareholder_rights: "Shareholder rights & takeover defenses: dual-class shares, poison pills, supermajority requirements, and the ability to call meetings or act by written consent.",
   overall: "Composite percentile across the four pillars, ranked against index peers.",
 };
@@ -90,7 +90,7 @@ function RetryNotice({ label, onRetry }: { label: string; onRetry: () => void })
     <div className="flex flex-col items-center gap-2 py-6 text-center">
       <p className="text-sm text-amber-400/90">Couldn&apos;t load {label}.</p>
       <p className="text-xs text-zinc-500 max-w-sm">
-        The market-data source may be rate-limiting. This is temporary — the data
+        The market-data source may be rate-limiting. This is temporary: the data
         exists, it just didn&apos;t come through this time.
       </p>
       <button
@@ -143,7 +143,7 @@ function CompanyDeepDive() {
               <Building2 className="w-6 h-6 text-vela-teal" /> Company Deep-Dive
             </h1>
             <p className="text-zinc-400 text-sm mt-1">
-              Financial statements, management, and insider activity — filing data only.
+              Financial statements, management, and insider activity. Filing data only.
             </p>
           </div>
           <form onSubmit={submit} className="flex items-center gap-2">
@@ -336,10 +336,10 @@ function CompanyDeepDive() {
                         ))}
                         <div className="mt-3 space-y-1.5 border-t border-zinc-800/60 pt-2.5">
                           <p className="text-[10px] text-zinc-500 leading-relaxed">
-                            <span className="text-zinc-400">ISS Governance QualityScore</span> — a decile <em className="not-italic text-zinc-300">rank vs. index peers</em>, not an absolute grade. 1 = lowest-risk decile, 10 = highest-risk decile. A high score means higher risk relative to peers.
+                            <span className="text-zinc-400">ISS Governance QualityScore</span>: a decile <em className="not-italic text-zinc-300">rank vs. index peers</em>, not an absolute grade. 1 = lowest-risk decile, 10 = highest-risk decile. A high score means higher risk relative to peers.
                           </p>
                           <p className="text-[10px] text-zinc-600 leading-relaxed">
-                            ISS raises scores for dual-class shares, founder/insider control, classified boards and takeover defenses, and scores pay on performance alignment rather than dollar size — so recently-public, founder-led companies often rank higher.
+                            ISS raises scores for dual-class shares, founder/insider control, classified boards and takeover defenses, and scores pay on performance alignment rather than dollar size. Recently-public, founder-led companies often rank higher.
                           </p>
                           {mgmt.governance_as_of && (
                             <p className="text-[10px] text-zinc-600">As of {mgmt.governance_as_of}. Hover a pillar for what it measures.</p>

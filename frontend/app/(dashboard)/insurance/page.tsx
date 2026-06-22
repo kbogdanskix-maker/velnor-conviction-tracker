@@ -226,7 +226,7 @@ export default function InsurancePage() {
         message: `${effectiveHomeowner ? "Home" : "Renters"} insurance active. ${homePolicies.length} policy(ies) on file.`,
         recommendation: effectiveHomeowner
           ? "Update coverage after renovations or major purchases. Review replacement cost vs. actual cash value."
-          : "Review annually — your coverage should reflect the value of your belongings.",
+          : "Review annually. Your coverage should reflect the value of your belongings.",
       });
     }
 
@@ -250,7 +250,7 @@ export default function InsurancePage() {
         results.push({
           type: "life", label: "Life", icon: User,
           status: "missing", priority: "low",
-          message: "No life insurance on file — not urgent with no dependents or major shared debt.",
+          message: "No life insurance on file. Not urgent with no dependents or major shared debt.",
           recommendation: "Life insurance becomes important when others depend on your income. Revisit if your situation changes.",
         });
       }

@@ -108,7 +108,7 @@ export default function ProfilePage() {
           My Profile
         </h1>
         <p className="text-sm text-zinc-500 mt-0.5">
-          Set your personal details once — all pages adapt to your situation.
+          Set your personal details once. All pages adapt to your situation.
         </p>
       </div>
 
@@ -308,7 +308,7 @@ export default function ProfilePage() {
             <h2 className="text-sm font-semibold text-zinc-200 uppercase tracking-wider">Investor Profile</h2>
           </div>
           <p className="text-[11px] text-zinc-600 mb-5">
-            Tells Velnor&apos;s AI how to think about your money — your objective and philosophy shape its framing and what it emphasizes.
+            Tells Velnor&apos;s AI how to think about your money. Your objective and philosophy shape its framing and what it emphasizes.
           </p>
 
           {/* Primary objective */}
@@ -382,7 +382,7 @@ export default function ProfilePage() {
           <textarea
             value={profile.philosophy}
             onChange={(e) => update({ philosophy: e.target.value.slice(0, 1200) })}
-            placeholder="How do you think about investing? What are you trying to achieve, and how do you approach it? e.g. 'I look for mispriced growth — companies the market mis-classifies. I'll hold through volatility if the thesis holds. I don't care about dividends or matching an index.'"
+            placeholder="How do you think about investing? What are you trying to achieve, and how do you approach it? e.g. 'I look for mispriced growth (companies the market mis-classifies). I'll hold through volatility if the thesis holds. I don't care about dividends or matching an index.'"
             rows={5}
             className="w-full bg-[#0c0c0c] border border-zinc-800 focus:border-emerald-500/40 rounded-lg px-3 py-2.5 text-[13px] text-zinc-200 placeholder-zinc-700 resize-none outline-none transition-colors leading-relaxed"
           />
@@ -414,7 +414,7 @@ export default function ProfilePage() {
           </div>
           {annualIncome > 0 && (
             <p className="text-xs text-zinc-600 mt-3 pt-3 border-t border-zinc-800">
-              Annual income from Cash Flow: ${annualIncome.toLocaleString()} — used to suggest tax bracket above.
+              Annual income from Cash Flow: ${annualIncome.toLocaleString()}. Used to suggest tax bracket above.
             </p>
           )}
         </div>

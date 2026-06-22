@@ -213,7 +213,7 @@ function generateAlerts(
             : ["Healthcare", "Consumer Defensive", "Industrials"];
         const suggestSectors = prioritySectors.filter((s) => missingSectors.includes(s)).slice(0, 3);
         const suggestText = suggestSectors.length > 0
-          ? `Consider adding ${suggestSectors.join(", ")} — sectors you currently have zero exposure to.`
+          ? `Consider adding ${suggestSectors.join(", ")}, sectors you currently have zero exposure to.`
           : `Spreading further across the ${missingSectors.length} sectors you don't hold would reduce correlation risk.`;
 
         // Build a message that references actual sector names and top-2 if relevant

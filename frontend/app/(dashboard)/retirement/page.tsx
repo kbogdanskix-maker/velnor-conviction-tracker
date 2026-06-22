@@ -203,7 +203,7 @@ export default function RetirementPage() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 {([
-                  { label: "Current age", value: currentAge, set: setCurrentAge, min: 18, max: 70, step: 1, suffix: "", desc: "Your age today — seeded from My Profile" },
+                  { label: "Current age", value: currentAge, set: setCurrentAge, min: 18, max: 70, step: 1, suffix: "", desc: "Your age today (seeded from My Profile)" },
                   { label: "Retire at age", value: retireAge, set: setRetireAge, min: 40, max: 80, step: 1, suffix: "", desc: `${Math.max(0, retireAge - currentAge)} years of accumulation remaining` },
                   { label: "Social Security starts", value: ssStartAge, set: setSsStartAge, min: 62, max: 70, step: 1, suffix: "", desc: "Earlier = lower monthly benefit" },
                   { label: "SS monthly benefit", value: annualSS / 12, set: (v: number) => setAnnualSS(v * 12), min: 0, max: 5000, step: 100, suffix: "", isMoney: true, desc: "Estimated monthly Social Security" },

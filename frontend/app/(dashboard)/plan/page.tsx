@@ -124,7 +124,7 @@ export default function PlanPage() {
         return;
       }
       if (res.status === 429) {
-        setError("You've reached today's AI insight limit. It resets at midnight — or upgrade to Navigator for unlimited insights.");
+        setError("You've reached today's AI insight limit. It resets at midnight. Upgrade to Navigator for unlimited insights.");
         setGenerating(false);
         return;
       }

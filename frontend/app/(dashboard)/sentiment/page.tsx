@@ -259,7 +259,7 @@ export default function SentimentPage() {
             News Sentiment
           </h1>
           <p className="text-sm text-zinc-500 mt-0.5">
-            Real news headlines scored with VADER NLP — refreshed every 4 hours
+            Real news headlines scored with VADER NLP, refreshed every 4 hours
           </p>
         </div>
         <button
@@ -341,7 +341,7 @@ export default function SentimentPage() {
           <Minus className="w-4 h-4 text-zinc-500 shrink-0 mt-0.5" />
           <p className="text-xs text-zinc-500 leading-relaxed">
             Scores are computed with <strong className="text-zinc-400">VADER NLP</strong> on recent headlines from Yahoo Finance.
-            VADER measures text polarity, not price direction — a headline can sound positive while the stock falls.
+            VADER measures text polarity, not price direction. A headline can sound positive while the stock falls.
             Use as one signal among many, not a trading signal.
           </p>
         </div>

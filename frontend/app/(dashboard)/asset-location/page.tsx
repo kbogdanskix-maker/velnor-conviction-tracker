@@ -88,7 +88,7 @@ function classifyHolding(h: Holding): AssetClassification {
     return {
       ticker, taxEfficiency: "tax-inefficient", recommendedAccount: "tax-advantaged",
       category: "Crypto", estimatedYield: null,
-      description: "Digital asset taxed as property — every trade is a taxable event.",
+      description: "Digital asset taxed as property. Every trade is a taxable event.",
       reason: "Crypto gains are taxed as property. Tax-advantaged accounts shelter frequent rebalancing.",
       currentAccount: h.asset_type, marketValue: mv, dividendYield: null,
     };
@@ -131,7 +131,7 @@ function classifyHolding(h: Holding): AssetClassification {
     return {
       ticker, taxEfficiency: "tax-efficient", recommendedAccount: "taxable",
       category: "International ETF", estimatedYield: null,
-      description: "Holds stocks from non-US markets — earns a foreign tax credit in taxable accounts.",
+      description: "Holds stocks from non-US markets. Earns a foreign tax credit in taxable accounts.",
       reason: "International stocks in taxable accounts let you claim the foreign tax credit.",
       currentAccount: h.asset_type, marketValue: mv, dividendYield: null,
     };
@@ -142,7 +142,7 @@ function classifyHolding(h: Holding): AssetClassification {
       ticker, taxEfficiency: "tax-efficient", recommendedAccount: "taxable",
       category: "Index / Growth ETF", estimatedYield: null,
       description: "Low-cost fund tracking a broad market index with minimal tax events.",
-      reason: "Low turnover, qualified dividends — tax-efficient in taxable accounts.",
+      reason: "Low turnover, qualified dividends. Tax-efficient in taxable accounts.",
       currentAccount: h.asset_type, marketValue: mv, dividendYield: null,
     };
   }
@@ -150,7 +150,7 @@ function classifyHolding(h: Holding): AssetClassification {
   return {
     ticker, taxEfficiency: "tax-efficient", recommendedAccount: "taxable",
     category: "Individual Stock", estimatedYield: null,
-    description: "Shares in a single company — eligible for tax-loss harvesting and long-term rates.",
+    description: "Shares in a single company, eligible for tax-loss harvesting and long-term rates.",
     reason: "Individual stocks can benefit from tax-loss harvesting and long-term capital gains rates.",
     currentAccount: h.asset_type, marketValue: mv, dividendYield: null,
   };

@@ -250,7 +250,7 @@ export default function DebtPayoffPage() {
         <div className="flex items-start gap-3 p-3 rounded-lg border border-amber-400/20 bg-amber-400/5">
           <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
           <div className="text-xs text-zinc-300 leading-relaxed">
-            <span className="font-medium text-amber-400">Estimates may be inaccurate —</span>{" "}
+            <span className="font-medium text-amber-400">Estimates may be inaccurate:</span>{" "}
             {debtsWithMissingData.map((l) => (
               <span key={l.id}>
                 <span className="font-medium">{l.name}</span> is missing{" "}

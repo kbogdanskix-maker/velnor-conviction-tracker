@@ -305,7 +305,7 @@ function MethodologyCard({
             </div>
             <p className="text-zinc-500 leading-relaxed">
               The safe withdrawal rate is the percentage of your portfolio you can spend each year without running out of money.
-              4% is the traditional figure from the Trinity Study — based on a 30-year retirement with a 60/40 portfolio.
+              4% is the traditional figure from the Trinity Study, based on a 30-year retirement with a 60/40 portfolio.
               Lowering it (e.g. 3.5%) is more conservative and suits longer retirements.
             </p>
           </div>

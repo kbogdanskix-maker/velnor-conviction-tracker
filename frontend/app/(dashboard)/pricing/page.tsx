@@ -66,7 +66,7 @@ const PLANS: Plan[] = [
     buttonClass: "bg-vela-teal hover:bg-teal-400 text-zinc-950 font-semibold",
     features: [
       "Everything in Horizon, plus:",
-      "AI insights — 10 per day",
+      "AI insights (10 per day)",
       "Stock screener (5,000+ tickers)",
       "DCF & Reverse DCF valuation (5 saved models)",
       "Stock Compare",
@@ -101,7 +101,7 @@ const PLANS: Plan[] = [
       "\"What If\" scenario simulator",
       "Monte Carlo projections",
       "Correlation & diversification map",
-      "Reflect — AI portfolio journal",
+      "Reflect: AI portfolio journal",
       "Company Deep-Dive (filings, insider & institutional)",
       "5s real-time quote refresh",
       "Priority support",
@@ -200,7 +200,7 @@ export default function PricingPage() {
                       {plan.yearlyPrice && (
                         <p className="text-zinc-500 text-xs mt-1.5">
                           or <span className="text-zinc-300 tabular">${plan.yearlyPrice}</span>/yr
-                          <span className="text-zinc-600"> — save {Math.round((1 - plan.yearlyPrice / (plan.price * 12)) * 100)}%</span>
+                          <span className="text-zinc-600"> (save {Math.round((1 - plan.yearlyPrice / (plan.price * 12)) * 100)}%)</span>
                         </p>
                       )}
                     </div>

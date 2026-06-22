@@ -148,7 +148,7 @@ function AddPastEntryModal({ open, onClose, onAdd, existingDates }: {
                 className="input-field w-full"
               />
               {dateConflict && (
-                <p className="text-xs text-amber-400 mt-1">A snapshot already exists for this date — it will be replaced.</p>
+                <p className="text-xs text-amber-400 mt-1">A snapshot already exists for this date. It will be replaced.</p>
               )}
             </div>
 

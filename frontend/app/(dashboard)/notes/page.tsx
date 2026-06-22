@@ -219,7 +219,7 @@ export default function NotesPage() {
                 <h1 className="text-xl font-semibold text-zinc-100 tracking-tight">Notes</h1>
               </div>
               <p className="text-sm text-zinc-500">
-                Your knowledge library — feeds the Reflect AI as background context.
+                Your knowledge library. Feeds the Reflect AI as background context.
               </p>
             </div>
             {totalCount > 0 && (
