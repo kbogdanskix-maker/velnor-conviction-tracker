@@ -20,8 +20,11 @@ threat to viability — bigger than any design-polish issue.
    benchmark percentiles are age-agnostic; asset-location tax classification is fragile string
    matching. One wrong number discredits all the numbers. 15 features we can stand behind beat 63
    we can't all verify.
-4. **The headline differentiator is dark.** The AI "Reflect" read — what the landing page sells —
-   returns an auth error because no `ANTHROPIC_API_KEY` is configured backend-side.
+4. **The headline differentiator needs verifying.** The AI "Reflect" read — what the landing page
+   sells — is the spine centerpiece. `ANTHROPIC_API_KEY` is now configured in `backend/.env`
+   (valid `sk-ant-` format), so the prior auth error was stale (pre-key). It still needs an
+   end-to-end check after a backend restart (env changes don't hot-reload) to confirm Reflect
+   actually streams.
 
 ## Goal
 
@@ -49,9 +52,10 @@ Cut the launch surface from **63 → a spine of ~21 destinations** (10 of them m
   `vela_nav_advanced`) becomes **Spine (default) / Lab (all tools)**. The spine is the launch nav;
   Lab reveals deferred tools. No new infrastructure — repurpose `CORE_HREFS` → the spine set and the
   toggle label.
-- **AI prerequisite (owner: user).** Reflect and Earnings AI assume `ANTHROPIC_API_KEY` is set
-  backend-side. This spec treats them as live; configuring the key is a launch prerequisite the user
-  handles. Claude does not touch backend secrets.
+- **AI prerequisite (configured).** `ANTHROPIC_API_KEY` is set in `backend/.env` (valid format), so
+  Reflect and Earnings AI are treated as live. Remaining step is to **restart the backend and confirm
+  Reflect streams end-to-end** (env changes don't hot-reload). Claude does not read, print, or modify
+  the secret value.
 
 ## The launch spine (target nav)
 
@@ -134,4 +138,5 @@ remain available via Lab for power users and can be promoted later if real users
 2. Redirect the "obvious" merges that are already near-siblings (Valuation, Net Worth, Tax).
 3. Tabbed merges in priority order: Cash Flow, On Track?, Performance, Portfolio Health, Markets,
    Dividends, Thesis. Fix the named correctness bugs as each cluster is touched.
-4. Turn on / verify Reflect (AI key prerequisite) so the spine centerpiece is live.
+4. Restart the backend and verify Reflect streams end-to-end (key already configured) so the spine
+   centerpiece is confirmed live.
