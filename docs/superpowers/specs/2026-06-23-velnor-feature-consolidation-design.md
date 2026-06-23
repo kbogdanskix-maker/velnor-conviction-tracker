@@ -1,6 +1,11 @@
 # Velnor Feature Consolidation — Design
 
-_Date: 2026-06-23 · Branch: `feat/ui-design-system-phase-0` · Status: design (awaiting plan)_
+_Date: 2026-06-23 · Branch: `feat/ui-design-system-phase-0` · Status: SUPERSEDED_
+
+> **Superseded by `2026-06-23-velnor-conviction-tracker-pivot-design.md`.** The merges, Lab, and
+> Spine/Lab toggle below still apply, but the spine is now reframed **investing-first** with planning
+> demoted to a secondary section. Read the pivot spec first; this doc is retained for the merge map
+> and defer-list detail it still provides.
 
 ## Problem (the honest viability read)
 
