@@ -365,7 +365,7 @@ export default function ProfilePage() {
                         : [...profile.deEmphasize, opt.value],
                     })
                   }
-                  className={`text-xs px-3 py-1.5 rounded-full border transition-all ${
+                  className={`text-xs px-3 py-1.5 rounded border transition-all ${
                     on
                       ? "border-rose-500/40 bg-rose-500/10 text-rose-300"
                       : "border-zinc-700 hover:border-zinc-600 text-zinc-400"

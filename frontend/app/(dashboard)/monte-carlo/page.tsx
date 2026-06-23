@@ -151,7 +151,7 @@ function ConfidenceBadge({ rate }: { rate: number }) {
   }
 
   return (
-    <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full ${bg} ${color} text-xs font-medium`}>
+    <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded ${bg} ${color} text-xs font-medium`}>
       <Icon className="w-3.5 h-3.5" />
       {label}  - {rate.toFixed(0)}% success
     </div>

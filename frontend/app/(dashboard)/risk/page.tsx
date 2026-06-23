@@ -347,7 +347,7 @@ function MetricCard({ def, value }: { def: MetricDef; value: number | null }) {
           </div>
           <span className="text-sm font-medium text-zinc-300">{def.label}</span>
         </div>
-        <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${grade.bg} ${grade.color}`}>
+        <span className={`text-xs font-bold px-2 py-0.5 rounded ${grade.bg} ${grade.color}`}>
           {grade.grade}
         </span>
       </div>
@@ -406,7 +406,7 @@ function ConcentrationCard({ holdings }: { holdings: Holding[] }) {
           </div>
           <span className="text-sm font-medium text-zinc-300">Concentration Risk</span>
         </div>
-        <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${conc.grade.bg} ${conc.grade.color}`}>
+        <span className={`text-xs font-bold px-2 py-0.5 rounded ${conc.grade.bg} ${conc.grade.color}`}>
           {conc.grade.grade}
         </span>
       </div>

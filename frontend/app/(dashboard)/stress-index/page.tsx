@@ -74,7 +74,7 @@ function DimensionCard({ dim, link }: { dim: StressDimension; link?: string }) {
           <h3 className="text-sm font-medium text-zinc-200">{dim.label}</h3>
         </div>
         <div className="flex items-center gap-2">
-          <span className={`text-xs px-2 py-0.5 rounded-full border ${STATUS_BG[dim.status]}`}>
+          <span className={`text-xs px-2 py-0.5 rounded border ${STATUS_BG[dim.status]}`}>
             {dim.score}/100
           </span>
           {link && <ArrowRight className="w-3 h-3 text-zinc-600 group-hover:text-zinc-400 transition-colors" />}

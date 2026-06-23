@@ -38,7 +38,7 @@ export default function LearningCard({ card, onDismiss, compact }: LearningCardP
 
       {/* Category badge */}
       <div className="flex items-center gap-2 mb-2">
-        <span className={`text-xs px-2 py-0.5 rounded-full border ${colorClass}`}>
+        <span className={`text-xs px-2 py-0.5 rounded border ${colorClass}`}>
           {CATEGORY_LABELS[card.category]}
         </span>
         {card.link && !compact && (

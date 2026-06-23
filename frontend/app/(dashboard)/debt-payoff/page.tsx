@@ -524,7 +524,7 @@ function StrategyCard({
       {/* Selection indicator + recommended badge */}
       <div className="absolute top-3 right-3 flex items-center gap-2">
         {recommended && (
-          <span className="text-[10px] font-medium bg-vela-teal/15 text-vela-teal px-2 py-0.5 rounded-full">
+          <span className="text-[10px] font-medium bg-vela-teal/15 text-vela-teal px-2 py-0.5 rounded">
             Recommended
           </span>
         )}

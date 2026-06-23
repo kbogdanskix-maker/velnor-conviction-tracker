@@ -55,7 +55,7 @@ export default function NewsPage() {
             <div className="flex items-center gap-2 flex-wrap">
               <button
                 onClick={() => setFilter(null)}
-                className={`text-xs font-medium px-2.5 py-1 rounded-full transition-colors ${
+                className={`text-xs font-medium px-2.5 py-1 rounded transition-colors ${
                   filter === null
                     ? "bg-vela-teal/15 text-vela-teal"
                     : "bg-zinc-800 text-zinc-400 hover:text-zinc-200"
@@ -67,7 +67,7 @@ export default function NewsPage() {
                 <button
                   key={t}
                   onClick={() => setFilter(filter === t ? null : t)}
-                  className={`text-xs font-medium px-2.5 py-1 rounded-full transition-colors ${
+                  className={`text-xs font-medium px-2.5 py-1 rounded transition-colors ${
                     filter === t
                       ? "bg-vela-teal/15 text-vela-teal"
                       : "bg-zinc-800 text-zinc-400 hover:text-zinc-200"

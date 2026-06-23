@@ -537,7 +537,7 @@ export default function HealthScorePage() {
                     <d.icon className={`w-4 h-4 ${GRADE_COLORS[d.grade]}`} />
                     <span className="text-sm font-medium text-zinc-200">{d.label}</span>
                     {weights[d.key as keyof typeof weights] !== 20 && (
-                      <span className="text-[9px] font-semibold text-teal-500/70 bg-teal-500/10 px-1.5 py-0.5 rounded-full">
+                      <span className="text-[9px] font-semibold text-teal-500/70 bg-teal-500/10 px-1.5 py-0.5 rounded">
                         {weights[d.key as keyof typeof weights]}%
                       </span>
                     )}

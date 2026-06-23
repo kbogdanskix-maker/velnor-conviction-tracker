@@ -118,7 +118,7 @@ export default function PricingPage() {
     <PageTransition className="px-4 sm:px-6 pb-16 max-w-6xl mx-auto">
       {/* Hero */}
       <MotionSection className="text-center pt-8 pb-12">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-vela-teal/10 text-vela-teal text-xs font-medium mb-6">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-vela-teal/10 text-vela-teal text-xs font-medium mb-6">
           <Sparkles className="w-3.5 h-3.5" />
           Choose your trajectory
         </div>
@@ -160,7 +160,7 @@ export default function PricingPage() {
                   {/* Popular badge  - inside card, pinned to top */}
                   {isPopular && (
                     <div className="flex justify-center pt-3">
-                      <span className="px-3 py-1 rounded-full bg-vela-teal/20 text-vela-teal text-[11px] font-semibold uppercase tracking-wider border border-vela-teal/30">
+                      <span className="px-3 py-1 rounded bg-vela-teal/20 text-vela-teal text-[11px] font-semibold uppercase tracking-wider border border-vela-teal/30">
                         Most Popular
                       </span>
                     </div>

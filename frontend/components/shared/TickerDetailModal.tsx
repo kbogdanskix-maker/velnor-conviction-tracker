@@ -48,12 +48,12 @@ export default function TickerDetailModal({ ticker, open, onOpenChange }: Props)
                   {(info.sector || info.industry) && (
                     <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                       {info.sector && (
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400">
+                        <span className="text-xs px-2 py-0.5 rounded bg-zinc-800 text-zinc-400">
                           {info.sector}
                         </span>
                       )}
                       {info.industry && (
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400">
+                        <span className="text-xs px-2 py-0.5 rounded bg-zinc-800 text-zinc-400">
                           {info.industry}
                         </span>
                       )}

@@ -220,7 +220,7 @@ export default function CorrelationPage() {
             <button
               key={p.value}
               onClick={() => setPeriod(p.value)}
-              className={`px-3 py-1 text-xs rounded-full transition-colors ${
+              className={`px-3 py-1 text-xs rounded transition-colors ${
                 period === p.value
                   ? "bg-vela-teal/20 text-vela-teal"
                   : "bg-zinc-800 text-zinc-400 hover:text-zinc-300"

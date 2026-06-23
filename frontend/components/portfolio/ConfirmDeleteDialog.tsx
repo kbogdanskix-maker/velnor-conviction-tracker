@@ -73,7 +73,7 @@ export default function ConfirmDeleteDialog({
             <div className="bg-zinc-800/50 rounded-md p-3 space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium text-zinc-100">{transaction.ticker}</span>
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${typeBadge}`}>
+                <span className={`text-xs px-2 py-0.5 rounded font-medium ${typeBadge}`}>
                   {transaction.transaction_type}
                 </span>
               </div>

@@ -192,10 +192,10 @@ function ContextPanel() {
         <div className="bg-[#0f0f0f] border border-[#161616] rounded-[9px] p-2.5">
           <p className="text-[9.5px] text-zinc-500 mb-1.5 font-medium">Profile</p>
           <div className="flex flex-wrap gap-1">
-            <span className="text-[10px] px-1.5 py-0.5 rounded-full border border-teal-500/30 text-teal-500 bg-teal-500/5 font-medium capitalize">{profile.riskTolerance}</span>
-            <span className="text-[10px] px-1.5 py-0.5 rounded-full border border-teal-500/30 text-teal-500 bg-teal-500/5 font-medium capitalize">{profile.sophistication}</span>
-            <span className="text-[10px] px-1.5 py-0.5 rounded-full border border-zinc-700 text-zinc-400">Age {profile.age}</span>
-            <span className="text-[10px] px-1.5 py-0.5 rounded-full border border-zinc-700 text-zinc-400">{profile.marginalTaxRate}% tax</span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded border border-teal-500/30 text-teal-500 bg-teal-500/5 font-medium capitalize">{profile.riskTolerance}</span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded border border-teal-500/30 text-teal-500 bg-teal-500/5 font-medium capitalize">{profile.sophistication}</span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded border border-zinc-700 text-zinc-400">Age {profile.age}</span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded border border-zinc-700 text-zinc-400">{profile.marginalTaxRate}% tax</span>
           </div>
         </div>
 

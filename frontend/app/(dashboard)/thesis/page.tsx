@@ -144,7 +144,7 @@ export default function ThesisPage() {
 
   const stanceBadge = (stance: string) => {
     const cls = stance === "bullish" ? "bg-gain/15 text-gain" : stance === "bearish" ? "bg-loss/15 text-loss" : "bg-zinc-700/50 text-zinc-400";
-    return <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${cls}`}>{stance}</span>;
+    return <span className={`text-[10px] font-medium px-2 py-0.5 rounded ${cls}`}>{stance}</span>;
   };
 
   const hasEvaluated = stats.total > 0;
@@ -238,7 +238,7 @@ export default function ThesisPage() {
             <button
               key={s}
               onClick={() => setFilterStance(s)}
-              className={`text-xs px-3 py-1.5 rounded-full transition-colors ${
+              className={`text-xs px-3 py-1.5 rounded transition-colors ${
                 filterStance === s
                   ? "bg-vela-teal/15 text-vela-teal"
                   : "bg-zinc-800 text-zinc-400 hover:text-zinc-200"
@@ -259,7 +259,7 @@ export default function ThesisPage() {
               <button
                 key={o}
                 onClick={() => setFilterOutcome(filterOutcome === o ? "all" : o)}
-                className={`text-xs px-2.5 py-1.5 rounded-full transition-colors inline-flex items-center gap-1 ${
+                className={`text-xs px-2.5 py-1.5 rounded transition-colors inline-flex items-center gap-1 ${
                   filterOutcome === o
                     ? `${meta.bg} ${meta.color}`
                     : "bg-zinc-800 text-zinc-500 hover:text-zinc-300"
@@ -304,7 +304,7 @@ export default function ThesisPage() {
                     <span className="text-sm font-bold text-vela-teal">{t.ticker}</span>
                     {stanceBadge(t.stance)}
                     {outcome !== "pending" && (
-                      <span className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full ${meta.bg} ${meta.color}`}>
+                      <span className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded ${meta.bg} ${meta.color}`}>
                         <OutcomeIcon className="w-3 h-3" />
                         {meta.label}
                       </span>
