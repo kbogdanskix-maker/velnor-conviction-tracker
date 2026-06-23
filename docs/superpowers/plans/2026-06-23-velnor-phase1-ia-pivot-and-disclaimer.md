@@ -33,11 +33,11 @@ Source spec: `docs/superpowers/specs/2026-06-23-velnor-conviction-tracker-pivot-
 
 - [ ] **Step 1: Install vitest**
 
-Run (from `frontend/` — use the project's node/PATH, e.g. via `./dev.sh` env or the anaconda/homebrew node already used for `npm run dev`):
+Run (from `frontend/` — node/npm are on PATH at `/opt/homebrew/bin`, node v25, npm 11):
 ```bash
-npm install -D vitest@^2
+npm install -D vitest
 ```
-Expected: `vitest` added to devDependencies, no peer-dep errors.
+Expected: current `vitest` (v4.x) added to devDependencies, no peer-dep errors. (Node 25 is new — use current vitest, not an old pin.)
 
 - [ ] **Step 2: Create the vitest config**
 
