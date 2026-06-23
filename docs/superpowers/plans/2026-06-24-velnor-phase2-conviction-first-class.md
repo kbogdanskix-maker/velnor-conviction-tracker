@@ -16,7 +16,13 @@ Source spec: `docs/superpowers/specs/2026-06-23-velnor-conviction-tracker-pivot-
 > `POST /thesis/{id}/entries`, `DELETE /thesis/{id}`. Canonical ticker normalization (`_norm_ticker`).
 > Verified end-to-end against the real DB (create→append→list→delete). Note: `get_thread` returned a
 > stale entries collection only when one DB session was reused across calls (probe artifact) — does
-> not happen in production (per-request sessions via `get_db`). **Remaining: Tasks 3–5 (frontend).**
+> not happen in production (per-request sessions via `get_db`).
+>
+> **Task 3 DONE** — `frontend/lib/thesis.ts` (SWR hooks + mutations + `ENTRY_TYPE_STYLE`).
+> **Task 4 DONE** (commit `f32eb03`) — `/thesis` page rewritten to versioned threads + entry
+> timeline + New/Add/Delete modals + legacy `vela_theses` importer. Live-verified authed (GET 200,
+> renders, type-check clean).
+> **REMAINING: Task 5 only** (absorb Notes/Journal + nav) — has a PENDING USER DECISION (see Task 5).
 
 ---
 
