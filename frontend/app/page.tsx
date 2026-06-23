@@ -392,7 +392,6 @@ export default function LandingPage() {
       {/* ── Two waters, one current ───────────────────────────────────── */}
       <section className="relative z-10 px-6 md:px-12 pb-28 max-w-5xl mx-auto">
         <Reveal>
-          <p className="text-vela-teal text-xs font-medium tracking-[0.2em] uppercase mb-3 text-center">The crossing</p>
           <h2 className="font-display text-3xl md:text-[2.5rem] font-bold text-center mb-4 tracking-tight leading-tight">
             Two waters most people row separately.
           </h2>
@@ -494,9 +493,8 @@ export default function LandingPage() {
       <section className="relative z-10 px-6 md:px-12 pb-28 max-w-5xl mx-auto">
         <div className="grid lg:grid-cols-2 gap-10 items-center">
           <Reveal>
-            <p className="text-vela-teal text-xs font-medium tracking-[0.2em] uppercase mb-3">The difference</p>
             <h2 className="font-display text-3xl md:text-[2.4rem] font-bold tracking-tight leading-tight mb-5">
-              Most tools give everyone the same answer. Velnor asks where <span className="text-transparent bg-clip-text bg-gradient-to-r from-vela-teal to-emerald-400">you&apos;re headed</span> first.
+              Most tools give everyone the same answer. Velnor asks where <span className="text-vela-teal italic">you&apos;re headed</span> first.
             </h2>
             <p className="text-zinc-500 leading-relaxed mb-4">
               Pick what you&apos;re investing for, and the same portfolio gets a completely different
@@ -515,7 +513,7 @@ export default function LandingPage() {
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="font-display text-3xl md:text-4xl font-bold tracking-tight mb-5">
               For people who&apos;d rather{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-vela-teal to-emerald-400">navigate</span>{" "}
+              <span className="text-vela-teal italic">navigate</span>{" "}
               than drift.
             </h2>
             <p className="text-zinc-500 text-lg leading-relaxed max-w-2xl mx-auto">
@@ -530,7 +528,7 @@ export default function LandingPage() {
       <section className="relative z-10 px-6 pb-32">
         <Reveal>
           <div className="max-w-xl mx-auto text-center relative">
-            <span className="inline-block w-1.5 h-1.5 rounded-full bg-teal-200 mb-6 animate-[ambient-pulse_3s_ease-in-out_infinite]" />
+            <span className="inline-block w-1.5 h-1.5 rounded-full bg-vela-teal mb-6 animate-[ambient-pulse_3s_ease-in-out_infinite]" />
             <h3 className="font-display text-2xl md:text-3xl font-bold tracking-tight mb-3 relative">Come aboard before we sail.</h3>
             <p className="text-zinc-500 mb-8">Join the waitlist for early access when Velnor launches.</p>
             <div className="flex justify-center"><WaitlistForm id="bottom-email" /></div>
