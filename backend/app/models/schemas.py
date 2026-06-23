@@ -188,11 +188,28 @@ class ImportJobOut(BaseModel):
 class ThesisThreadCreate(BaseModel):
     ticker: str = Field(..., max_length=20)
     title: str = Field(..., max_length=200)
+    # Optional first entry so a thread can be created with its opening conviction
+    # in one call. Append-only history starts here.
+    initial_body: str | None = None
+    entry_type: str = Field(default="note")  # bull | bear | update | note
 
 
 class ThesisEntryCreate(BaseModel):
     body: str = Field(..., min_length=1)
     entry_type: str = Field(default="note")  # bull | bear | update | note
+
+
+class ThesisThreadSummary(BaseModel):
+    """Lightweight list item — avoids loading every entry for the index view."""
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    ticker: str
+    title: str
+    created_at: datetime
+    updated_at: datetime
+    entry_count: int = 0
+    latest_entry_type: str | None = None
 
 
 class ThesisEntryOut(BaseModel):
