@@ -19,7 +19,7 @@ from sqlalchemy import func as sqlfunc
 
 from app.dependencies import get_current_user, get_db
 from app.core.tier import require_tier, Tier
-from app.models.db import User, Portfolio, Holding, Goal, NetWorthAsset, Transaction, UserKVStore
+from app.models.db import User, Portfolio, Holding, Goal, NetWorthAsset, Transaction, UserKVStore, ThesisThread, ThesisEntry
 from app.services import ai_service, portfolio_calc, market_data
 from app.services.market_data import cache_get
 from app.services.macro_service import get_macro_dashboard
@@ -223,6 +223,93 @@ async def _build_user_context(user: User, db: AsyncSession) -> dict:
     }
 
 
+async def _build_holdings_ctx(db: AsyncSession, portfolio) -> list[dict]:
+    """Per-holding detail (ticker, weight %, unrealized P&L %, days held) with a
+    cost-basis fallback when live prices are unavailable. Shared by Reflect and
+    alert insights so both speak in specifics instead of generalities."""
+    if portfolio is None:
+        return []
+    holdings_result = await db.execute(
+        select(Holding).where(Holding.portfolio_id == portfolio.id)
+    )
+    raw_holdings = holdings_result.scalars().all()
+    if not raw_holdings:
+        return []
+
+    tx_result = await db.execute(
+        select(
+            Transaction.ticker,
+            sqlfunc.min(Transaction.executed_at).label("first_buy"),
+        ).where(
+            Transaction.portfolio_id == portfolio.id,
+            Transaction.transaction_type == "buy",
+        ).group_by(Transaction.ticker)
+    )
+    first_buys: dict[str, datetime] = {row.ticker: row.first_buy for row in tx_result}
+
+    tickers = [h.ticker for h in raw_holdings]
+    quotes = await market_data.get_quotes(tickers, ttl=60) if tickers else {}
+    enriched, totals = portfolio_calc.enrich_holdings_with_quotes(raw_holdings, quotes)
+    enriched_by_ticker = {e["ticker"]: e for e in enriched}
+
+    market_total = float(totals.get("total_value") or 0)
+    cost_total = sum(float(h.total_cost) for h in raw_holdings) or 1.0
+    use_cost_basis = market_total <= 0  # prices unavailable -> weight by cost
+
+    out: list[dict] = []
+    for h in raw_holdings:
+        days_held: int | None = None
+        if first_buys.get(h.ticker):
+            fb = first_buys[h.ticker]
+            if fb.tzinfo is None:
+                fb = fb.replace(tzinfo=timezone.utc)
+            days_held = (datetime.now(timezone.utc) - fb).days
+
+        e = enriched_by_ticker.get(h.ticker, {})
+        if use_cost_basis:
+            weight_pct = float(h.total_cost) / cost_total * 100
+            pnl_pct = None
+        else:
+            weight_pct = float(e.get("market_value") or 0) / market_total * 100
+            raw_pnl = e.get("unrealized_pnl_pct")
+            pnl_pct = float(raw_pnl) if raw_pnl is not None else None
+
+        out.append({
+            "ticker": h.ticker,
+            "days_held": days_held,
+            "weight_pct": weight_pct,
+            "unrealized_pnl_pct": pnl_pct,
+        })
+    return out
+
+
+async def _fetch_thesis_notes(db: AsyncSession, user: User) -> list[dict]:
+    """The latest thesis entry per ticker the user has written a thesis on, so AI
+    surfaces can engage with the user's actual conviction rather than generic
+    advice. Returns [{ticker, stance, title, body}]."""
+    threads_result = await db.execute(
+        select(ThesisThread).where(ThesisThread.user_id == user.id)
+    )
+    threads = threads_result.scalars().all()
+    notes: list[dict] = []
+    for th in threads:
+        entry_result = await db.execute(
+            select(ThesisEntry)
+            .where(ThesisEntry.thread_id == th.id)
+            .order_by(ThesisEntry.created_at.desc())
+            .limit(1)
+        )
+        latest = entry_result.scalar_one_or_none()
+        if latest:
+            notes.append({
+                "ticker": th.ticker,
+                "stance": latest.entry_type,
+                "title": th.title,
+                "body": latest.body,
+            })
+    return notes
+
+
 # ── Portfolio Reflection ─────────────────────────────────────────────────────
 
 class ThesisNote(BaseModel):
@@ -304,9 +391,19 @@ async def alert_insight(
     sse_headers = await _enforce_insight_quota(user)
 
     context = await _build_user_context(user, db)
-    # (Removed a dead `portfolio_sectors` cache read that was never populated, so
-    # it always no-op'd. Computing sectors live here would add per-ticker info
-    # fetches to this high-frequency endpoint and isn't worth the cost.)
+
+    # Conviction-aware enrichment: per-holding detail + the user's own thesis, so
+    # the insight speaks to their actual positions and convictions rather than
+    # defaulting to generic "trim and diversify" advice.
+    portfolio_result = await db.execute(
+        select(Portfolio).where(
+            Portfolio.user_id == user.id,
+            Portfolio.is_default.is_(True),
+        )
+    )
+    portfolio = portfolio_result.scalar_one_or_none()
+    context["holdings_detail"] = await _build_holdings_ctx(db, portfolio)
+    context["thesis_notes"] = await _fetch_thesis_notes(db, user)
 
     alert = {
         "title": body.alert_title,

@@ -757,6 +757,23 @@ async def stream_alert_insight(
     portfolio = user_context.get("portfolio", {})
     cf = user_context.get("cash_flow", {})
     nw = user_context.get("net_worth", {})
+    profile = user_context.get("profile", {}) or {}
+    holdings = user_context.get("holdings_detail", []) or []
+    thesis_notes = user_context.get("thesis_notes", []) or []
+
+    objective = profile.get("primaryObjective", "target")
+    risk = profile.get("riskTolerance", "moderate")
+    horizon = profile.get("timeHorizon", "long")
+    philosophy = (profile.get("philosophy") or "").strip()
+
+    # Same objective lens Reflect uses: same facts, weighted to their goal.
+    objective_framing = {
+        "growth": "Maximizing growth. Concentration and volatility are acceptable; do not reflexively push diversification or trimming. A large winner is the cost of conviction, weigh whether the thesis still holds.",
+        "income": "Generating income. Weigh yield and the durability of distributions above raw appreciation.",
+        "preservation": "Preserving capital. Weigh drawdown risk and downside protection above upside.",
+        "target": "Reaching a specific target on a timeline. Frame around whether they are on pace and what would close the gap.",
+        "learning": "Learning and building conviction. Teach the reasoning and invite them to pressure-test the idea.",
+    }.get(objective, "")
 
     # Build a compact goal summary
     goal_lines = []
@@ -767,41 +784,61 @@ async def stream_alert_insight(
         goal_lines.append(f'  • {g["name"]}: {pct}% of ${target:,.0f} target, due {g.get("target_date", "?")}')
     goals_text = "\n".join(goal_lines) if goal_lines else "  No goals set."
 
-    # Portfolio sector summary
-    sectors = portfolio.get("sectors", [])
-    sector_text = ", ".join(f'{s["name"]} {round(s["weight"]*100)}%' for s in sectors[:5]) if sectors else "Unknown"
-    top_holdings = portfolio.get("top_holdings", [])
-    holdings_text = ", ".join(top_holdings[:5]) if top_holdings else "Unknown"
-    total_value = portfolio.get("total_value", 0)
+    # Per-holding detail (weights, P&L, tenure) — the specifics that prevent generic advice.
+    holdings_lines = []
+    for h in sorted(holdings, key=lambda x: float(x.get("weight_pct", 0) or 0), reverse=True)[:12]:
+        line = f"  • {h['ticker']}: {float(h.get('weight_pct', 0)):.1f}% weight"
+        if h.get("unrealized_pnl_pct") is not None:
+            line += f", {float(h['unrealized_pnl_pct']):+.1f}% P&L"
+        if h.get("days_held") is not None:
+            line += f", held {h['days_held']}d"
+        holdings_lines.append(line)
+    holdings_block = "\n".join(holdings_lines) if holdings_lines else "  No holdings on file."
+
+    # The user's own thesis / conviction, so the insight engages it by name.
+    thesis_block = "\n".join(
+        f"  • {t['ticker']} ({t.get('stance', 'note')}): {t.get('title', '')} — {(t.get('body') or '')[:220]}"
+        for t in thesis_notes[:8]
+    ) if thesis_notes else "  No thesis written yet."
+
+    philosophy_block = f'\n- Their own investing philosophy: "{philosophy}". Honor it; align your framing to how they actually think.' if philosophy else ""
 
     savings_rate = cf.get("savings_rate")
     net_worth = nw.get("net_worth", 0)
 
-    system = f"""You are Vela, a personal wealth intelligence assistant. You are concise, direct, and deeply personalized.
+    system = f"""You are Velnor, a portfolio intelligence that helps a self-directed investor hold their winners and tie every decision to their stated objective. The user just triggered a Smart Alert. React to it through THEIR lens.
 
-The user has triggered a Smart Alert. Your job is to give a 2–4 sentence insight that:
-1. Explains WHY this alert matters specifically for THEIR situation (reference their goals and holdings by name)
-2. Connects it to their nearest goal if relevant
-3. Gives one concrete, actionable step they can take TODAY
+Investor lens:
+- Primary objective: {objective}. {objective_framing}
+- Risk tolerance: {risk}; Time horizon: {horizon}.{philosophy_block}
 
-User's financial context:
-- Portfolio value: ${total_value:,.0f} | Top holdings: {holdings_text}
-- Sector exposure: {sector_text}
-- Net worth: ${net_worth:,.0f}
-- Savings rate: {f"{savings_rate:.0%}" if savings_rate else "unknown"}
-- Goals:
+Their positions:
+{holdings_block}
+
+Their own thesis / conviction notes:
+{thesis_block}
+
+Goals:
 {goals_text}
 
-Rules:
-- Never use generic advice that could apply to anyone
-- Always name specific goals, tickers, or dollar amounts from their data
-- Do NOT repeat the alert title back to them
-- 2–4 sentences max. No bullet points. Conversational tone."""
+Net worth: ${net_worth:,.0f}{f" | Savings rate: {savings_rate:.0%}" if savings_rate else ""}
+
+Write 2-4 sentences that:
+1. Tie the alert to their specific position(s), weights, P&L and dollar amounts, and to their own thesis on the relevant ticker when one exists.
+2. Frame it through their objective and philosophy, not a one-size-fits-all default.
+3. End with one concrete, decision-useful next step for them.
+
+Hard rules:
+- Do NOT give generic advice. Specifically: no reflexive "trim and diversify", "rotate into an index fund", or "rebalance to target" unless it genuinely fits THIS user's objective and philosophy. For a hold-your-winners / growth investor, treat a big winner as the cost of conviction: ask whether the thesis still holds rather than telling them to sell it.
+- If a relevant thesis note exists, engage with it by name.
+- Reference real tickers, weights, P&L and dollar amounts from the data above. Never invent numbers, prices, peers or multiples you were not given. If you lack a specific, say so plainly.
+- Do not repeat the alert title back. No disclaimers or "consult an advisor" boilerplate (the app shows that separately).
+- Conversational, plain language, no bullet points, no em-dashes."""
 
     try:
         async with client.messages.stream(
             model="claude-haiku-4-5-20251001",
-            max_tokens=180,
+            max_tokens=260,
             system=system,
             messages=[{
                 "role": "user",
