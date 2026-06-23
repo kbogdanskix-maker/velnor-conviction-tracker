@@ -3,12 +3,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { createBrowserClient } from "@/lib/supabase-browser";
 import { useRouter } from "next/navigation";
 import { useAdmin } from "@/contexts/AdminContext";
 import { useProfile } from "@/hooks/useProfile";
 import VelnorMark from "@/components/shared/VelnorMark";
+import { tailoredHrefs, hasPersonalization } from "@/lib/sidebar-personalization";
 import {
   LayoutDashboard, PieChart, Eye, BarChart2, TrendingUp, TrendingDown,
   FileText, BookOpen, Newspaper, Globe, ChevronLeft, ChevronRight, ChevronDown,
@@ -128,6 +129,11 @@ const NAV_GROUPS: NavGroup[] = [
 
 // Curated "core" pages shown in Simple view. Everything else is Advanced.
 // (Dashboard, Guide, and Profile are standalone and always shown.)
+// Flat lookups for personalization ("For you").
+const ALL_ITEMS: NavItem[] = NAV_GROUPS.flatMap((g) => g.items);
+const ITEM_BY_HREF = new Map(ALL_ITEMS.map((i) => [i.href, i] as const));
+const ALL_HREFS = ALL_ITEMS.map((i) => i.href);
+
 const CORE_HREFS = new Set<string>([
   "/health-score",
   "/portfolio", "/watchlist", "/reflect",
@@ -179,6 +185,20 @@ export default function Sidebar() {
       return next;
     });
   }
+
+  // "For you" — top tools ranked from profile options + investing philosophy.
+  const tailored = useMemo(() => {
+    if (!hasPersonalization(profile)) return [] as NavItem[];
+    return tailoredHrefs(profile, ALL_HREFS, 6)
+      .map((href) => ITEM_BY_HREF.get(href))
+      .filter((i): i is NavItem => Boolean(i));
+  }, [profile]);
+  const [showForYou, setShowForYou] = useState(true);
+  // Render the personalized section only after mount: it derives from the
+  // client-side profile (localStorage/SWR), so gating avoids a server/client
+  // hydration mismatch.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   // Close mobile nav on route change
   useEffect(() => {
@@ -297,6 +317,39 @@ export default function Sidebar() {
               </>
             )}
           </button>
+
+          {/* For you — ranked from profile options + investing philosophy */}
+          {mounted && tailored.length > 0 && (
+            <div>
+              {showLabels ? (
+                <button
+                  onClick={() => setShowForYou((v) => !v)}
+                  title="Ranked from your profile and investing philosophy"
+                  className="w-full flex items-center justify-between px-3 py-1.5 mt-2 rounded-md font-mono text-[10px] uppercase tracking-[0.16em] text-vela-teal transition-colors"
+                >
+                  <span className="flex items-center gap-1.5"><Sparkles className="w-3 h-3" />For you</span>
+                  <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${showForYou ? "" : "-rotate-90"}`} />
+                </button>
+              ) : (
+                <div className="h-px bg-vela-border mx-2 my-2" />
+              )}
+              {(showForYou || !showLabels) && (
+                <div className="space-y-0.5">
+                  {tailored.map((item) => (
+                    <NavLink
+                      key={`fy-${item.href}`}
+                      item={item}
+                      active={pathname === item.href || pathname.startsWith(`${item.href}/`)}
+                      showLabel={showLabels}
+                      collapsed={collapsed}
+                      mobileOpen={mobileOpen}
+                      adminMode={adminMode}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Grouped sections */}
           {NAV_GROUPS.map((group) => {
