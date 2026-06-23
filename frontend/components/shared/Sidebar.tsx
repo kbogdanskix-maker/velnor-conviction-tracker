@@ -11,136 +11,14 @@ import { useProfile } from "@/hooks/useProfile";
 import VelnorMark from "@/components/shared/VelnorMark";
 import { tailoredHrefs, hasPersonalization } from "@/lib/sidebar-personalization";
 import {
-  LayoutDashboard, PieChart, Eye, BarChart2, TrendingUp, TrendingDown,
-  FileText, BookOpen, Newspaper, Globe, ChevronLeft, ChevronRight, ChevronDown,
-  LogOut, Settings, Menu, X, Target, Wallet, Calculator, DollarSign, Sparkles,
-  RotateCcw, Coins, Receipt, GraduationCap, Activity, Umbrella,
-  Banknote, Brain, Users, Search, Scale, BadgePercent, LayoutGrid, Calendar, GitBranch, CreditCard, Shield, Repeat, Trophy, ArrowLeftRight, Compass, Flame, Dice5, Scissors, LineChart, MapPin, Star, GitCompare, HeartPulse, Zap, MessageCircle, StickyNote, Building2,
+  ChevronLeft, ChevronRight, ChevronDown,
+  LogOut, Settings, Menu, X, Search, Sparkles, LayoutGrid,
 } from "lucide-react";
+import {
+  NAV_STANDALONE, buildNav, ALL_HREFS, ITEM_BY_HREF,
+  type NavItem,
+} from "@/lib/nav-structure";
 
-
-// ── Nav structure ───────────────────────────────────────────────────────────
-
-interface NavItem {
-  href: string;
-  label: string;
-  icon: React.ComponentType<{ className?: string }>;
-  tier?: string;
-}
-
-interface NavGroup {
-  label: string;
-  items: NavItem[];
-}
-
-const NAV_TOP: NavItem = { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard };
-const NAV_GUIDE: NavItem = { href: "/guide", label: "Guide", icon: Compass };
-const NAV_PROFILE: NavItem = { href: "/profile", label: "My Profile", icon: Users };
-
-const NAV_GROUPS: NavGroup[] = [
-  {
-    label: "Intelligence",
-    items: [
-      { href: "/plan", label: "My Plan", icon: Sparkles },
-      { href: "/health-score", label: "Health Score", icon: HeartPulse },
-      { href: "/smart-alerts", label: "Smart Alerts", icon: Zap },
-    ],
-  },
-  {
-    label: "Equities",
-    items: [
-      { href: "/portfolio", label: "Portfolio", icon: PieChart },
-      { href: "/dividends", label: "Dividends", icon: Coins },
-      { href: "/dividend-calendar", label: "Div Calendar", icon: Calendar, tier: "voyager" },
-      { href: "/dividend-forecast", label: "Div Forecast", icon: TrendingUp, tier: "voyager" },
-      { href: "/watchlist", label: "Watchlist", icon: Eye },
-      { href: "/rebalance", label: "Rebalance", icon: Scale, tier: "voyager" },
-      { href: "/fees", label: "Fee Analyzer", icon: BadgePercent, tier: "voyager" },
-      { href: "/sectors", label: "Sectors", icon: LayoutGrid },
-      { href: "/position-size", label: "Position Size", icon: Calculator, tier: "voyager" },
-      { href: "/correlation", label: "Diversification", icon: Shield, tier: "navigator" },
-      { href: "/risk", label: "Risk", icon: Activity },
-      { href: "/attribution", label: "Attribution", icon: BarChart2, tier: "voyager" },
-      { href: "/reflect", label: "Reflect", icon: Brain, tier: "navigator" },
-      { href: "/returns", label: "Returns", icon: TrendingUp },
-    ],
-  },
-  {
-    label: "Financial Planning",
-    items: [
-      { href: "/net-worth", label: "Net Worth", icon: Wallet },
-      { href: "/nw-history", label: "NW History", icon: LineChart },
-      { href: "/cash-flow", label: "Cash Flow", icon: DollarSign, tier: "voyager" },
-      { href: "/expenses", label: "Expenses", icon: CreditCard },
-      { href: "/budget", label: "Budget", icon: Target, tier: "voyager" },
-      { href: "/affordability", label: "Affordability", icon: Calculator },
-      { href: "/debt-payoff", label: "Debt Payoff", icon: TrendingDown },
-      { href: "/tax", label: "Tax Awareness", icon: Receipt, tier: "voyager" },
-      { href: "/tax-harvest", label: "Tax Harvest", icon: Scissors, tier: "voyager" },
-      { href: "/income", label: "Income", icon: Banknote },
-      { href: "/insurance", label: "Insurance", icon: Shield, tier: "voyager" },
-      { href: "/stress-index", label: "Stress Index", icon: Activity },
-      { href: "/subscriptions", label: "Subscriptions", icon: Repeat },
-      { href: "/asset-location", label: "Asset Location", icon: MapPin, tier: "voyager" },
-      { href: "/behavior", label: "Behavior", icon: Brain, tier: "voyager" },
-    ],
-  },
-  {
-    label: "Projections",
-    items: [
-      { href: "/fi", label: "FI Tracker", icon: Flame },
-      { href: "/monte-carlo", label: "Monte Carlo", icon: Dice5, tier: "navigator" },
-      { href: "/goals", label: "Goals", icon: Target },
-      { href: "/retirement", label: "Retirement", icon: Umbrella, tier: "voyager" },
-      { href: "/compare", label: "Portfolio Comparison", icon: GitBranch, tier: "voyager" },
-      { href: "/benchmark", label: "Benchmark", icon: Users, tier: "voyager" },
-      { href: "/what-if", label: "What If", icon: Sparkles, tier: "navigator" },
-      { href: "/emergency-fund", label: "Emergency Fund", icon: Shield, tier: "voyager" },
-      { href: "/milestones", label: "Milestones", icon: Trophy },
-      { href: "/learn", label: "Learn", icon: GraduationCap },
-      { href: "/annual-review", label: "Annual Review", icon: Star },
-    ],
-  },
-  {
-    label: "News & Markets",
-    items: [
-      { href: "/fx", label: "Currency", icon: ArrowLeftRight, tier: "voyager" },
-      { href: "/markets", label: "Markets", icon: Globe },
-      { href: "/macro", label: "Macro", icon: TrendingUp, tier: "voyager" },
-      { href: "/news", label: "News", icon: Newspaper },
-      { href: "/sentiment", label: "Sentiment", icon: MessageCircle },
-    ],
-  },
-  {
-    label: "Research",
-    items: [
-      { href: "/earnings-insights", label: "Earnings AI", icon: TrendingUp },
-      { href: "/thesis", label: "Thesis", icon: BookOpen },
-      { href: "/notes", label: "Notes", icon: StickyNote },
-      { href: "/journal", label: "Journal", icon: FileText },
-      { href: "/screener", label: "Screener", icon: BarChart2, tier: "voyager" },
-      { href: "/valuation/dcf", label: "DCF", icon: FileText, tier: "voyager" },
-      { href: "/valuation/reverse-dcf", label: "Reverse DCF", icon: RotateCcw, tier: "voyager" },
-      { href: "/stock-compare", label: "Stock Compare", icon: GitCompare, tier: "voyager" },
-      { href: "/company", label: "Company Deep-Dive", icon: Building2, tier: "navigator" },
-    ],
-  },
-];
-
-// Curated "core" pages shown in Simple view. Everything else is Advanced.
-// (Dashboard, Guide, and Profile are standalone and always shown.)
-// Flat lookups for personalization ("For you").
-const ALL_ITEMS: NavItem[] = NAV_GROUPS.flatMap((g) => g.items);
-const ITEM_BY_HREF = new Map(ALL_ITEMS.map((i) => [i.href, i] as const));
-const ALL_HREFS = ALL_ITEMS.map((i) => i.href);
-
-const CORE_HREFS = new Set<string>([
-  "/health-score",
-  "/portfolio", "/watchlist", "/reflect",
-  "/net-worth", "/cash-flow",
-  "/goals", "/learn",
-  "/markets", "/news",
-]);
 
 // ── Component ───────────────────────────────────────────────────────────────
 
@@ -152,30 +30,31 @@ export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  // Simple vs Advanced navigation. Beginners/intermediate default to a curated
-  // core; advanced users see everything. A manual toggle is remembered.
   const { profile } = useProfile();
-  const [showAdvanced, setShowAdvanced] = useState(true);
+
+  // Lab toggle: the conviction spine shows by default; Lab reveals deferred tools.
+  const [showLab, setShowLab] = useState(false);
   useEffect(() => {
-    const stored = typeof window !== "undefined" ? localStorage.getItem("vela_nav_advanced") : null;
-    if (stored === "true") { setShowAdvanced(true); return; }
-    if (stored === "false") { setShowAdvanced(false); return; }
-    setShowAdvanced(profile.sophistication === "advanced");
-  }, [profile.sophistication]);
-  function toggleAdvanced() {
-    setShowAdvanced((v) => {
+    const stored = typeof window !== "undefined" ? localStorage.getItem("velnor_nav_lab") : null;
+    if (stored === "true") setShowLab(true);
+  }, []);
+  function toggleLab() {
+    setShowLab((v) => {
       const next = !v;
-      try { localStorage.setItem("vela_nav_advanced", String(next)); } catch { /* ignore */ }
+      try { localStorage.setItem("velnor_nav_lab", String(next)); } catch { /* ignore */ }
       return next;
     });
   }
 
   // Auto-open the group that contains the active page
-  const initialOpen = NAV_GROUPS
+  const navGroups = buildNav(showLab);
+  const initialOpen = buildNav(true)
     .filter((g) => g.items.some((item) => pathname === item.href || pathname.startsWith(`${item.href}/`)))
     .map((g) => g.label);
 
-  const [openGroups, setOpenGroups] = useState<Set<string>>(new Set(initialOpen.length > 0 ? initialOpen : ["Equities", "Financial Planning"]));
+  const [openGroups, setOpenGroups] = useState<Set<string>>(
+    new Set(initialOpen.length > 0 ? initialOpen : ["Accuracy & Conviction", "Research"]),
+  );
 
   function toggleGroup(label: string) {
     setOpenGroups((prev) => {
@@ -295,10 +174,10 @@ export default function Sidebar() {
 
         {/* Nav */}
         <nav className="flex-1 py-3 px-2 overflow-y-auto space-y-1">
-          {/* Dashboard  - always visible, no group */}
-          <NavLink item={NAV_TOP} active={pathname === NAV_TOP.href} showLabel={showLabels} collapsed={collapsed} mobileOpen={mobileOpen} adminMode={adminMode} />
-          <NavLink item={NAV_GUIDE} active={pathname === NAV_GUIDE.href} showLabel={showLabels} collapsed={collapsed} mobileOpen={mobileOpen} adminMode={adminMode} />
-          <NavLink item={NAV_PROFILE} active={pathname === NAV_PROFILE.href} showLabel={showLabels} collapsed={collapsed} mobileOpen={mobileOpen} adminMode={adminMode} />
+          {/* Standalone links — always visible, no group */}
+          <NavLink item={NAV_STANDALONE.dashboard} active={pathname === "/dashboard"} showLabel={showLabels} collapsed={collapsed} mobileOpen={mobileOpen} adminMode={adminMode} />
+          <NavLink item={NAV_STANDALONE.guide} active={pathname === "/guide"} showLabel={showLabels} collapsed={collapsed} mobileOpen={mobileOpen} adminMode={adminMode} />
+          <NavLink item={NAV_STANDALONE.profile} active={pathname === "/profile"} showLabel={showLabels} collapsed={collapsed} mobileOpen={mobileOpen} adminMode={adminMode} />
 
           {/* Search trigger */}
           <button
@@ -352,27 +231,19 @@ export default function Sidebar() {
           )}
 
           {/* Grouped sections */}
-          {NAV_GROUPS.map((group) => {
-            // In Simple view, show only core items (plus whichever page is active,
-            // so the current page never disappears from the nav).
-            const visibleItems = showAdvanced
-              ? group.items
-              : group.items.filter(
-                  (it) => CORE_HREFS.has(it.href) || pathname === it.href || pathname.startsWith(`${it.href}/`),
-                );
-            if (visibleItems.length === 0) return null;
+          {navGroups.map((group) => {
             const isOpen = openGroups.has(group.label);
-            const hasActive = visibleItems.some((item) => pathname === item.href || pathname.startsWith(`${item.href}/`));
-
+            const hasActive = group.items.some(
+              (item) => pathname === item.href || pathname.startsWith(`${item.href}/`),
+            );
             return (
               <div key={group.label}>
-                {/* Group header */}
                 {showLabels ? (
                   <button
                     onClick={() => toggleGroup(group.label)}
                     className={`
                       w-full flex items-center justify-between px-3 py-1.5 mt-2 rounded-md font-mono text-[10px] uppercase tracking-[0.16em] transition-colors
-                      ${hasActive ? "text-vela-teal" : "text-vela-muted hover:text-zinc-200"}
+                      ${hasActive ? "text-vela-teal" : group.secondary ? "text-vela-subtle hover:text-vela-muted" : "text-vela-muted hover:text-zinc-200"}
                     `}
                   >
                     <span>{group.label}</span>
@@ -381,11 +252,9 @@ export default function Sidebar() {
                 ) : (
                   <div className="h-px bg-vela-border mx-2 my-2" />
                 )}
-
-                {/* Group items */}
                 {(isOpen || !showLabels) && (
                   <div className="space-y-0.5">
-                    {visibleItems.map((item) => (
+                    {group.items.map((item) => (
                       <NavLink
                         key={item.href}
                         item={item}
@@ -404,11 +273,11 @@ export default function Sidebar() {
 
           {showLabels && (
             <button
-              onClick={toggleAdvanced}
+              onClick={toggleLab}
               className="w-full flex items-center gap-2 px-3 py-2 mt-3 rounded-md text-[11px] font-medium text-zinc-500 hover:text-vela-teal transition-colors border-t border-vela-border pt-3"
             >
               <LayoutGrid className="w-3.5 h-3.5" />
-              {showAdvanced ? "Switch to Simple view" : "Show all tools"}
+              {showLab ? "Hide Lab tools" : "Show Lab tools"}
             </button>
           )}
         </nav>
@@ -476,14 +345,7 @@ function NavLink({ item, active, showLabel, collapsed, mobileOpen, adminMode }: 
         }`}
       />
       {showLabel && (
-        <>
-          <span className="truncate">{item.label}</span>
-          {item.tier && !adminMode && (
-            <span className="ml-auto shrink-0 font-mono text-[9px] uppercase tracking-wide px-1.5 py-0.5 rounded border border-vela-border text-vela-muted">
-              {item.tier === "voyager" ? "V+" : item.tier === "navigator" ? "N+" : item.tier}
-            </span>
-          )}
-        </>
+        <span className="truncate">{item.label}</span>
       )}
     </Link>
   );
