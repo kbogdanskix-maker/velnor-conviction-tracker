@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useInView } from "framer-motion";
-import { useRef, type ReactNode } from "react";
+import { useRef, useState, useEffect, type ReactNode } from "react";
 
 interface RevealOnScrollProps {
   children: ReactNode;
@@ -22,6 +22,14 @@ export default function RevealOnScroll({
 }: RevealOnScrollProps) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-60px" });
+  // Safety net: never leave content stuck hidden if the observer never fires
+  // (e.g. a flaky/zero-height viewport). Real scrolling triggers inView first.
+  const [forceShow, setForceShow] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setForceShow(true), 2500);
+    return () => clearTimeout(t);
+  }, []);
+  const show = inView || forceShow;
 
   const initial = {
     opacity: 0,
@@ -36,7 +44,7 @@ export default function RevealOnScroll({
       ref={ref}
       className={className}
       initial={initial}
-      animate={inView ? {
+      animate={show ? {
         opacity: 1,
         y: 0,
         x: 0,
