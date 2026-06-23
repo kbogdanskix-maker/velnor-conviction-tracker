@@ -10,6 +10,14 @@
 
 Source spec: `docs/superpowers/specs/2026-06-23-velnor-conviction-tracker-pivot-design.md` (§ Features 2; § Risks: confirm thesis persistence + ticker normalization).
 
+> **STATUS (2026-06-24): Task 1 + Task 2 DONE** (commit `a2efef4`). Schemas extended
+> (`ThesisThreadCreate.initial_body`, `ThesisThreadSummary`) and `backend/app/routers/thesis.py`
+> built + registered in `main.py`. Endpoints: `GET /thesis`, `GET /thesis/{id}`, `POST /thesis`,
+> `POST /thesis/{id}/entries`, `DELETE /thesis/{id}`. Canonical ticker normalization (`_norm_ticker`).
+> Verified end-to-end against the real DB (create→append→list→delete). Note: `get_thread` returned a
+> stale entries collection only when one DB session was reused across calls (probe artifact) — does
+> not happen in production (per-request sessions via `get_db`). **Remaining: Tasks 3–5 (frontend).**
+
 ---
 
 ## Context the executor needs (verified 2026-06-24)
