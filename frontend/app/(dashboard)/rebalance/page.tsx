@@ -223,7 +223,7 @@ export default function RebalancePage() {
                       />
                       <span className="text-xs tabular text-zinc-400 w-10 text-right">{val}%</span>
                       {showNormalized && (
-                        <span className="text-xs tabular text-teal-400 w-12 text-right">→ {effective}%</span>
+                        <span className="text-xs tabular text-vela-teal w-12 text-right">→ {effective}%</span>
                       )}
                     </div>
                   </div>
@@ -265,7 +265,7 @@ export default function RebalancePage() {
       <div className="flex items-center justify-between px-1 text-xs text-zinc-600">
         <span>
           Buys − Sells ={" "}
-          <span className={cashToInvest > 0 ? "text-teal-400 font-medium" : "text-zinc-500"}>
+          <span className={cashToInvest > 0 ? "text-vela-teal font-medium" : "text-zinc-500"}>
             {cashToInvest > 0 ? fmtCurrency(cashToInvest) : "$0"}
           </span>
           {cashToInvest === 0 && (

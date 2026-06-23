@@ -142,7 +142,7 @@ export default function RetirementPage() {
               <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-4 w-full text-center sm:text-left">
                 <div>
                   <p className="text-xs text-zinc-500">Portfolio at {retireAge}</p>
-                  <p className="text-lg font-display font-bold text-teal-400 tabular-nums">{formatCompact(balanceAtRetirement)}</p>
+                  <p className="text-lg font-display font-bold text-vela-teal tabular-nums">{formatCompact(balanceAtRetirement)}</p>
                 </div>
                 <div>
                   <p className="text-xs text-zinc-500">Lasts until</p>

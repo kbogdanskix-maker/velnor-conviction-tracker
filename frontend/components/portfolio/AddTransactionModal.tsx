@@ -308,7 +308,7 @@ export default function AddTransactionModal({
                     onClick={() => update("asset_type", t.value)}
                     className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                       (form.asset_type || "stock") === t.value
-                        ? "bg-teal-500/15 text-teal-400 border border-teal-500/30"
+                        ? "bg-vela-teal/15 text-vela-teal border border-vela-teal/30"
                         : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 border border-transparent"
                     }`}
                   >

@@ -110,7 +110,7 @@ function NoteCard({
                   <PinOff className="w-3.5 h-3.5" />
                 </button>
               ) : (
-                <button onClick={onFlag} title="Pin as standing conviction" className="p-1 text-zinc-600 hover:text-teal-400 rounded transition-colors">
+                <button onClick={onFlag} title="Pin as standing conviction" className="p-1 text-zinc-600 hover:text-vela-teal rounded transition-colors">
                   <Pin className="w-3.5 h-3.5" />
                 </button>
               )}

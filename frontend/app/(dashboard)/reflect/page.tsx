@@ -507,7 +507,7 @@ export default function ReflectPage() {
               <button
                 onClick={() => handleSend()}
                 disabled={!input.trim() || streaming}
-                className="w-[34px] h-[34px] bg-teal-500 hover:bg-teal-400 disabled:bg-zinc-800 disabled:text-zinc-600 rounded-[8px] flex items-center justify-center transition-colors shrink-0"
+                className="w-[34px] h-[34px] bg-teal-500 hover:bg-vela-teal-dim disabled:bg-zinc-800 disabled:text-zinc-600 rounded-[8px] flex items-center justify-center transition-colors shrink-0"
               >
                 <Send className="w-[14px] h-[14px] text-white" />
               </button>

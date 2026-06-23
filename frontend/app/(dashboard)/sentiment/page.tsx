@@ -214,7 +214,7 @@ function TickerLookup() {
         <button
           onClick={handleSearch}
           disabled={!input.trim()}
-          className="px-4 py-2 rounded-lg bg-teal-500/15 text-teal-400 border border-teal-500/20 text-sm hover:bg-teal-500/25 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="px-4 py-2 rounded-lg bg-vela-teal/15 text-vela-teal border border-vela-teal/20 text-sm hover:bg-vela-teal/25 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
           Analyze
         </button>
@@ -255,7 +255,7 @@ export default function SentimentPage() {
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-display font-bold text-zinc-100 flex items-center gap-2">
-            <MessageCircle className="w-6 h-6 text-teal-400" />
+            <MessageCircle className="w-6 h-6 text-vela-teal" />
             News Sentiment
           </h1>
           <p className="text-sm text-zinc-500 mt-0.5">

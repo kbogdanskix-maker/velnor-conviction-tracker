@@ -83,7 +83,7 @@ export default function JournalPage() {
         </div>
         <button
           onClick={() => setAddOpen(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-vela-teal text-zinc-950 rounded-lg text-sm font-medium hover:bg-teal-400 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-vela-teal text-zinc-950 rounded-lg text-sm font-medium hover:bg-vela-teal-dim transition-colors"
         >
           <Plus className="w-4 h-4" />
           New Entry
@@ -199,7 +199,7 @@ export default function JournalPage() {
           </div>
           <button
             onClick={() => setAddOpen(true)}
-            className="mt-4 px-4 py-2 bg-vela-teal text-zinc-950 rounded-lg text-sm font-medium hover:bg-teal-400 transition-colors"
+            className="mt-4 px-4 py-2 bg-vela-teal text-zinc-950 rounded-lg text-sm font-medium hover:bg-vela-teal-dim transition-colors"
           >
             Log First Decision
           </button>
@@ -603,7 +603,7 @@ function AddEntryModal({
               <button
                 type="submit"
                 disabled={saving || !ticker.trim() || !rationale.trim()}
-                className="flex-1 px-4 py-2 bg-vela-teal text-zinc-950 rounded-lg text-sm font-medium hover:bg-teal-400 transition-colors disabled:opacity-50"
+                className="flex-1 px-4 py-2 bg-vela-teal text-zinc-950 rounded-lg text-sm font-medium hover:bg-vela-teal-dim transition-colors disabled:opacity-50"
               >
                 {saving ? "Saving..." : "Log Decision"}
               </button>
@@ -742,7 +742,7 @@ function ReviewModal({
               <button
                 type="submit"
                 disabled={saving || outcome === "pending"}
-                className="flex-1 px-4 py-2 bg-vela-teal text-zinc-950 rounded-lg text-sm font-medium hover:bg-teal-400 transition-colors disabled:opacity-50"
+                className="flex-1 px-4 py-2 bg-vela-teal text-zinc-950 rounded-lg text-sm font-medium hover:bg-vela-teal-dim transition-colors disabled:opacity-50"
               >
                 {saving ? "Saving..." : "Save Review"}
               </button>

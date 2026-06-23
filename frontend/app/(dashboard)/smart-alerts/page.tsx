@@ -482,12 +482,12 @@ function FilterPill({ label, active, count, onClick }: { label: string; active: 
       onClick={onClick}
       className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium transition-all ${
         active
-          ? "bg-teal-500/20 text-teal-300 border border-teal-500/30"
+          ? "bg-vela-teal/20 text-vela-teal border border-vela-teal/30"
           : "bg-zinc-800/50 text-zinc-500 border border-zinc-700/50 hover:text-zinc-300 hover:border-zinc-600"
       }`}
     >
       {label}
-      <span className={`text-[10px] px-1.5 py-0.5 rounded ${active ? "bg-teal-500/30" : "bg-zinc-700/50"}`}>
+      <span className={`text-[10px] px-1.5 py-0.5 rounded ${active ? "bg-vela-teal/30" : "bg-zinc-700/50"}`}>
         {count}
       </span>
     </button>
@@ -623,7 +623,7 @@ export default function SmartAlertsPage() {
         </div>
         {insightQuota && (
           <div className="shrink-0 flex items-center gap-1.5 text-[11px] text-zinc-500 mt-1 border border-zinc-800 rounded px-2.5 py-1">
-            <Sparkles className="w-3 h-3 text-teal-400" />
+            <Sparkles className="w-3 h-3 text-vela-teal" />
             <span className={insightQuota.remaining <= 2 ? "text-amber-400" : "text-zinc-400"}>
               {insightQuota.remaining}/{insightQuota.limit} AI insights left today
             </span>
@@ -737,7 +737,7 @@ export default function SmartAlertsPage() {
                       <div className="flex items-center gap-3 pt-1 flex-wrap">
                         <Link
                           href={alert.link}
-                          className="inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-teal-400 transition-colors"
+                          className="inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-vela-teal transition-colors"
                         >
                           {alert.action} <ArrowRight className="w-3 h-3" />
                         </Link>
@@ -746,7 +746,7 @@ export default function SmartAlertsPage() {
                           <button
                             onClick={() => fetchInsight(alert)}
                             disabled={insight?.loading}
-                            className="inline-flex items-center gap-1 text-[11px] text-zinc-600 hover:text-teal-400 transition-colors disabled:opacity-50"
+                            className="inline-flex items-center gap-1 text-[11px] text-zinc-600 hover:text-vela-teal transition-colors disabled:opacity-50"
                           >
                             {insight?.loading
                               ? <><Loader2 className="w-3 h-3 animate-spin" /> Thinking…</>
@@ -764,12 +764,12 @@ export default function SmartAlertsPage() {
                           ) : (
                             <div className="space-y-1">
                               <div className="flex items-center gap-1.5 mb-1.5">
-                                <Sparkles className="w-3 h-3 text-teal-400" />
-                                <span className="text-[10px] font-medium text-teal-400 uppercase tracking-wider">Velnor AI</span>
+                                <Sparkles className="w-3 h-3 text-vela-teal" />
+                                <span className="text-[10px] font-medium text-vela-teal uppercase tracking-wider">Velnor AI</span>
                               </div>
                               <p className="text-xs text-zinc-300 leading-relaxed">
                                 {insight.text}
-                                {insight.loading && <span className="inline-block w-1 h-3 bg-teal-400 ml-0.5 animate-pulse align-middle" />}
+                                {insight.loading && <span className="inline-block w-1 h-3 bg-vela-teal ml-0.5 animate-pulse align-middle" />}
                               </p>
                             </div>
                           )}

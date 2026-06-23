@@ -343,7 +343,7 @@ export default function MonteCarloPage() {
                 <div className="flex items-center gap-6 text-center sm:text-left">
                   <div>
                     <p className="text-xs text-zinc-500">Median Outcome</p>
-                    <p className="text-lg font-display font-bold text-teal-400 tabular-nums">
+                    <p className="text-lg font-display font-bold text-vela-teal tabular-nums">
                       {fmt(result.medianFinal, true)}
                     </p>
                   </div>
@@ -484,7 +484,7 @@ export default function MonteCarloPage() {
                       <label className="text-xs text-zinc-400 font-medium flex items-center gap-1.5">
                         Annual Contribution
                         {annualContribOverride === null && (
-                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-teal-500/10 text-teal-400 font-normal">from cash flow</span>
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-vela-teal/10 text-vela-teal font-normal">from cash flow</span>
                         )}
                       </label>
                       <div className="flex items-center gap-2">

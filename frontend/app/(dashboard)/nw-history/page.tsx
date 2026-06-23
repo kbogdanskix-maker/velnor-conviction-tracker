@@ -182,7 +182,7 @@ function AddPastEntryModal({ open, onClose, onAdd, existingDates }: {
             {(Number(assets) > 0) && (
               <div className="flex items-center justify-between px-3 py-2 bg-zinc-800/60 rounded-lg">
                 <span className="text-xs text-zinc-500">Net Worth</span>
-                <span className={`text-sm font-bold tabular-nums ${netWorth >= 0 ? "text-teal-400" : "text-rose-400"}`}>
+                <span className={`text-sm font-bold tabular-nums ${netWorth >= 0 ? "text-vela-teal" : "text-rose-400"}`}>
                   {formatCurrency(netWorth)}
                 </span>
               </div>
@@ -231,7 +231,7 @@ function IntervalPicker({ value, onChange }: { value: AutoInterval; onChange: (v
             onClick={() => onChange(o.value)}
             className={`px-2.5 py-1 text-xs transition-colors ${
               value === o.value
-                ? "bg-teal-500/20 text-teal-400"
+                ? "bg-vela-teal/20 text-vela-teal"
                 : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800"
             }`}
           >
@@ -397,7 +397,7 @@ export default function NwHistoryPage() {
       <div className="flex items-start justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-display font-bold text-zinc-100 flex items-center gap-2">
-            <LineChartIcon className="w-6 h-6 text-teal-400" />
+            <LineChartIcon className="w-6 h-6 text-vela-teal" />
             Net Worth History
           </h1>
           <p className="text-sm text-zinc-500 mt-0.5">
@@ -563,10 +563,10 @@ export default function NwHistoryPage() {
           {/* Single snapshot prompt */}
           {sorted.length === 1 && (
             <div className="vela-card flex items-center gap-3 px-4 py-3 border-teal-500/15">
-              <LineChartIcon className="w-4 h-4 text-teal-400 shrink-0" />
+              <LineChartIcon className="w-4 h-4 text-vela-teal shrink-0" />
               <p className="text-xs text-zinc-400">
                 Add one more snapshot to see your growth chart and stats.{" "}
-                <button onClick={() => setAddModalOpen(true)} className="text-teal-400 underline underline-offset-2 hover:text-teal-300">
+                <button onClick={() => setAddModalOpen(true)} className="text-vela-teal underline underline-offset-2 hover:text-vela-teal">
                   Add a past entry
                 </button>{" "}
                 or come back next {autoInterval === "weekly" ? "week" : autoInterval === "monthly" ? "month" : "visit"} for an auto-snapshot.

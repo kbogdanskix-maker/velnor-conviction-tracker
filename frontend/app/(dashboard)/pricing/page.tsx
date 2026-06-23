@@ -63,7 +63,7 @@ const PLANS: Plan[] = [
     accent: "text-vela-teal",
     glowFrom: "rgba(26, 168, 187,0.25)",
     glowTo: "rgba(26, 168, 187,0.05)",
-    buttonClass: "bg-vela-teal hover:bg-teal-400 text-zinc-950 font-semibold",
+    buttonClass: "bg-vela-teal hover:bg-vela-teal-dim text-zinc-950 font-semibold",
     features: [
       "Everything in Horizon, plus:",
       "AI insights (10 per day)",
@@ -94,7 +94,7 @@ const PLANS: Plan[] = [
     accent: "text-vela-teal",
     glowFrom: "rgba(26,168,187,0.15)",
     glowTo: "rgba(26,168,187,0.03)",
-    buttonClass: "bg-vela-teal hover:bg-teal-400 text-white font-semibold",
+    buttonClass: "bg-vela-teal hover:bg-vela-teal-dim text-white font-semibold",
     features: [
       "Everything in Voyager, plus:",
       "Unlimited AI insights",

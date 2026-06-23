@@ -301,7 +301,7 @@ function MethodologyCard({
               <p className="text-zinc-500">
                 = {formatCurrency(annualExpenses)} / {withdrawalRate}%
               </p>
-              <p className="text-teal-400 font-semibold">= {formatCompact(fiNumber)} ({multiplier}x your annual expenses)</p>
+              <p className="text-vela-teal font-semibold">= {formatCompact(fiNumber)} ({multiplier}x your annual expenses)</p>
             </div>
             <p className="text-zinc-500 leading-relaxed">
               The safe withdrawal rate is the percentage of your portfolio you can spend each year without running out of money.
@@ -320,7 +320,7 @@ function MethodologyCard({
               <p className="text-zinc-500">
                 = {formatCompact(fiNumber)} / (1 + {(realReturn * 100).toFixed(1)}%)^{retirementAge - currentAge}
               </p>
-              <p className="text-teal-400 font-semibold">= {formatCompact(coastFiNumber)}</p>
+              <p className="text-vela-teal font-semibold">= {formatCompact(coastFiNumber)}</p>
             </div>
             <p className="text-zinc-500 leading-relaxed">
               Coast FI is the amount you need invested today so that, even if you stop contributing entirely,
@@ -426,7 +426,7 @@ export default function FinancialIndependencePage() {
                 </div>
                 <div className="text-center md:text-left">
                   <p className="text-xs text-zinc-500">Net Worth</p>
-                  <p className="text-lg font-display font-bold text-teal-400 tabular-nums">
+                  <p className="text-lg font-display font-bold text-vela-teal tabular-nums">
                     {formatCompact(nwSummary!.net_worth)}
                   </p>
                 </div>
@@ -665,7 +665,7 @@ export default function FinancialIndependencePage() {
                     return (
                       <div key={s.label} className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700/50">
                         <p className="text-sm font-medium text-zinc-200">{s.label}</p>
-                        <p className="text-lg font-display font-bold text-teal-400 tabular-nums mt-1">{s.desc}</p>
+                        <p className="text-lg font-display font-bold text-vela-teal tabular-nums mt-1">{s.desc}</p>
                         {diff != null && diff > 0 && (
                           <p className="text-xs text-gain mt-1">{diff} year{diff !== 1 ? "s" : ""} sooner</p>
                         )}

@@ -364,7 +364,7 @@ export default function InsurancePage() {
               <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${(isHomeowner || hasMortgage) ? "translate-x-5" : "translate-x-0.5"}`} />
             </button>
             {hasMortgage && !isHomeowner && (
-              <span className="text-[10px] text-teal-400/70">auto-detected from net worth</span>
+              <span className="text-[10px] text-vela-teal/70">auto-detected from net worth</span>
             )}
           </div>
         </div>

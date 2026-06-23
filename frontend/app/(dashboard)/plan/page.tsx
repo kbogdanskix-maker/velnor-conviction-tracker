@@ -76,7 +76,7 @@ function PlanSection({ content, icon: Icon, color }: {
 
 const SECTION_CONFIG: Record<string, { icon: typeof Sparkles; color: string; bg: string }> = {
   "Financial Health Overview": { icon: CheckCircle2, color: "text-emerald-400", bg: "bg-emerald-400/5 border-emerald-400/10" },
-  "Priority Actions":          { icon: Target,       color: "text-teal-400",    bg: "bg-teal-400/5 border-teal-400/10" },
+  "Priority Actions":          { icon: Target,       color: "text-vela-teal",    bg: "bg-vela-teal/5 border-vela-teal/10" },
   "Goals Analysis":             { icon: TrendingUp,   color: "text-vela-teal",   bg: "bg-vela-teal/5 border-vela-teal/10" },
   "Investment Strategy":        { icon: BarChart2,    color: "text-vela-teal",   bg: "bg-vela-teal/5 border-vela-teal/10" },
   "Risks to Watch":             { icon: AlertTriangle, color: "text-amber-400",  bg: "bg-amber-400/5 border-amber-400/10" },
@@ -183,7 +183,7 @@ export default function PlanPage() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-display font-bold text-zinc-100 flex items-center gap-2">
-            <Sparkles className="w-6 h-6 text-teal-400" />
+            <Sparkles className="w-6 h-6 text-vela-teal" />
             My Financial Plan
           </h1>
           <p className="text-sm text-zinc-500 mt-0.5">
@@ -194,7 +194,7 @@ export default function PlanPage() {
           <button
             onClick={generate}
             disabled={generating}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-teal-500/10 text-teal-400 hover:bg-teal-500/20 border border-teal-500/20 text-sm font-medium transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-vela-teal/10 text-vela-teal hover:bg-vela-teal/20 border border-vela-teal/20 text-sm font-medium transition-colors disabled:opacity-50"
           >
             {generating ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -223,7 +223,7 @@ export default function PlanPage() {
                 label: "Monthly Income",
                 value: cfSummary ? `$${(cfSummary.total_income / 1000).toFixed(1)}k` : " -",
                 sub: "recurring",
-                color: "text-teal-400",
+                color: "text-vela-teal",
               },
               {
                 label: "Savings Rate",
@@ -254,8 +254,8 @@ export default function PlanPage() {
       {!planText && !generating && !error && (
         <FloatingCard glowColor="rgba(26, 168, 187,0.08)" tilt={false}>
           <div className="text-center py-12 space-y-4">
-            <div className="w-16 h-16 rounded-2xl bg-teal-500/10 flex items-center justify-center mx-auto">
-              <Sparkles className="w-8 h-8 text-teal-400" />
+            <div className="w-16 h-16 rounded-2xl bg-vela-teal/10 flex items-center justify-center mx-auto">
+              <Sparkles className="w-8 h-8 text-vela-teal" />
             </div>
             <div>
               <p className="text-zinc-200 font-medium text-lg">Your personalised plan is waiting</p>
@@ -266,7 +266,7 @@ export default function PlanPage() {
             <button
               onClick={generate}
               disabled={generating}
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg bg-teal-500 text-zinc-950 font-semibold text-sm hover:bg-teal-400 transition-colors"
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg bg-teal-500 text-zinc-950 font-semibold text-sm hover:bg-vela-teal-dim transition-colors"
             >
               <Sparkles className="w-4 h-4" />
               Generate My Plan
@@ -296,7 +296,7 @@ export default function PlanPage() {
         <div className="vela-card">
           <p className="text-xs text-zinc-400 leading-relaxed whitespace-pre-wrap">
             {planText}
-            <span className="inline-block w-1.5 h-3.5 bg-teal-400 ml-0.5 animate-pulse align-middle" />
+            <span className="inline-block w-1.5 h-3.5 bg-vela-teal ml-0.5 animate-pulse align-middle" />
           </p>
         </div>
       )}
@@ -320,7 +320,7 @@ export default function PlanPage() {
                   />
                   {/* Streaming cursor on last section */}
                   {generating && i === sections.length - 1 && (
-                    <span className="inline-block w-1.5 h-3.5 bg-teal-400 ml-0.5 animate-pulse align-middle" />
+                    <span className="inline-block w-1.5 h-3.5 bg-vela-teal ml-0.5 animate-pulse align-middle" />
                   )}
                 </div>
               </RevealOnScroll>

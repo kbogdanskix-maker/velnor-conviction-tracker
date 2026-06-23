@@ -57,7 +57,7 @@ const SOPHISTICATION_OPTIONS = [
 
 const OBJECTIVE_OPTIONS = [
   { value: "growth" as const, label: "Maximize growth", desc: "Compounding and capital appreciation come first. Comfortable with concentration and volatility.", color: "border-emerald-500/40 bg-emerald-500/5 text-emerald-400", inactive: "border-zinc-700 hover:border-zinc-600" },
-  { value: "income" as const, label: "Generate income", desc: "Dividends and cash flow matter most. Favor yield and durability.", color: "border-teal-500/40 bg-teal-500/5 text-teal-400", inactive: "border-zinc-700 hover:border-zinc-600" },
+  { value: "income" as const, label: "Generate income", desc: "Dividends and cash flow matter most. Favor yield and durability.", color: "border-vela-teal/40 bg-vela-teal/5 text-vela-teal", inactive: "border-zinc-700 hover:border-zinc-600" },
   { value: "preservation" as const, label: "Preserve capital", desc: "Protecting what you have outweighs upside. Low drawdown tolerance.", color: "border-blue-500/40 bg-blue-500/5 text-blue-400", inactive: "border-zinc-700 hover:border-zinc-600" },
   { value: "target" as const, label: "Reach a target", desc: "Working toward a goal or financial independence on a timeline.", color: "border-vela-teal/40 bg-vela-teal/5 text-vela-teal", inactive: "border-zinc-700 hover:border-zinc-600" },
   { value: "learning" as const, label: "Learn & experiment", desc: "Building skill and conviction. Open to ideas, comfortable being wrong.", color: "border-amber-500/40 bg-amber-500/5 text-amber-400", inactive: "border-zinc-700 hover:border-zinc-600" },
@@ -104,7 +104,7 @@ export default function ProfilePage() {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-display font-bold text-zinc-100 flex items-center gap-2">
-          <User className="w-6 h-6 text-teal-400" />
+          <User className="w-6 h-6 text-vela-teal" />
           My Profile
         </h1>
         <p className="text-sm text-zinc-500 mt-0.5">
@@ -115,7 +115,7 @@ export default function ProfilePage() {
       {/* Personal */}
       <FloatingCard glowColor="rgba(26, 168, 187,0.08)" tilt={false}>
         <div className="flex items-center gap-2 mb-5">
-          <Users className="w-4 h-4 text-teal-400" />
+          <Users className="w-4 h-4 text-vela-teal" />
           <h2 className="text-sm font-semibold text-zinc-200 uppercase tracking-wider">Personal</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -196,7 +196,7 @@ export default function ProfilePage() {
               {suggestedBracket && profile.isUsCitizen && suggestedBracket !== profile.marginalTaxRate && (
                 <button
                   onClick={() => update({ marginalTaxRate: suggestedBracket })}
-                  className="text-[10px] text-teal-400 hover:text-teal-300 transition-colors"
+                  className="text-[10px] text-vela-teal hover:text-vela-teal transition-colors"
                 >
                   Use suggested ({suggestedBracket}% based on income) →
                 </button>
@@ -211,7 +211,7 @@ export default function ProfilePage() {
                     onClick={() => update({ marginalTaxRate: b.rate })}
                     className={`p-2.5 rounded-lg border text-left transition-colors ${
                       profile.marginalTaxRate === b.rate
-                        ? "border-teal-500/40 bg-teal-500/10 text-teal-400"
+                        ? "border-vela-teal/40 bg-vela-teal/10 text-vela-teal"
                         : "border-zinc-700 hover:border-zinc-600 text-zinc-400"
                     }`}
                   >

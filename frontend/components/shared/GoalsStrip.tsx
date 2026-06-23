@@ -25,7 +25,7 @@ export default function GoalsStrip({ monthlySavings }: { monthlySavings?: number
           <Target className="w-4 h-4 text-vela-teal" />
           <h2 className="text-sm font-semibold text-zinc-200">Goals</h2>
         </div>
-        <Link href="/goals" className="text-xs text-vela-teal hover:text-teal-300 transition-colors">
+        <Link href="/goals" className="text-xs text-vela-teal hover:text-vela-teal transition-colors">
           View all →
         </Link>
       </div>
