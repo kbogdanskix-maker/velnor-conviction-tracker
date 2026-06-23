@@ -480,14 +480,14 @@ function FilterPill({ label, active, count, onClick }: { label: string; active: 
   return (
     <button
       onClick={onClick}
-      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium transition-all ${
         active
           ? "bg-teal-500/20 text-teal-300 border border-teal-500/30"
           : "bg-zinc-800/50 text-zinc-500 border border-zinc-700/50 hover:text-zinc-300 hover:border-zinc-600"
       }`}
     >
       {label}
-      <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${active ? "bg-teal-500/30" : "bg-zinc-700/50"}`}>
+      <span className={`text-[10px] px-1.5 py-0.5 rounded ${active ? "bg-teal-500/30" : "bg-zinc-700/50"}`}>
         {count}
       </span>
     </button>
@@ -622,7 +622,7 @@ export default function SmartAlertsPage() {
           </p>
         </div>
         {insightQuota && (
-          <div className="shrink-0 flex items-center gap-1.5 text-[11px] text-zinc-500 mt-1 border border-zinc-800 rounded-full px-2.5 py-1">
+          <div className="shrink-0 flex items-center gap-1.5 text-[11px] text-zinc-500 mt-1 border border-zinc-800 rounded px-2.5 py-1">
             <Sparkles className="w-3 h-3 text-teal-400" />
             <span className={insightQuota.remaining <= 2 ? "text-amber-400" : "text-zinc-400"}>
               {insightQuota.remaining}/{insightQuota.limit} AI insights left today
@@ -728,7 +728,7 @@ export default function SmartAlertsPage() {
                     <div className="flex-1 min-w-0 space-y-1.5">
                       <div className="flex items-start justify-between gap-2">
                         <h3 className="text-sm font-medium text-zinc-100">{alert.title}</h3>
-                        <span className={`shrink-0 text-[10px] font-medium px-2 py-0.5 rounded-full border ${style.border} ${style.iconColor}`}>
+                        <span className={`shrink-0 text-[10px] font-medium px-2 py-0.5 rounded border ${style.border} ${style.iconColor}`}>
                           {alert.severity}
                         </span>
                       </div>

@@ -136,7 +136,7 @@ export default function JournalPage() {
         <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={() => { setFilterAction(null); setFilterOutcome(null); }}
-            className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
+            className={`px-3 py-1 rounded text-xs font-medium border transition-colors ${
               !filterAction && !filterOutcome
                 ? "bg-zinc-100 text-zinc-900 border-zinc-100"
                 : "border-zinc-700 text-zinc-400 hover:text-zinc-200"
@@ -148,7 +148,7 @@ export default function JournalPage() {
             <button
               key={a.value}
               onClick={() => setFilterAction(filterAction === a.value ? null : a.value)}
-              className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
+              className={`px-3 py-1 rounded text-xs font-medium border transition-colors ${
                 filterAction === a.value
                   ? "bg-vela-teal/15 text-vela-teal border-vela-teal/30"
                   : "border-zinc-700 text-zinc-400 hover:text-zinc-200"
@@ -160,7 +160,7 @@ export default function JournalPage() {
           <span className="w-px h-4 bg-zinc-700" />
           <button
             onClick={() => setFilterOutcome(filterOutcome === "pending" ? null : "pending")}
-            className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
+            className={`px-3 py-1 rounded text-xs font-medium border transition-colors ${
               filterOutcome === "pending"
                 ? "bg-amber-500/15 text-amber-400 border-amber-500/30"
                 : "border-zinc-700 text-zinc-400 hover:text-zinc-200"
@@ -170,7 +170,7 @@ export default function JournalPage() {
           </button>
           <button
             onClick={() => setFilterOutcome(filterOutcome === "reviewed" ? null : "reviewed")}
-            className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
+            className={`px-3 py-1 rounded text-xs font-medium border transition-colors ${
               filterOutcome === "reviewed"
                 ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
                 : "border-zinc-700 text-zinc-400 hover:text-zinc-200"
@@ -391,7 +391,7 @@ function OutcomeBadge({ outcome }: { outcome: string }) {
   const conf = getOutcomeConfig(outcome);
   const Icon = conf.icon;
   return (
-    <span className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full ${conf.color} bg-zinc-800`}>
+    <span className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded ${conf.color} bg-zinc-800`}>
       <Icon className="w-2.5 h-2.5" />
       {conf.label}
     </span>

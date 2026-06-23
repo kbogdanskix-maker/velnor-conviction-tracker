@@ -43,7 +43,7 @@ function TypeBadge({ type }: { type: "playbook" | "deepdive" }) {
 function CatBadge({ cat }: { cat: LearnCategory }) {
   const c = CATEGORY_COLORS[cat];
   return (
-    <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full border ${c.bg} ${c.text} ${c.border}`}>
+    <span className={`text-[10px] font-medium px-2 py-0.5 rounded border ${c.bg} ${c.text} ${c.border}`}>
       {CATEGORY_LABELS[cat]}
     </span>
   );
@@ -457,7 +457,7 @@ function TaxHarvestTool() {
             <button
               key={t.value}
               onClick={() => setRate(t.value)}
-              className={`px-2.5 py-1 rounded-full text-[11px] border transition-all ${
+              className={`px-2.5 py-1 rounded text-[11px] border transition-all ${
                 rate === t.value
                   ? "bg-teal-500/15 text-teal-300 border-teal-500/40"
                   : "bg-zinc-800/60 text-zinc-400 border-zinc-700 hover:border-zinc-500"
@@ -720,7 +720,7 @@ function ApplyToStock({ item }: { item: LearnItem }) {
               <button
                 key={h.ticker}
                 onClick={() => { setSelectedTicker(h.ticker); setShowCustom(false); }}
-                className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-all ${
+                className={`px-2.5 py-1 rounded text-xs font-medium border transition-all ${
                   !showCustom && selectedTicker === h.ticker
                     ? "bg-teal-500/15 text-teal-300 border-teal-500/40"
                     : "bg-zinc-800/60 text-zinc-400 border-zinc-700 hover:border-zinc-500 hover:text-zinc-300"
@@ -738,7 +738,7 @@ function ApplyToStock({ item }: { item: LearnItem }) {
         {!showCustom ? (
           <button
             onClick={() => { setShowCustom(true); setSelectedTicker(""); }}
-            className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 border border-zinc-700 hover:border-zinc-600 rounded-full px-2.5 py-1 transition-colors"
+            className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 border border-zinc-700 hover:border-zinc-600 rounded px-2.5 py-1 transition-colors"
           >
             <Search className="w-3 h-3" />
             Any ticker
@@ -969,7 +969,7 @@ export default function LearnPage() {
         <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={() => setCatFilter(null)}
-            className={`px-2.5 py-1 rounded-full text-xs border transition-colors ${
+            className={`px-2.5 py-1 rounded text-xs border transition-colors ${
               !catFilter
                 ? "bg-zinc-200 text-zinc-900 border-zinc-200"
                 : "border-zinc-800 text-zinc-500 hover:border-zinc-600 hover:text-zinc-300"
@@ -985,7 +985,7 @@ export default function LearnPage() {
               <button
                 key={cat}
                 onClick={() => setCatFilter(catFilter === cat ? null : cat)}
-                className={`px-2.5 py-1 rounded-full text-xs border transition-colors ${
+                className={`px-2.5 py-1 rounded text-xs border transition-colors ${
                   active
                     ? `${c.bg} ${c.text} ${c.border}`
                     : "border-zinc-800 text-zinc-500 hover:border-zinc-600 hover:text-zinc-300"

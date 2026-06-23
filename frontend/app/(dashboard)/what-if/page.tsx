@@ -412,7 +412,7 @@ export default function WhatIfPage() {
                     <div key={i} className="py-3 first:pt-0 last:pb-0">
                       <div className="flex items-start justify-between gap-3">
                         <p className="text-sm font-medium text-zinc-200 leading-snug">{g.name}</p>
-                        <span className={`shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full border ${
+                        <span className={`shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded border ${
                           cantReach
                             ? "bg-rose-500/10 text-rose-400 border-rose-500/25"
                             : isDelayed

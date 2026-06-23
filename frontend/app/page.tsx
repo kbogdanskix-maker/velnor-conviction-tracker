@@ -236,7 +236,7 @@ function BearingDemo() {
     <div className="vela-card overflow-hidden">
       {/* preview tag */}
       <div className="flex items-center gap-2 mb-3">
-        <span className="text-[10px] font-mono uppercase tracking-widest text-vela-teal/90 bg-vela-teal/10 border border-vela-teal/25 px-2 py-0.5 rounded-full">
+        <span className="text-[10px] font-mono uppercase tracking-widest text-vela-teal/90 bg-vela-teal/10 border border-vela-teal/25 px-2 py-0.5 rounded">
           Preview · Reflect
         </span>
         <span className="text-[10px] text-zinc-600">a glimpse of Velnor&apos;s portfolio AI</span>
@@ -256,7 +256,7 @@ function BearingDemo() {
           <button
             key={opt.key}
             onClick={() => setActive(i)}
-            className={`text-xs px-3 py-1.5 rounded-full border transition-all ${
+            className={`text-xs px-3 py-1.5 rounded border transition-all ${
               i === active
                 ? "border-vela-teal/50 bg-vela-teal/10 text-vela-teal"
                 : "border-zinc-800 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300"

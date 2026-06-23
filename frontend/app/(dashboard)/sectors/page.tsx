@@ -342,7 +342,7 @@ export default function SectorsPage() {
                             {sectorHoldings.map((h) => (
                               <span
                                 key={h.ticker}
-                                className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-300 tabular"
+                                className="text-[10px] px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 tabular"
                               >
                                 {h.ticker} · {pctWeight(h.weight)}
                               </span>

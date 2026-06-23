@@ -324,7 +324,7 @@ export default function ScreenerPage() {
                         setFilters((prev) => ({ ...prev, capMin: preset.min, capMax: preset.max }));
                       }
                     }}
-                    className={`text-xs px-3 py-1.5 rounded-full transition-colors ${
+                    className={`text-xs px-3 py-1.5 rounded transition-colors ${
                       isActive
                         ? "bg-vela-teal/15 text-vela-teal"
                         : "bg-zinc-800 text-zinc-400 hover:text-zinc-200"
@@ -345,7 +345,7 @@ export default function ScreenerPage() {
                 <button
                   key={s}
                   onClick={() => toggleSector(s)}
-                  className={`text-xs px-3 py-1.5 rounded-full transition-colors ${
+                  className={`text-xs px-3 py-1.5 rounded transition-colors ${
                     filters.sectors.has(s)
                       ? "bg-vela-teal/15 text-vela-teal"
                       : "bg-zinc-800 text-zinc-400 hover:text-zinc-200"
@@ -467,7 +467,7 @@ export default function ScreenerPage() {
                   <button
                     key={key}
                     onClick={() => toggleSort(key)}
-                    className={`flex items-center gap-1 text-xs px-2.5 py-1 rounded-full whitespace-nowrap transition-colors ${
+                    className={`flex items-center gap-1 text-xs px-2.5 py-1 rounded whitespace-nowrap transition-colors ${
                       active ? "bg-vela-teal/15 text-vela-teal" : "bg-zinc-800 text-zinc-400"
                     }`}
                   >

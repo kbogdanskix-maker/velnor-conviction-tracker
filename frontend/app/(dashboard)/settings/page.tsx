@@ -247,7 +247,7 @@ export default function SettingsPage() {
         <div className="flex items-center gap-2 mb-4">
           <ShieldCheck className={`w-4 h-4 ${adminMode ? "text-amber-400" : "text-zinc-400"}`} />
           <h2 className="text-sm font-medium text-zinc-300">Admin Mode</h2>
-          {adminMode && <span className="text-[10px] font-medium bg-amber-500/15 text-amber-400 px-2 py-0.5 rounded-full">ACTIVE</span>}
+          {adminMode && <span className="text-[10px] font-medium bg-amber-500/15 text-amber-400 px-2 py-0.5 rounded">ACTIVE</span>}
         </div>
         <p className="text-xs text-zinc-500 mb-4">
           Enable admin mode to unlock all tiered features for testing and preview.
@@ -281,7 +281,7 @@ export default function SettingsPage() {
               <p className="text-sm text-zinc-200">Plan</p>
               <p className="text-xs text-zinc-500">Free tier  - all features included during beta</p>
             </div>
-            <span className="text-[10px] font-medium bg-vela-teal/15 text-vela-teal px-2 py-0.5 rounded-full">Beta</span>
+            <span className="text-[10px] font-medium bg-vela-teal/15 text-vela-teal px-2 py-0.5 rounded">Beta</span>
           </div>
           <div className="flex items-center justify-between py-2">
             <div>

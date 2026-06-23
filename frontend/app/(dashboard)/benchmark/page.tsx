@@ -354,7 +354,7 @@ function TogglePill({ label, active, onToggle }: { label: string; active: boolea
   return (
     <button
       onClick={onToggle}
-      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+      className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium border transition-colors ${
         active
           ? "bg-vela-teal/10 text-vela-teal border-vela-teal/30"
           : "border-zinc-700 text-zinc-500 hover:text-zinc-300"
