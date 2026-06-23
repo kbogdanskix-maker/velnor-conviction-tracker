@@ -138,6 +138,30 @@ and `apiStreamPost`/`streamReflect` on the frontend. Add prompt templates for **
 **Prerequisite:** restart backend so the key is live; confirm `/ai/reflect` streams end-to-end.
 Claude never reads/prints/modifies the secret.
 
+## Compliance & disclaimers (guardrail) — cross-cutting
+
+Velnor helps users evaluate securities and surfaces AI thesis reviews and valuation coaching. Every
+such surface must carry: **"Not investment advice. For educational purposes only. Consult a licensed
+financial advisor before making decisions."** Enforced in two layers (don't trust the model to
+remember):
+
+1. **Deterministic UI.** A shared `<Disclaimer />` component:
+   - A persistent, quiet line in the app footer / shell on all investing + planning surfaces.
+   - Appended beneath **every AI response** (Reflect, thesis review, valuation coaching) as a
+     non-dismissible micro-label — rendered by the client, independent of model output.
+   - On the AI Valuation helper and Journey, a short inline note where outputs could read as a
+     recommendation.
+2. **AI system prompt.** The Reflect / valuation / thesis-review prompts instruct the model to be
+   **educational and non-directive**: explain frameworks and trade-offs, never issue personalized
+   buy/sell/hold directives, never invent numbers, and defer to a licensed advisor for decisions.
+3. **First-run acknowledgment** (lightweight): a one-time "Velnor is an educational tool, not an
+   advisor" acknowledgment on first investing-surface visit (stored in `kv`/profile). Strengthens the
+   legal posture; non-blocking.
+
+Ties to the deferred `/privacy` + `/terms` pages (controller = individual, pre-launch scope). Wording
+lives in one constant so it's consistent everywhere and easy for legal to revise. Tone: quiet and
+muted (design-system §11 legibility), never alarmist, never competing with data.
+
 ## Visual redesign integration
 
 The "Instrument" design system (`design-system.md`) applies, focused on the **new core surfaces**
@@ -148,7 +172,9 @@ only signal; bubbles carry icon/label; contrast on dark surfaces).
 ## Sequencing (relaxed timeline → soft-launch ~July 1)
 
 1. **IA pivot + nav** — investing-first groups, Planning secondary, Lab toggle. Reuse
-   `Sidebar.tsx` + Simple/Advanced machinery. Lowest risk, immediate clarity.
+   `Sidebar.tsx` + Simple/Advanced machinery. Lowest risk, immediate clarity. **Ship the shared
+   `<Disclaimer />` component + wording constant here** (cheap, global) and wire it into the shell
+   footer; AI-response placement lands with the AI phases.
 2. **Conviction first-class** — Thesis versioned + saved everywhere; absorb notes + journal.
 3. **Stock Journey map v1** — `/journey/{ticker}` aggregation + event-bubble UI + colour from
    conviction/price.
