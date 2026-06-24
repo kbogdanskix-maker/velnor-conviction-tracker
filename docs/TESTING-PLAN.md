@@ -47,6 +47,16 @@ conviction-aware Smart Alerts AI, versioned Thesis, and the Stock Journey map. D
   - [ ] A **Conviction Trail**: your transactions + thesis entries, newest-first, colour-coded dots — or the empty prompt if none yet.
 - [ ] **Deep link**: on **Positions** (portfolio), each holding has a Journey (route) icon → opens that ticker's journey.
 
+## 5b. Phase 4 — Closed & Lessons (sold-position post-mortems)
+- [ ] Open **Closed & Lessons** (Accuracy group, under Lookout). For every ticker you've sold, you see a row.
+  - [ ] **Realized P&L** (FIFO) with ▲/▼ and %, standard gain/loss colour.
+  - [ ] **"Since you sold"**: the counterfactual move since your last sale, coloured by *regret* — positive (it ran up after you sold) shows amber + "ran without you"; negative shows gain + "dodged the drop".
+  - [ ] Sold date/price, proceeds, first-buy date.
+  - [ ] A **"View {ticker} journey"** link to `/journey/{ticker}`.
+- [ ] **Lesson capture**: type a lesson in the textarea, click **Save to thesis**. It saves as a `note` entry on that ticker's thesis (creating the thread if needed).
+- [ ] Open that ticker's **Stock Journey** → the lesson appears in the Conviction Trail as a NOTE, alongside the buy/sell events. (This is the `/closed → thesis → journey` integration.)
+- [ ] Demo data present: a seeded **PLTR** closed trade (bought $22, sold $30 = +36% realized; +275% since you sold) with a saved lesson. Remove by deleting the PLTR thesis in `/thesis` and the PLTR transactions if you want a clean slate.
+
 ## 6. The conviction loop (the whole product thesis, end to end)
 1. [ ] Write a **bull thesis on NVDA** (Thesis → New Thesis).
 2. [ ] Open **Stock Journey → NVDA**: the thesis entry now appears in the Conviction Trail; the state reflects it (e.g. "on thesis").
