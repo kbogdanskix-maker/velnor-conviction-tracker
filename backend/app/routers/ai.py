@@ -419,6 +419,57 @@ async def alert_insight(
     )
 
 
+class ThesisReviewRequest(BaseModel):
+    ticker: str
+
+
+@router.post("/thesis-review")
+async def thesis_review(
+    body: ThesisReviewRequest,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Stream an AI read on whether the user's own thesis for a ticker still holds,
+    grounded in their thesis trail + live data."""
+    sse_headers = await _enforce_insight_quota(user)
+    tk = body.ticker.strip().upper()
+
+    # The user's full thesis trail for this ticker
+    threads = (await db.execute(
+        select(ThesisThread).where(ThesisThread.user_id == user.id, ThesisThread.ticker == tk)
+    )).scalars().all()
+    thesis_entries: list[dict] = []
+    for th in threads:
+        entries = (await db.execute(
+            select(ThesisEntry).where(ThesisEntry.thread_id == th.id).order_by(ThesisEntry.created_at)
+        )).scalars().all()
+        thesis_entries.extend(
+            {"entry_type": e.entry_type, "body": e.body, "created_at": e.created_at.isoformat() if e.created_at else ""}
+            for e in entries
+        )
+
+    # Position + profile
+    portfolio = (await db.execute(
+        select(Portfolio).where(Portfolio.user_id == user.id, Portfolio.is_default.is_(True))
+    )).scalar_one_or_none()
+    holdings = await _build_holdings_ctx(db, portfolio)
+    holding = next((h for h in holdings if h["ticker"] == tk), None)
+
+    prof_row = (await db.execute(
+        select(UserKVStore).where(UserKVStore.user_id == user.id, UserKVStore.key == "user_profile")
+    )).scalar_one_or_none()
+    profile = prof_row.data if prof_row and isinstance(prof_row.data, dict) else {}
+
+    news = await market_data.get_ticker_news(tk)
+    earnings = await ai_service.get_earnings_raw_data(tk)
+
+    return StreamingResponse(
+        ai_service.stream_thesis_review(tk, thesis_entries, holding, profile, news, earnings),
+        media_type="text/event-stream",
+        headers=sse_headers,
+    )
+
+
 class ReflectMessage(BaseModel):
     role: str  # "user" | "assistant"
     content: str

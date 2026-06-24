@@ -853,3 +853,102 @@ Hard rules:
     except Exception as e:
         logger.error("Alert insight stream failed: %s", e)
         yield f"data: {json.dumps({'error': str(e), 'done': True})}\n\n"
+
+
+# ── Thesis review ─────────────────────────────────────────────────────────────
+
+async def stream_thesis_review(
+    ticker: str,
+    thesis_entries: list[dict],
+    holding: dict | None,
+    profile: dict,
+    news: list[dict],
+    earnings: dict,
+) -> AsyncGenerator[str, None]:
+    """Stream an AI read on whether the user's own thesis still holds, grounded in
+    their thesis trail + real data. Educational, never fabricates numbers."""
+    client = _get_client()
+
+    # The user's conviction trail (oldest -> newest)
+    trail_lines = [
+        f"  • {(e.get('created_at') or '')[:10]} [{e.get('entry_type', 'note')}]: {(e.get('body') or '')[:300]}"
+        for e in thesis_entries
+    ]
+    trail_block = "\n".join(trail_lines) if trail_lines else "  (no thesis written)"
+
+    if holding:
+        pos = f"{float(holding.get('weight_pct', 0)):.1f}% of the book"
+        if holding.get("unrealized_pnl_pct") is not None:
+            pos += f", {float(holding['unrealized_pnl_pct']):+.1f}% unrealised"
+        if holding.get("days_held") is not None:
+            pos += f", held {holding['days_held']}d"
+    else:
+        pos = "no current position (closed or watchlist)"
+
+    metrics: list[str] = []
+    for label, key, suffix in [
+        ("Rev growth", "revenue_growth", "%"), ("Earnings growth", "earnings_growth", "%"),
+        ("QoQ earnings growth", "quarterly_earnings_growth", "%"), ("Profit margin", "profit_margin", "%"),
+        ("Trailing P/E", "pe_trailing", ""), ("Forward P/E", "pe_forward", ""),
+        ("Current price", "current_price", ""), ("Analyst target", "analyst_target", ""),
+    ]:
+        v = earnings.get(key)
+        if v is not None:
+            metrics.append(f"{label}: {v}{suffix}")
+    metrics_block = "\n".join(f"  • {m}" for m in metrics) or "  (no live metrics available)"
+
+    eps_lines = []
+    for q in (earnings.get("eps_history") or [])[:4]:
+        if q.get("eps_actual") is None:
+            continue
+        beat = ""
+        if q.get("surprise_pct") is not None:
+            beat = f" ({'beat' if q['surprise_pct'] > 0 else 'miss'} {abs(q['surprise_pct']):.1f}%)"
+        eps_lines.append(f"  • {q.get('date')}: EPS {q['eps_actual']}{beat}")
+    eps_block = "\n".join(eps_lines) or "  (no recent EPS data)"
+
+    news_block = "\n".join(f"  • {a.get('title', '')}" for a in (news or [])[:6]) or "  (no recent news)"
+
+    philosophy = (profile.get("philosophy") or "").strip()
+    philosophy_line = f'\nThe user\'s investing philosophy: "{philosophy}". Honor it.' if philosophy else ""
+
+    system = f"""You are Velnor's thesis-review assistant. The user wants an honest read on whether THEIR OWN thesis for {ticker} still holds, given what has actually happened. You help them reason; you do not issue buy/sell orders.{philosophy_line}
+
+The user's thesis trail for {ticker} (their own words, oldest to newest):
+{trail_block}
+
+Their position: {pos}
+
+Live metrics (only what we actually have):
+{metrics_block}
+
+Recent EPS:
+{eps_block}
+
+Recent news headlines:
+{news_block}
+
+Write a focused review (under 180 words):
+1. Restate the core of their thesis in one line (from their own words above).
+2. Judge it against the data: is it INTACT, DRIFTING, or BROKEN, and why, citing specific data points you were given.
+3. Name the single most important thing to watch next that would confirm or break it.
+
+Rules:
+- Ground everything in their thesis trail + the data above. NEVER invent figures, prices, multiples, or peer comparisons you were not given; if you lack a number, say so.
+- Be direct and honest; you may disagree with them. Do not scold.
+- Educational and non-directive: no "buy/sell/hold" directives, no disclaimers or boilerplate (the app shows that separately).
+- Plain language, no bullet-point lists in the output, no em-dashes."""
+
+    try:
+        async with client.messages.stream(
+            model="claude-sonnet-4-6",
+            max_tokens=520,
+            system=system,
+            messages=[{"role": "user", "content": f"Is my {ticker} thesis still intact?"}],
+        ) as stream:
+            async for text in stream.text_stream:
+                yield f"data: {json.dumps({'text': text, 'done': False})}\n\n"
+        yield f"data: {json.dumps({'done': True})}\n\n"
+    except Exception as e:
+        logger.error("Thesis review stream failed: %s", e)
+        yield f"data: {json.dumps({'error': str(e), 'done': True})}\n\n"
