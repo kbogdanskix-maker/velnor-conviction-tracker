@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { createBrowserClient } from "@/lib/supabase-browser";
-import HeroVoyage from "@/components/celestial/HeroVoyage";
+import SailInstrument from "@/components/celestial/SailInstrument";
 import VelnorMark from "@/components/shared/VelnorMark";
 
 /* ─── icons ─────────────────────────────────────────────────────────────── */
@@ -381,9 +381,7 @@ export default function LandingPage() {
           <Reveal delay={200} className="relative hidden lg:block">
             <div className="relative h-[440px]">
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_60%_45%,#1AA8BB10_0%,transparent_65%)]" />
-              <HeroVoyage />
-              <div className="absolute left-2 top-6 font-mono text-[10px] text-zinc-600 tabular-nums z-10">N 41.2°</div>
-              <div className="absolute left-0 bottom-8 font-mono text-[10px] text-zinc-600 tabular-nums z-10">↑ in motion</div>
+              <SailInstrument />
             </div>
           </Reveal>
         </div>
