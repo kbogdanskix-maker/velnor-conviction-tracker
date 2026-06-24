@@ -1,8 +1,9 @@
 "use client";
 
 import { useParams } from "next/navigation";
+import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Sparkles } from "lucide-react";
 import {
   ComposedChart,
   Line,
@@ -16,9 +17,157 @@ import {
 import { useJourney, COLOUR_CLASS, COLOUR_HEX, ENTRY_TYPE_LABEL, ENTRY_TYPE_CHIP } from "@/lib/journey";
 import type { JourneyEvent, JourneyColour, ThesisEntryType } from "@/lib/journey";
 import { formatCurrency, formatPercent, formatDate } from "@/lib/formatters";
+import { apiStreamPost } from "@/lib/api";
 import PageTransition from "@/components/celestial/PageTransition";
 import DashboardSkeleton from "@/components/shared/DashboardSkeleton";
 import ErrorState from "@/components/shared/ErrorState";
+import Disclaimer from "@/components/shared/Disclaimer";
+
+// ── Streaming helper ──────────────────────────────────────────────────────────
+
+async function streamThesisReview(
+  ticker: string,
+  onChunk: (text: string) => void,
+  onDone: () => void,
+  onError: (err: string) => void,
+) {
+  try {
+    const res = await apiStreamPost("/ai/thesis-review", { ticker });
+    if (res.status === 429) {
+      onError("Daily AI limit reached. Resets at midnight.");
+      return;
+    }
+    if (!res.ok || !res.body) {
+      onError("Failed to connect.");
+      return;
+    }
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop() ?? "";
+      for (const line of lines) {
+        if (!line.startsWith("data: ")) continue;
+        const raw = line.slice(6).trim();
+        if (!raw) continue;
+        try {
+          const msg = JSON.parse(raw);
+          if (msg.text) onChunk(msg.text);
+          if (msg.done) onDone();
+          if (msg.error) onError(msg.error);
+        } catch { /* ignore malformed */ }
+      }
+    }
+  } catch (e) {
+    onError(e instanceof Error ? e.message : "Network error");
+  }
+}
+
+// ── Inline bold renderer ──────────────────────────────────────────────────────
+
+/**
+ * Splits text on **bold** markers and renders them as <strong> spans.
+ * Keeps it simple — no heavy markdown lib dependency.
+ */
+function InlineBold({ text }: { text: string }) {
+  const parts = text.split(/\*\*(.+?)\*\*/g);
+  return (
+    <>
+      {parts.map((part, i) =>
+        i % 2 === 1 ? (
+          <strong key={i} className="text-zinc-100 font-semibold">
+            {part}
+          </strong>
+        ) : (
+          <span key={i}>{part}</span>
+        ),
+      )}
+    </>
+  );
+}
+
+// ── Thesis review panel ───────────────────────────────────────────────────────
+
+interface ThesisReviewState {
+  text: string;
+  loading: boolean;
+  error?: string;
+}
+
+function ThesisReviewPanel({ ticker }: { ticker: string }) {
+  const [state, setState] = useState<ThesisReviewState>({
+    text: "",
+    loading: false,
+  });
+
+  function handleReview() {
+    setState({ text: "", loading: true, error: undefined });
+
+    streamThesisReview(
+      ticker,
+      (chunk) => {
+        setState((prev) => ({ ...prev, text: prev.text + chunk }));
+      },
+      () => {
+        setState((prev) => ({ ...prev, loading: false }));
+      },
+      (err) => {
+        setState((prev) => ({ ...prev, loading: false, error: err }));
+      },
+    );
+  }
+
+  return (
+    <div className="vela-card space-y-4">
+      {/* Header row */}
+      <div className="flex items-center justify-between">
+        <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-500">
+          Thesis Review
+        </p>
+        <button
+          onClick={handleReview}
+          disabled={state.loading}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-[12px] font-medium
+            bg-vela-teal/10 text-vela-teal border border-vela-teal/25
+            hover:bg-vela-teal/15 hover:border-vela-teal/40
+            disabled:opacity-40 disabled:cursor-not-allowed
+            transition-colors"
+        >
+          <Sparkles className="w-4 h-4 shrink-0" />
+          {state.loading ? "Reviewing..." : "Review this thesis"}
+        </button>
+      </div>
+
+      {/* Loading state */}
+      {state.loading && state.text === "" && (
+        <p className="text-[12px] text-zinc-500 italic">Reviewing your thesis...</p>
+      )}
+
+      {/* Error state */}
+      {state.error && (
+        <p className="text-[12px] text-rose-400">{state.error}</p>
+      )}
+
+      {/* Streamed answer */}
+      {state.text && (
+        <div className="space-y-2">
+          <p
+            className="text-[13px] text-zinc-300 leading-relaxed whitespace-pre-wrap"
+          >
+            <InlineBold text={state.text} />
+          </p>
+          <Disclaimer variant="inline" />
+        </div>
+      )}
+    </div>
+  );
+}
 
 // ── Tooltip ───────────────────────────────────────────────────────────────────
 
@@ -383,6 +532,11 @@ export default function JourneyTickerPage() {
           </div>
         )}
       </div>
+
+      {/* AI thesis review — only shown when thesis entries exist */}
+      {journey.has_thesis && (
+        <ThesisReviewPanel ticker={journey.ticker} />
+      )}
     </PageTransition>
   );
 }
