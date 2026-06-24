@@ -31,7 +31,7 @@ describe("nav-structure", () => {
     const spineHrefs = new Set(
       NAV_GROUPS.filter((g) => !g.lab).flatMap((g) => g.items.map((i) => i.href)),
     );
-    for (const h of ["/insurance", "/fees", "/monte-carlo", "/retirement", "/learn"]) {
+    for (const h of ["/insurance", "/fees", "/monte-carlo", "/retirement", "/learn", "/journal", "/notes"]) {
       expect(spineHrefs.has(h)).toBe(false);
     }
   });
