@@ -4,15 +4,16 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import {
-  AreaChart,
-  Area,
+  ComposedChart,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  ReferenceDot,
 } from "recharts";
-import { useJourney, COLOUR_CLASS, ENTRY_TYPE_LABEL, ENTRY_TYPE_CHIP } from "@/lib/journey";
+import { useJourney, COLOUR_CLASS, COLOUR_HEX, ENTRY_TYPE_LABEL, ENTRY_TYPE_CHIP } from "@/lib/journey";
 import type { JourneyEvent, JourneyColour, ThesisEntryType } from "@/lib/journey";
 import { formatCurrency, formatPercent, formatDate } from "@/lib/formatters";
 import PageTransition from "@/components/celestial/PageTransition";
@@ -69,7 +70,6 @@ function EntryTypeBadge({ type }: { type: ThesisEntryType }) {
 // ── Timeline event row ────────────────────────────────────────────────────────
 
 function EventRow({ event }: { event: JourneyEvent }) {
-  const cls = COLOUR_CLASS[event.colour];
   const shortDate = (() => {
     try {
       return new Date(event.date).toLocaleDateString("en-US", {
@@ -82,21 +82,24 @@ function EventRow({ event }: { event: JourneyEvent }) {
     }
   })();
 
+  const dotColour = COLOUR_CLASS[event.colour].dot;
+
   return (
-    <div className="flex items-start gap-3 py-3 border-b border-vela-border last:border-b-0">
-      {/* Dot + vertical connector */}
-      <div className="flex flex-col items-center pt-1 shrink-0">
-        <span className={`w-2 h-2 rounded-full shrink-0 ${cls.dot}`} />
+    <div className="relative flex gap-4 pb-5 last:pb-0">
+      {/* Spine dot — positioned over the border-l rule */}
+      <div className="flex flex-col items-center shrink-0 w-4">
+        <span
+          className={`w-2 h-2 rounded-full shrink-0 mt-1 -ml-[3px] ${dotColour}`}
+        />
       </div>
 
-      {/* Date */}
-      <span className="font-mono text-xs text-zinc-500 tabular-nums w-[72px] shrink-0 pt-0.5">
-        {shortDate}
-      </span>
-
-      {/* Content */}
-      <div className="flex-1 min-w-0 space-y-0.5">
-        <div className="flex flex-wrap items-center gap-2">
+      {/* Row content */}
+      <div className="flex-1 min-w-0 pb-0">
+        {/* Top line: date + title + chip */}
+        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
+          <span className="font-mono text-[11px] text-vela-muted tabular-nums shrink-0">
+            {shortDate}
+          </span>
           <span className="text-sm font-medium text-zinc-100">{event.title}</span>
           {event.kind === "thesis" && event.entry_type && (
             <EntryTypeBadge type={event.entry_type} />
@@ -107,12 +110,38 @@ function EventRow({ event }: { event: JourneyEvent }) {
             </span>
           )}
         </div>
+        {/* Detail text */}
         {event.detail && (
-          <p className="text-xs text-zinc-500 leading-snug">{event.detail}</p>
+          <p className="text-xs text-zinc-500 leading-snug mt-0.5">{event.detail}</p>
         )}
       </div>
     </div>
   );
+}
+
+// ── Nearest-date mapper ───────────────────────────────────────────────────────
+
+/**
+ * Given a YYYY-MM-DD event date and the array of price-line date strings,
+ * returns the nearest price-line date (by calendar distance) or null if the
+ * price_line is empty.
+ */
+function nearestPriceDate(
+  eventDate: string,
+  priceDates: string[],
+): string | null {
+  if (priceDates.length === 0) return null;
+  const target = new Date(eventDate).getTime();
+  let best = priceDates[0];
+  let bestDiff = Math.abs(new Date(priceDates[0]).getTime() - target);
+  for (let i = 1; i < priceDates.length; i++) {
+    const diff = Math.abs(new Date(priceDates[i]).getTime() - target);
+    if (diff < bestDiff) {
+      bestDiff = diff;
+      best = priceDates[i];
+    }
+  }
+  return best;
 }
 
 // ── Main page ─────────────────────────────────────────────────────────────────
@@ -140,9 +169,10 @@ export default function JourneyTickerPage() {
 
   const eventsDesc = [...journey.events].reverse();
 
-  // Format date labels for x-axis — only month + day to keep them short
+  // Build price data keyed on YYYY-MM-DD (used by ReferenceDot x values)
   const priceData = (journey.price_line ?? []).map((pt) => ({
-    ...pt,
+    date: pt.date,           // YYYY-MM-DD — the axis dataKey
+    close: pt.close,
     label: (() => {
       try {
         return new Date(pt.date).toLocaleDateString("en-US", {
@@ -155,7 +185,33 @@ export default function JourneyTickerPage() {
     })(),
   }));
 
-  // Thin out x-axis ticks so they don't crowd — show ~6 ticks
+  // Index of close by YYYY-MM-DD for O(1) lookup
+  const closeByDate = new Map<string, number>(
+    priceData.map((pt) => [pt.date, pt.close]),
+  );
+  const priceDates = priceData.map((pt) => pt.date);
+
+  // Derive event markers: map each event to the nearest price-line date
+  interface EventMarker {
+    x: string;
+    y: number;
+    fill: string;
+  }
+  const eventMarkers: EventMarker[] = [];
+  for (const event of journey.events) {
+    const eventDay = event.date.slice(0, 10); // YYYY-MM-DD
+    const mapped = nearestPriceDate(eventDay, priceDates);
+    if (mapped === null) continue;
+    const close = closeByDate.get(mapped);
+    if (close === undefined) continue;
+    eventMarkers.push({
+      x: mapped,
+      y: close,
+      fill: COLOUR_HEX[event.colour],
+    });
+  }
+
+  // Thin out x-axis ticks — show ~6 ticks
   const xTickInterval =
     priceData.length > 0 ? Math.max(1, Math.floor(priceData.length / 6)) : 1;
 
@@ -232,7 +288,7 @@ export default function JourneyTickerPage() {
         </div>
       )}
 
-      {/* Price line */}
+      {/* Price line with event markers */}
       {priceData.length > 0 ? (
         <div className="vela-card">
           <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 mb-4">
@@ -240,24 +296,28 @@ export default function JourneyTickerPage() {
           </p>
           <div className="h-[220px]">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart
+              <ComposedChart
                 data={priceData}
-                margin={{ top: 4, right: 8, left: 0, bottom: 4 }}
+                margin={{ top: 8, right: 8, left: 0, bottom: 4 }}
               >
-                <defs>
-                  <linearGradient id="journeyTealGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#1AA8BB" stopOpacity={0.25} />
-                    <stop offset="100%" stopColor="#1AA8BB" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
                 <CartesianGrid
                   strokeDasharray="3 3"
                   stroke="#1B2638"
                   vertical={false}
                 />
                 <XAxis
-                  dataKey="label"
+                  dataKey="date"
                   interval={xTickInterval}
+                  tickFormatter={(d: string) => {
+                    try {
+                      return new Date(d).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                      });
+                    } catch {
+                      return d.slice(5, 10);
+                    }
+                  }}
                   tick={{ fill: "#5A6678", fontSize: 10 }}
                   axisLine={false}
                   tickLine={false}
@@ -274,17 +334,27 @@ export default function JourneyTickerPage() {
                   cursor={{ stroke: "#1B2638", strokeWidth: 1 }}
                   content={<PriceTooltip />}
                 />
-                <Area
+                <Line
                   type="monotone"
                   dataKey="close"
                   stroke="#1AA8BB"
                   strokeWidth={1.5}
-                  fill="url(#journeyTealGrad)"
                   dot={false}
                   activeDot={{ r: 3, fill: "#1AA8BB", strokeWidth: 0 }}
                   animationDuration={900}
                 />
-              </AreaChart>
+                {eventMarkers.map((marker, i) => (
+                  <ReferenceDot
+                    key={i}
+                    x={marker.x}
+                    y={marker.y}
+                    r={4}
+                    fill={marker.fill}
+                    stroke="#050A16"
+                    strokeWidth={1.5}
+                  />
+                ))}
+              </ComposedChart>
             </ResponsiveContainer>
           </div>
         </div>
@@ -294,9 +364,9 @@ export default function JourneyTickerPage() {
         </p>
       )}
 
-      {/* Event timeline */}
+      {/* Conviction trail — hairline-spine timeline */}
       <div className="vela-card">
-        <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 mb-1">
+        <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 mb-4">
           Conviction Trail
         </p>
 
@@ -305,7 +375,8 @@ export default function JourneyTickerPage() {
             No events yet. Add a thesis or log a trade to start the journey.
           </p>
         ) : (
-          <div>
+          /* Hairline spine: border-l runs the full height of this container */
+          <div className="border-l border-vela-border pl-0">
             {eventsDesc.map((event, i) => (
               <EventRow key={`${event.date}-${i}`} event={event} />
             ))}

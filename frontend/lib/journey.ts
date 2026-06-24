@@ -75,6 +75,19 @@ export const COLOUR_CLASS: Record<
   neutral: { text: "text-vela-muted", dot: "bg-vela-muted", chipBg: "bg-white/5 text-vela-muted" },
 };
 
+/**
+ * Hex colour values for each JourneyColour token.
+ * Used for recharts primitives (ReferenceDot, etc.) that require literal hex,
+ * not Tailwind class names.
+ */
+export const COLOUR_HEX: Record<JourneyColour, string> = {
+  gain:    "#34D399",
+  loss:    "#F43F5E",
+  amber:   "#F59E0B",
+  teal:    "#1AA8BB",
+  neutral: "#8A97AC",
+};
+
 // ── Hook ─────────────────────────────────────────────────────────────────────
 
 const fetcher = <T>(path: string) => api.get<T>(path);
