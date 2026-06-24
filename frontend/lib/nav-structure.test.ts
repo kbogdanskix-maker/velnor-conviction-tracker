@@ -28,6 +28,15 @@ describe("nav-structure", () => {
     expect(journeyItem?.label).toBe("Stock Journey");
   });
 
+  it("places /closed in Accuracy & Conviction group (non-lab, non-secondary)", () => {
+    const accuracyGroup = NAV_GROUPS.find((g) => g.label === "Accuracy & Conviction");
+    expect(accuracyGroup).toBeDefined();
+    expect(accuracyGroup?.lab).toBeFalsy();
+    expect(accuracyGroup?.secondary).toBeFalsy();
+    const closedItem = accuracyGroup?.items.find((i) => i.href === "/closed");
+    expect(closedItem?.label).toBe("Closed & Lessons");
+  });
+
   it("marks Planning secondary and Lab as lab", () => {
     const planning = NAV_GROUPS.find((g) => g.label === "Planning");
     const lab = NAV_GROUPS.find((g) => g.label === "Lab");
