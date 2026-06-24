@@ -108,9 +108,12 @@ export default function SailInstrument() {
 
     // ── Bezier course (ship path) ─────────────────────────────────────────────
     function course(tp: number) {
-      const p0 = { x: 0.02 * w, y: 0.92 * h };
+      // Endpoints sit beyond the visible edges (well past the ship's ~18px glow) so
+      // the loop wrap happens entirely off-screen: the ship sails fully out the right
+      // and re-enters from the left, reading as continuous motion rather than a loop.
+      const p0 = { x: -0.12 * w, y: 0.92 * h };
       const c  = { x: 0.50 * w, y: 1.05 * h };
-      const p1 = { x: 0.98 * w, y: 0.74 * h };
+      const p1 = { x: 1.12 * w, y: 0.74 * h };
       const u = 1 - tp;
       const x  = u * u * p0.x + 2 * u * tp * c.x + tp * tp * p1.x;
       const y  = u * u * p0.y + 2 * u * tp * c.y + tp * tp * p1.y;
