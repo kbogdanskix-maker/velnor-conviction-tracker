@@ -57,6 +57,12 @@ conviction-aware Smart Alerts AI, versioned Thesis, and the Stock Journey map. D
 - [ ] Open that ticker's **Stock Journey** → the lesson appears in the Conviction Trail as a NOTE, alongside the buy/sell events. (This is the `/closed → thesis → journey` integration.)
 - [ ] Demo data present: a seeded **PLTR** closed trade (bought $22, sold $30 = +36% realized; +275% since you sold) with a saved lesson. Remove by deleting the PLTR thesis in `/thesis` and the PLTR transactions if you want a clean slate.
 
+## 5c. Phase 5 — AI deepening (valuation, thesis-review, disclaimer)
+- [ ] **Inline disclaimer under AI output**: on Reflect (send any message), Smart Alerts (open an insight), and Earnings AI (run a briefing), a short "Not investment advice. Educational purposes only…" line appears beneath the AI answer (in addition to the page footer).
+- [ ] **Thesis review** (`/journey/{ticker}` for a ticker you've written a thesis on, e.g. SOFI): click **"Review this thesis"** → it streams an AI read that restates your thesis, gives a verdict (INTACT / DRIFTING / BROKEN) citing your own trail + live data, and names what to watch. Disclaimer beneath. Never invents numbers.
+- [ ] **Valuation coaching** (`/company`, pick a ticker): click **"How should I value this?"** → it streams the right framework for that business type (e.g. a bank → P/TBV + ROTCE; AAPL → P/E + DCF; hypergrowth → EV/Sales) and the assumptions that matter. Not a price target. Disclaimer beneath. Switching tickers resets the panel.
+- [ ] All three are navigator-tier + share the daily AI quota (free tier blocked, voyager 10/day).
+
 ## 6. The conviction loop (the whole product thesis, end to end)
 1. [ ] Write a **bull thesis on NVDA** (Thesis → New Thesis).
 2. [ ] Open **Stock Journey → NVDA**: the thesis entry now appears in the Conviction Trail; the state reflects it (e.g. "on thesis").
