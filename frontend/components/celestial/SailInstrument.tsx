@@ -322,7 +322,7 @@ export default function SailInstrument() {
     const start = performance.now();
     let raf = 0;
 
-    function render(now: number) {
+    function draw(now: number) {
       const t = (now - start) / 1000;
 
       // Ease parallax/trim toward cursor target
@@ -443,7 +443,13 @@ export default function SailInstrument() {
         lastTrimAngle = trimAngle;
       }
 
-      raf = requestAnimationFrame(render);
+    }
+
+    // Loop driver, kept separate from draw() so a ResizeObserver repaint can call
+    // draw() without spawning a second rAF loop.
+    function frame(now: number) {
+      draw(now);
+      raf = requestAnimationFrame(frame);
     }
 
     // ── Input ─────────────────────────────────────────────────────────────────
@@ -458,21 +464,28 @@ export default function SailInstrument() {
 
     if (reduce) {
       // Reduced motion: single static frame with ambient billow at t=5s
-      render(start + 5000);
+      draw(start + 5000);
       if (headingRef.current) headingRef.current.textContent = "HEADING 041°";
       if (statusRef.current) statusRef.current.textContent = "ON THE WIND";
     } else {
-      raf = requestAnimationFrame(render);
+      // Paint the first frame synchronously so the sail appears immediately even
+      // if the initial rAF is delayed/throttled, then start the loop.
+      draw(start);
+      raf = requestAnimationFrame(frame);
       window.addEventListener("mousemove", onMove);
       window.addEventListener("mouseout", onLeave);
     }
 
-    const onResize = () => build();
-    window.addEventListener("resize", onResize);
+    // ResizeObserver fixes the 0-rect-at-mount case: build() in useEffect can run
+    // before layout gives the hero stage its size, leaving the canvas 1x1 until a
+    // window resize that never comes. The observer fires with the real size once
+    // layout is ready (and on later resizes), so we rebuild + repaint then.
+    const ro = new ResizeObserver(() => { build(); draw(performance.now()); });
+    ro.observe(parent);
 
     return () => {
       cancelAnimationFrame(raf);
-      window.removeEventListener("resize", onResize);
+      ro.disconnect();
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mouseout", onLeave);
     };
