@@ -32,6 +32,7 @@ import FloatingCard from "@/components/celestial/FloatingCard";
 import RevealOnScroll from "@/components/celestial/RevealOnScroll";
 import DashboardSkeleton from "@/components/shared/DashboardSkeleton";
 import ErrorState from "@/components/shared/ErrorState";
+import Disclaimer from "@/components/shared/Disclaimer";
 
 // ── Alert types ───────────────────────────────────────────────────────
 
@@ -771,6 +772,7 @@ export default function SmartAlertsPage() {
                                 {insight.text}
                                 {insight.loading && <span className="inline-block w-1 h-3 bg-vela-teal ml-0.5 animate-pulse align-middle" />}
                               </p>
+                              {insights[alert.id]?.text && <Disclaimer variant="inline" />}
                             </div>
                           )}
                         </div>

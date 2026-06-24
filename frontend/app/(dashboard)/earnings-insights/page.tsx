@@ -11,6 +11,7 @@ import PageTransition from "@/components/celestial/PageTransition";
 import RevealOnScroll from "@/components/celestial/RevealOnScroll";
 import DashboardSkeleton from "@/components/shared/DashboardSkeleton";
 import TierGate from "@/components/shared/TierGate";
+import Disclaimer from "@/components/shared/Disclaimer";
 import { apiStream } from "@/lib/api";
 
 // ── Types ───────────────────────────────────────────────────────────────────
@@ -194,6 +195,7 @@ function EarningsCard({
               {state.cached && (
                 <p className="text-[10px] text-zinc-600 mt-2">Cached summary</p>
               )}
+              {state.text && <Disclaimer variant="inline" />}
             </div>
           )}
         </div>

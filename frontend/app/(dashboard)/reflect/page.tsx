@@ -15,6 +15,7 @@ import { formatCurrency } from "@/lib/formatters";
 import PageTransition from "@/components/celestial/PageTransition";
 import DashboardSkeleton from "@/components/shared/DashboardSkeleton";
 import TierGate from "@/components/shared/TierGate";
+import Disclaimer from "@/components/shared/Disclaimer";
 
 // ── Streaming helper ──────────────────────────────────────────────────────────
 
@@ -477,6 +478,13 @@ export default function ReflectPage() {
               )}
               <div ref={messagesEndRef} />
             </div>
+
+            {/* Compliance disclaimer — shown once when AI has responded */}
+            {messages.some((m) => m.role === "assistant" && m.content !== "") && (
+              <div className="px-4 pb-1">
+                <Disclaimer variant="inline" />
+              </div>
+            )}
 
             {/* Error banner */}
             {error && (
