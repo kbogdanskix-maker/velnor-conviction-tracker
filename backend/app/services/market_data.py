@@ -165,7 +165,10 @@ async def get_historical_prices(
             return []
 
     data = await asyncio.to_thread(_sync_fetch)
-    await cache_set(cache_key, data, ttl=3600)
+    # Don't cache an empty result: a transient Yahoo rate-limit would otherwise
+    # poison every chart for an hour. Only cache a real series.
+    if data:
+        await cache_set(cache_key, data, ttl=3600)
     return data
 
 
