@@ -6,7 +6,7 @@ import {
   GraduationCap, Activity, Umbrella, Banknote, Brain, Scale, BadgePercent,
   LayoutGrid, Calendar, GitBranch, CreditCard, Shield, Repeat, Trophy,
   ArrowLeftRight, Flame, Dice5, Scissors, LineChart, MapPin, Star, GitCompare,
-  HeartPulse, Zap, MessageCircle, StickyNote, Building2,
+  HeartPulse, Zap, MessageCircle, StickyNote, Building2, Route,
 } from "lucide-react";
 
 export interface NavItem {
@@ -35,6 +35,7 @@ export const NAV_GROUPS: NavGroup[] = [
     label: "Accuracy & Conviction",
     items: [
       { href: "/portfolio", label: "Positions", icon: PieChart },
+      { href: "/journey", label: "Stock Journey", icon: Route },
       { href: "/thesis", label: "Thesis", icon: BookOpen },
       { href: "/reflect", label: "Reflect", icon: Brain },
       { href: "/watchlist", label: "Lookout", icon: Eye },

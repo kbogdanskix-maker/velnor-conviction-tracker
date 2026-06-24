@@ -18,6 +18,14 @@ describe("nav-structure", () => {
     expect(byHref.get("/watchlist")).toBe("Lookout");
     expect(byHref.get("/thesis")).toBe("Thesis");
     expect(byHref.get("/reflect")).toBe("Reflect");
+    expect(byHref.get("/journey")).toBe("Stock Journey");
+  });
+
+  it("places /journey in Accuracy & Conviction group (non-lab, non-secondary)", () => {
+    const accuracyGroup = NAV_GROUPS.find((g) => g.label === "Accuracy & Conviction");
+    expect(accuracyGroup).toBeDefined();
+    const journeyItem = accuracyGroup?.items.find((i) => i.href === "/journey");
+    expect(journeyItem?.label).toBe("Stock Journey");
   });
 
   it("marks Planning secondary and Lab as lab", () => {

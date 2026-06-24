@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+import { Route } from "lucide-react";
 import { formatCurrency, formatPercent, formatQuantity, changePillClass } from "@/lib/formatters";
 import type { Holding } from "@/hooks/usePortfolio";
 
@@ -45,15 +47,25 @@ function HoldingCard({
         clickable ? "cursor-pointer hover:border-zinc-600 transition-colors" : ""
       }`}
     >
-      <div className="space-y-0.5 min-w-0">
+      <div className="space-y-0.5 min-w-0 flex-1">
         <p className="text-base font-semibold text-zinc-100">{holding.ticker}</p>
         <p className="text-sm text-zinc-400 tabular">
           {formatQuantity(holding.quantity)} shares · {formatCurrency(holding.market_value)}
         </p>
       </div>
-      <span className={changePillClass(holding.unrealized_pnl_pct)}>
-        {formatPercent(holding.unrealized_pnl_pct)}
-      </span>
+      <div className="flex items-center gap-2 shrink-0">
+        <span className={changePillClass(holding.unrealized_pnl_pct)}>
+          {formatPercent(holding.unrealized_pnl_pct)}
+        </span>
+        <Link
+          href={`/journey/${holding.ticker}`}
+          title="View journey"
+          onClick={(e) => e.stopPropagation()}
+          className="p-1 rounded text-zinc-600 hover:text-vela-teal transition-colors"
+        >
+          <Route className="w-3.5 h-3.5" />
+        </Link>
+      </div>
     </div>
   );
 }
