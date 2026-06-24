@@ -1,16 +1,17 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import useSWR from "swr";
-import { api } from "@/lib/api";
+import { api, apiStreamPost } from "@/lib/api";
 import PageTransition from "@/components/celestial/PageTransition";
 import FloatingCard from "@/components/celestial/FloatingCard";
 import RevealOnScroll from "@/components/celestial/RevealOnScroll";
 import TierGate from "@/components/shared/TierGate";
+import Disclaimer from "@/components/shared/Disclaimer";
 import { useDefaultPortfolio } from "@/hooks/usePortfolio";
 import {
   Building2, Search, Users, ShieldCheck, ArrowDownRight, ArrowUpRight,
-  Gift, FileText, BarChart3, Wallet, RefreshCw,
+  Gift, FileText, BarChart3, Wallet, RefreshCw, Scale,
 } from "lucide-react";
 
 /* ── helpers ────────────────────────────────────────────────── */
@@ -84,6 +85,151 @@ const TXN_STYLE: Record<string, { color: string; bg: string; label: string; Icon
  * section is simply not reported by the source. */
 const isRetryable = (err: unknown): boolean =>
   !!err && (err as { status?: number }).status === 503;
+
+// ── AI valuation streaming ────────────────────────────────────────────────────
+
+async function streamValuation(
+  ticker: string,
+  onChunk: (text: string) => void,
+  onDone: () => void,
+  onError: (err: string) => void,
+) {
+  try {
+    const res = await apiStreamPost(`/ai/valuation/${ticker}`, {});
+    if (res.status === 429) {
+      onError("Daily AI limit reached. Resets at midnight.");
+      return;
+    }
+    if (!res.ok || !res.body) {
+      onError("Failed to connect.");
+      return;
+    }
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop() ?? "";
+      for (const line of lines) {
+        if (!line.startsWith("data: ")) continue;
+        const raw = line.slice(6).trim();
+        if (!raw) continue;
+        try {
+          const msg = JSON.parse(raw);
+          if (msg.text) onChunk(msg.text);
+          if (msg.done) onDone();
+          if (msg.error) onError(msg.error);
+        } catch { /* ignore malformed */ }
+      }
+    }
+  } catch (e) {
+    onError(e instanceof Error ? e.message : "Network error");
+  }
+}
+
+// ── Inline bold renderer ──────────────────────────────────────────────────────
+
+function InlineBold({ text }: { text: string }) {
+  const parts = text.split(/\*\*(.+?)\*\*/g);
+  return (
+    <>
+      {parts.map((part, i) =>
+        i % 2 === 1 ? (
+          <strong key={i} className="text-zinc-100 font-semibold">
+            {part}
+          </strong>
+        ) : (
+          <span key={i}>{part}</span>
+        ),
+      )}
+    </>
+  );
+}
+
+// ── Valuation panel ───────────────────────────────────────────────────────────
+
+interface ValuationState {
+  text: string;
+  loading: boolean;
+  error?: string;
+}
+
+function ValuationPanel({ ticker }: { ticker: string }) {
+  const [state, setState] = useState<ValuationState>({
+    text: "",
+    loading: false,
+  });
+
+  // Reset when ticker changes so stale answers don't linger
+  useEffect(() => {
+    setState({ text: "", loading: false, error: undefined });
+  }, [ticker]);
+
+  const handleValuation = useCallback(() => {
+    setState({ text: "", loading: true, error: undefined });
+
+    streamValuation(
+      ticker,
+      (chunk) => {
+        setState((prev) => ({ ...prev, text: prev.text + chunk }));
+      },
+      () => {
+        setState((prev) => ({ ...prev, loading: false }));
+      },
+      (err) => {
+        setState((prev) => ({ ...prev, loading: false, error: err }));
+      },
+    );
+  }, [ticker]);
+
+  return (
+    <div className="vela-card space-y-4">
+      {/* Header row */}
+      <div className="flex items-center justify-between">
+        <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-500">
+          Valuation Coaching
+        </p>
+        <button
+          onClick={handleValuation}
+          disabled={state.loading}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-[12px] font-medium
+            bg-vela-teal/10 text-vela-teal border border-vela-teal/25
+            hover:bg-vela-teal/15 hover:border-vela-teal/40
+            disabled:opacity-40 disabled:cursor-not-allowed
+            transition-colors"
+        >
+          <Scale className="w-4 h-4 shrink-0" />
+          {state.loading ? "Thinking..." : "How should I value this?"}
+        </button>
+      </div>
+
+      {/* Loading state — no text yet */}
+      {state.loading && state.text === "" && (
+        <p className="text-[12px] text-zinc-500 italic">Thinking about valuation...</p>
+      )}
+
+      {/* Error state */}
+      {state.error && (
+        <p className="text-[12px] text-rose-400">{state.error}</p>
+      )}
+
+      {/* Streamed answer */}
+      {state.text && (
+        <div className="space-y-2">
+          <p className="text-[13px] text-zinc-300 leading-relaxed whitespace-pre-wrap">
+            <InlineBold text={state.text} />
+          </p>
+          <Disclaimer variant="inline" />
+        </div>
+      )}
+    </div>
+  );
+}
 
 function RetryNotice({ label, onRetry }: { label: string; onRetry: () => void }) {
   return (
@@ -203,6 +349,11 @@ function CompanyDeepDive() {
             )}
           </div>
         </FloatingCard>
+
+        {/* ── AI valuation coaching ──────────────────────────── */}
+        <RevealOnScroll>
+          <ValuationPanel ticker={ticker} />
+        </RevealOnScroll>
 
         {/* ── Financial statements ───────────────────────────── */}
         <RevealOnScroll>
