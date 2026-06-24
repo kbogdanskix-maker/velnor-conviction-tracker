@@ -470,6 +470,23 @@ async def thesis_review(
     )
 
 
+@router.post("/valuation/{ticker}")
+async def valuation_coaching(
+    ticker: str,
+    user: User = Depends(get_current_user),
+):
+    """Stream coaching on how to value a business: the right framework for its
+    type/stage and the assumptions that matter. Not a price target."""
+    sse_headers = await _enforce_insight_quota(user)
+    tk = ticker.strip().upper()
+    data = await ai_service.get_earnings_raw_data(tk)
+    return StreamingResponse(
+        ai_service.stream_valuation_coaching(tk, data),
+        media_type="text/event-stream",
+        headers=sse_headers,
+    )
+
+
 class ReflectMessage(BaseModel):
     role: str  # "user" | "assistant"
     content: str

@@ -952,3 +952,58 @@ Rules:
     except Exception as e:
         logger.error("Thesis review stream failed: %s", e)
         yield f"data: {json.dumps({'error': str(e), 'done': True})}\n\n"
+
+
+# ── Valuation coaching ────────────────────────────────────────────────────────
+
+async def stream_valuation_coaching(ticker: str, data: dict) -> AsyncGenerator[str, None]:
+    """Stream coaching on HOW to value this business: the right framework for its
+    type/stage and the assumptions that matter. A scaffold, not a price target.
+    Grounds in the metrics provided; never invents multiples it wasn't given."""
+    client = _get_client()
+    company = data.get("name", ticker)
+
+    facts: list[str] = [f"Sector: {data.get('sector') or 'unknown'}", f"Industry: {data.get('industry') or 'unknown'}"]
+    for label, key, suffix in [
+        ("Revenue growth", "revenue_growth", "%"), ("Earnings growth", "earnings_growth", "%"),
+        ("Profit margin", "profit_margin", "%"), ("Operating margin", "operating_margin", "%"),
+        ("Trailing P/E", "pe_trailing", ""), ("Forward P/E", "pe_forward", ""),
+        ("Current price", "current_price", ""), ("Analyst target", "analyst_target", ""),
+    ]:
+        v = data.get(key)
+        if v is not None:
+            facts.append(f"{label}: {v}{suffix}")
+    facts_block = "\n".join(f"  • {f}" for f in facts)
+
+    system = f"""You are Velnor's valuation coach. The user wants to know HOW to value {company} ({ticker}): which framework fits this kind of business at its stage, and which assumptions actually drive the answer. You teach the approach; you do not output a price target or a buy/sell call.
+
+What we know about {ticker} (use only this; do not invent other figures):
+{facts_block}
+
+Pick the framework that fits the business type and stage, and explain why. Guidance:
+- High-growth / not yet profitable (e.g. neo-cloud like Nebius, early SaaS): EV/Sales, with growth durability and a credible path to margins. P/E is meaningless here.
+- Banks / lenders: Price/Tangible Book Value and ROTCE; net interest margin and credit quality drive it.
+- Mature, profitable, cash-generative: P/E and a DCF; FCF yield as a cross-check.
+- Cyclicals: normalized/mid-cycle earnings, not peak or trough.
+- Insurers: P/Book and combined ratio. REITs: P/FFO.
+
+Write under 200 words:
+1. Name the right primary framework for {ticker} and one sentence why it fits this business.
+2. The 2-3 assumptions that matter most for that framework, given the data above.
+3. One honest caveat or the easiest way to fool yourself valuing this name.
+
+Rules: ground in the data above; never fabricate specific multiples, prices, peers, or a target you were not given. Educational and non-directive, no buy/sell call, no disclaimers (the app shows that separately). Plain language, no bullet-list formatting, no em-dashes."""
+
+    try:
+        async with client.messages.stream(
+            model="claude-sonnet-4-6",
+            max_tokens=520,
+            system=system,
+            messages=[{"role": "user", "content": f"How should I value {ticker}?"}],
+        ) as stream:
+            async for text in stream.text_stream:
+                yield f"data: {json.dumps({'text': text, 'done': False})}\n\n"
+        yield f"data: {json.dumps({'done': True})}\n\n"
+    except Exception as e:
+        logger.error("Valuation coaching stream failed: %s", e)
+        yield f"data: {json.dumps({'error': str(e), 'done': True})}\n\n"
