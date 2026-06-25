@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import * as Dialog from "@radix-ui/react-dialog";
 import {
@@ -26,6 +27,9 @@ import FloatingCard from "@/components/celestial/FloatingCard";
 import RevealOnScroll from "@/components/celestial/RevealOnScroll";
 import AnimatedNumber from "@/components/celestial/AnimatedNumber";
 import GoalsStrip from "@/components/shared/GoalsStrip";
+import NetWorthHistory from "@/components/networth/NetWorthHistory";
+
+type Tab = "overview" | "history";
 
 // ── Category icon map ───────────────────────────────────────────────────────
 
@@ -55,6 +59,33 @@ const ICON_MAP: Record<string, React.FC<{ className?: string }>> = {
 // ── Page ────────────────────────────────────────────────────────────────────
 
 export default function NetWorthPage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const [activeTab, setActiveTab] = useState<Tab>(() => {
+    const param = searchParams.get("tab");
+    return param === "history" ? "history" : "overview";
+  });
+
+  // Sync tab state from URL on mount / navigation
+  useEffect(() => {
+    const param = searchParams.get("tab");
+    setActiveTab(param === "history" ? "history" : "overview");
+  }, [searchParams]);
+
+  const switchTab = (tab: Tab) => {
+    setActiveTab(tab);
+    const params = new URLSearchParams(searchParams.toString());
+    if (tab === "overview") {
+      params.delete("tab");
+    } else {
+      params.set("tab", tab);
+    }
+    const query = params.toString();
+    router.replace(pathname + (query ? `?${query}` : ""), { scroll: false });
+  };
+
   const { assets, isLoading, mutate } = useNetWorthAssets();
   const { summary, mutate: mutateSummary } = useNetWorthSummary();
 
@@ -79,141 +110,169 @@ export default function NetWorthPage() {
             Your complete financial picture
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          {assets && assets.length > 0 && (
-            <button
-              onClick={() =>
-                exportCSV(
-                  assets.map((a) => ({
-                    Name: a.name,
-                    Category: categoryLabel(a.category),
-                    Type: a.is_liability ? "Liability" : "Asset",
-                    Value: a.value,
-                    Currency: a.currency,
-                  })),
-                  `velnor-net-worth-${new Date().toISOString().slice(0, 10)}.csv`,
-                )
-              }
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs text-zinc-400 hover:text-zinc-200 bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700/50 transition-colors"
-            >
-              <Download className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Export</span>
-            </button>
-          )}
-          <button
-            onClick={() => { setEditItem(null); setModalOpen(true); }}
-            className="btn-primary text-sm flex items-center gap-1.5"
-          >
-            <Plus className="w-4 h-4" /> Add account
-          </button>
-        </div>
-      </div>
-
-      {/* Summary Cards */}
-      {summary && (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <SummaryCard
-            label="Net Worth"
-            value={summary.net_worth}
-            accent
-          />
-          <SummaryCard
-            label="Total Assets"
-            value={summary.total_assets}
-            sub={`Portfolio: ${formatCurrency(summary.portfolio_value, "USD", true)}`}
-          />
-          <SummaryCard
-            label="Total Liabilities"
-            value={summary.total_liabilities}
-            negative
-          />
-          <SummaryCard
-            label="Portfolio Value"
-            value={summary.portfolio_value}
-            sub="Live from holdings"
-          />
-        </div>
-      )}
-
-      {/* Goals in context */}
-      <GoalsStrip />
-
-      {/* Assets Section */}
-      <section className="space-y-3">
-        <h2 className="section-heading">Assets</h2>
-        {userAssets.length === 0 ? (
-          <div className="vela-card text-center py-8">
-            <PiggyBank className="w-6 h-6 text-zinc-600 mx-auto mb-2" />
-            <p className="text-sm text-zinc-500">No assets added yet</p>
+        {activeTab === "overview" && (
+          <div className="flex items-center gap-2">
+            {assets && assets.length > 0 && (
+              <button
+                onClick={() =>
+                  exportCSV(
+                    assets.map((a) => ({
+                      Name: a.name,
+                      Category: categoryLabel(a.category),
+                      Type: a.is_liability ? "Liability" : "Asset",
+                      Value: a.value,
+                      Currency: a.currency,
+                    })),
+                    `velnor-net-worth-${new Date().toISOString().slice(0, 10)}.csv`,
+                  )
+                }
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs text-zinc-400 hover:text-zinc-200 bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700/50 transition-colors"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Export</span>
+              </button>
+            )}
             <button
               onClick={() => { setEditItem(null); setModalOpen(true); }}
-              className="text-xs text-vela-teal mt-2 hover:text-vela-teal-dim transition-colors"
+              className="btn-primary text-sm flex items-center gap-1.5"
             >
-              Add your first account →
+              <Plus className="w-4 h-4" /> Add account
             </button>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {userAssets.map((a) => (
-              <AccountCard
-                key={a.id}
-                item={a}
-                onEdit={() => { setEditItem(a); setModalOpen(true); }}
-                onDelete={() => setDeleteTarget(a)}
-              />
-            ))}
-          </div>
         )}
-      </section>
-
-      {/* Liabilities Section */}
-      <section className="space-y-3">
-        <h2 className="section-heading">Liabilities</h2>
-        {userLiabilities.length === 0 ? (
-          <div className="vela-card text-center py-8">
-            <CreditCard className="w-6 h-6 text-zinc-600 mx-auto mb-2" />
-            <p className="text-sm text-zinc-500">No liabilities  - nice!</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {userLiabilities.map((a) => (
-              <AccountCard
-                key={a.id}
-                item={a}
-                onEdit={() => { setEditItem(a); setModalOpen(true); }}
-                onDelete={() => setDeleteTarget(a)}
-              />
-            ))}
-          </div>
-        )}
-      </section>
-
-      {/* Portfolio note */}
-      <div className="vela-card flex items-center gap-3 text-sm text-zinc-400">
-        <TrendingUp className="w-4 h-4 text-vela-teal shrink-0" />
-        <span>
-          Your investment portfolio ({formatCurrency(summary?.portfolio_value)}) is automatically included in assets from your{" "}
-          <Link href="/portfolio" className="text-vela-teal hover:text-vela-teal-dim transition-colors">
-            holdings
-          </Link>.
-        </span>
       </div>
 
-      {/* Add/Edit Modal */}
-      <AddAccountModal
-        open={modalOpen}
-        onOpenChange={setModalOpen}
-        onSuccess={refresh}
-        editItem={editItem}
-      />
+      {/* Tab bar */}
+      <div className="flex items-center border-b border-vela-border -mb-2">
+        {(["overview", "history"] as const).map((tab) => (
+          <button
+            key={tab}
+            onClick={() => switchTab(tab)}
+            className={`
+              px-4 py-2.5 text-xs font-mono uppercase tracking-widest transition-colors relative
+              ${activeTab === tab
+                ? "text-vela-teal after:absolute after:bottom-0 after:left-0 after:right-0 after:h-px after:bg-vela-teal"
+                : "text-zinc-500 hover:text-zinc-300"
+              }
+            `}
+          >
+            {tab === "overview" ? "Overview" : "History"}
+          </button>
+        ))}
+      </div>
 
-      {/* Delete Confirm */}
-      <ConfirmDeleteDialog
-        item={deleteTarget}
-        open={!!deleteTarget}
-        onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
-        onSuccess={refresh}
-      />
+      {/* Tab content */}
+      {activeTab === "overview" ? (
+        <>
+          {/* Summary Cards */}
+          {summary && (
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              <SummaryCard
+                label="Net Worth"
+                value={summary.net_worth}
+                accent
+              />
+              <SummaryCard
+                label="Total Assets"
+                value={summary.total_assets}
+                sub={`Portfolio: ${formatCurrency(summary.portfolio_value, "USD", true)}`}
+              />
+              <SummaryCard
+                label="Total Liabilities"
+                value={summary.total_liabilities}
+                negative
+              />
+              <SummaryCard
+                label="Portfolio Value"
+                value={summary.portfolio_value}
+                sub="Live from holdings"
+              />
+            </div>
+          )}
+
+          {/* Goals in context */}
+          <GoalsStrip />
+
+          {/* Assets Section */}
+          <section className="space-y-3">
+            <h2 className="section-heading">Assets</h2>
+            {userAssets.length === 0 ? (
+              <div className="vela-card text-center py-8">
+                <PiggyBank className="w-6 h-6 text-zinc-600 mx-auto mb-2" />
+                <p className="text-sm text-zinc-500">No assets added yet</p>
+                <button
+                  onClick={() => { setEditItem(null); setModalOpen(true); }}
+                  className="text-xs text-vela-teal mt-2 hover:text-vela-teal-dim transition-colors"
+                >
+                  Add your first account →
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {userAssets.map((a) => (
+                  <AccountCard
+                    key={a.id}
+                    item={a}
+                    onEdit={() => { setEditItem(a); setModalOpen(true); }}
+                    onDelete={() => setDeleteTarget(a)}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
+
+          {/* Liabilities Section */}
+          <section className="space-y-3">
+            <h2 className="section-heading">Liabilities</h2>
+            {userLiabilities.length === 0 ? (
+              <div className="vela-card text-center py-8">
+                <CreditCard className="w-6 h-6 text-zinc-600 mx-auto mb-2" />
+                <p className="text-sm text-zinc-500">No liabilities  - nice!</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {userLiabilities.map((a) => (
+                  <AccountCard
+                    key={a.id}
+                    item={a}
+                    onEdit={() => { setEditItem(a); setModalOpen(true); }}
+                    onDelete={() => setDeleteTarget(a)}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
+
+          {/* Portfolio note */}
+          <div className="vela-card flex items-center gap-3 text-sm text-zinc-400">
+            <TrendingUp className="w-4 h-4 text-vela-teal shrink-0" />
+            <span>
+              Your investment portfolio ({formatCurrency(summary?.portfolio_value)}) is automatically included in assets from your{" "}
+              <Link href="/portfolio" className="text-vela-teal hover:text-vela-teal-dim transition-colors">
+                holdings
+              </Link>.
+            </span>
+          </div>
+
+          {/* Add/Edit Modal */}
+          <AddAccountModal
+            open={modalOpen}
+            onOpenChange={setModalOpen}
+            onSuccess={refresh}
+            editItem={editItem}
+          />
+
+          {/* Delete Confirm */}
+          <ConfirmDeleteDialog
+            item={deleteTarget}
+            open={!!deleteTarget}
+            onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+            onSuccess={refresh}
+          />
+        </>
+      ) : (
+        <NetWorthHistory />
+      )}
     </PageTransition>
   );
 }

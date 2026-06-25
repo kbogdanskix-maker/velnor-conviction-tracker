@@ -5,7 +5,7 @@ import {
   Target, Wallet, Calculator, DollarSign, Sparkles, RotateCcw, Coins, Receipt,
   GraduationCap, Activity, Umbrella, Banknote, Brain, Scale, BadgePercent,
   LayoutGrid, Calendar, GitBranch, CreditCard, Shield, Repeat, Trophy,
-  ArrowLeftRight, Flame, Dice5, Scissors, LineChart, MapPin, Star, GitCompare,
+  ArrowLeftRight, Flame, Dice5, Scissors, MapPin, Star, GitCompare,
   HeartPulse, Zap, MessageCircle, StickyNote, Building2, Route, Archive,
 } from "lucide-react";
 
@@ -80,7 +80,6 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: "/risk", label: "Risk", icon: Activity },
       { href: "/attribution", label: "Attribution", icon: BarChart2 },
       { href: "/returns", label: "Returns", icon: TrendingUp },
-      { href: "/nw-history", label: "NW History", icon: LineChart },
       { href: "/expenses", label: "Expenses", icon: CreditCard },
       { href: "/budget", label: "Budget", icon: Target },
       { href: "/affordability", label: "Affordability", icon: Calculator },
