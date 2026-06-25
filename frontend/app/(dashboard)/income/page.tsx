@@ -12,6 +12,7 @@ import { useCashFlowSummary, type CashFlowEntry } from "@/hooks/useCashFlow";
 import { formatCompact, formatCurrency } from "@/lib/formatters";
 import PageTransition from "@/components/celestial/PageTransition";
 import ErrorState from "@/components/shared/ErrorState";
+import CashFlowTabs from "@/components/cashflow/CashFlowTabs";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -140,6 +141,8 @@ export default function IncomePage() {
           A unified view of all your income sources, from salary to dividends.
         </p>
       </div>
+
+      <CashFlowTabs />
 
       {isEmpty ? (
         <div className="vela-card text-center py-16 space-y-3">

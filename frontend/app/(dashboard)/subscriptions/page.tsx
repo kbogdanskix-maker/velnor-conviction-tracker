@@ -14,6 +14,7 @@ import { exportCSV } from "@/lib/export";
 import { useCashFlowSummary } from "@/hooks/useCashFlow";
 import { useCloudStore } from "@/hooks/useCloudStore";
 import PageTransition from "@/components/celestial/PageTransition";
+import CashFlowTabs from "@/components/cashflow/CashFlowTabs";
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -221,6 +222,8 @@ export default function SubscriptionsPage() {
           </button>
         )}
       </div>
+
+      <CashFlowTabs />
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">

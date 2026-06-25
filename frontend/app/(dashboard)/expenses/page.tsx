@@ -18,6 +18,7 @@ import { formatCurrency, formatCompact, formatPercent } from "@/lib/formatters";
 import PageTransition from "@/components/celestial/PageTransition";
 import AnimatedNumber from "@/components/celestial/AnimatedNumber";
 import ErrorState from "@/components/shared/ErrorState";
+import CashFlowTabs from "@/components/cashflow/CashFlowTabs";
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -114,6 +115,7 @@ export default function ExpensesPage() {
     return (
       <PageTransition className="space-y-6">
         <Header />
+        <CashFlowTabs />
         <div className="space-y-3">
           {[...Array(3)].map((_, i) => (
             <div key={i} className="vela-card animate-pulse h-24" />
@@ -126,6 +128,7 @@ export default function ExpensesPage() {
   return (
     <PageTransition className="space-y-6">
       <Header />
+      <CashFlowTabs />
 
       {isEmpty ? (
         <div className="vela-card text-center py-16 space-y-3">

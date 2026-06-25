@@ -23,6 +23,7 @@ import FloatingCard from "@/components/celestial/FloatingCard";
 import RevealOnScroll from "@/components/celestial/RevealOnScroll";
 import AnimatedNumber from "@/components/celestial/AnimatedNumber";
 import GoalsStrip from "@/components/shared/GoalsStrip";
+import CashFlowTabs from "@/components/cashflow/CashFlowTabs";
 
 // ── Page ────────────────────────────────────────────────────────────────────
 
@@ -99,6 +100,8 @@ export default function CashFlowPage() {
           </button>
         </div>
       </div>
+
+      <CashFlowTabs />
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
