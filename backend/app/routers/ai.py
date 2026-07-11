@@ -19,7 +19,7 @@ from sqlalchemy import func as sqlfunc
 
 from app.dependencies import get_current_user, get_db
 from app.core.tier import require_tier, Tier
-from app.models.db import User, Portfolio, Holding, Goal, NetWorthAsset, Transaction, UserKVStore, ThesisThread, ThesisEntry
+from app.models.db import User, Portfolio, Holding, Goal, NetWorthAsset, Transaction, UserKVStore, ThesisThread, ThesisEntry, DecisionJournalEntry
 from app.services import ai_service, portfolio_calc, market_data
 from app.services.market_data import cache_get
 from app.services.macro_service import get_macro_dashboard
@@ -310,6 +310,145 @@ async def _fetch_thesis_notes(db: AsyncSession, user: User) -> list[dict]:
     return notes
 
 
+async def _fetch_closed_summary(db: AsyncSession, portfolio) -> list[dict]:
+    """Realized-P&L post-mortems for every ticker the user has sold (FIFO), so
+    Reflect can reason about their actual sell record — the retrospective core of
+    the conviction tracker. Reuses the Closed & Lessons FIFO logic. Read-only."""
+    if portfolio is None:
+        return []
+    from collections import defaultdict
+    from app.routers.closed import _realize
+
+    txs = (await db.execute(
+        select(Transaction)
+        .where(Transaction.portfolio_id == portfolio.id)
+        .order_by(Transaction.executed_at)
+    )).scalars().all()
+
+    by_ticker: dict[str, list] = defaultdict(list)
+    for t in txs:
+        by_ticker[t.ticker].append(t)
+
+    out: list[dict] = []
+    for ticker, rows in by_ticker.items():
+        r = _realize(rows)
+        if r is None:
+            continue
+        out.append({
+            "ticker": ticker,
+            "realized_pnl_pct": r.get("realized_pnl_pct"),
+            "realized_pnl": r.get("realized_pnl"),
+            "fully_closed": r.get("fully_closed"),
+            "last_sell_date": r.get("last_sell_date"),
+        })
+    # Most recent exits first; cap for prompt size.
+    out.sort(key=lambda x: x["last_sell_date"] or "", reverse=True)
+    return out[:8]
+
+
+async def _fetch_journal_summary(db: AsyncSession, user: User) -> list[dict]:
+    """Recent decision-journal entries (action, conviction, outcome, rationale)
+    so Reflect can compare what the user decided and how sure they were against
+    how it turned out. Read-only, newest first."""
+    rows = (await db.execute(
+        select(DecisionJournalEntry)
+        .where(DecisionJournalEntry.user_id == user.id)
+        .order_by(DecisionJournalEntry.decided_at.desc())
+        .limit(12)
+    )).scalars().all()
+    return [
+        {
+            "ticker": e.ticker,
+            "action": e.action,
+            "conviction": e.conviction,
+            "outcome": e.outcome,
+            "rationale": (e.rationale or "")[:200],
+            "decided_at": e.decided_at.isoformat() if e.decided_at else "",
+        }
+        for e in rows
+    ]
+
+
+async def _fetch_calibration_summary(db: AsyncSession, user: User) -> dict | None:
+    """Pre-computed conviction calibration (hit-rate by conviction level) so Reflect
+    can reference the user's actual accuracy reliably instead of re-aggregating the
+    raw journal. Mirrors the /calibration endpoint's journal math. Returns None when
+    the user hasn't reviewed enough decisions to say anything."""
+    entries = (await db.execute(
+        select(DecisionJournalEntry).where(DecisionJournalEntry.user_id == user.id)
+    )).scalars().all()
+
+    decided = {"win", "loss", "breakeven"}
+    buckets: dict[int, dict[str, int]] = {c: {"reviewed": 0, "wins": 0} for c in range(1, 6)}
+    total_reviewed = 0
+    total_wins = 0
+    for e in entries:
+        if e.outcome not in decided:
+            continue
+        conv = int(e.conviction) if e.conviction is not None else 0
+        if conv < 1 or conv > 5:
+            continue
+        buckets[conv]["reviewed"] += 1
+        total_reviewed += 1
+        if e.outcome == "win":
+            buckets[conv]["wins"] += 1
+            total_wins += 1
+
+    if total_reviewed == 0:
+        return None
+
+    by_conviction = [
+        {
+            "conviction": c,
+            "reviewed": buckets[c]["reviewed"],
+            "hit_rate": round(buckets[c]["wins"] / buckets[c]["reviewed"] * 100, 1)
+            if buckets[c]["reviewed"] else None,
+        }
+        for c in range(1, 6)
+    ]
+    return {
+        "total_reviewed": total_reviewed,
+        "overall_hit_rate": round(total_wins / total_reviewed * 100, 1),
+        "by_conviction": by_conviction,
+    }
+
+
+async def _fetch_thesis_trail(db: AsyncSession, user: User) -> list[dict]:
+    """The user's FULL dated thesis-entry trail per ticker, from the relational
+    thesis tables. Reflect's frontend only sends a flat one-line summary per
+    thesis (the KV `theses` store), so without this the AI never sees the actual
+    conviction history — the dated entries the user actually wrote over time.
+    This is the core of the conviction tracker, so Reflect gets the real trail."""
+    threads = (await db.execute(
+        select(ThesisThread).where(ThesisThread.user_id == user.id)
+    )).scalars().all()
+    out: list[dict] = []
+    for th in threads:
+        entries = (await db.execute(
+            select(ThesisEntry)
+            .where(ThesisEntry.thread_id == th.id)
+            .order_by(ThesisEntry.created_at)
+        )).scalars().all()
+        if not entries:
+            continue
+        # Keep the most recent ~24 entries per ticker so the whole history fits
+        # while bounding prompt size; bodies trimmed to keep it lean.
+        recent = entries[-24:]
+        out.append({
+            "ticker": th.ticker,
+            "title": th.title,
+            "entries": [
+                {
+                    "date": e.created_at.isoformat()[:10] if e.created_at else "",
+                    "entry_type": e.entry_type,
+                    "body": (e.body or "")[:300],
+                }
+                for e in recent
+            ],
+        })
+    return out
+
+
 # ── Portfolio Reflection ─────────────────────────────────────────────────────
 
 class ThesisNote(BaseModel):
@@ -589,6 +728,14 @@ async def portfolio_reflect(
     goals = context.get("goals", [])
     nw = context.get("net_worth", {})
 
+    # ── Retrospective record: closed positions + decision journal ────────────
+    # The conviction-tracker USP lives here — Reflect reasons about what the user
+    # actually did and wrote versus what happened, not forward calls on holdings.
+    closed_positions = await _fetch_closed_summary(db, portfolio)
+    journal_entries = await _fetch_journal_summary(db, user)
+    calibration = await _fetch_calibration_summary(db, user)
+    thesis_trail = await _fetch_thesis_trail(db, user)
+
     # ── Fetch macro data ─────────────────────────────────────────────────────
     macro = await get_macro_dashboard()
 
@@ -603,6 +750,10 @@ async def portfolio_reflect(
         thesis_notes=[t.model_dump() for t in body.thesis_notes],
         macro=macro,
         is_opening=body.is_opening,
+        closed_positions=closed_positions,
+        journal_entries=journal_entries,
+        calibration=calibration,
+        thesis_trail=thesis_trail,
     )
 
     messages = [m.model_dump() for m in body.messages]

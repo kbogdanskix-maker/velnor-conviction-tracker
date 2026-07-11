@@ -26,21 +26,33 @@ def _norm_ticker(t: str) -> str:
 
 
 def _journey_state(in_profit: bool | None, latest_stance: str | None, has_position: bool):
-    """v1 assumption-vs-performance rubric → (state, colour).
-    green  = in profit AND conviction not bearish (thesis playing out)
-    red    = thesis turned bear, OR underwater (the cost showing)
-    amber  = mixed signal (profit w/ weak/absent conviction, or underwater w/ bull conviction)
+    """Observational status for the ticker → (state, colour).
+
+    Describes the user's OWN record — their latest logged stance and the factual
+    sign of their P&L — never Velnor's verdict on the holding. Labels are kept
+    non-directive on purpose ("bear case logged", not "thesis broken"; "in
+    profit", not "on thesis"): the app reflects what the user did and what the
+    price did, it does not judge the position (no-advice guardrail).
+
+    Colour still carries the assumption-vs-performance nuance:
+      gain  = in profit with an active bull/update thesis (or none logged)
+      amber = mixed (profit but the thesis has gone quiet, or underwater but the
+              user's own conviction is still bullish)
+      loss  = a bear case the user logged, or the position is underwater
     """
     if not has_position:
         return ("watching", "neutral")
+    if in_profit is None:
+        # Position held but no live price available to judge P&L.
+        return ("position open", "neutral")
     if latest_stance == "bear":
-        return ("thesis broken", "loss")
+        return ("bear case logged", "loss")
     if in_profit and latest_stance in ("bull", "update", None):
-        return ("on thesis", "gain")
+        return ("in profit", "gain")
     if in_profit is False and latest_stance == "bull":
         return ("conviction tested", "amber")
     if in_profit:
-        return ("drifting", "amber")
+        return ("thesis quiet", "amber")
     return ("underwater", "loss")
 
 
