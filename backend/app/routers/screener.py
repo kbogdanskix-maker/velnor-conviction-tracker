@@ -428,16 +428,19 @@ async def _warm_screener_cache():
     _warming = True
     try:
         universe = await _fetch_us_ticker_list()
-        batch_size = 15
+        # Throttled to ~4 req/s: Yahoo soft-rate-limits (429) well below the old
+        # ~50 req/s (15 concurrent / 0.3s), and those 429s poison the info/quote
+        # caches. Slower warm is fine — it's a background pass.
+        batch_size = 4
         fetched = 0
         for i in range(0, len(universe), batch_size):
             batch = universe[i:i + batch_size]
             tasks = [market_data.get_ticker_info(ticker) for ticker in batch]
             await asyncio.gather(*tasks, return_exceptions=True)
             fetched += len(batch)
-            if fetched % 150 == 0:
+            if fetched % 200 == 0:
                 logger.info("Screener cache warm: %d / %d", fetched, len(universe))
-            await asyncio.sleep(0.3)
+            await asyncio.sleep(1.0)
         logger.info("Screener cache warm complete: %d tickers", len(universe))
 
         # Now build and cache the full result
@@ -451,7 +454,8 @@ async def _build_and_cache_result():
     all_results: list[dict] = []
     universe = await _fetch_us_ticker_list()
 
-    # Gather all info (should be cached now)
+    # Gather all info (should be cached now from the warm pass; a small sleep
+    # keeps any cache-miss fallthrough from bursting Yahoo).
     batch_size = 30
     all_info: dict[str, dict] = {}
     for i in range(0, len(universe), batch_size):
@@ -462,14 +466,16 @@ async def _build_and_cache_result():
             if isinstance(result, Exception) or result is None:
                 continue
             all_info[ticker] = result
+        await asyncio.sleep(0.2)
 
-    # Batch fetch quotes
+    # Batch fetch quotes (short-TTL, so this does hit Yahoo — throttle it)
     tickers_with_info = list(all_info.keys())
     all_quotes: dict[str, dict] = {}
     for i in range(0, len(tickers_with_info), 30):
         batch = tickers_with_info[i:i + 30]
         quotes = await market_data.get_quotes(batch, ttl=60)
         all_quotes.update(quotes)
+        await asyncio.sleep(0.5)
 
     # Assemble + sanitize
     for ticker in tickers_with_info:
