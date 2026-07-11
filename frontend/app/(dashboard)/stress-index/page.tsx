@@ -179,7 +179,7 @@ export default function StressIndexPage() {
         <ScoreGauge score={result.overall} label={result.label} color={result.color} />
         <p className="text-sm text-zinc-400 mt-4 max-w-md text-center">
           {result.overall >= 65
-            ? "Your finances are in a solid position. Keep building on this foundation."
+            ? "Your finances are in a solid position across most dimensions."
             : result.overall >= 40
               ? "There are a few areas that could use attention. Check the breakdown below."
               : "Several areas need focus. Start with the lowest-scoring dimensions below."}

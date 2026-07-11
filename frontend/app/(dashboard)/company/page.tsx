@@ -8,6 +8,7 @@ import FloatingCard from "@/components/celestial/FloatingCard";
 import RevealOnScroll from "@/components/celestial/RevealOnScroll";
 import TierGate from "@/components/shared/TierGate";
 import Disclaimer from "@/components/shared/Disclaimer";
+import { stripAiMarkdown } from "@/lib/formatters";
 import { useDefaultPortfolio } from "@/hooks/usePortfolio";
 import {
   Building2, Search, Users, ShieldCheck, ArrowDownRight, ArrowUpRight,
@@ -215,14 +216,14 @@ function ValuationPanel({ ticker }: { ticker: string }) {
 
       {/* Error state */}
       {state.error && (
-        <p className="text-[12px] text-rose-400">{state.error}</p>
+        <p className="text-[12px] text-loss">{state.error}</p>
       )}
 
       {/* Streamed answer */}
       {state.text && (
         <div className="space-y-2">
           <p className="text-[13px] text-zinc-300 leading-relaxed whitespace-pre-wrap">
-            <InlineBold text={state.text} />
+            <InlineBold text={stripAiMarkdown(state.text)} />
           </p>
           <Disclaimer variant="inline" />
         </div>

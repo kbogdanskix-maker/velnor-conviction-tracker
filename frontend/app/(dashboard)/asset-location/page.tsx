@@ -204,7 +204,7 @@ export default function AssetLocationPage() {
           Asset Location
         </h1>
         <p className="text-sm text-zinc-500 mt-0.5">
-          Optimize which holdings go in tax-advantaged vs taxable accounts
+          How different asset types are commonly located across tax-advantaged and taxable accounts
         </p>
       </div>
 
@@ -214,7 +214,7 @@ export default function AssetLocationPage() {
           <div>
             <h2 className="text-lg font-medium text-zinc-300">No holdings to analyze</h2>
             <p className="text-sm text-zinc-500 mt-1 max-w-md mx-auto">
-              Add trades to your portfolio to get asset location recommendations.
+              Add trades to your portfolio to see how each asset type is commonly located across account types.
             </p>
           </div>
           <Link href="/portfolio" className="inline-flex items-center gap-2 btn-primary text-sm">
@@ -253,7 +253,7 @@ export default function AssetLocationPage() {
           {/* Allocation bar */}
           <RevealOnScroll>
             <div className="vela-card">
-              <h2 className="section-heading mb-3">Recommended Split</h2>
+              <h2 className="section-heading mb-3">Split by Tax Treatment</h2>
               <div className="flex h-4 rounded-full overflow-hidden">
                 {groups.taxAdv.length > 0 && (
                   <div
@@ -286,8 +286,8 @@ export default function AssetLocationPage() {
           <RevealOnScroll delay={0.05}>
             <div className="space-y-6">
               {([
-                { label: "Place in Tax-Advantaged Accounts", items: groups.taxAdv, color: "border-blue-500/20", icon: Shield, iconColor: "text-blue-400" },
-                { label: "Place in Taxable Accounts", items: groups.taxable, color: "border-gain/20", icon: Wallet, iconColor: "text-gain" },
+                { label: "Often Held in Tax-Advantaged Accounts", items: groups.taxAdv, color: "border-blue-500/20", icon: Shield, iconColor: "text-blue-400" },
+                { label: "Often Held in Taxable Accounts", items: groups.taxable, color: "border-gain/20", icon: Wallet, iconColor: "text-gain" },
                 { label: "Flexible Placement", items: groups.either, color: "border-amber-400/20", icon: MapPin, iconColor: "text-amber-400" },
               ] as const).map((section) => section.items.length > 0 && (
                 <div key={section.label} className={`vela-card border-l-2 ${section.color}`}>

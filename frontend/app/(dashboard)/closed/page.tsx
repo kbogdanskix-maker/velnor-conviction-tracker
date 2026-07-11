@@ -293,7 +293,14 @@ export default function ClosedPage() {
           </h1>
         </div>
         <p className="text-sm text-zinc-500">
-          Every position you have sold, and what happened after.
+          Every position you have sold, and what happened after.{" "}
+          <Link
+            href="/calibration"
+            className="text-vela-teal hover:underline underline-offset-2"
+          >
+            See your calibration
+          </Link>
+          .
         </p>
       </div>
 

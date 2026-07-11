@@ -337,7 +337,7 @@ export default function RebalancePage() {
 
       {/* Trade list */}
       <div className="vela-card">
-        <h2 className="text-sm font-medium text-zinc-300 mb-3">Suggested Trades</h2>
+        <h2 className="text-sm font-medium text-zinc-300 mb-3">Trades Needed</h2>
         <div className="space-y-2">
           {result.holdings.map((h) => {
             const needsTrade = Math.abs(h.drift) > driftThreshold;
@@ -405,8 +405,8 @@ export default function RebalancePage() {
             <h3 className="text-sm font-medium text-zinc-300">About Rebalancing</h3>
             <p className="text-xs text-zinc-500 leading-relaxed">
               Rebalancing keeps your portfolio aligned with your target allocation. The drift
-              threshold determines when a position is far enough from target to warrant a trade.
-              Consider tax implications before executing sells.
+              threshold determines when a position is far enough from target to appear here. The
+              math ignores taxes, so note that selling can realize capital gains.
             </p>
           </div>
         </div>
@@ -415,8 +415,8 @@ export default function RebalancePage() {
       {/* Disclaimer */}
       <div className="text-center pt-4 pb-8 border-t border-zinc-800">
         <p className="text-xs text-zinc-600">
-          Trade suggestions are based on weight targets only. Consider commissions, taxes, and
-          minimum lot sizes before executing. Not financial advice.
+          These trades are computed from your weight targets only. The math excludes commissions,
+          taxes, and minimum lot sizes. Not financial advice.
         </p>
       </div>
     </PageTransition>
@@ -434,7 +434,7 @@ function Header() {
         Rebalance
       </h1>
       <p className="text-zinc-500 text-sm mt-1">
-        Align your portfolio to target weights with suggested trades.
+        The trades needed to bring your portfolio to your target weights. Purely the math, not advice.
       </p>
     </div>
   );

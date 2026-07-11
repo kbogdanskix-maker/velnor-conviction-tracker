@@ -171,7 +171,7 @@ export default function TaxHarvestPage() {
             Tax-Loss Harvesting
           </h1>
           <p className="text-sm text-zinc-500 mt-0.5">
-            Identify positions to sell for tax-efficient losses
+            Positions with unrealized losses, and the tax that harvesting them could offset
           </p>
         </div>
         {harvest && harvest.candidates.length > 0 && (

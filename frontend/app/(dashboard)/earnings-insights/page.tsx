@@ -6,7 +6,7 @@ import {
   BarChart2, Loader2, AlertCircle, Newspaper,
 } from "lucide-react";
 import { useDefaultPortfolio, usePortfolioSummary } from "@/hooks/usePortfolio";
-import { formatCurrency } from "@/lib/formatters";
+import { formatCurrency, stripAiMarkdown } from "@/lib/formatters";
 import PageTransition from "@/components/celestial/PageTransition";
 import RevealOnScroll from "@/components/celestial/RevealOnScroll";
 import DashboardSkeleton from "@/components/shared/DashboardSkeleton";
@@ -187,7 +187,7 @@ function EarningsCard({
           ) : (
             <div className="relative">
               <p className="text-xs leading-relaxed text-zinc-300 whitespace-pre-wrap">
-                {state.text}
+                {stripAiMarkdown(state.text)}
                 {state.loading && (
                   <span className="inline-block w-1.5 h-3.5 bg-amber-400 ml-0.5 animate-pulse align-middle" />
                 )}

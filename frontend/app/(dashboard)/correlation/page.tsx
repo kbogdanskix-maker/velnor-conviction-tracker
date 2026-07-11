@@ -143,7 +143,7 @@ function getSuggestions(avgCorr: number, clusters: RiskCluster[], negPairs: numb
   const tips: string[] = [];
 
   if (avgCorr > 0.6) {
-    tips.push("Consider adding bonds (BND, AGG) or treasuries (TLT)  - they often move opposite to stocks during crashes.");
+    tips.push("Bonds and treasuries have historically moved opposite to stocks during crashes, which is why some portfolios hold them as a diversifier.");
   }
   if (clusters.length > 0) {
     tips.push("You have tightly correlated groups. Selling one stock from each cluster and rotating into a different sector would improve diversification without reducing your number of holdings.");

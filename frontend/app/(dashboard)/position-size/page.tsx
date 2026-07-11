@@ -178,8 +178,8 @@ export default function PositionSizePage() {
               {riskLevel === "conservative"
                 ? "Good risk management. Position is under 10% of your account."
                 : riskLevel === "moderate"
-                  ? "Moderate concentration. Consider if this aligns with your overall strategy."
-                  : "High concentration risk. Consider reducing position size or account for concentrated bets only."}
+                  ? "Moderate concentration. Worth knowing how this sits against your overall strategy."
+                  : "High concentration. A position this size ties a large share of your outcome to one name."}
             </p>
           </div>
         </div>

@@ -683,7 +683,6 @@ export default function FinancialIndependencePage() {
               {[
                 { href: "/retirement", label: "Retirement Planner", desc: "Detailed retirement projections", icon: Calendar },
                 { href: "/goals", label: "Financial Goals", desc: "Track specific savings targets", icon: Target },
-                { href: "/what-if", label: "What-If Simulator", desc: "Model life changes", icon: TrendingUp },
               ].map((link) => (
                 <Link key={link.href} href={link.href} className="vela-card group hover:border-zinc-600 transition-colors flex items-center gap-3">
                   <div className="p-2 rounded-lg bg-zinc-800 group-hover:bg-vela-teal/10 transition-colors">

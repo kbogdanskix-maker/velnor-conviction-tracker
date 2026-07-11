@@ -229,8 +229,8 @@ function computeHealthScore(
     icon: Wallet,
     color: "sky",
     insight: debtInsight,
-    link: "/debt-payoff",
-    linkLabel: "View Debt Payoff",
+    link: "/net-worth",
+    linkLabel: "View Net Worth",
   });
 
   // 4. Investment Performance (0-100)

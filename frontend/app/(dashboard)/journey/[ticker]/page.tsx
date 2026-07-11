@@ -16,7 +16,7 @@ import {
 } from "recharts";
 import { useJourney, COLOUR_CLASS, COLOUR_HEX, ENTRY_TYPE_LABEL, ENTRY_TYPE_CHIP } from "@/lib/journey";
 import type { JourneyEvent, JourneyColour, ThesisEntryType } from "@/lib/journey";
-import { formatCurrency, formatPercent, formatDate } from "@/lib/formatters";
+import { formatCurrency, formatPercent, formatDate, stripAiMarkdown } from "@/lib/formatters";
 import { apiStreamPost } from "@/lib/api";
 import PageTransition from "@/components/celestial/PageTransition";
 import DashboardSkeleton from "@/components/shared/DashboardSkeleton";
@@ -151,7 +151,7 @@ function ThesisReviewPanel({ ticker }: { ticker: string }) {
 
       {/* Error state */}
       {state.error && (
-        <p className="text-[12px] text-rose-400">{state.error}</p>
+        <p className="text-[12px] text-loss">{state.error}</p>
       )}
 
       {/* Streamed answer */}
@@ -160,7 +160,7 @@ function ThesisReviewPanel({ ticker }: { ticker: string }) {
           <p
             className="text-[13px] text-zinc-300 leading-relaxed whitespace-pre-wrap"
           >
-            <InlineBold text={state.text} />
+            <InlineBold text={stripAiMarkdown(state.text)} />
           </p>
           <Disclaimer variant="inline" />
         </div>

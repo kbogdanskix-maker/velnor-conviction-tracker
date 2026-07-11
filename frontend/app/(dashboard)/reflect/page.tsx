@@ -11,7 +11,7 @@ import { useCloudStore } from "@/hooks/useCloudStore";
 import { useReflectionNotes } from "@/hooks/useReflectionNotes";
 import { useReflectionChat, type ChatMessage } from "@/hooks/useReflectionChat";
 import { apiStreamPost } from "@/lib/api";
-import { formatCurrency } from "@/lib/formatters";
+import { formatCurrency, stripAiMarkdown } from "@/lib/formatters";
 import PageTransition from "@/components/celestial/PageTransition";
 import DashboardSkeleton from "@/components/shared/DashboardSkeleton";
 import TierGate from "@/components/shared/TierGate";
@@ -245,12 +245,12 @@ function MessageBubble({ msg }: { msg: ChatMessage }) {
       }`}>
         {msg.role === "assistant" ? "V" : ""}
       </div>
-      <div className={`px-3.5 py-2.5 rounded-[13px] text-[12.5px] leading-[1.65] ${
+      <div className={`px-3.5 py-2.5 rounded-[13px] text-[12.5px] leading-[1.65] whitespace-pre-line ${
         msg.role === "assistant"
           ? "bg-[#0f0f0f] border border-[#181818] rounded-tl-[4px] text-zinc-300 shadow-[0_2px_10px_#00000035]"
           : "bg-[#0c1a1a] border border-teal-500/[0.15] rounded-tr-[4px] text-zinc-300"
       }`}>
-        {msg.content}
+        {msg.role === "assistant" ? stripAiMarkdown(msg.content) : msg.content}
       </div>
     </div>
   );
@@ -386,10 +386,10 @@ export default function ReflectPage() {
     .sort((a, b) => (b.market_value ?? 0) - (a.market_value ?? 0))[0]?.ticker;
   const hasNotes = notes.flagged.length > 0 || recentEphemeral.length > 0;
   const starters = [
-    "Where am I most concentrated, and should that worry me?",
-    topTicker ? `Talk me through my ${topTicker} position` : "Is my allocation aligned with my goals?",
-    hasNotes ? "React to my latest notes" : "What am I not paying attention to?",
-    "Is my risk level actually right for me?",
+    "What does my buy and sell history say about my patience?",
+    topTicker ? `Walk me through what I wrote about ${topTicker} versus what actually happened` : "Which of my past convictions have aged best?",
+    hasNotes ? "React to my latest notes" : "What have I been overlooking lately?",
+    "Where have I stuck to my own strategy, and where have I drifted from it?",
   ];
 
   if (loading && messages.length === 0) return <DashboardSkeleton />;
@@ -468,6 +468,12 @@ export default function ReflectPage() {
                       </button>
                     ))}
                   </div>
+                  <Link
+                    href="/calibration"
+                    className="text-[12px] text-vela-teal hover:underline underline-offset-2"
+                  >
+                    Or see how your conviction has actually scored
+                  </Link>
                 </div>
               )}
               {messages.map((msg, i) => (

@@ -146,7 +146,7 @@ export default function BenchmarkPage() {
           Benchmarking
         </h1>
         <p className="text-zinc-500 text-sm mt-1">
-          See how your finances compare, with recommendations tailored to your risk profile.
+          See how your finances compare to a typical profile for your age and risk tolerance.
         </p>
       </div>
 

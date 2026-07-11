@@ -12,6 +12,7 @@ import {
   type LearnItem, type Playbook, type DeepDive, type LearnCategory, type MiniToolDef,
 } from "@/lib/learn-content";
 import { useDefaultPortfolio } from "@/hooks/usePortfolio";
+import { stripAiMarkdown } from "@/lib/formatters";
 import { apiStreamPost } from "@/lib/api";
 import PageTransition from "@/components/celestial/PageTransition";
 
@@ -795,7 +796,7 @@ function ApplyToStock({ item }: { item: LearnItem }) {
               <p className="text-xs text-rose-400">{error}</p>
             ) : (
               <p className="text-sm text-zinc-300 leading-relaxed whitespace-pre-wrap">
-                {analysisText}
+                {stripAiMarkdown(analysisText)}
                 {isAnalyzing && (
                   <span className="inline-block w-1.5 h-3.5 bg-vela-teal/70 ml-0.5 animate-pulse rounded-sm align-middle" />
                 )}

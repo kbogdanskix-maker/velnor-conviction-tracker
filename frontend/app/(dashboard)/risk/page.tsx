@@ -222,7 +222,7 @@ function generateInsights(risk: RiskMetrics, holdings: Holding[]): Insight[] {
 
   if (risk.annualized_volatility != null) {
     if (risk.annualized_volatility > 25) {
-      insights.push({ type: "warning", text: `Volatility of ${risk.annualized_volatility.toFixed(0)}% is high  - consider adding lower-volatility assets like bonds or dividend stocks.` });
+      insights.push({ type: "warning", text: `Volatility of ${risk.annualized_volatility.toFixed(0)}% is high. Lower-volatility asset classes like bonds have historically dampened swings like this.` });
     } else if (risk.annualized_volatility < 12) {
       insights.push({ type: "success", text: "Your portfolio has low volatility  - smooth sailing through market turbulence." });
     }

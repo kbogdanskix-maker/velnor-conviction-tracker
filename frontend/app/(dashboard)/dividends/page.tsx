@@ -342,7 +342,7 @@ function HoldingRow({ holding: h }: { holding: DividendHolding }) {
         <div className="flex items-center gap-1.5">
           <span className="text-zinc-100 font-medium">{h.ticker}</span>
           {highYield && (
-            <span title="Yield above 8%  - may be unsustainable">
+            <span title="Yield above 8%  - unusually high">
               <AlertTriangle className="w-3 h-3 text-amber-400" />
             </span>
           )}

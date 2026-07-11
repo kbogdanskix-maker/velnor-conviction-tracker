@@ -617,7 +617,7 @@ function DCFInsights({ result, inputs, fundamentals }: {
     insights.push({
       icon: <TrendingUp className="w-4 h-4" />,
       title: `${result.marginOfSafety.toFixed(0)}% upside to fair value`,
-      body: `Based on your assumptions, ${inputs.ticker} appears undervalued. `
+      body: `On your assumptions, your model's fair value sits above ${inputs.ticker}'s current price. `
         + `The market would need to grow FCF at ${inputs.growthRateY1_5 ?? 0}% for 5 years to justify a $${result.intrinsicPrice.toFixed(0)} price. `
         + (fundamentals?.trailing_pe
           ? `Current P/E of ${fundamentals.trailing_pe}x ${fundamentals.trailing_pe < 20 ? "suggests reasonable valuation" : "is above average"}  - cross-check with the sensitivity table.`
@@ -629,7 +629,7 @@ function DCFInsights({ result, inputs, fundamentals }: {
       icon: <Lightbulb className="w-4 h-4" />,
       title: "Fair value below market price",
       body: `DCF only values actual cash flows  - it ignores brand premium, M&A speculation, and momentum. `
-        + `A ${Math.abs(result.marginOfSafety).toFixed(0)}% gap could mean the stock is overvalued, or that your growth assumptions are conservative. `
+        + `A ${Math.abs(result.marginOfSafety).toFixed(0)}% gap could mean the market prices in more than your assumptions do, or that your growth assumptions are conservative. `
         + (fundamentals?.revenue_growth && fundamentals.revenue_growth > (inputs.growthRateY1_5 ?? 0)
           ? `Note: recent revenue growth (${fundamentals.revenue_growth}%) is higher than your Y1-5 assumption (${inputs.growthRateY1_5 ?? 0}%)  - consider whether this pace is sustainable.`
           : `Try adjusting growth rates or discount rate to see where the breakeven is.`),
@@ -693,7 +693,7 @@ function DCFInsights({ result, inputs, fundamentals }: {
     icon: <BookOpen className="w-4 h-4" />,
     title: "One lens, not the full picture",
     body: `Cross-check with the Reverse DCF (what growth the market is pricing in) and your own qualitative thesis. `
-      + `${upside ? "Undervalued stocks can stay cheap  - match conviction to position size." : "Overvaluation doesn't mean sell  - but revisit whether your thesis has changed."}`,
+      + `${upside ? "A model-to-market gap can persist for years, so weigh conviction against position size." : "A fair value below price is not a sell signal, but it is a prompt to revisit whether your thesis has changed."}`,
     color: "text-zinc-400",
   });
 

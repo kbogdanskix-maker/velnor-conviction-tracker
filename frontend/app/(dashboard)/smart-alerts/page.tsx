@@ -21,6 +21,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { apiStreamPost } from "@/lib/api";
+import { stripAiMarkdown } from "@/lib/formatters";
 import { useDefaultPortfolio } from "@/hooks/usePortfolio";
 import { useNetWorthSummary } from "@/hooks/useNetWorth";
 import { useCashFlowSummary } from "@/hooks/useCashFlow";
@@ -127,7 +128,7 @@ function generateAlerts(
           category: "risk",
           severity: pct > 40 ? "critical" : "warning",
           title: `${h.ticker} is ${pct.toFixed(0)}% of your portfolio`,
-          description: `High concentration in a single position increases idiosyncratic risk. Consider trimming to below 20% and reallocating to maintain diversification.`,
+          description: `High concentration in a single position ties a large share of your outcome to one name (idiosyncratic risk). How that sits with you depends on your conviction and risk tolerance.`,
           action: "View Rebalance",
           link: "/rebalance",
           icon: ShieldAlert,
@@ -145,8 +146,8 @@ function generateAlerts(
           severity: dayPct < -5 ? "warning" : "positive",
           title: `${h.ticker} moved ${dayPct > 0 ? "+" : ""}${dayPct.toFixed(1)}% today`,
           description: dayPct < 0
-            ? `Significant drop  - review your thesis. If the fundamentals haven't changed, this could be a buying opportunity.`
-            : `Strong rally  - consider whether to take partial profits or let it ride based on your thesis.`,
+            ? `Significant drop. A moment to check whether the reason you own it still holds.`
+            : `Strong rally. Worth checking whether news is driving it, and how it sits against your thesis.`,
           action: "View Portfolio",
           link: "/portfolio",
           icon: dayPct < 0 ? TrendingDown : TrendingUp,
@@ -214,8 +215,8 @@ function generateAlerts(
             : ["Healthcare", "Consumer Defensive", "Industrials"];
         const suggestSectors = prioritySectors.filter((s) => missingSectors.includes(s)).slice(0, 3);
         const suggestText = suggestSectors.length > 0
-          ? `Consider adding ${suggestSectors.join(", ")}, sectors you currently have zero exposure to.`
-          : `Spreading further across the ${missingSectors.length} sectors you don't hold would reduce correlation risk.`;
+          ? `You currently have zero exposure to ${suggestSectors.join(", ")}.`
+          : `You hold few of the ${missingSectors.length} other sectors, so your outcome leans heavily on the ones above.`;
 
         // Build a message that references actual sector names and top-2 if relevant
         let description: string;
@@ -253,7 +254,7 @@ function generateAlerts(
         category: "portfolio",
         severity: "info",
         title: `${dustPositions.length} dust positions under 0.5%`,
-        description: `Tiny positions add complexity without meaningful impact. Consider consolidating ${dustPositions.map((p) => p.ticker).join(", ")} into your core holdings.`,
+        description: `${dustPositions.map((p) => p.ticker).join(", ")} each sit under 0.5% of your portfolio, so they add line-item complexity without moving your outcome much.`,
         action: "View Portfolio",
         link: "/portfolio",
         icon: DollarSign,
@@ -273,8 +274,8 @@ function generateAlerts(
           severity: debtRatio > 80 ? "critical" : "warning",
           title: `Debt-to-asset ratio at ${debtRatio.toFixed(0)}%`,
           description: `Your liabilities represent a significant portion of your assets. Prioritize paying down high-interest debt to strengthen your balance sheet.`,
-          action: "View Debt Payoff",
-          link: "/debt-payoff",
+          action: "View Net Worth",
+          link: "/net-worth",
           icon: AlertTriangle,
         });
       }
@@ -416,7 +417,7 @@ function generateAlerts(
       if (volIdx >= 0 && alerts[volIdx].severity === "warning") {
         alerts[volIdx].severity = "critical";
         alerts[volIdx].description =
-          alerts[volIdx].description.replace("If this exceeds your risk tolerance", "With a retirement goal, sustained high volatility compounds sequence-of-returns risk");
+          alerts[volIdx].description.replace("Whether that fits depends on your risk tolerance and time horizon.", "With a retirement goal, sustained high volatility raises sequence-of-returns risk as you approach drawdown.");
       }
     }
   }
@@ -434,7 +435,7 @@ function generateAlerts(
         category: "risk",
         severity: "warning",
         title: `Portfolio volatility at ${vol.toFixed(0)}%`,
-        description: `Your portfolio swings more than the broad market (~15-20%). If this exceeds your risk tolerance, consider adding bonds, REITs, or lower-beta holdings.`,
+        description: `Your portfolio swings more than the broad market (~15-20%). Whether that fits depends on your risk tolerance and time horizon.`,
         action: "View Risk",
         link: "/risk",
         icon: ShieldAlert,
@@ -768,8 +769,8 @@ export default function SmartAlertsPage() {
                                 <Sparkles className="w-3 h-3 text-vela-teal" />
                                 <span className="text-[10px] font-medium text-vela-teal uppercase tracking-wider">Velnor AI</span>
                               </div>
-                              <p className="text-xs text-zinc-300 leading-relaxed">
-                                {insight.text}
+                              <p className="text-xs text-zinc-300 leading-relaxed whitespace-pre-line">
+                                {stripAiMarkdown(insight.text)}
                                 {insight.loading && <span className="inline-block w-1 h-3 bg-vela-teal ml-0.5 animate-pulse align-middle" />}
                               </p>
                               {insights[alert.id]?.text && <Disclaimer variant="inline" />}
