@@ -381,7 +381,6 @@ export const LEARN_CONTENT: LearnItem[] = [
       {
         heading: "Tax drag: the silent compounding killer",
         body: "A 10% annual return in a taxable account, assuming 20% capital gains tax on annual realizations, effectively compounds at 7.5 to 8%.\n\nOver 30 years, that 0.5 to 1% difference compresses ending wealth by 15 to 25%. On a $1 million portfolio, that's $150,000 to $250,000 in taxes that didn't have to be paid yet.",
-        tool: { label: "Model your savings growth", href: "/growth-calc" },
       },
       {
         heading: "The practical order of operations",
@@ -597,7 +596,6 @@ export const LEARN_CONTENT: LearnItem[] = [
       {
         title: "Keep it liquid and boring",
         body: "The emergency fund is not an investment. It is insurance. Its job is to be available instantly at full value.\n\nA high-yield savings account (HYSA) is the right vehicle. Currently yielding 4.5 to 5%, it beats inflation, stays fully liquid, and is FDIC-insured. A money market fund is a reasonable alternative.\n\nDo not invest the emergency fund in equities, bonds, or anything that can lose value. A 30% market decline that coincides with a job loss is exactly when you need this money most.",
-        tool: { label: "Compare HYSA Rates", href: "/hysa-finder" },
       },
       {
         title: "Fund it before investing",

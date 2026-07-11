@@ -7,9 +7,9 @@ import { Search, ArrowRight } from "lucide-react";
 import {
   LayoutDashboard, PieChart, Eye, BarChart2, TrendingUp, TrendingDown,
   FileText, BookOpen, Newspaper, Globe, Target, Wallet, Calculator,
-  DollarSign, Sparkles, PiggyBank, Coins, Receipt, GraduationCap,
+  DollarSign, Sparkles, Coins, Receipt, GraduationCap,
   Activity, Bell, Umbrella, Banknote, Brain, Users, RotateCcw, Settings,
-  Scale, BadgePercent, LayoutGrid, Calendar, GitBranch, CreditCard, Shield, Home, Repeat, Trophy,
+  Scale, BadgePercent, LayoutGrid, Calendar, GitBranch, CreditCard, Shield, Repeat, Trophy,
 } from "lucide-react";
 
 // ── Search items ─────────────────────────────────────────────────────────────
@@ -26,7 +26,6 @@ const ITEMS: SearchItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard, keywords: ["home", "overview", "summary"], group: "Main" },
   { label: "Portfolio", href: "/portfolio", icon: PieChart, keywords: ["holdings", "stocks", "positions", "equities"], group: "Equities" },
   { label: "Dividends", href: "/dividends", icon: Coins, keywords: ["income", "yield", "payout", "ex-date"], group: "Equities" },
-  { label: "DRIP Calculator", href: "/drip", icon: Coins, keywords: ["drip", "dividend", "reinvestment", "compound", "income", "yield", "reinvest"], group: "Equities" },
   { label: "Watchlist", href: "/watchlist", icon: Eye, keywords: ["watch", "track", "monitor"], group: "Equities" },
   { label: "Rebalance", href: "/rebalance", icon: Scale, keywords: ["rebalance", "allocation", "drift", "weight"], group: "Equities" },
   { label: "Fee Analyzer", href: "/fees", icon: BadgePercent, keywords: ["fees", "expense ratio", "cost", "etf fees", "fund fees", "drag"], group: "Equities" },
@@ -38,8 +37,6 @@ const ITEMS: SearchItem[] = [
   { label: "Cash Flow", href: "/cash-flow", icon: DollarSign, keywords: ["income", "expenses", "savings", "budget", "spending"], group: "Financial Planning" },
   { label: "Expense Breakdown", href: "/expenses", icon: CreditCard, keywords: ["expenses", "spending", "budget", "categories", "50/30/20", "fixed", "variable"], group: "Financial Planning" },
   { label: "Monthly Budget", href: "/budget", icon: Target, keywords: ["budget", "target", "limit", "spending", "track", "over budget"], group: "Financial Planning" },
-  { label: "Rental Property Analyzer", href: "/real-estate", icon: Home, keywords: ["real estate", "rental", "property", "cap rate", "cash on cash", "landlord", "investment property", "noi"], group: "Financial Planning" },
-  { label: "Savings Finder", href: "/savings", icon: PiggyBank, keywords: ["hysa", "savings", "interest", "cd", "high yield"], group: "Financial Planning" },
   { label: "Tax Awareness", href: "/tax", icon: Receipt, keywords: ["tax", "capital gains", "harvest", "loss", "ltcg"], group: "Financial Planning" },
   { label: "Income Streams", href: "/income", icon: Banknote, keywords: ["income", "salary", "revenue", "streams", "earnings"], group: "Financial Planning" },
   { label: "Stress Index", href: "/stress-index", icon: Activity, keywords: ["stress", "anxiety", "health", "financial health"], group: "Financial Planning" },
@@ -50,7 +47,6 @@ const ITEMS: SearchItem[] = [
   { label: "Retirement", href: "/retirement", icon: Umbrella, keywords: ["retire", "retirement", "401k", "nest egg", "pension"], group: "Projections" },
   { label: "Portfolio Comparison", href: "/compare", icon: GitBranch, keywords: ["compare", "benchmark", "sp500", "nasdaq", "index", "radar", "growth", "projection"], group: "Projections" },
   { label: "Benchmarking", href: "/benchmark", icon: Users, keywords: ["benchmark", "compare", "percentile", "average", "median"], group: "Projections" },
-  { label: "Growth Calculator", href: "/growth-calc", icon: TrendingUp, keywords: ["growth", "compound", "dca", "lump sum", "calculator", "investment", "return"], group: "Projections" },
   { label: "Learn", href: "/learn", icon: GraduationCap, keywords: ["learn", "education", "cards", "tips", "knowledge"], group: "Projections" },
   { label: "Currency Converter", href: "/fx", icon: Globe, keywords: ["currency", "fx", "exchange", "convert", "euro", "pound", "yen", "forex"], group: "News & Markets" },
   { label: "Markets", href: "/markets", icon: Globe, keywords: ["market", "index", "sp500", "nasdaq", "dow"], group: "News & Markets" },
