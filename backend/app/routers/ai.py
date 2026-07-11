@@ -1,7 +1,6 @@
 """
 AI router — streaming endpoints powered by Claude.
   GET  /ai/earnings/{ticker}  → streamed earnings briefing
-  GET  /ai/plan               → streamed personalised financial plan
   POST /ai/learn              → streamed concept-applied stock analysis
 """
 import uuid
@@ -53,24 +52,6 @@ async def earnings_summary_cached(
     """Return the cached earnings summary text if available, else null."""
     cached = await cache_get(f"earnings_ai:{ticker.upper()}")
     return {"ticker": ticker.upper(), "summary": cached}
-
-
-# ── Tailored financial plan ──────────────────────────────────────────────────
-
-@router.get("/plan")
-async def generate_plan(
-    user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-):
-    """Stream a personalised financial plan based on the user's data."""
-    sse_headers = await _enforce_insight_quota(user)
-    context = await _build_user_context(user, db)
-
-    return StreamingResponse(
-        ai_service.stream_financial_plan(context),
-        media_type="text/event-stream",
-        headers=sse_headers,
-    )
 
 
 class LearnAnalysisRequest(BaseModel):

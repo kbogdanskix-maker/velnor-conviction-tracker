@@ -1,6 +1,5 @@
 """
 AI service — Claude-powered features.
-  - stream_financial_plan()   → personalised plan streamed as SSE
   - get_earnings_summary()    → cached AI briefing for a stock's earnings
   - get_earnings_raw_data()   → yfinance earnings data for AI context
 """
@@ -81,6 +80,11 @@ async def get_earnings_raw_data(ticker: str) -> dict:
         try:
             t = yf.Ticker(ticker)
             info = t.info or {}
+            # Yahoo soft rate-limit returns {} — treat as a failed fetch so we
+            # never cache a degenerate all-None payload for 6h (poisons the
+            # earnings AI). Mirror get_ticker_info's guard in market_data.py.
+            if not info:
+                return {}
             data["name"] = info.get("longName") or info.get("shortName") or ticker
             data["sector"] = info.get("sector")
             data["industry"] = info.get("industry")
@@ -278,129 +282,6 @@ def _plan_years_out(g: dict) -> float:
         return 999.0
 
 
-def _build_plan_prompt(context: dict) -> str:
-    nw = context.get("net_worth") or {}
-    cf = context.get("cash_flow") or {}
-    goals = context.get("goals") or []
-    portfolio = context.get("portfolio") or {}
-    profile = context.get("profile") or {}
-
-    monthly_savings = (cf.get("total_income") or 0) - (cf.get("total_expenses") or 0)
-    savings_rate = (monthly_savings / cf["total_income"] * 100) if cf.get("total_income") else 0
-
-    # ── Investor profile ──────────────────────────────────────────────────────
-    age = profile.get("age", 30)
-    risk = profile.get("riskTolerance", "moderate")
-    sophistication = profile.get("sophistication", "intermediate")
-    objective = profile.get("primaryObjective", "target")
-    horizon = profile.get("timeHorizon", "long")
-    de_emphasize = profile.get("deEmphasize") or []
-    philosophy = (profile.get("philosophy") or "").strip()
-
-    objective_label = {
-        "growth": "maximize growth", "income": "generate income",
-        "preservation": "preserve capital", "target": "reach a target on a timeline",
-        "learning": "learn and build conviction",
-    }.get(objective, str(objective))
-    horizon_label = {"short": "short (under 3 years)", "medium": "medium (3-10 years)", "long": "long (10+ years)"}.get(horizon, str(horizon))
-
-    profile_block = (
-        "Investor profile:\n"
-        f"  • Age: {age}; Risk tolerance: {risk}; Sophistication: {sophistication}\n"
-        f"  • Primary objective: {objective_label}; Time horizon: {horizon_label}"
-    )
-    if de_emphasize:
-        _lbl = {"retirement": "retirement / FI framing", "income": "income & dividends", "tax": "tax optimization", "volatility": "short-term volatility"}
-        profile_block += "\n  • Downplay: " + ", ".join(_lbl.get(d, d) for d in de_emphasize)
-    if philosophy:
-        profile_block += f'\n  • Their philosophy, in their words: "{philosophy}"'
-
-    # ── Goals, segmented by time priority ──────────────────────────────────────
-    if goals:
-        lines = []
-        for g in sorted(goals, key=_plan_years_out):
-            yrs = _plan_years_out(g)
-            band = "near-term" if yrs < 3 else ("medium-term" if yrs < 10 else "long-term")
-            try:
-                tgt = float(g["target_amount"])
-                pct = (float(g["current_amount"]) / tgt * 100) if tgt else 0
-            except Exception:
-                tgt, pct = 0, 0
-            yrs_txt = f"~{yrs:.0f}y" if yrs < 900 else "no date"
-            lines.append(
-                f"  • [{band}, {yrs_txt}] {g['name']}: target ${tgt:,.0f} by {g.get('target_date')}, "
-                f"at ${float(g['current_amount']):,.0f} ({pct:.0f}%), contributing ${float(g.get('monthly_contribution') or 0):,.0f}/mo"
-            )
-        goals_block = "\n".join(lines)
-    else:
-        goals_block = "  No goals set yet."
-
-    portfolio_block = ""
-    if portfolio.get("total_value"):
-        # Aggregate portfolio facts only. Specific tickers are deliberately omitted:
-        # a plan that reasons about the user's named holdings drifts toward advice on
-        # specific instruments (MiFID). Planning stays at the asset-class level.
-        portfolio_block = f"""
-Investment Portfolio (aggregate):
-  • Total value: ${float(portfolio['total_value']):,.0f}
-  • Positions: {portfolio.get('holdings_count', 0)}"""
-        if portfolio.get("unrealized_pnl") is not None:
-            portfolio_block += f"\n  • Unrealized P&L: ${float(portfolio['unrealized_pnl']):+,.0f}"
-
-    return f"""{_NO_ADVICE_GUARDRAIL}
-
-{_OUTPUT_STYLE}
-
-You are a clear-headed financial planning educator. A Velnor user has asked for a read on their financial plan. Work at the level of savings, cash flow, goals, and broad asset classes, never specific securities. Use ONLY the data provided below — do not invent numbers.
-
-=== FINANCIAL SNAPSHOT ===
-
-{profile_block}
-
-Net Worth:
-  • Assets: ${float(nw.get('total_assets') or 0):,.0f}
-  • Liabilities: ${float(nw.get('total_liabilities') or 0):,.0f}
-  • Net Worth: ${float(nw.get('net_worth') or 0):,.0f}
-
-Monthly Cash Flow:
-  • Income: ${float(cf.get('total_income') or 0):,.0f}
-  • Expenses: ${float(cf.get('total_expenses') or 0):,.0f}
-  • Savings: ${monthly_savings:,.0f} ({savings_rate:.0f}% savings rate)
-{portfolio_block}
-
-Goals (ordered by time priority — soonest first):
-{goals_block}
-
-=== HOW TO THINK ABOUT THIS PERSON ===
-Frame everything around their objective ({objective_label}), age ({age}), risk tolerance ({risk}), and time horizon ({horizon_label}). The plan must read as if written for them specifically, not a template. Stay at the level of savings, cash flow, goals, and broad asset classes (equities / bonds / cash). NEVER name a specific security to buy, sell, or hold, and never comment on their specific holdings — that is out of bounds.
-
-Broad asset-class balance should FOLLOW from that profile, as general education, never a generic default:
-  - A young, aggressive, growth-focused investor with a long horizon typically skews heavily to equities with little or no bonds. A balanced or bond-heavy mix would be an odd fit for that profile.
-  - A preservation-focused, near-term, or older investor generally warrants more stability and downside protection.
-  - Explain the asset-class balance in terms of their actual age, objective, and horizon, as a way to think, not an instruction.
-
-Segment by goal time priority: near-term goals need funding certainty and stability; long-term goals can take more risk to compound. Do not apply one balance across goals with very different horizons. Respect their stated philosophy and anything they asked to downplay.
-
-=== YOUR TASK ===
-
-Write the user a read on their financial plan that reads like a sharp planner who actually looked at their numbers, not a generated report. It is educational: you surface considerations and tradeoffs, they make the decisions.
-
-Cover these, in a natural flow:
-  - Where they stand: their real position in a couple of sentences, naming one genuine strength and one thing worth their attention, with their actual figures.
-  - What to think about now: the levers that matter most (savings rate, cash flow, goal funding, emergency buffer, broad asset-class balance), each tied to a real number. Lead with what matters most. Frame these as considerations, not commands. No generic filler.
-  - Their goals: address them in time-priority order; for each, are they on pace and what single adjustment would close the gap.
-  - Broad asset-class balance from here: a general equities/bonds/cash mix that follows from their profile per the rules above, explained as education. No specific tickers or funds.
-  - What to watch: a couple of real risks given their numbers, and why each matters to them specifically.
-
-Use line breaks to separate the sections into short plain paragraphs, the way a person writes, not markdown headers, bold labels, or bullet-point filler. No formatting symbols and no asterisks (never write **like this**).
-
-Voice:
-  - Write like a person talking to one person. Use contractions. Address them directly as "you".
-  - No emojis. Do not use em-dashes; use commas, periods, or separate sentences.
-  - Vary your sentence length. Cut hedging and corporate filler. Be direct and specific, never preachy.
-  - Every number you cite must come from the data above. Do not invent figures."""
-
-
 async def stream_learn_analysis(
     concept_id: str,
     ticker: str,
@@ -534,31 +415,6 @@ Task:
 {instruction}
 
 Write in plain prose with no markdown or formatting symbols at all: no asterisks or bold (never **like this**), no headers, no bullet points, no em-dashes. Separate distinct points with a line break. Reference specific numbers from the data above. Never invent figures you were not given. Be analytical and educational, and do not issue a buy/sell/hold view, a suitability judgement, or an over/under-valued verdict on {ticker}."""
-
-
-async def stream_financial_plan(context: dict) -> AsyncGenerator[str, None]:
-    """Stream a personalised financial plan from Claude Sonnet."""
-    prompt = _build_plan_prompt(context)
-    client = _get_client()
-
-    try:
-        async with client.messages.stream(
-            model="claude-sonnet-5",
-            max_tokens=1500,
-            # Sonnet 5 runs adaptive thinking when `thinking` is omitted (Sonnet 4.6
-            # ran thinking-off). Keep it off here to preserve behavior and avoid
-            # thinking eating the output budget / adding latency to the stream.
-            thinking={"type": "disabled"},
-            messages=[{"role": "user", "content": prompt}],
-        ) as stream:
-            async for text in stream.text_stream:
-                yield f"data: {json.dumps({'text': text, 'done': False})}\n\n"
-
-        yield f"data: {json.dumps({'done': True})}\n\n"
-
-    except Exception as e:
-        logger.error("Financial plan generation failed: %s", e)
-        yield f"data: {json.dumps({'error': str(e), 'done': True})}\n\n"
 
 
 # ── Portfolio Reflection ─────────────────────────────────────────────────────
