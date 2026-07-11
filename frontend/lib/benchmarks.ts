@@ -280,7 +280,7 @@ export function calculateBenchmarks(input: BenchmarkInput): BenchmarkResult {
       personalized: true,
       insight: input.numHoldings >= target
         ? `Good diversification for your ${input.profile.riskTolerance} risk tolerance.`
-        : `Consider adding positions. Your ${input.profile.riskTolerance} profile suggests ~${target} holdings.`,
+        : `You hold ${input.numHoldings}. A ${input.profile.riskTolerance} profile is commonly spread across ~${target} holdings.`,
     });
   }
 

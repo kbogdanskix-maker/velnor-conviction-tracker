@@ -162,6 +162,21 @@
     transform: scale(0.98);
   }
 
+  /* Secondary button — solid surface, 1px hairline border, teal-on-hover */
+  .btn-secondary {
+    @apply text-zinc-200 font-medium px-4 py-2 rounded transition-colors duration-200;
+    border: 1px solid #1B2638;
+  }
+
+  .btn-secondary:hover {
+    @apply text-zinc-100 border-vela-teal/40;
+    background: #0B1322;
+  }
+
+  .btn-secondary:active {
+    transform: scale(0.98);
+  }
+
   /* Ghost button — flat, no glass */
   .btn-ghost {
     @apply text-zinc-400 px-3 py-2 rounded transition-colors duration-200;

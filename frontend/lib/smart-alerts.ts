@@ -89,7 +89,7 @@ function priceAlerts(input: AlertInput): SmartAlert[] {
       alerts.push({
         id: `dip-${h.ticker}-${now}`,
         title: `${h.ticker} down ${Math.abs(h.dayChangePct).toFixed(1)}% today`,
-        message: `Notable decline. Could be a buying opportunity if your thesis is intact.`,
+        message: `Notable decline. Does the reason you own it still hold?`,
         severity: "info",
         category: "price",
         timestamp: now,
@@ -102,7 +102,7 @@ function priceAlerts(input: AlertInput): SmartAlert[] {
       alerts.push({
         id: `surge-${h.ticker}-${now}`,
         title: `${h.ticker} surged ${h.dayChangePct.toFixed(1)}% today`,
-        message: `Unusually large move. Consider if it's news-driven and whether to take some profit.`,
+        message: `Unusually large move. Worth checking whether news is driving it.`,
         severity: "positive",
         category: "price",
         timestamp: now,
@@ -115,7 +115,7 @@ function priceAlerts(input: AlertInput): SmartAlert[] {
       alerts.push({
         id: `underwater-${h.ticker}`,
         title: `${h.ticker} is down ${Math.abs(h.unrealizedPnlPct).toFixed(0)}% from cost`,
-        message: `Significant unrealized loss. Re-evaluate your original thesis.`,
+        message: `Significant unrealized loss. A moment to revisit what you originally expected.`,
         severity: "warning",
         category: "portfolio",
         timestamp: now,
@@ -129,7 +129,7 @@ function priceAlerts(input: AlertInput): SmartAlert[] {
       alerts.push({
         id: `double-${h.ticker}`,
         title: `${h.ticker} has doubled from your cost basis`,
-        message: `Up ${h.unrealizedPnlPct.toFixed(0)}%. Some investors take partial profits at this level.`,
+        message: `Up ${h.unrealizedPnlPct.toFixed(0)}% from your cost. A milestone worth noting against your original thesis.`,
         severity: "positive",
         category: "portfolio",
         timestamp: now,
@@ -251,7 +251,7 @@ function incomeAlerts(input: AlertInput): SmartAlert[] {
         alerts.push({
           id: `ex-div-${h.ticker}`,
           title: `${h.ticker} ex-dividend in ${daysUntil} day${daysUntil === 1 ? "" : "s"}`,
-          message: `Buy before the ex-date to receive the next dividend payment.`,
+          message: `The ex-date is the cutoff to be eligible for the next dividend payment.`,
           severity: "info",
           category: "income",
           timestamp: now,
@@ -289,7 +289,7 @@ function riskAlerts(input: AlertInput): SmartAlert[] {
     alerts.push({
       id: `concentrated-${h.ticker}`,
       title: `${h.ticker} is ${(h.weight * 100).toFixed(0)}% of your portfolio`,
-      message: `Over 40% of your portfolio sits in one stock. Consider your risk tolerance.`,
+      message: `Over 40% of your portfolio sits in one stock. That concentrates a lot of your outcome in one name.`,
       severity: "warning",
       category: "risk",
       timestamp: now,

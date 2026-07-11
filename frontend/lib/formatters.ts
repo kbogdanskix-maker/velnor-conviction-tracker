@@ -116,3 +116,23 @@ export function formatPnl(value: number | string | null | undefined, currency = 
   const abs = formatCurrency(Math.abs(num), currency);
   return num >= 0 ? `+${abs}` : `-${abs.replace("-", "")}`;
 }
+
+/**
+ * Strip markdown / formatting symbols from AI-generated text before display.
+ * The AI prompts already forbid markdown (plain human language, line breaks for
+ * structure), but models drift, so this is the guaranteed backstop so stray
+ * `**bold**`, headers, or bullet markers never reach the UI as "weird signs".
+ * Line breaks are preserved (structure the model is told to use).
+ */
+export function stripAiMarkdown(s: string | null | undefined): string {
+  if (!s) return "";
+  return s
+    .replace(/\*\*([\s\S]+?)\*\*/g, "$1")  // **bold** (across lines too)
+    .replace(/__([\s\S]+?)__/g, "$1")      // __bold__
+    .replace(/`([^`]+)`/g, "$1")           // `inline code`
+    // Line-leading markers: match only horizontal whitespace ([ \t]) for indent so
+    // a blank line before a marker is never consumed (paragraph breaks preserved).
+    .replace(/^[ \t]{0,3}#{1,6}[ \t]+/gm, "")   // # headers
+    .replace(/^[ \t]{0,3}[-*+][ \t]+/gm, "")    // - / * bullet markers
+    .replace(/^[ \t]{0,3}\d+\.[ \t]+/gm, "");   // 1. numbered list markers
+}

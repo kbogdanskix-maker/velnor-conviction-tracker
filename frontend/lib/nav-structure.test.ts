@@ -37,10 +37,10 @@ describe("nav-structure", () => {
     expect(closedItem?.label).toBe("Closed & Lessons");
   });
 
-  it("marks Planning secondary and Lab as lab", () => {
+  it("removed the Planning group and keeps Lab marked lab (2026-07 equity pivot)", () => {
     const planning = NAV_GROUPS.find((g) => g.label === "Planning");
     const lab = NAV_GROUPS.find((g) => g.label === "Lab");
-    expect(planning?.secondary).toBe(true);
+    expect(planning).toBeUndefined();
     expect(lab?.lab).toBe(true);
   });
 
@@ -48,7 +48,7 @@ describe("nav-structure", () => {
     const spineHrefs = new Set(
       NAV_GROUPS.filter((g) => !g.lab).flatMap((g) => g.items.map((i) => i.href)),
     );
-    for (const h of ["/insurance", "/fees", "/monte-carlo", "/retirement", "/learn", "/journal", "/notes"]) {
+    for (const h of ["/fees", "/sectors", "/markets", "/macro", "/learn", "/journal", "/notes"]) {
       expect(spineHrefs.has(h)).toBe(false);
     }
   });

@@ -265,7 +265,7 @@ export const LEARNING_CARDS: LearningCard[] = [
     category: "risk",
     priority: 9,
     emoji: "📈",
-    link: "/debt-payoff",
+    link: "/net-worth",
     trigger: (ctx) => !!ctx.netWorth && ctx.netWorth.net_worth < 0,
   },
 

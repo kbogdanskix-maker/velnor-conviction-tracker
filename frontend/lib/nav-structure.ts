@@ -1,12 +1,12 @@
 import type * as React from "react";
 import {
-  LayoutDashboard, PieChart, Eye, BarChart2, TrendingUp, TrendingDown,
+  LayoutDashboard, PieChart, Eye, BarChart2, TrendingUp,
   FileText, BookOpen, Newspaper, Globe, Compass, Users,
-  Target, Wallet, Calculator, DollarSign, Sparkles, RotateCcw, Coins, Receipt,
-  GraduationCap, Activity, Umbrella, Brain, Scale, BadgePercent,
-  LayoutGrid, Calendar, GitBranch, Shield, Trophy,
-  ArrowLeftRight, Flame, Dice5, Scissors, MapPin, Star, GitCompare,
-  HeartPulse, Zap, MessageCircle, StickyNote, Building2, Route, Archive,
+  Target, Calculator, RotateCcw, Coins, Receipt,
+  GraduationCap, Activity, Brain, Scale, BadgePercent,
+  LayoutGrid, Calendar, GitBranch, Shield,
+  ArrowLeftRight, Scissors, MapPin, Star, GitCompare,
+  Zap, MessageCircle, StickyNote, Building2, Route, Archive,
 } from "lucide-react";
 
 export interface NavItem {
@@ -40,6 +40,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: "/reflect", label: "Reflect", icon: Brain },
       { href: "/watchlist", label: "Lookout", icon: Eye },
       { href: "/closed", label: "Closed & Lessons", icon: Archive },
+      { href: "/calibration", label: "Calibration", icon: Target },
       { href: "/smart-alerts", label: "Smart Alerts", icon: Zap },
     ],
   },
@@ -53,22 +54,14 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: "/valuation/reverse-dcf", label: "Reverse DCF", icon: RotateCcw },
     ],
   },
-  {
-    label: "Planning",
-    secondary: true,
-    items: [
-      { href: "/net-worth", label: "Net Worth", icon: Wallet },
-      { href: "/cash-flow", label: "Cash Flow", icon: DollarSign },
-      { href: "/goals", label: "Goals", icon: Target },
-      { href: "/debt-payoff", label: "Debt Payoff", icon: TrendingDown },
-    ],
-  },
+  // Planning group (Net Worth, Cash Flow, Goals, Debt Payoff) removed from nav in the
+  // 2026-07 equity-only pivot. Net Worth / Cash Flow / Goals routes are KEPT (they feed
+  // Reflect context + dashboard) but hidden from nav; Debt Payoff route was deleted.
   {
     label: "Lab",
     lab: true,
     items: [
-      { href: "/plan", label: "My Plan", icon: Sparkles },
-      { href: "/health-score", label: "Health Score", icon: HeartPulse },
+      // Equity income + portfolio analytics (kept)
       { href: "/dividends", label: "Dividends", icon: Coins },
       { href: "/dividend-calendar", label: "Div Calendar", icon: Calendar },
       { href: "/dividend-forecast", label: "Div Forecast", icon: TrendingUp },
@@ -80,21 +73,11 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: "/risk", label: "Risk", icon: Activity },
       { href: "/attribution", label: "Attribution", icon: BarChart2 },
       { href: "/returns", label: "Returns", icon: TrendingUp },
-      { href: "/affordability", label: "Affordability", icon: Calculator },
       { href: "/tax", label: "Tax Awareness", icon: Receipt },
       { href: "/tax-harvest", label: "Tax Harvest", icon: Scissors },
-      { href: "/insurance", label: "Insurance", icon: Shield },
-      { href: "/stress-index", label: "Stress Index", icon: Activity },
       { href: "/asset-location", label: "Asset Location", icon: MapPin },
       { href: "/behavior", label: "Behavior", icon: Brain },
-      { href: "/fi", label: "FI Tracker", icon: Flame },
-      { href: "/monte-carlo", label: "Monte Carlo", icon: Dice5 },
-      { href: "/retirement", label: "Retirement", icon: Umbrella },
       { href: "/compare", label: "Portfolio Comparison", icon: GitBranch },
-      { href: "/benchmark", label: "Benchmark", icon: Users },
-      { href: "/what-if", label: "What If", icon: Sparkles },
-      { href: "/emergency-fund", label: "Emergency Fund", icon: Shield },
-      { href: "/milestones", label: "Milestones", icon: Trophy },
       { href: "/learn", label: "Learn", icon: GraduationCap },
       { href: "/annual-review", label: "Annual Review", icon: Star },
       { href: "/fx", label: "Currency", icon: ArrowLeftRight },
@@ -105,6 +88,10 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: "/notes", label: "Notes", icon: StickyNote },
       { href: "/journal", label: "Journal", icon: FileText },
       { href: "/stock-compare", label: "Stock Compare", icon: GitCompare },
+      // CUT (routes deleted): /plan, /affordability, /insurance, /what-if,
+      //   /emergency-fund, /milestones, /debt-payoff
+      // HIDDEN (routes kept, off nav): /health-score, /stress-index, /fi,
+      //   /monte-carlo, /retirement, /benchmark, /net-worth, /cash-flow, /goals
     ],
   },
 ];

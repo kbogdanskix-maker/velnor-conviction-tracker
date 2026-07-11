@@ -10,11 +10,12 @@ import { api } from "@/lib/api";
 export type JourneyColour = "gain" | "loss" | "amber" | "teal" | "neutral";
 
 export type JourneyState =
-  | "on thesis"
-  | "drifting"
+  | "in profit"
+  | "thesis quiet"
   | "conviction tested"
-  | "thesis broken"
+  | "bear case logged"
   | "underwater"
+  | "position open"
   | "watching";
 
 export type JourneyEventKind = "buy" | "sell" | "dividend" | "thesis";
