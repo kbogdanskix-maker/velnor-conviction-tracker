@@ -357,18 +357,17 @@ export default function LandingPage() {
             </Reveal>
             <Reveal delay={90}>
               <h1 className="font-display text-[2.6rem] sm:text-5xl md:text-6xl font-bold tracking-tight leading-[1.05] mb-6">
-                Your investments{" "}
-                <span className="text-vela-teal italic">and</span>{" "}
-                your life finances.
+                Hold your{" "}
+                <span className="text-vela-teal italic">winners</span>.
                 <br />
-                <span className="text-zinc-500">Finally on one heading.</span>
+                <span className="text-zinc-500">Know if you were right.</span>
               </h1>
             </Reveal>
             <Reveal delay={180}>
               <p className="text-zinc-400 text-lg max-w-xl leading-relaxed mb-9">
-                Your portfolio, research, planning, and taxes in one place, with an AI that
-                actually knows <span className="text-zinc-200">your</span> goals and gives you a
-                straight answer. Stop paying for four apps that don&apos;t talk to each other.
+                Velnor is where your <span className="text-zinc-200">investing convictions</span> live.
+                Write down why you bought, watch each thesis play out against the price, and see how
+                right you&apos;ve actually been over time. Built for investors who make their own calls.
               </p>
             </Reveal>
             <Reveal delay={260}><WaitlistForm id="hero-email" large /></Reveal>
@@ -440,8 +439,8 @@ export default function LandingPage() {
           <div className="mt-6 rounded-2xl p-5 border border-vela-teal/25 bg-vela-teal/[0.04] relative overflow-hidden text-center">
             <div className="absolute inset-0 bg-gradient-to-br from-vela-teal/[0.06] via-transparent to-transparent" />
             <p className="relative text-sm text-zinc-200">
-              <span className="text-vela-teal font-medium">Velnor</span> is the one place that does both.
-              One login, one view, your full financial picture.
+              <span className="text-vela-teal font-medium">Velnor</span> puts your investing at the center,
+              with the rest of your money in view, so every call ties to where you&apos;re actually headed.
             </p>
           </div>
         </Reveal>
@@ -466,7 +465,7 @@ export default function LandingPage() {
             {[
               { tag: "Waypoint I", title: "See the whole sky", body: "Portfolio, net worth, goals, and cash flow in one view. No more stitching four apps together just to figure out where you stand." },
               { tag: "Waypoint II", title: "Sail by real instruments", body: "A 5,000-ticker screener, DCF and reverse-DCF valuation, and company deep-dives. The real tools to judge what a stock is worth before you buy, not the toy charts in your brokerage app." },
-              { tag: "Waypoint III", title: "An intelligence that's yours", body: "Velnor reads your holdings through the goals and style you set. Tell it you invest for growth and you get growth advice; say you're protecting capital and the same portfolio gets a very different take, always tied to your real numbers, never made up." },
+              { tag: "Waypoint III", title: "See if you were right", body: "Every thesis you write becomes a track record. Velnor maps each holding's journey against the price, scores your hit-rate by how sure you were, and shows what happened after you sold. It engages your own reasoning, always tied to your real numbers, never made up, and never advice." },
             ].map((w, i) => (
               <Reveal key={w.title} delay={i * 90}>
                 <div className="flex gap-4 md:gap-6 md:even:flex-row-reverse md:text-right md:even:text-left">
@@ -495,9 +494,9 @@ export default function LandingPage() {
               Most tools give everyone the same answer. Velnor asks where <span className="text-vela-teal italic">you&apos;re headed</span> first.
             </h2>
             <p className="text-zinc-500 leading-relaxed mb-4">
-              Pick what you&apos;re investing for, and the same portfolio gets a completely different
-              read. That&apos;s the point: advice built around your goals, not a one-size-fits-all
-              risk score. Try it on the right.
+              Pick what you&apos;re investing for, and the same portfolio reads completely differently.
+              That&apos;s the point: it engages your objective and your own reasoning, not a
+              one-size-fits-all risk score. Try it on the right.
             </p>
             <p className="text-zinc-600 text-sm">And it never makes up a number. If it doesn&apos;t have the figure, it tells you.</p>
           </Reveal>
