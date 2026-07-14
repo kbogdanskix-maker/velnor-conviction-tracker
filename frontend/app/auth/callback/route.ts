@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
   const next = searchParams.get("next") ?? "/dashboard";
 
   if (code) {
-    const supabase = createServerClient();
+    const supabase = await createServerClient();
     await supabase.auth.exchangeCodeForSession(code);
   }
 

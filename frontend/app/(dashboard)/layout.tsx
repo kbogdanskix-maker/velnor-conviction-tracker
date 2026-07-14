@@ -8,7 +8,7 @@ import Providers from "@/components/shared/Providers";
 import Disclaimer from "@/components/shared/Disclaimer";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const supabase = createServerClient();
+  const supabase = await createServerClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
