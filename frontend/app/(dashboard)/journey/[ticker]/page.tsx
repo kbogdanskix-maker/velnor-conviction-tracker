@@ -242,14 +242,14 @@ function ReflectPanel({ ticker }: { ticker: string }) {
     <div>
       <div className="flex items-center gap-2 mb-4">
         <span className="text-vela-teal text-[10px] leading-none">◆</span>
-        <Eyebrow>Reflect · reads your own numbers</Eyebrow>
+        <Eyebrow>Reflect</Eyebrow>
       </div>
 
       {idle && (
         <p className="text-[15px] text-zinc-300 leading-relaxed mb-5">
           Walk your own thesis back against what actually happened. Velnor surfaces
-          the questions worth asking about your reasoning — grounded in your notes and
-          your real numbers, never a call on the stock.
+          the questions worth asking about your reasoning, grounded in your notes and
+          your real numbers. It never makes a call on the stock.
         </p>
       )}
 
@@ -573,7 +573,7 @@ export default function JourneyTickerPage() {
       <div className="grid lg:grid-cols-[1fr_360px] gap-x-12 gap-y-10 border-t border-vela-border/60 pt-8">
         {/* Thesis log */}
         <div>
-          <Eyebrow className="mb-5">Conviction trail · append-only</Eyebrow>
+          <Eyebrow className="mb-5">Conviction trail</Eyebrow>
           {derived.rows.length === 0 ? (
             <p className="text-sm text-vela-muted py-6">
               No entries yet. Write a thesis or log a trade to start the journey.
