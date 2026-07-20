@@ -134,5 +134,9 @@ export function stripAiMarkdown(s: string | null | undefined): string {
     // a blank line before a marker is never consumed (paragraph breaks preserved).
     .replace(/^[ \t]{0,3}#{1,6}[ \t]+/gm, "")   // # headers
     .replace(/^[ \t]{0,3}[-*+][ \t]+/gm, "")    // - / * bullet markers
-    .replace(/^[ \t]{0,3}\d+\.[ \t]+/gm, "");   // 1. numbered list markers
+    .replace(/^[ \t]{0,3}\d+\.[ \t]+/gm, "")    // 1. numbered list markers
+    // Voice guardrail backstop: models occasionally drift an em/en-dash in
+    // despite the prompt rule — normalise a spaced dash to a comma so AI
+    // output stays plain. Unspaced em-dashes become a comma too.
+    .replace(/[ \t]*[—–][ \t]*/g, ", ");
 }

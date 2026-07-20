@@ -16,6 +16,8 @@ import {
 } from "recharts";
 import { useJourney, COLOUR_CLASS, COLOUR_HEX, ENTRY_TYPE_LABEL } from "@/lib/journey";
 import type { JourneyEvent } from "@/lib/journey";
+import { useCalibration } from "@/lib/calibration";
+import type { Calibration } from "@/lib/calibration";
 import { formatCurrency, formatPercent, stripAiMarkdown } from "@/lib/formatters";
 import { apiStreamPost } from "@/lib/api";
 import PageTransition from "@/components/celestial/PageTransition";
@@ -124,6 +126,20 @@ function StatCell({
   );
 }
 
+/** Conviction pips — filled/hollow diamonds for a 1-5 level. */
+function Pips({ level, size = "text-[11px]", className = "" }: { level: number; size?: string; className?: string }) {
+  const n = Math.max(0, Math.min(5, Math.round(level)));
+  return (
+    <span className={`inline-flex items-center gap-0.5 ${className}`} aria-label={`conviction ${n} of 5`}>
+      {[1, 2, 3, 4, 5].map((i) => (
+        <span key={i} className={`${size} leading-none ${i <= n ? "text-vela-teal" : "text-vela-subtle"}`}>
+          {i <= n ? "◆" : "◇"}
+        </span>
+      ))}
+    </span>
+  );
+}
+
 /** Segmented pill group (used for range + event-type filters). */
 function PillGroup<T extends string>({
   options,
@@ -218,25 +234,62 @@ function nearestClose(
   return close === undefined ? null : { date: best, close };
 }
 
-// ── Reflect / thesis-review panel (restyled to the template's Reflect column) ──
+// ── Reflect column: deterministic-first, AI opt-in + cached ────────────────────
 
-function ReflectPanel({ ticker }: { ticker: string }) {
-  const [state, setState] = useState<{ text: string; loading: boolean; error?: string }>({
-    text: "",
+// Session-lifetime cache so re-opening a ticker never re-spends an AI insight.
+const reviewCache = new Map<string, string>();
+
+/** One free line summarising the user's own accuracy from the calibration scorecard. */
+function calibrationLine(cal: Calibration | undefined): string | null {
+  if (!cal) return null;
+  const j = cal.journal;
+  if (j.total_logged === 0) return null;
+  if (j.overall_hit_rate == null || j.total_reviewed === 0) {
+    return "Mark outcomes on your logged decisions to see how your conviction has scored.";
+  }
+  const parts = [`Across your ${j.total_reviewed} reviewed call${j.total_reviewed === 1 ? "" : "s"}, ${j.overall_hit_rate.toFixed(0)}% paid off.`];
+  const hi = j.by_conviction.filter((b) => b.conviction >= 4 && b.hit_rate != null);
+  if (hi.length) {
+    const best = hi.reduce((a, b) => (b.conviction > a.conviction ? b : a));
+    parts.push(`At ${best.conviction}/5 conviction, ${Math.round(best.hit_rate as number)}%.`);
+  }
+  return parts.join(" ");
+}
+
+function ReflectPanel({
+  ticker,
+  hasThesis,
+  readout,
+}: {
+  ticker: string;
+  hasThesis: boolean;
+  readout: string[];
+}) {
+  const { data: calibration } = useCalibration();
+  const [state, setState] = useState<{ text: string; loading: boolean; error?: string }>(() => ({
+    text: reviewCache.get(ticker) ?? "",
     loading: false,
-  });
+  }));
 
   function handleReview() {
     setState({ text: "", loading: true, error: undefined });
+    let acc = "";
     streamThesisReview(
       ticker,
-      (chunk) => setState((p) => ({ ...p, text: p.text + chunk })),
-      () => setState((p) => ({ ...p, loading: false })),
+      (chunk) => {
+        acc += chunk;
+        setState((p) => ({ ...p, text: p.text + chunk }));
+      },
+      () => {
+        reviewCache.set(ticker, acc);
+        setState((p) => ({ ...p, loading: false }));
+      },
       (err) => setState((p) => ({ ...p, loading: false, error: err })),
     );
   }
 
-  const idle = !state.loading && !state.text && !state.error;
+  const hasCached = reviewCache.get(ticker) === state.text && state.text !== "";
+  const calLine = calibrationLine(calibration);
 
   return (
     <div>
@@ -245,22 +298,30 @@ function ReflectPanel({ ticker }: { ticker: string }) {
         <Eyebrow>Reflect</Eyebrow>
       </div>
 
-      {idle && (
-        <p className="text-[15px] text-zinc-300 leading-relaxed mb-5">
-          Walk your own thesis back against what actually happened. Velnor surfaces
-          the questions worth asking about your reasoning, grounded in your notes and
-          your real numbers. It never makes a call on the stock.
+      {/* Your own numbers — free, always shown */}
+      {readout.length > 0 && (
+        <div className="space-y-1.5 mb-5">
+          {readout.map((line, i) => (
+            <p key={i} className="text-[14px] text-zinc-300 leading-relaxed">{line}</p>
+          ))}
+        </div>
+      )}
+
+      {/* Your track record — free, from the calibration scorecard */}
+      {calLine && (
+        <p className="text-[13px] text-vela-muted leading-relaxed border-l-2 border-vela-teal/30 pl-3 mb-6">
+          {calLine}
         </p>
       )}
 
+      {/* AI depth — opt-in, cached per ticker */}
       {state.loading && !state.text && (
-        <p className="text-[13px] text-vela-muted italic mb-5">Reading your thesis…</p>
+        <p className="text-[13px] text-vela-muted italic mb-4">Reading your thesis…</p>
       )}
-
-      {state.error && <p className="text-[13px] text-loss mb-5">{state.error}</p>}
-
+      {state.error && <p className="text-[13px] text-loss mb-4">{state.error}</p>}
       {state.text && (
-        <div className="mb-5">
+        <div className="mb-4 border-t border-vela-border/60 pt-4">
+          <Eyebrow className="mb-2">Velnor asks</Eyebrow>
           <p className="text-[15px] text-zinc-200 leading-relaxed whitespace-pre-wrap">
             <InlineBold text={stripAiMarkdown(state.text)} />
           </p>
@@ -270,17 +331,26 @@ function ReflectPanel({ ticker }: { ticker: string }) {
         </div>
       )}
 
-      <button
-        onClick={handleReview}
-        disabled={state.loading}
-        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded text-[12px] font-medium
-          bg-vela-teal/10 text-vela-teal border border-vela-teal/25
-          hover:bg-vela-teal/15 hover:border-vela-teal/40
-          disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-      >
-        <Sparkles className="w-4 h-4 shrink-0" />
-        {state.loading ? "Reviewing…" : state.text ? "Ask again" : "Reflect on this thesis"}
-      </button>
+      {hasThesis ? (
+        <button
+          onClick={handleReview}
+          disabled={state.loading}
+          className="inline-flex items-center gap-2 px-3.5 py-2 rounded text-[12px] font-medium
+            bg-vela-teal/10 text-vela-teal border border-vela-teal/25
+            hover:bg-vela-teal/15 hover:border-vela-teal/40
+            disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+        >
+          <Sparkles className="w-4 h-4 shrink-0" />
+          {state.loading ? "Reflecting…" : hasCached ? "Ask again" : "Reflect with Velnor"}
+          {!hasCached && !state.loading && (
+            <span className="font-mono text-[10px] text-vela-subtle">uses 1 insight</span>
+          )}
+        </button>
+      ) : (
+        <p className="text-[13px] text-vela-subtle">
+          Write a thesis to reflect on your reasoning with Velnor.
+        </p>
+      )}
     </div>
   );
 }
@@ -387,6 +457,22 @@ export default function JourneyTickerPage() {
     return years >= 1 ? `${years.toFixed(1)}y held` : `${Math.max(1, Math.round(days / 30))}mo held`;
   })();
 
+  // Deterministic Reflect readout — free, from the user's own numbers.
+  const readout: string[] = [];
+  const oldestWithSince = [...derived.rows].reverse().find((r) => r.wroteAt != null && r.sincePct != null);
+  if (oldestWithSince) {
+    readout.push(
+      `You first logged this around ${formatCurrency(oldestWithSince.wroteAt as number)}. It has moved ${formatPercent(oldestWithSince.sincePct as number)} since.`,
+    );
+  }
+  const stanceWord = journey.latest_stance ? ENTRY_TYPE_LABEL[journey.latest_stance].toLowerCase() : null;
+  if (stanceWord || journey.latest_conviction != null) {
+    let line = "Your latest read is ";
+    if (stanceWord) line += stanceWord;
+    if (journey.latest_conviction != null) line += `${stanceWord ? " at " : ""}${journey.latest_conviction}/5 conviction`;
+    readout.push(line + ".");
+  }
+
   const rangeOpts: { key: RangeKey; label: string }[] = [
     { key: "3M", label: "3M" },
     { key: "6M", label: "6M" },
@@ -466,15 +552,27 @@ export default function JourneyTickerPage() {
             value={pos.market_value != null ? formatCurrency(pos.market_value) : "—"}
             sub={heldLabel ?? `${pos.shares.toLocaleString("en-US")} shares`}
           />
-          <StatCell
-            label="Latest stance"
-            value={
-              <span className={journey.latest_stance ? COLOUR_CLASS[journey.state_colour].text : "text-vela-subtle"}>
-                {journey.latest_stance ? ENTRY_TYPE_LABEL[journey.latest_stance] : "—"}
-              </span>
-            }
-            sub={thesisCount > 0 ? `${thesisCount} thesis ${thesisCount === 1 ? "entry" : "entries"}` : "no thesis yet"}
-          />
+          {journey.latest_conviction != null ? (
+            <StatCell
+              label="Conviction"
+              value={<Pips level={journey.latest_conviction} size="text-lg" />}
+              sub={
+                journey.latest_stance
+                  ? `latest: ${ENTRY_TYPE_LABEL[journey.latest_stance].toLowerCase()}`
+                  : `${journey.latest_conviction} / 5 logged`
+              }
+            />
+          ) : (
+            <StatCell
+              label="Latest stance"
+              value={
+                <span className={journey.latest_stance ? COLOUR_CLASS[journey.state_colour].text : "text-vela-subtle"}>
+                  {journey.latest_stance ? ENTRY_TYPE_LABEL[journey.latest_stance] : "—"}
+                </span>
+              }
+              sub={thesisCount > 0 ? `${thesisCount} thesis ${thesisCount === 1 ? "entry" : "entries"}` : "no thesis yet"}
+            />
+          )}
         </div>
       )}
 
@@ -589,17 +687,7 @@ export default function JourneyTickerPage() {
 
         {/* Reflect column */}
         <div className="lg:border-l lg:border-vela-border/60 lg:pl-12">
-          {journey.has_thesis ? (
-            <ReflectPanel ticker={journey.ticker} />
-          ) : (
-            <div>
-              <Eyebrow className="mb-4">Reflect</Eyebrow>
-              <p className="text-[15px] text-zinc-300 leading-relaxed">
-                Write a thesis for {journey.ticker} and Velnor will help you walk your
-                own reasoning back against what the price actually did.
-              </p>
-            </div>
-          )}
+          <ReflectPanel ticker={journey.ticker} hasThesis={journey.has_thesis} readout={readout} />
         </div>
       </div>
     </PageTransition>
@@ -607,6 +695,13 @@ export default function JourneyTickerPage() {
 }
 
 // ── Thesis-log row ────────────────────────────────────────────────────────────
+
+const OUTCOME_STYLE: Record<string, { label: string; cls: string }> = {
+  win:       { label: "won",       cls: "text-gain" },
+  loss:      { label: "lost",      cls: "text-loss" },
+  breakeven: { label: "flat",      cls: "text-vela-muted" },
+  pending:   { label: "open",      cls: "text-vela-subtle" },
+};
 
 function LogRow({
   ev,
@@ -618,7 +713,14 @@ function LogRow({
   sincePct: number | null;
 }) {
   const cls = COLOUR_CLASS[ev.colour];
-  const badge = ev.kind === "thesis" && ev.entry_type ? ENTRY_TYPE_LABEL[ev.entry_type] : ev.title;
+  const isDecision = ev.kind === "decision";
+  const badge =
+    ev.kind === "thesis" && ev.entry_type
+      ? ENTRY_TYPE_LABEL[ev.entry_type]
+      : isDecision && ev.action
+        ? ev.action
+        : ev.title;
+  const outcome = isDecision && ev.outcome ? OUTCOME_STYLE[ev.outcome] : null;
   const sincePositive = sincePct != null && sincePct >= 0;
 
   return (
@@ -626,8 +728,12 @@ function LogRow({
       {/* spine dot */}
       <span className={`absolute left-0 top-1.5 w-2 h-2 rounded-full ${cls.dot}`} />
       {/* top line */}
-      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
         <span className={`font-mono text-[10px] uppercase tracking-wider ${cls.text}`}>{badge}</span>
+        {isDecision && ev.conviction != null && <Pips level={ev.conviction} />}
+        {outcome && (
+          <span className={`font-mono text-[10px] uppercase tracking-wider ${outcome.cls}`}>{outcome.label}</span>
+        )}
         <span className="font-mono text-[11px] text-vela-muted tabular-nums">{fmtShortDate(ev.date)}</span>
         <span className="flex-1" />
         {wroteAt != null && (

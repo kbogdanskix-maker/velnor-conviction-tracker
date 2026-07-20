@@ -15,7 +15,9 @@ from sqlalchemy import select, func as sqlfunc
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.dependencies import get_current_user, get_db
-from app.models.db import User, Portfolio, Holding, Transaction, ThesisThread, ThesisEntry
+from app.models.db import (
+    User, Portfolio, Holding, Transaction, ThesisThread, ThesisEntry, DecisionJournalEntry,
+)
 from app.services import market_data
 
 router = APIRouter(prefix="/journey")
@@ -62,6 +64,12 @@ _TX_EVENT = {
     "dividend": ("dividend", "gain"),
 }
 _THESIS_COLOUR = {"bull": "gain", "bear": "loss", "update": "teal", "note": "neutral"}
+# Decision-journal action → trail colour (win/loss outcome refines it below).
+_ACTION_COLOUR = {
+    "buy": "teal", "add": "teal",
+    "sell": "amber", "trim": "amber",
+    "hold": "neutral", "watch": "neutral",
+}
 
 
 @router.get("/{ticker}")
@@ -149,6 +157,34 @@ async def get_journey(
                 latest_stance_at = e.created_at
                 latest_stance = e.entry_type
 
+    # ── Events: decision-journal entries (conviction 1-5 + outcome) ───────
+    # Thesis and journal are intertwined per ticker — the journal carries the
+    # structured conviction/outcome the thesis narrative doesn't.
+    journal = (await db.execute(
+        select(DecisionJournalEntry)
+        .where(DecisionJournalEntry.user_id == user.id, DecisionJournalEntry.ticker == tk)
+        .order_by(DecisionJournalEntry.decided_at)
+    )).scalars().all()
+    latest_conviction: int | None = None
+    latest_conviction_at: datetime | None = None
+    for j in journal:
+        px = float(j.price_at_decision) if j.price_at_decision is not None else None
+        colour = "gain" if j.outcome == "win" else "loss" if j.outcome == "loss" else _ACTION_COLOUR.get(j.action, "neutral")
+        events.append({
+            "date": j.decided_at.isoformat() if j.decided_at else None,
+            "kind": "decision",
+            "action": j.action,
+            "conviction": j.conviction,
+            "outcome": j.outcome,
+            "colour": colour,
+            "title": f"{(j.action or 'note').capitalize()}",
+            "detail": (j.rationale or "")[:280],
+            "price": round(px, 2) if px else None,
+        })
+        if j.decided_at and (latest_conviction_at is None or j.decided_at > latest_conviction_at):
+            latest_conviction_at = j.decided_at
+            latest_conviction = j.conviction
+
     events.sort(key=lambda x: x["date"] or "")
 
     # ── Price line ────────────────────────────────────────────────────────
@@ -163,8 +199,10 @@ async def get_journey(
         "state": state,
         "state_colour": state_colour,
         "latest_stance": latest_stance,
+        "latest_conviction": latest_conviction,
         "position": position,
         "events": events,
         "price_line": price_line,
         "has_thesis": len(threads) > 0,
+        "has_journal": len(journal) > 0,
     }

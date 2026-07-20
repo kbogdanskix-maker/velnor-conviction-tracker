@@ -18,9 +18,11 @@ export type JourneyState =
   | "position open"
   | "watching";
 
-export type JourneyEventKind = "buy" | "sell" | "dividend" | "thesis";
+export type JourneyEventKind = "buy" | "sell" | "dividend" | "thesis" | "decision";
 
 export type ThesisEntryType = "bull" | "bear" | "update" | "note";
+
+export type DecisionOutcome = "win" | "loss" | "breakeven" | "pending" | null;
 
 export interface JourneyEvent {
   date: string;
@@ -30,6 +32,10 @@ export interface JourneyEvent {
   detail: string;
   price?: number | null;
   entry_type?: ThesisEntryType;
+  /** Present on kind === "decision" — from the decision journal. */
+  action?: string;
+  conviction?: number; // 1-5
+  outcome?: DecisionOutcome;
 }
 
 export interface JourneyPosition {
@@ -51,7 +57,9 @@ export interface Journey {
   state: JourneyState;
   state_colour: JourneyColour;
   latest_stance: ThesisEntryType | null;
+  latest_conviction: number | null;
   has_thesis: boolean;
+  has_journal: boolean;
   position: JourneyPosition | null;
   events: JourneyEvent[];
   price_line: JourneyPricePoint[];
