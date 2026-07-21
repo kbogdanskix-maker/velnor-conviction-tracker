@@ -9,6 +9,15 @@ import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { formatDate } from "@/lib/formatters";
 import PageTransition from "@/components/celestial/PageTransition";
 import {
+  TopBar,
+  PageHero,
+  StatStrip,
+  StatCell,
+  Section,
+  Eyebrow,
+  Prose,
+} from "@/components/instrument";
+import {
   useThesisList,
   useThesisThread,
   createThread,
@@ -43,6 +52,24 @@ function stanceToEntryType(stance: string): ThesisEntryType {
   return "note";
 }
 
+// ── Shared class tokens ──────────────────────────────────────────────────────
+
+const BTN_TEAL =
+  "inline-flex items-center justify-center gap-1.5 rounded border border-vela-teal/25 bg-vela-teal/10 px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-vela-teal transition-colors hover:border-vela-teal/40 hover:bg-vela-teal/15 disabled:cursor-not-allowed disabled:opacity-40";
+const BTN_QUIET =
+  "inline-flex items-center justify-center gap-1.5 rounded border border-vela-border px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-vela-muted transition-colors hover:border-vela-teal/40 hover:text-zinc-100";
+const BTN_DANGER =
+  "inline-flex items-center justify-center gap-1.5 rounded border border-loss/30 bg-loss/10 px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-loss transition-colors hover:bg-loss/15";
+const FIELD_LABEL =
+  "mb-1.5 block font-mono text-[10px] uppercase tracking-[0.14em] text-vela-muted";
+const MENU_CONTENT =
+  "z-50 min-w-[150px] rounded border border-vela-border bg-vela-card py-1";
+const MENU_ITEM_DANGER =
+  "flex cursor-pointer items-center gap-2 px-3 py-2 font-mono text-[11px] uppercase tracking-wider text-loss outline-none transition-colors hover:bg-loss/10";
+const OVERLAY = "fixed inset-0 z-50 bg-black/70";
+const DIALOG_BASE =
+  "fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] -translate-x-1/2 -translate-y-1/2 rounded border border-vela-border bg-vela-card p-6";
+
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 const ENTRY_TYPE_LABELS: Record<ThesisEntryType, string> = {
@@ -55,7 +82,9 @@ const ENTRY_TYPE_LABELS: Record<ThesisEntryType, string> = {
 function EntryTypeChip({ type }: { type: ThesisEntryType }) {
   const style = ENTRY_TYPE_STYLE[type];
   return (
-    <span className={`text-[10px] font-mono uppercase tracking-widest px-2 py-0.5 rounded ${style.className}`}>
+    <span
+      className={`rounded px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.14em] ${style.className}`}
+    >
       {style.label}
     </span>
   );
@@ -64,6 +93,39 @@ function EntryTypeChip({ type }: { type: ThesisEntryType }) {
 function LatestEntryTypeBadge({ type }: { type: ThesisEntryType | null }) {
   if (!type) return null;
   return <EntryTypeChip type={type} />;
+}
+
+/** Mono selector for the four entry types. Keeps ENTRY_TYPE_STYLE as the source of truth. */
+function EntryTypeSelector({
+  value,
+  onChange,
+}: {
+  value: ThesisEntryType;
+  onChange: (t: ThesisEntryType) => void;
+}) {
+  return (
+    <div className="grid grid-cols-4 gap-1.5">
+      {(["bull", "bear", "update", "note"] as ThesisEntryType[]).map((t) => {
+        const style = ENTRY_TYPE_STYLE[t];
+        const active = value === t;
+        return (
+          <button
+            key={t}
+            type="button"
+            aria-pressed={active}
+            onClick={() => onChange(t)}
+            className={`rounded border py-1.5 font-mono text-[10px] uppercase tracking-wider transition-colors ${
+              active
+                ? `${style.className} border-current`
+                : "border-vela-border text-vela-muted hover:border-vela-teal/40 hover:text-zinc-100"
+            }`}
+          >
+            {ENTRY_TYPE_LABELS[t]}
+          </button>
+        );
+      })}
+    </div>
+  );
 }
 
 // ── Page ─────────────────────────────────────────────────────────────────────
@@ -133,58 +195,112 @@ export default function ThesisPage() {
     mutateList();
   }
 
+  // ── Derived figures ────────────────────────────────────────────────────────
+  const totalEntries = threads.reduce((sum, t) => sum + t.entry_count, 0);
+  const bullCount = threads.filter((t) => t.latest_entry_type === "bull").length;
+  const bearCount = threads.filter((t) => t.latest_entry_type === "bear").length;
+  const lastTouched = threads.length
+    ? threads.reduce((latest, t) => (t.updated_at > latest ? t.updated_at : latest), threads[0].updated_at)
+    : null;
+
+  const newThreadButton = (
+    <button onClick={() => setNewThreadOpen(true)} className={BTN_TEAL}>
+      <Plus className="w-3.5 h-3.5 shrink-0" />
+      New thesis
+    </button>
+  );
+
   return (
-    <PageTransition className="space-y-6">
-      {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-display font-bold text-zinc-100 flex items-center gap-2">
-            <BookOpen className="w-6 h-6 text-vela-teal shrink-0" />
-            Thesis
-          </h1>
-          <p className="text-zinc-500 text-sm mt-0.5">
-            Your conviction trail — one thread per idea, append-only.
-          </p>
-        </div>
-        <button
-          onClick={() => setNewThreadOpen(true)}
-          className="btn-primary text-sm inline-flex items-center gap-1.5 shrink-0"
-        >
-          <Plus className="w-4 h-4 shrink-0" /> New Thesis
-        </button>
-      </div>
+    <PageTransition>
+      <TopBar
+        trail={[{ label: "Journal" }, { label: "Thesis" }]}
+        note={
+          threads.length
+            ? `${threads.length} ${threads.length === 1 ? "thread" : "threads"} · append only`
+            : "nothing written yet"
+        }
+      />
 
-      {/* Split layout: thread list + detail */}
-      <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-4 items-start">
-        {/* Thread list */}
-        <ThreadList
-          threads={threads}
-          isLoading={isLoading}
-          selectedId={selectedId}
-          onSelect={setSelectedId}
-          onDelete={(t) => setDeleteTarget(t)}
-          onNew={() => setNewThreadOpen(true)}
-        />
+      <PageHero
+        title="Thesis"
+        meta="One thread per idea. Entries append, they never overwrite."
+        figure={isLoading ? undefined : totalEntries}
+        figureSub={
+          isLoading
+            ? undefined
+            : `${threads.length} ${threads.length === 1 ? "thread" : "threads"}`
+        }
+      />
 
-        {/* Thread detail */}
-        {selectedId ? (
-          <ThreadDetail
-            threadId={selectedId}
-            onBack={() => setSelectedId(null)}
-            onDelete={(t) => setDeleteTarget(t)}
-            addEntryOpen={addEntryOpen}
-            setAddEntryOpen={setAddEntryOpen}
-            mutateList={mutateList}
+      {!isLoading && threads.length > 0 && (
+        <StatStrip className="mt-6">
+          <StatCell
+            label="Threads"
+            value={threads.length}
+            sub={`${totalEntries} ${totalEntries === 1 ? "entry" : "entries"}`}
           />
-        ) : (
-          <div className="hidden lg:flex vela-card items-center justify-center min-h-[320px] text-zinc-600">
-            <div className="text-center">
-              <BookOpen className="w-8 h-8 mx-auto mb-3 opacity-40" />
-              <p className="text-sm">Select a thesis to read its conviction trail</p>
-            </div>
+          <StatCell
+            label="Standing bull"
+            value={bullCount}
+            valueClass={bullCount > 0 ? "text-gain" : "text-zinc-100"}
+            sub="latest entry is bullish"
+          />
+          <StatCell
+            label="Standing bear"
+            value={bearCount}
+            valueClass={bearCount > 0 ? "text-loss" : "text-zinc-100"}
+            sub="latest entry is bearish"
+          />
+          <StatCell
+            label="Last written"
+            value={lastTouched ? formatDate(lastTouched) : "—"}
+            sub="most recent entry"
+          />
+        </StatStrip>
+      )}
+
+      <Section
+        label="Threads"
+        labelAside={isLoading ? undefined : String(threads.length)}
+        prose="Each thread is a running record of what you believed and when. Nothing here can be edited after the fact, so the trail stays honest."
+        controls={threads.length > 0 ? newThreadButton : undefined}
+      >
+        <div className="grid grid-cols-1 items-start gap-x-10 gap-y-8 lg:grid-cols-[320px_1fr]">
+          {/* Thread list */}
+          <ThreadList
+            threads={threads}
+            isLoading={isLoading}
+            selectedId={selectedId}
+            onSelect={setSelectedId}
+            onDelete={(t) => setDeleteTarget(t)}
+            onNew={() => setNewThreadOpen(true)}
+          />
+
+          {/* Thread detail */}
+          <div className="min-w-0 lg:border-l lg:border-vela-border lg:pl-10">
+            {selectedId ? (
+              <ThreadDetail
+                threadId={selectedId}
+                onBack={() => setSelectedId(null)}
+                onDelete={(t) => setDeleteTarget(t)}
+                addEntryOpen={addEntryOpen}
+                setAddEntryOpen={setAddEntryOpen}
+                mutateList={mutateList}
+              />
+            ) : (
+              <div className="hidden min-h-[280px] items-center justify-center border border-vela-border px-6 text-center lg:flex">
+                <div>
+                  <BookOpen className="mx-auto mb-3 h-5 w-5 text-vela-teal" />
+                  <Eyebrow>No thread selected</Eyebrow>
+                  <Prose className="mx-auto mt-2.5 max-w-[300px]">
+                    Pick a thesis on the left to read its conviction trail.
+                  </Prose>
+                </div>
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        </div>
+      </Section>
 
       {/* New Thread Modal */}
       <NewThreadModal
@@ -200,24 +316,22 @@ export default function ThesisPage() {
       {/* Delete confirm */}
       <Dialog.Root open={!!deleteTarget} onOpenChange={(v) => { if (!v) setDeleteTarget(null); }}>
         <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50" />
-          <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-sm bg-zinc-900 border border-vela-border rounded-lg p-6 shadow-xl">
-            <Dialog.Title className="text-base font-semibold text-zinc-100 mb-2">
-              Delete Thesis
+          <Dialog.Overlay className={OVERLAY} />
+          <Dialog.Content className={`${DIALOG_BASE} max-w-sm`}>
+            <Dialog.Title className="font-display text-[18px] font-semibold text-zinc-100">
+              Delete thesis
             </Dialog.Title>
-            <p className="text-sm text-zinc-400 mb-4">
+            <p className="mt-2.5 text-[13.5px] leading-[1.55] text-vela-body">
               This permanently deletes the thread for{" "}
-              <span className="font-mono font-bold text-zinc-200">{deleteTarget?.ticker}</span> and
-              all its entries. This cannot be undone.
+              <span className="font-mono font-medium text-zinc-100">{deleteTarget?.ticker}</span>{" "}
+              and all of its entries. This cannot be undone.
             </p>
-            <div className="flex justify-end gap-3">
-              <button onClick={() => setDeleteTarget(null)} className="btn-ghost text-sm">
+            <div className="mt-5 flex justify-end gap-2">
+              <button onClick={() => setDeleteTarget(null)} className={BTN_QUIET}>
                 Cancel
               </button>
-              <button
-                onClick={handleDeleteThread}
-                className="bg-loss hover:bg-loss/80 text-white font-medium px-4 py-2 rounded text-sm transition-colors"
-              >
+              <button onClick={handleDeleteThread} className={BTN_DANGER}>
+                <Trash2 className="w-3.5 h-3.5 shrink-0" />
                 Delete
               </button>
             </div>
@@ -247,9 +361,13 @@ function ThreadList({
 }) {
   if (isLoading) {
     return (
-      <div className="vela-card space-y-3">
+      <div className="divide-y divide-vela-border border-y border-vela-border">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="h-16 rounded bg-zinc-800/50 animate-pulse" />
+          <div key={i} className="py-4">
+            <div className="skeleton h-3 w-16" />
+            <div className="skeleton mt-2 h-3 w-40" />
+            <div className="skeleton mt-2 h-2.5 w-24" />
+          </div>
         ))}
       </div>
     );
@@ -257,19 +375,25 @@ function ThreadList({
 
   if (threads.length === 0) {
     return (
-      <div className="vela-card text-center py-14">
-        <BookOpen className="w-7 h-7 text-zinc-600 mx-auto mb-3" />
-        <h2 className="text-sm font-medium text-zinc-300 mb-1">No theses yet</h2>
-        <p className="text-xs text-zinc-500 mb-4">Write down your first investment reasoning</p>
-        <button onClick={onNew} className="btn-primary text-sm inline-flex items-center gap-1.5">
-          <Plus className="w-4 h-4 shrink-0" /> Write first thesis
+      <div className="flex flex-col items-center border border-vela-border px-6 py-14 text-center">
+        <div className="mb-4 flex h-10 w-10 items-center justify-center rounded border border-vela-border">
+          <BookOpen className="h-4 w-4 text-vela-teal" />
+        </div>
+        <Eyebrow>No theses yet</Eyebrow>
+        <Prose className="mx-auto mt-2.5 max-w-[300px]">
+          Write down the reasoning behind a position while you still believe it. That is what makes
+          the trail worth reading later.
+        </Prose>
+        <button onClick={onNew} className={`${BTN_TEAL} mt-6`}>
+          <Plus className="w-3.5 h-3.5 shrink-0" />
+          Write first thesis
         </button>
       </div>
     );
   }
 
   return (
-    <div className="vela-card divide-y divide-vela-border">
+    <div className="divide-y divide-vela-border border-y border-vela-border">
       {threads.map((t) => (
         <ThreadRow
           key={t.id}
@@ -296,58 +420,55 @@ function ThreadRow({
 }) {
   return (
     <div
-      className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${
-        isSelected ? "bg-vela-teal/8" : "hover:bg-zinc-800/40"
-      }`}
       onClick={onSelect}
+      aria-current={isSelected ? "true" : undefined}
+      className={`group relative flex cursor-pointer items-center gap-3 py-3.5 pl-3 pr-1 transition-colors ${
+        isSelected ? "bg-vela-teal/[0.06]" : "hover:bg-vela-teal/[0.03]"
+      }`}
     >
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-0.5">
-          <span className="font-mono font-bold text-sm text-vela-teal tabular-nums shrink-0">
+      {isSelected && (
+        <span aria-hidden="true" className="absolute bottom-0 left-0 top-0 w-[2px] bg-vela-teal" />
+      )}
+
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-2">
+          <span
+            className={`font-mono text-[13px] font-medium tracking-[0.06em] ${
+              isSelected ? "text-vela-teal" : "text-zinc-100"
+            }`}
+          >
             {thread.ticker}
           </span>
-          {thread.latest_entry_type && (
-            <LatestEntryTypeBadge type={thread.latest_entry_type} />
-          )}
+          {thread.latest_entry_type && <LatestEntryTypeBadge type={thread.latest_entry_type} />}
         </div>
-        <p className="text-xs text-zinc-300 truncate">{thread.title}</p>
-        <div className="flex items-center gap-2 mt-1">
-          <span className="text-[10px] font-mono text-zinc-600 tabular-nums">
-            {thread.entry_count} {thread.entry_count === 1 ? "entry" : "entries"}
-          </span>
-          <span className="text-[10px] text-zinc-700">·</span>
-          <span className="text-[10px] font-mono text-zinc-600 tabular-nums">
-            {formatDate(thread.updated_at)}
-          </span>
-        </div>
+        <p className="mt-1 truncate text-[12.5px] leading-snug text-vela-body">{thread.title}</p>
+        <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.12em] tabular-nums text-vela-muted">
+          {thread.entry_count} {thread.entry_count === 1 ? "entry" : "entries"} ·{" "}
+          {formatDate(thread.updated_at)}
+        </p>
       </div>
-      <div className="flex items-center gap-1 shrink-0">
-        <DropdownMenu.Root>
-          <DropdownMenu.Trigger asChild>
-            <button
-              className="p-1 rounded hover:bg-zinc-700 text-zinc-600 hover:text-zinc-300 transition-colors"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <MoreHorizontal className="w-4 h-4 shrink-0" />
-            </button>
-          </DropdownMenu.Trigger>
-          <DropdownMenu.Portal>
-            <DropdownMenu.Content
-              className="min-w-[140px] bg-zinc-900 border border-vela-border rounded-lg p-1 shadow-xl z-50"
-              sideOffset={4}
-              align="end"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <DropdownMenu.Item
-                className="flex items-center gap-2 px-3 py-2 text-sm text-loss rounded cursor-pointer hover:bg-zinc-800 outline-none"
-                onSelect={onDelete}
+
+      <div className="flex shrink-0 items-center gap-1">
+        <div onClick={(e) => e.stopPropagation()}>
+          <DropdownMenu.Root>
+            <DropdownMenu.Trigger asChild>
+              <button
+                aria-label={`Actions for ${thread.ticker}`}
+                className="rounded p-1 text-vela-muted transition-colors hover:text-zinc-100 focus:outline-none"
               >
-                <Trash2 className="w-4 h-4 shrink-0" /> Delete
-              </DropdownMenu.Item>
-            </DropdownMenu.Content>
-          </DropdownMenu.Portal>
-        </DropdownMenu.Root>
-        <ChevronRight className="w-4 h-4 text-zinc-700 shrink-0" />
+                <MoreHorizontal className="h-4 w-4 shrink-0" />
+              </button>
+            </DropdownMenu.Trigger>
+            <DropdownMenu.Portal>
+              <DropdownMenu.Content className={MENU_CONTENT} sideOffset={4} align="end">
+                <DropdownMenu.Item className={MENU_ITEM_DANGER} onSelect={onDelete}>
+                  <Trash2 className="h-3.5 w-3.5 shrink-0" /> Delete
+                </DropdownMenu.Item>
+              </DropdownMenu.Content>
+            </DropdownMenu.Portal>
+          </DropdownMenu.Root>
+        </div>
+        <ChevronRight className="h-4 w-4 shrink-0 text-vela-subtle" aria-hidden="true" />
       </div>
     </div>
   );
@@ -374,10 +495,14 @@ function ThreadDetail({
 
   if (isLoading) {
     return (
-      <div className="vela-card space-y-3">
-        <div className="h-8 w-48 rounded bg-zinc-800/50 animate-pulse" />
-        <div className="h-4 w-full rounded bg-zinc-800/50 animate-pulse" />
-        <div className="h-4 w-3/4 rounded bg-zinc-800/50 animate-pulse" />
+      <div>
+        <div className="skeleton h-3 w-16" />
+        <div className="skeleton mt-3 h-6 w-56" />
+        <div className="skeleton mt-3 h-3 w-40" />
+        <div className="mt-7 space-y-3">
+          <div className="skeleton h-3 w-full" />
+          <div className="skeleton h-3 w-3/4" />
+        </div>
       </div>
     );
   }
@@ -401,56 +526,55 @@ function ThreadDetail({
   };
 
   return (
-    <div className="vela-card space-y-5">
+    <div>
       {/* Back button (mobile) */}
       <button
         onClick={onBack}
-        className="lg:hidden flex items-center gap-1.5 text-sm text-zinc-400 hover:text-zinc-200 transition-colors"
+        className="mb-5 inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-vela-muted transition-colors hover:text-vela-teal lg:hidden"
       >
-        <ChevronLeft className="w-4 h-4 shrink-0" /> All theses
+        <ChevronLeft className="h-3.5 w-3.5 shrink-0" /> All theses
       </button>
 
       {/* Thread header */}
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-4">
         <div className="min-w-0">
-          <div className="flex items-center gap-2 mb-1 flex-wrap">
-            <span className="font-mono font-bold text-lg text-vela-teal tabular-nums">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <span className="font-mono text-[13px] font-medium tracking-[0.08em] text-vela-teal">
               {thread.ticker}
             </span>
             {asSummary.latest_entry_type && (
               <LatestEntryTypeBadge type={asSummary.latest_entry_type} />
             )}
           </div>
-          <h2 className="text-base font-semibold text-zinc-100">{thread.title}</h2>
-          <p className="text-[10px] font-mono text-zinc-600 mt-1 tabular-nums">
+          <h2 className="mt-2 font-display text-[22px] font-semibold leading-tight text-zinc-100">
+            {thread.title}
+          </h2>
+          <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.12em] tabular-nums text-vela-muted">
             Started {formatDate(thread.created_at)} · {thread.entries.length}{" "}
             {thread.entries.length === 1 ? "entry" : "entries"}
           </p>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <button
-            onClick={() => setAddEntryOpen(true)}
-            className="btn-primary text-sm inline-flex items-center gap-1.5"
-          >
-            <Plus className="w-4 h-4 shrink-0" /> Add thought
+        <div className="flex shrink-0 items-center gap-2">
+          <button onClick={() => setAddEntryOpen(true)} className={BTN_TEAL}>
+            <Plus className="w-3.5 h-3.5 shrink-0" />
+            Add thought
           </button>
           <DropdownMenu.Root>
             <DropdownMenu.Trigger asChild>
-              <button className="p-1.5 rounded hover:bg-zinc-800 text-zinc-500 hover:text-zinc-300 transition-colors">
-                <MoreHorizontal className="w-4 h-4 shrink-0" />
+              <button
+                aria-label="Thread actions"
+                className="rounded p-1.5 text-vela-muted transition-colors hover:text-zinc-100 focus:outline-none"
+              >
+                <MoreHorizontal className="h-4 w-4 shrink-0" />
               </button>
             </DropdownMenu.Trigger>
             <DropdownMenu.Portal>
-              <DropdownMenu.Content
-                className="min-w-[140px] bg-zinc-900 border border-vela-border rounded-lg p-1 shadow-xl z-50"
-                sideOffset={4}
-                align="end"
-              >
+              <DropdownMenu.Content className={MENU_CONTENT} sideOffset={4} align="end">
                 <DropdownMenu.Item
-                  className="flex items-center gap-2 px-3 py-2 text-sm text-loss rounded cursor-pointer hover:bg-zinc-800 outline-none"
+                  className={MENU_ITEM_DANGER}
                   onSelect={() => onDelete(asSummary)}
                 >
-                  <Trash2 className="w-4 h-4 shrink-0" /> Delete thread
+                  <Trash2 className="h-3.5 w-3.5 shrink-0" /> Delete thread
                 </DropdownMenu.Item>
               </DropdownMenu.Content>
             </DropdownMenu.Portal>
@@ -458,45 +582,47 @@ function ThreadDetail({
         </div>
       </div>
 
-      <hr className="border-vela-border" />
-
       {/* Entry timeline */}
-      {entries.length === 0 ? (
-        <div className="text-center py-8">
-          <p className="text-sm text-zinc-600">No entries yet</p>
-          <button
-            onClick={() => setAddEntryOpen(true)}
-            className="mt-3 text-sm text-vela-teal hover:underline"
-          >
-            Add your opening thought
-          </button>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {entries.map((entry, idx) => (
-            <div key={entry.id} className="flex gap-3">
-              {/* Timeline spine */}
-              <div className="flex flex-col items-center pt-1">
-                <div className="w-2 h-2 rounded-full bg-vela-teal shrink-0" />
-                {idx < entries.length - 1 && (
-                  <div className="w-px flex-1 bg-vela-border mt-1" />
-                )}
-              </div>
-              <div className="flex-1 min-w-0 pb-4">
-                <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+      <div className="mt-7 border-t border-vela-border pt-6">
+        <Eyebrow className="mb-4">Conviction trail</Eyebrow>
+
+        {entries.length === 0 ? (
+          <div className="py-6">
+            <Prose className="max-w-[380px]">
+              Nothing logged on this thread yet. The first entry is usually the most useful one:
+              what you believe, and what would prove you wrong.
+            </Prose>
+            <button onClick={() => setAddEntryOpen(true)} className={`${BTN_TEAL} mt-4`}>
+              <Plus className="w-3.5 h-3.5 shrink-0" />
+              Add opening thought
+            </button>
+          </div>
+        ) : (
+          <div className="divide-y divide-vela-border border-t border-vela-border">
+            {entries.map((entry, idx) => (
+              <article key={entry.id} className="relative py-5 pl-5">
+                <span
+                  aria-hidden="true"
+                  className="absolute left-0 top-[26px] h-[7px] w-[7px] rotate-45 bg-vela-teal"
+                />
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
                   <EntryTypeChip type={entry.entry_type} />
-                  <span className="text-[10px] font-mono text-zinc-600 tabular-nums">
+                  <span className="font-mono text-[11px] tabular-nums text-vela-muted">
                     {formatDate(entry.created_at)}
                   </span>
+                  <span className="flex-1" />
+                  <span className="font-mono text-[10px] uppercase tracking-[0.12em] tabular-nums text-vela-muted">
+                    #{entries.length - idx}
+                  </span>
                 </div>
-                <p className="text-sm text-zinc-300 whitespace-pre-wrap leading-relaxed">
+                <p className="mt-2 whitespace-pre-wrap text-[13.5px] leading-[1.6] text-vela-body">
                   {entry.body}
                 </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+              </article>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Add Entry Modal */}
       <AddEntryModal
@@ -559,15 +685,18 @@ function NewThreadModal({
   return (
     <Dialog.Root open={open} onOpenChange={(v) => { if (!v) { reset(); onClose(); } }}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50" />
-        <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-lg bg-zinc-900 border border-vela-border rounded-lg p-6 shadow-xl max-h-[90vh] overflow-y-auto">
-          <Dialog.Title className="text-base font-semibold text-zinc-100 mb-4">
-            New Thesis
+        <Dialog.Overlay className={OVERLAY} />
+        <Dialog.Content className={`${DIALOG_BASE} max-h-[90vh] max-w-lg overflow-y-auto`}>
+          <Dialog.Title className="font-display text-[18px] font-semibold text-zinc-100">
+            New thesis
           </Dialog.Title>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+          <p className="mt-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-vela-muted">
+            Opens a new append-only thread
+          </p>
+          <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <label className="text-xs text-zinc-500 mb-1 block">Ticker</label>
+                <label className={FIELD_LABEL}>Ticker</label>
                 <input
                   type="text"
                   value={ticker}
@@ -578,31 +707,12 @@ function NewThreadModal({
                 />
               </div>
               <div>
-                <label className="text-xs text-zinc-500 mb-1 block">Opening stance</label>
-                <div className="flex gap-1.5">
-                  {(["bull", "bear", "update", "note"] as ThesisEntryType[]).map((t) => {
-                    const style = ENTRY_TYPE_STYLE[t];
-                    const active = entryType === t;
-                    return (
-                      <button
-                        key={t}
-                        type="button"
-                        onClick={() => setEntryType(t)}
-                        className={`flex-1 text-[10px] font-mono uppercase tracking-wider py-1.5 rounded border transition-colors ${
-                          active
-                            ? `${style.className} border-current`
-                            : "bg-zinc-800/50 text-zinc-600 border-zinc-700/50 hover:text-zinc-300"
-                        }`}
-                      >
-                        {ENTRY_TYPE_LABELS[t]}
-                      </button>
-                    );
-                  })}
-                </div>
+                <label className={FIELD_LABEL}>Opening stance</label>
+                <EntryTypeSelector value={entryType} onChange={setEntryType} />
               </div>
             </div>
             <div>
-              <label className="text-xs text-zinc-500 mb-1 block">Title</label>
+              <label className={FIELD_LABEL}>Title</label>
               <input
                 type="text"
                 value={title}
@@ -613,7 +723,7 @@ function NewThreadModal({
               />
             </div>
             <div>
-              <label className="text-xs text-zinc-500 mb-1 block">Opening thought (optional)</label>
+              <label className={FIELD_LABEL}>Opening thought (optional)</label>
               <textarea
                 value={body}
                 onChange={(e) => setBody(e.target.value)}
@@ -622,16 +732,16 @@ function NewThreadModal({
                 className="input-field w-full resize-none"
               />
             </div>
-            <div className="flex justify-end gap-3 pt-2">
-              <button type="button" onClick={() => { reset(); onClose(); }} className="btn-ghost text-sm">
+            <div className="flex justify-end gap-2 pt-1">
+              <button type="button" onClick={() => { reset(); onClose(); }} className={BTN_QUIET}>
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={!ticker.trim() || !title.trim() || saving}
-                className="btn-primary text-sm disabled:opacity-50"
+                className={BTN_TEAL}
               >
-                {saving ? "Creating..." : "Create"}
+                {saving ? "Creating…" : "Create"}
               </button>
             </div>
           </form>
@@ -682,43 +792,22 @@ function AddEntryModal({
   return (
     <Dialog.Root open={open} onOpenChange={(v) => { if (!v) { reset(); onClose(); } }}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50" />
-        <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md bg-zinc-900 border border-vela-border rounded-lg p-6 shadow-xl">
-          <Dialog.Title className="text-base font-semibold text-zinc-100 mb-1">
+        <Dialog.Overlay className={OVERLAY} />
+        <Dialog.Content className={`${DIALOG_BASE} max-h-[90vh] max-w-md overflow-y-auto`}>
+          <Dialog.Title className="font-display text-[18px] font-semibold text-zinc-100">
             Add thought
           </Dialog.Title>
-          <p className="text-xs text-zinc-500 mb-4">
-            Appending to{" "}
-            <span className="font-mono font-bold text-zinc-300">{ticker}</span> — entries are
-            permanent.
+          <p className="mt-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-vela-muted">
+            Appending to <span className="text-zinc-100">{ticker}</span> · entries are permanent
           </p>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="mt-5 space-y-4">
             {/* Entry type selector */}
             <div>
-              <label className="text-xs text-zinc-500 mb-1.5 block">Entry type</label>
-              <div className="grid grid-cols-4 gap-1.5">
-                {(["bull", "bear", "update", "note"] as ThesisEntryType[]).map((t) => {
-                  const style = ENTRY_TYPE_STYLE[t];
-                  const active = entryType === t;
-                  return (
-                    <button
-                      key={t}
-                      type="button"
-                      onClick={() => setEntryType(t)}
-                      className={`text-[10px] font-mono uppercase tracking-wider py-2 rounded border transition-colors ${
-                        active
-                          ? `${style.className} border-current`
-                          : "bg-zinc-800/50 text-zinc-600 border-zinc-700/50 hover:text-zinc-300"
-                      }`}
-                    >
-                      {ENTRY_TYPE_LABELS[t]}
-                    </button>
-                  );
-                })}
-              </div>
+              <label className={FIELD_LABEL}>Entry type</label>
+              <EntryTypeSelector value={entryType} onChange={setEntryType} />
             </div>
             <div>
-              <label className="text-xs text-zinc-500 mb-1 block">Your thought</label>
+              <label className={FIELD_LABEL}>Your thought</label>
               <textarea
                 value={body}
                 onChange={(e) => setBody(e.target.value)}
@@ -729,16 +818,12 @@ function AddEntryModal({
                 autoFocus
               />
             </div>
-            <div className="flex justify-end gap-3 pt-1">
-              <button type="button" onClick={() => { reset(); onClose(); }} className="btn-ghost text-sm">
+            <div className="flex justify-end gap-2 pt-1">
+              <button type="button" onClick={() => { reset(); onClose(); }} className={BTN_QUIET}>
                 Cancel
               </button>
-              <button
-                type="submit"
-                disabled={!body.trim() || saving}
-                className="btn-primary text-sm disabled:opacity-50"
-              >
-                {saving ? "Appending..." : "Append entry"}
+              <button type="submit" disabled={!body.trim() || saving} className={BTN_TEAL}>
+                {saving ? "Appending…" : "Append entry"}
               </button>
             </div>
           </form>
@@ -747,4 +832,3 @@ function AddEntryModal({
     </Dialog.Root>
   );
 }
-
