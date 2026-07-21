@@ -126,7 +126,7 @@ export const LEARNING_CARDS: LearningCard[] = [
   {
     id: "big-winner",
     title: "Riding a Winner",
-    body: "One of your positions is up over 50%. While momentum can continue, consider whether to rebalance or set a trailing stop to lock in some gains.",
+    body: "One of your positions is up over 50%. A position that runs takes up a larger share of your portfolio than you originally chose, which is worth knowing when you review your own allocation.",
     category: "portfolio",
     priority: 6,
     emoji: "🚀",
@@ -144,7 +144,7 @@ export const LEARNING_CARDS: LearningCard[] = [
   {
     id: "position-sizing",
     title: "Position Sizing Matters",
-    body: "Your smallest position is less than 2% of your portfolio. Very small positions barely move the needle on returns. Consider concentrating into your highest-conviction ideas.",
+    body: "Your smallest position is less than 2% of your portfolio. A position that size moves the total very little either way, which is the trade-off of holding a long tail of small names.",
     category: "portfolio",
     priority: 4,
     emoji: "📐",
@@ -176,7 +176,7 @@ export const LEARNING_CARDS: LearningCard[] = [
   {
     id: "tax-loss-harvesting",
     title: "Tax-Loss Harvesting Opportunity",
-    body: "You have positions with unrealized losses. Selling them could offset up to $3,000 of ordinary income per year, plus unlimited capital gains. Just watch the 30-day wash sale rule!",
+    body: "You have positions with unrealized losses. How tax-loss harvesting works: realized losses offset realized capital gains, and up to $3,000 of ordinary income per year in the US. The 30-day wash sale rule disallows the loss if you rebuy the same security inside that window. Whether it applies to you is a question for your tax adviser.",
     category: "tax",
     priority: 8,
     emoji: "🌾",
@@ -186,7 +186,7 @@ export const LEARNING_CARDS: LearningCard[] = [
   {
     id: "short-term-gains-warning",
     title: "Short-Term Gains Tax Impact",
-    body: "You have short-term unrealized gains. If you sell within a year, these get taxed as ordinary income (potentially 22-37%). Holding longer may save you significantly.",
+    body: "You have short-term unrealized gains. How the US holding period works: a gain realized inside a year is taxed as ordinary income (roughly 22-37%), while past a year it is taxed at the long-term rate. The threshold is a fact about the tax code, not a signal about these positions.",
     category: "tax",
     priority: 7,
     emoji: "💸",
@@ -287,7 +287,7 @@ export const LEARNING_CARDS: LearningCard[] = [
   {
     id: "great-savings-rate",
     title: "Excellent Savings Rate!",
-    body: "You're saving over 30% of your income, which puts you in a great position. Consider putting the surplus toward investments, emergency funds, or accelerated debt payoff.",
+    body: "You're saving over 30% of your income. At that rate the common question becomes where surplus savings sit: invested, held as cash reserve, or against debt. Each has a different risk and liquidity profile.",
     category: "planning",
     priority: 3,
     emoji: "🌟",
@@ -300,7 +300,7 @@ export const LEARNING_CARDS: LearningCard[] = [
   {
     id: "goal-behind-schedule",
     title: "Goal Needs Attention",
-    body: "One of your goals is less than 25% funded but the target date is approaching. Consider increasing contributions or adjusting the timeline to stay on track.",
+    body: "One of your goals is less than 25% funded with the target date approaching. The three variables in any funding gap are the contribution, the timeline, and the target itself.",
     category: "planning",
     priority: 6,
     emoji: "🎯",
