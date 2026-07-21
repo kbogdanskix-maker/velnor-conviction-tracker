@@ -16,6 +16,14 @@ import PageTransition from "@/components/celestial/PageTransition";
 import DashboardSkeleton from "@/components/shared/DashboardSkeleton";
 import TierGate from "@/components/shared/TierGate";
 import Disclaimer from "@/components/shared/Disclaimer";
+import { TopBar, PageHero, Eyebrow } from "@/components/instrument";
+
+// ── Shared class tokens ───────────────────────────────────────────────────────
+
+const BTN_TEAL =
+  "inline-flex items-center justify-center gap-1.5 rounded border border-vela-teal/25 bg-vela-teal/10 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-vela-teal transition-colors hover:border-vela-teal/40 hover:bg-vela-teal/15 disabled:cursor-not-allowed disabled:opacity-40";
+const BTN_QUIET =
+  "inline-flex items-center justify-center gap-1.5 rounded border border-vela-border px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-vela-muted transition-colors hover:border-vela-teal/40 hover:text-zinc-100";
 
 // ── Streaming helper ──────────────────────────────────────────────────────────
 
@@ -60,6 +68,16 @@ async function streamReflect(
 
 // ── Context panel ─────────────────────────────────────────────────────────────
 
+/** Small mono figure pair used inside the context rail. */
+function MicroStat({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div className="min-w-0">
+      <p className="font-mono text-[9.5px] uppercase tracking-[0.12em] text-vela-muted">{label}</p>
+      <p className="mt-0.5 font-mono text-[12px] tabular-nums text-vela-body">{value}</p>
+    </div>
+  );
+}
+
 function ContextPanel() {
   const { summary, portfolio, loading } = useDefaultPortfolio();
   const { data: risk } = useRiskMetrics(portfolio?.id);
@@ -84,43 +102,39 @@ function ContextPanel() {
     : 0;
 
   return (
-    <div className="w-60 min-w-60 border-r border-zinc-900 bg-[#080808] flex flex-col overflow-y-auto">
-      <div className="p-3.5 flex flex-col gap-3 flex-1">
-        <p className="text-[9.5px] font-semibold text-zinc-600 uppercase tracking-widest">Your context</p>
+    <aside className="hidden w-60 shrink-0 flex-col overflow-y-auto border-r border-vela-border lg:flex">
+      <div className="flex flex-1 flex-col gap-5 px-4 py-4">
+        <Eyebrow>Your context</Eyebrow>
 
         {/* Portfolio */}
-        <div className="bg-[#0f0f0f] border border-[#161616] rounded-[9px] p-2.5">
-          <p className="text-[9.5px] text-zinc-500 mb-1 font-medium">Portfolio</p>
+        <div>
+          <Eyebrow>Portfolio</Eyebrow>
           {loading ? (
-            <div className="h-8 bg-zinc-800/30 rounded animate-pulse" />
+            <div className="skeleton mt-2 h-6 w-28" />
           ) : (
             <>
-              <p className="text-[15px] font-semibold text-zinc-100 tabular-nums tracking-tight">
+              <p className="mt-1.5 font-mono text-[19px] font-semibold leading-none tabular-nums text-zinc-100">
                 {summary ? formatCurrency(summary.total_value ?? 0) : "—"}
               </p>
               {summary?.unrealized_pnl_pct != null && (
-                <p className={`text-[11px] tabular-nums mt-0.5 ${summary.unrealized_pnl_pct >= 0 ? "text-emerald-400" : "text-rose-500"}`}>
-                  {summary.unrealized_pnl_pct >= 0 ? "+" : ""}{summary.unrealized_pnl_pct.toFixed(2)}% total return
+                <p
+                  className={`mt-1.5 font-mono text-[11px] tabular-nums ${
+                    summary.unrealized_pnl_pct >= 0 ? "text-gain" : "text-loss"
+                  }`}
+                >
+                  {summary.unrealized_pnl_pct >= 0 ? "+" : ""}
+                  {summary.unrealized_pnl_pct.toFixed(2)}% total return
                 </p>
               )}
-              <div className="flex gap-2.5 mt-2 pt-2 border-t border-[#161616]">
+              <div className="mt-3 flex gap-4 border-t border-vela-border pt-2.5">
                 {risk?.sharpe_ratio != null && (
-                  <div>
-                    <p className="text-[9px] text-zinc-600">Sharpe</p>
-                    <p className="text-[11px] text-zinc-400 tabular-nums">{risk.sharpe_ratio.toFixed(2)}</p>
-                  </div>
+                  <MicroStat label="Sharpe" value={risk.sharpe_ratio.toFixed(2)} />
                 )}
                 {risk?.annualized_volatility != null && (
-                  <div>
-                    <p className="text-[9px] text-zinc-600">Volatility</p>
-                    <p className="text-[11px] text-zinc-400 tabular-nums">{risk.annualized_volatility.toFixed(1)}%</p>
-                  </div>
+                  <MicroStat label="Vol" value={`${risk.annualized_volatility.toFixed(1)}%`} />
                 )}
                 {summary?.holdings && (
-                  <div>
-                    <p className="text-[9px] text-zinc-600">Positions</p>
-                    <p className="text-[11px] text-zinc-400 tabular-nums">{summary.holdings.length}</p>
-                  </div>
+                  <MicroStat label="Positions" value={summary.holdings.length} />
                 )}
               </div>
             </>
@@ -129,8 +143,8 @@ function ContextPanel() {
 
         {/* Holdings */}
         {summary?.holdings && summary.holdings.length > 0 && (
-          <div className="bg-[#0f0f0f] border border-[#161616] rounded-[9px] p-2.5">
-            <p className="text-[9.5px] text-zinc-500 mb-1.5 font-medium">Holdings</p>
+          <div className="border-t border-vela-border pt-4">
+            <Eyebrow className="mb-2">Holdings</Eyebrow>
             {(() => {
               const total = summary.holdings.reduce((s, h) => s + (h.market_value ?? 0), 0);
               return summary.holdings
@@ -141,68 +155,86 @@ function ContextPanel() {
                   const wt = total > 0 ? ((h.market_value ?? 0) / total) * 100 : 0;
                   const pnl = h.unrealized_pnl_pct ?? null;
                   return (
-                    <div key={h.ticker} className="flex justify-between items-center py-[3px]">
-                      <span className="text-[11.5px] font-medium text-zinc-300 font-mono">{h.ticker}</span>
-                      <div className="flex flex-col items-end gap-px">
-                        <span className="text-[10px] text-zinc-500 tabular-nums">{wt.toFixed(0)}%</span>
+                    <div key={h.ticker} className="flex items-baseline justify-between gap-2 py-1">
+                      <span className="font-mono text-[12px] tracking-[0.04em] text-zinc-100">
+                        {h.ticker}
+                      </span>
+                      <span className="flex items-baseline gap-2 font-mono text-[11px] tabular-nums">
+                        <span className="text-vela-muted">{wt.toFixed(0)}%</span>
                         {pnl != null && (
-                          <span className={`text-[11px] tabular-nums font-medium ${pnl >= 0 ? "text-emerald-400" : "text-rose-500"}`}>
-                            {pnl >= 0 ? "+" : ""}{pnl.toFixed(1)}%
+                          <span className={pnl >= 0 ? "text-gain" : "text-loss"}>
+                            {pnl >= 0 ? "+" : ""}
+                            {pnl.toFixed(1)}%
                           </span>
                         )}
-                      </div>
+                      </span>
                     </div>
                   );
                 });
             })()}
             {summary.holdings.length > 6 && (
-              <p className="text-[9.5px] text-zinc-600 mt-1">+{summary.holdings.length - 6} more</p>
+              <p className="mt-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-vela-muted">
+                +{summary.holdings.length - 6} more
+              </p>
             )}
           </div>
         )}
 
         {/* Thesis */}
-        <div className="bg-[#0f0f0f] border border-[#161616] rounded-[9px] p-2.5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5">
-              <div className="w-[5px] h-[5px] rounded-full bg-teal-500" />
-              <span className="text-[12px] text-zinc-300">Thesis notes</span>
+        <div className="border-t border-vela-border pt-4">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <span aria-hidden="true" className="h-[6px] w-[6px] rotate-45 bg-vela-teal" />
+              <Eyebrow>Thesis notes</Eyebrow>
             </div>
-            <Link href="/thesis" className="text-[10px] text-teal-500 hover:text-teal-400 transition-colors">
-              View →
+            <Link
+              href="/thesis"
+              className="font-mono text-[10px] uppercase tracking-wider text-vela-teal transition-colors hover:text-zinc-100"
+            >
+              View
             </Link>
           </div>
-          <p className="text-[9.5px] text-zinc-600 mt-1.5 leading-relaxed border-t border-[#161616] pt-1.5">
+          <p className="mt-2 text-[12px] leading-[1.5] text-vela-body">
             More thesis notes = more accurate reflection of your actual reasoning
           </p>
         </div>
 
         {/* Goals */}
         {primaryGoal && (
-          <div className="bg-[#0f0f0f] border border-[#161616] rounded-[9px] p-2.5">
-            <p className="text-[9.5px] text-zinc-500 mb-1 font-medium">Primary goal</p>
-            <p className="text-[12px] text-zinc-300 mb-1.5">{primaryGoal.name}</p>
-            <div className="h-[3px] bg-[#161616] rounded-full overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-teal-600 to-teal-500 rounded-full" style={{ width: `${fundedPct}%` }} />
+          <div className="border-t border-vela-border pt-4">
+            <Eyebrow>Primary goal</Eyebrow>
+            <p className="mt-1.5 text-[12.5px] leading-snug text-vela-body">{primaryGoal.name}</p>
+            <div className="mt-2 h-[3px] w-full overflow-hidden bg-vela-border">
+              <div className="h-full bg-vela-teal" style={{ width: `${fundedPct}%` }} />
             </div>
-            <p className="text-[9.5px] text-zinc-500 mt-1">{fundedPct.toFixed(0)}% funded</p>
+            <p className="mt-1.5 font-mono text-[10px] uppercase tracking-[0.12em] tabular-nums text-vela-muted">
+              {fundedPct.toFixed(0)}% funded
+            </p>
           </div>
         )}
 
         {/* Profile pills */}
-        <div className="bg-[#0f0f0f] border border-[#161616] rounded-[9px] p-2.5">
-          <p className="text-[9.5px] text-zinc-500 mb-1.5 font-medium">Profile</p>
-          <div className="flex flex-wrap gap-1">
-            <span className="text-[10px] px-1.5 py-0.5 rounded border border-teal-500/30 text-teal-500 bg-teal-500/5 font-medium capitalize">{profile.riskTolerance}</span>
-            <span className="text-[10px] px-1.5 py-0.5 rounded border border-teal-500/30 text-teal-500 bg-teal-500/5 font-medium capitalize">{profile.sophistication}</span>
-            <span className="text-[10px] px-1.5 py-0.5 rounded border border-zinc-700 text-zinc-400">Age {profile.age}</span>
-            <span className="text-[10px] px-1.5 py-0.5 rounded border border-zinc-700 text-zinc-400">{profile.marginalTaxRate}% tax</span>
+        <div className="border-t border-vela-border pt-4">
+          <Eyebrow className="mb-2">Profile</Eyebrow>
+          <div className="flex flex-wrap gap-1.5">
+            <span className="rounded border border-vela-teal/30 bg-vela-teal/10 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-vela-teal">
+              {profile.riskTolerance}
+            </span>
+            <span className="rounded border border-vela-teal/30 bg-vela-teal/10 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-vela-teal">
+              {profile.sophistication}
+            </span>
+            <span className="rounded border border-vela-border px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider tabular-nums text-vela-body">
+              Age {profile.age}
+            </span>
+            <span className="rounded border border-vela-border px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider tabular-nums text-vela-body">
+              {profile.marginalTaxRate}% tax
+            </span>
           </div>
         </div>
 
         {/* Quick notes capture */}
-        <div>
-          <p className="text-[9.5px] font-semibold text-zinc-600 uppercase tracking-widest mb-1.5">Quick notes</p>
+        <div className="border-t border-vela-border pt-4">
+          <Eyebrow className="mb-2">Quick notes</Eyebrow>
           <div className="relative">
             <textarea
               value={quickInput}
@@ -210,47 +242,55 @@ function ContextPanel() {
               onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); handleAddNote(); } }}
               placeholder="Jot a market observation or conviction…"
               rows={3}
-              className="w-full bg-[#0c0c0c] border border-[#161616] focus:border-teal-500/40 rounded-[8px] px-2.5 py-2 text-[11.5px] text-zinc-300 placeholder-zinc-700 resize-none outline-none transition-colors leading-relaxed"
+              className="w-full resize-none rounded border border-vela-border bg-vela-card px-2.5 py-2 text-[12px] leading-relaxed text-vela-body outline-none transition-colors placeholder:text-vela-muted focus:border-vela-teal/50"
             />
             <button
               onClick={handleAddNote}
               disabled={!quickInput.trim()}
-              className="absolute bottom-2 right-2 text-[10px] text-teal-500 disabled:text-zinc-700 hover:text-teal-400 transition-colors"
+              className="absolute bottom-2 right-2 font-mono text-[10px] uppercase tracking-wider text-vela-teal transition-colors hover:text-zinc-100 disabled:text-vela-muted"
             >
-              {saved ? <><Check className="w-3 h-3 inline -mt-0.5" /> Saved</> : "Save"}
+              {saved ? <><Check className="-mt-0.5 inline h-3 w-3" /> Saved</> : "Save"}
             </button>
           </div>
           {(notes.flagged.length > 0 || recentEphemeral.length > 0) && (
-            <p className="text-[9.5px] text-zinc-600 mt-1">
+            <p className="mt-1.5 font-mono text-[10px] uppercase tracking-[0.12em] tabular-nums text-vela-muted">
               {notes.flagged.length} pinned · {notes.ephemeral.length} working
             </p>
           )}
         </div>
       </div>
-    </div>
+    </aside>
   );
 }
 
 // ── Chat message bubble ───────────────────────────────────────────────────────
 
+function AssistantMark({ size = "h-[22px] w-[22px]" }: { size?: string }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={`${size} mt-0.5 flex shrink-0 items-center justify-center rounded border border-vela-teal/30 bg-vela-teal/10 font-mono text-[10px] font-medium text-vela-teal`}
+    >
+      V
+    </span>
+  );
+}
+
 function MessageBubble({ msg }: { msg: ChatMessage }) {
   // Don't render empty assistant placeholder — TypingIndicator handles that state
   if (msg.role === "assistant" && msg.content === "") return null;
+  const isAssistant = msg.role === "assistant";
   return (
-    <div className={`flex gap-2.5 max-w-[88%] ${msg.role === "user" ? "ml-auto flex-row-reverse" : ""}`}>
-      <div className={`w-[25px] h-[25px] min-w-[25px] rounded-full flex items-center justify-center text-[10px] font-semibold mt-0.5 shrink-0 ${
-        msg.role === "assistant"
-          ? "bg-teal-700 text-white"
-          : "bg-zinc-900 text-zinc-500 border border-zinc-800"
-      }`}>
-        {msg.role === "assistant" ? "V" : ""}
-      </div>
-      <div className={`px-3.5 py-2.5 rounded-[13px] text-[12.5px] leading-[1.65] whitespace-pre-line ${
-        msg.role === "assistant"
-          ? "bg-[#0f0f0f] border border-[#181818] rounded-tl-[4px] text-zinc-300 shadow-[0_2px_10px_#00000035]"
-          : "bg-[#0c1a1a] border border-teal-500/[0.15] rounded-tr-[4px] text-zinc-300"
-      }`}>
-        {msg.role === "assistant" ? stripAiMarkdown(msg.content) : msg.content}
+    <div className={`flex max-w-[88%] gap-2.5 ${isAssistant ? "" : "ml-auto flex-row-reverse"}`}>
+      {isAssistant && <AssistantMark />}
+      <div
+        className={`whitespace-pre-line rounded border px-3.5 py-2.5 text-[13px] leading-[1.6] text-vela-body ${
+          isAssistant
+            ? "border-vela-border bg-vela-card"
+            : "border-vela-teal/20 bg-vela-teal/[0.06]"
+        }`}
+      >
+        {isAssistant ? stripAiMarkdown(msg.content) : msg.content}
       </div>
     </div>
   );
@@ -260,14 +300,14 @@ function MessageBubble({ msg }: { msg: ChatMessage }) {
 
 function TypingIndicator() {
   return (
-    <div className="flex gap-2.5 max-w-[88%]">
-      <div className="w-[25px] h-[25px] min-w-[25px] rounded-full flex items-center justify-center bg-teal-700 text-white text-[10px] font-semibold shrink-0">V</div>
-      <div className="px-3.5 py-3 rounded-[13px] rounded-tl-[4px] bg-[#0f0f0f] border border-[#181818]">
-        <div className="flex gap-1 items-center h-[14px]">
+    <div className="flex max-w-[88%] gap-2.5">
+      <AssistantMark />
+      <div className="rounded border border-vela-border bg-vela-card px-3.5 py-3">
+        <div className="flex h-[14px] items-center gap-1">
           {[0, 1, 2].map((i) => (
             <div
               key={i}
-              className="w-[5px] h-[5px] rounded-full bg-teal-500"
+              className="h-[5px] w-[5px] rotate-45 bg-vela-teal"
               style={{ animation: `blink 1.2s ${i * 0.2}s infinite` }}
             />
           ))}
@@ -396,73 +436,88 @@ export default function ReflectPage() {
 
   return (
     <TierGate requiredTier="navigator">
-    <PageTransition className="h-[calc(100vh-4rem)] flex flex-col">
+    <PageTransition className="flex h-[calc(100vh-4rem)] flex-col">
       <style>{`
         @keyframes blink {
-          0%, 100% { opacity: 0.2; transform: translateY(0); }
-          50% { opacity: 1; transform: translateY(-2px); }
+          0%, 100% { opacity: 0.2; transform: rotate(45deg) translateY(0); }
+          50% { opacity: 1; transform: rotate(45deg) translateY(-2px); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          @keyframes blink {
+            0%, 100% { opacity: 0.5; transform: rotate(45deg); }
+          }
         }
       `}</style>
 
-      {/* Shell */}
-      <div className="flex-1 flex flex-col border border-zinc-900 rounded-xl overflow-hidden shadow-[0_0_0_1px_#ffffff06,0_32px_64px_-16px_#000000cc] min-h-0">
+      <div className="shrink-0">
+        <TopBar
+          trail={[{ label: "Journal" }, { label: "Reflect" }]}
+          note="retrospective only · decisions you already made"
+        />
+        <PageHero
+          title="Reflect"
+          meta="Looking backwards at your own record, not forwards at the market"
+        />
+      </div>
 
-        {/* Top bar */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-900 bg-gradient-to-b from-zinc-950 to-transparent shrink-0">
+      {/* Shell */}
+      <div className="mt-6 flex min-h-0 flex-1 flex-col overflow-hidden border border-vela-border">
+
+        {/* Top rail */}
+        <div className="flex shrink-0 flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-vela-border px-4 py-2.5">
           <div className="flex items-center gap-2">
-            <div className="w-[7px] h-[7px] rounded-full bg-teal-500" />
-            <span className="text-[14px] font-semibold text-zinc-100 tracking-tight">Reflect</span>
+            <span aria-hidden="true" className="h-[7px] w-[7px] rotate-45 bg-vela-teal" />
+            <Eyebrow>Conversation</Eyebrow>
           </div>
-          <div className="flex items-center gap-3">
-            <span className="text-[10px] text-zinc-700 font-mono">claude-sonnet</span>
+          <div className="flex items-center gap-2.5">
+            <span className="hidden font-mono text-[10px] uppercase tracking-wider text-vela-muted sm:inline">
+              claude-sonnet
+            </span>
             {messages.length > 0 && (
               <button
                 onClick={() => handleSend("Wrap up this thread. Give me your takeaway and one concrete next step. No more questions.")}
                 disabled={streaming}
                 title="Get a conclusion and next step"
-                className="text-[11px] text-teal-500 hover:text-teal-400 border border-teal-500/30 hover:border-teal-500/50 px-2 py-0.5 rounded transition-all disabled:opacity-40"
+                className={BTN_TEAL}
               >
                 Land it
               </button>
             )}
-            <button
-              onClick={handleClear}
-              className="text-[11px] text-zinc-700 hover:text-zinc-400 border border-zinc-800 hover:border-zinc-700 px-2 py-0.5 rounded transition-all"
-            >
+            <button onClick={handleClear} className={BTN_QUIET}>
               Clear chat
             </button>
           </div>
         </div>
 
         {/* Body */}
-        <div className="flex flex-1 min-h-0">
+        <div className="flex min-h-0 flex-1">
           <ContextPanel />
 
           {/* Chat area */}
-          <div className="flex-1 flex flex-col min-w-0 relative">
-            {/* Ambient glow */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-[radial-gradient(ellipse_at_top_right,#1AA8BB09_0%,transparent_70%)] pointer-events-none" />
-
+          <div className="relative flex min-w-0 flex-1 flex-col">
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto px-4 pt-5 pb-2 flex flex-col gap-4 relative z-10">
+            <div className="relative z-10 flex flex-1 flex-col gap-4 overflow-y-auto px-4 pb-2 pt-5">
               {messages.length === 0 && !streaming && (
-                <div className="flex-1 flex flex-col items-center justify-center text-center px-6 py-10 gap-5">
-                  <div className="w-11 h-11 rounded-full bg-teal-700 flex items-center justify-center text-white text-[15px] font-semibold">
+                <div className="flex flex-1 flex-col items-center justify-center gap-5 px-4 py-10 text-center">
+                  <span
+                    aria-hidden="true"
+                    className="flex h-10 w-10 items-center justify-center rounded border border-vela-teal/30 bg-vela-teal/10 font-mono text-[14px] font-medium text-vela-teal"
+                  >
                     V
-                  </div>
-                  <div className="max-w-md space-y-1.5">
-                    <p className="text-[15px] font-semibold text-zinc-100">Let&apos;s think through your portfolio</p>
-                    <p className="text-[12.5px] text-zinc-500 leading-relaxed">
+                  </span>
+                  <div className="max-w-md space-y-2">
+                    <p className="font-display text-[19px] font-semibold text-zinc-100">Let&apos;s think through your portfolio</p>
+                    <p className="text-[13.5px] leading-[1.55] text-vela-body">
                       Not to grade it. Just to ask good questions and notice what you might have missed.
                       Pick a thread to start, or tell me what&apos;s on your mind.
                     </p>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-md">
+                  <div className="grid w-full max-w-md grid-cols-1 gap-2 sm:grid-cols-2">
                     {starters.map((s) => (
                       <button
                         key={s}
                         onClick={() => handleSend(s)}
-                        className="text-left text-[12px] text-zinc-300 bg-[#0f0f0f] border border-[#181818] hover:border-teal-500/30 hover:bg-[#0c1414] rounded-[10px] px-3 py-2.5 transition-colors leading-snug"
+                        className="rounded border border-vela-border px-3 py-2.5 text-left text-[12.5px] leading-snug text-vela-body transition-colors hover:border-vela-teal/40 hover:text-zinc-100"
                       >
                         {s}
                       </button>
@@ -470,7 +525,7 @@ export default function ReflectPage() {
                   </div>
                   <Link
                     href="/calibration"
-                    className="text-[12px] text-vela-teal hover:underline underline-offset-2"
+                    className="font-mono text-[10px] uppercase tracking-wider text-vela-teal transition-colors hover:text-zinc-100"
                   >
                     Or see how your conviction has actually scored
                   </Link>
@@ -494,15 +549,21 @@ export default function ReflectPage() {
 
             {/* Error banner */}
             {error && (
-              <div className="mx-3.5 mb-1 flex items-start gap-2 rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-[12px] text-rose-300">
-                <AlertTriangle className="w-4 h-4 shrink-0 mt-px" />
+              <div className="mx-4 mb-1 flex items-start gap-2 rounded border border-loss/30 bg-loss/10 px-3 py-2 text-[12.5px] text-loss">
+                <AlertTriangle className="mt-px h-4 w-4 shrink-0" />
                 <span className="flex-1">{error}</span>
-                <button onClick={() => setError(null)} className="text-rose-400/70 hover:text-rose-300 shrink-0"><X className="w-3.5 h-3.5" /></button>
+                <button
+                  onClick={() => setError(null)}
+                  aria-label="Dismiss error"
+                  className="shrink-0 text-loss transition-colors hover:text-zinc-100"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
               </div>
             )}
 
             {/* Input */}
-            <div className="px-3.5 pb-3.5 pt-2 border-t border-zinc-900 flex gap-2 items-end relative z-10 shrink-0">
+            <div className="relative z-10 flex shrink-0 items-end gap-2 border-t border-vela-border px-4 pb-4 pt-2.5">
               <textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
@@ -516,14 +577,15 @@ export default function ReflectPage() {
                 placeholder="Your thoughts… (⌘↵ to send)"
                 rows={1}
                 style={{ maxHeight: "96px" }}
-                className="flex-1 bg-[#0f0f0f] border border-[#181818] focus:border-teal-500/30 rounded-[9px] px-3 py-2.5 text-[12.5px] text-zinc-300 placeholder-zinc-700 resize-none outline-none transition-colors leading-relaxed disabled:opacity-40"
+                className="flex-1 resize-none rounded border border-vela-border bg-vela-card px-3 py-2.5 text-[13px] leading-relaxed text-vela-body outline-none transition-colors placeholder:text-vela-muted focus:border-vela-teal/50 disabled:opacity-40"
               />
               <button
                 onClick={() => handleSend()}
                 disabled={!input.trim() || streaming}
-                className="w-[34px] h-[34px] bg-teal-500 hover:bg-vela-teal-dim disabled:bg-zinc-800 disabled:text-zinc-600 rounded-[8px] flex items-center justify-center transition-colors shrink-0"
+                aria-label="Send message"
+                className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded border border-vela-teal/25 bg-vela-teal/10 text-vela-teal transition-colors hover:border-vela-teal/40 hover:bg-vela-teal/15 disabled:cursor-not-allowed disabled:border-vela-border disabled:bg-transparent disabled:text-vela-muted"
               >
-                <Send className="w-[14px] h-[14px] text-white" />
+                <Send className="h-[15px] w-[15px]" />
               </button>
             </div>
           </div>
