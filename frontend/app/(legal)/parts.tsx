@@ -12,7 +12,7 @@ export function LegalTitle({ eyebrow, title, updated, children }: {
     <header className="mb-12">
       <p className="font-mono text-xs uppercase tracking-widest text-vela-teal mb-3">{eyebrow}</p>
       <h1 className="font-display text-3xl md:text-4xl font-bold tracking-tight text-zinc-100">{title}</h1>
-      <p className="mt-3 font-mono text-xs text-vela-subtle">Last updated: {updated}</p>
+      <p className="mt-3 font-mono text-xs text-vela-muted">Last updated: {updated}</p>
       {children && <div className="mt-6 text-[15px] leading-relaxed text-vela-muted">{children}</div>}
     </header>
   );

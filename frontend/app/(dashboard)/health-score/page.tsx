@@ -62,6 +62,17 @@ const GRADE_BG: Record<string, string> = {
   F: "bg-rose-500/10",
 };
 
+/** Solid dot fills matching GRADE_COLORS. These must be literal strings:
+ *  Tailwind cannot see class names built at runtime, so deriving them from
+ *  GRADE_COLORS produced no CSS and the dot rendered invisible. */
+const GRADE_DOT: Record<string, string> = {
+  A: "bg-emerald-400",
+  B: "bg-teal-400",
+  C: "bg-amber-400",
+  D: "bg-orange-400",
+  F: "bg-rose-400",
+};
+
 const GRADE_RING: Record<string, string> = {
   A: "stroke-emerald-400",
   B: "stroke-teal-400",
@@ -515,7 +526,7 @@ export default function HealthScorePage() {
             <div className="flex gap-4 text-xs text-zinc-500 justify-center sm:justify-start pt-1">
               {dimensions.map((d) => (
                 <span key={d.key} className="flex items-center gap-1">
-                  <span className={`w-2 h-2 rounded-full ${GRADE_COLORS[d.grade].replace("text-", "bg-")}`} />
+                  <span className={`w-2 h-2 rounded-full ${GRADE_DOT[d.grade]}`} />
                   {d.label}
                 </span>
               ))}

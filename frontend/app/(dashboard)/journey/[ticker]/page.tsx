@@ -343,11 +343,11 @@ function ReflectPanel({
           <Sparkles className="w-4 h-4 shrink-0" />
           {state.loading ? "Reflecting…" : hasCached ? "Ask again" : "Reflect with Velnor"}
           {!hasCached && !state.loading && (
-            <span className="font-mono text-[10px] text-vela-subtle">uses 1 insight</span>
+            <span className="font-mono text-[10px] text-vela-muted">uses 1 insight</span>
           )}
         </button>
       ) : (
-        <p className="text-[13px] text-vela-subtle">
+        <p className="text-[13px] text-vela-body">
           Write a thesis to reflect on your reasoning with Velnor.
         </p>
       )}
@@ -664,7 +664,7 @@ export default function JourneyTickerPage() {
           </div>
         </>
       ) : (
-        <p className="text-xs text-vela-subtle italic mb-10">Price history unavailable right now.</p>
+        <p className="text-xs text-vela-muted italic mb-10">Price history unavailable right now.</p>
       )}
 
       {/* ── Lower: thesis log + reflect ──────────────────────────────────── */}
@@ -700,7 +700,7 @@ const OUTCOME_STYLE: Record<string, { label: string; cls: string }> = {
   win:       { label: "won",       cls: "text-gain" },
   loss:      { label: "lost",      cls: "text-loss" },
   breakeven: { label: "flat",      cls: "text-vela-muted" },
-  pending:   { label: "open",      cls: "text-vela-subtle" },
+  pending:   { label: "open",      cls: "text-vela-muted" },
 };
 
 function LogRow({
