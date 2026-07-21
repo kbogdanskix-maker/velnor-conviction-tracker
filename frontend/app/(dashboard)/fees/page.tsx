@@ -1,10 +1,8 @@
 "use client";
 
 import { useState, useMemo, useEffect, useRef } from "react";
-import {
-  Receipt, TrendingDown, DollarSign, Info, AlertTriangle,
-  CheckCircle, Minus, ArrowRight, RotateCcw,
-} from "lucide-react";
+import Link from "next/link";
+import { RotateCcw } from "lucide-react";
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer,
   CartesianGrid,
@@ -18,8 +16,17 @@ import {
 import type { FeeHolding, HoldingFeeDetail } from "@/lib/fee-analyzer";
 import PageTransition from "@/components/celestial/PageTransition";
 import TierGate from "@/components/shared/TierGate";
-import DashboardSkeleton from "@/components/shared/DashboardSkeleton";
-import ErrorState from "@/components/shared/ErrorState";
+import {
+  TopBar,
+  PageHero,
+  StatStrip,
+  StatCell,
+  Section,
+  Panel,
+  Legend,
+  Eyebrow,
+  Prose,
+} from "@/components/instrument";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -36,19 +43,15 @@ function fmtER(v: number): string {
   return `${(v * 100).toFixed(2)}%`;
 }
 
-const TIER_COLORS: Record<string, string> = {
-  low: "text-emerald-400 bg-emerald-500/10",
-  moderate: "text-teal-400 bg-teal-500/10",
-  high: "text-amber-400 bg-amber-500/10",
-  "very-high": "text-rose-400 bg-rose-500/10",
-};
-
-const GRADE_COLORS: Record<string, string> = {
-  A: "text-emerald-400",
-  B: "text-teal-400",
-  C: "text-amber-400",
-  D: "text-orange-400",
-  F: "text-rose-400",
+/**
+ * Emphasis for a cost tier. Literal class strings only — never build a Tailwind
+ * class name at runtime, the compiler cannot see it.
+ */
+const TIER_CLASS: Record<string, string> = {
+  low: "text-vela-body",
+  moderate: "text-vela-body",
+  high: "text-zinc-100",
+  "very-high": "text-amber-400",
 };
 
 // ── Page ─────────────────────────────────────────────────────────────────────
@@ -58,7 +61,7 @@ export default function FeesPage() {
   const holdings = summary?.holdings ?? [];
 
   // Persisted user overrides — survive page refresh
-  const { data: savedOverrides, save: saveOverrides, isLoading: kvLoading } =
+  const { data: savedOverrides, save: saveOverrides } =
     useCloudStore<Record<string, number>>("fee_overrides");
   const [overrides, setOverrides] = useState<Record<string, number>>({});
   const kvSynced = useRef(false);
@@ -127,12 +130,25 @@ export default function FeesPage() {
 
   if (holdings.length === 0) {
     return (
-      <PageTransition className="space-y-6">
-        <Header />
-        <div className="vela-card text-center py-16 space-y-3">
-          <Receipt className="w-10 h-10 text-zinc-600 mx-auto" />
-          <p className="text-zinc-300 font-medium">No holdings to analyze</p>
-          <p className="text-zinc-500 text-sm">Add positions to your portfolio first.</p>
+      <PageTransition>
+        <TopBar trail={[{ label: "Lab" }, { label: "Fees" }]} note="no positions yet" />
+        <PageHero title="Fees" meta="What the funds on the book charge each year" />
+        <div className="mt-8">
+          <Panel className="px-6 py-14 text-center">
+            <Eyebrow>Nothing to price</Eyebrow>
+            <Prose className="mx-auto mt-3 max-w-[380px]">
+              There are no holdings on the book yet. Once positions are recorded, their expense
+              ratios and the annual cost those ratios carry land here.
+            </Prose>
+            <Link
+              href="/portfolio"
+              className="mt-5 inline-flex items-center rounded border border-vela-teal/25 bg-vela-teal/10 px-3 py-1.5
+                font-mono text-[10px] uppercase tracking-wider text-vela-teal
+                hover:bg-vela-teal/15 hover:border-vela-teal/40 transition-colors"
+            >
+              Go to positions
+            </Link>
+          </Panel>
         </div>
       </PageTransition>
     );
@@ -140,236 +156,225 @@ export default function FeesPage() {
 
   return (
     <TierGate requiredTier="voyager">
-    <PageTransition className="space-y-6">
-      <Header />
+      <PageTransition>
+        <TopBar
+          trail={[{ label: "Lab" }, { label: "Fees" }]}
+          note={`${result.holdings.length} ${result.holdings.length === 1 ? "holding" : "holdings"} · blended ${fmtER(result.weightedExpenseRatio)}`}
+        />
 
-      {/* Unknown tickers notice */}
-      {unknownCount > 0 && (
-        <div className="vela-card border-amber-500/20 bg-amber-500/5 px-4 py-3">
-          <div className="flex items-start gap-3">
-            <AlertTriangle className="w-4 h-4 text-amber-400 mt-0.5 shrink-0" />
-            <p className="text-xs text-amber-400">
+        <PageHero
+          title="Fees"
+          meta="What the funds on the book charge each year"
+          figure={fmtER(result.weightedExpenseRatio)}
+          figureSub={`${fmtCurrency(result.totalAnnualFees)} a year at current values`}
+        />
+
+        <StatStrip className="mt-6">
+          <StatCell
+            label="Fee grade"
+            value={result.feeGrade}
+            sub={result.feeGradeLabel}
+            subClass="text-vela-muted"
+          />
+          <StatCell
+            label="Blended expense ratio"
+            value={fmtER(result.weightedExpenseRatio)}
+            sub="weighted by market value"
+          />
+          <StatCell
+            label="Annual fees"
+            value={fmtCurrency(result.totalAnnualFees)}
+            sub="at today's balances"
+          />
+          <StatCell
+            label="30-year drag"
+            value={fmtCurrency(result.thirtyYearFeeDrag)}
+            sub="vs a 0.03% blended rate"
+          />
+        </StatStrip>
+
+        {unknownCount > 0 && (
+          <div className="mt-6 border-l-2 border-amber-400/50 pl-4 py-1">
+            <p className="font-mono text-[11px] leading-relaxed text-amber-400">
               {unknownCount} holding{unknownCount > 1 ? "s" : ""} ha{unknownCount > 1 ? "ve" : "s"} no
-              known expense ratio. Individual stocks typically have no expense ratio (0%).
-              ETFs and mutual funds do  - edit below to add them.
+              expense ratio on record.
             </p>
-          </div>
-        </div>
-      )}
-
-      {/* Summary Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="vela-card text-center py-4">
-          <p className={`text-3xl font-bold ${GRADE_COLORS[result.feeGrade]}`}>
-            {result.feeGrade}
-          </p>
-          <p className={`text-xs font-medium mt-0.5 ${GRADE_COLORS[result.feeGrade]}`}>
-            {result.feeGradeLabel}
-          </p>
-          <p className="text-[10px] text-zinc-500 mt-0.5">Fee Grade</p>
-        </div>
-        <div className="vela-card text-center py-4">
-          <p className="text-2xl font-bold tabular text-zinc-100">
-            {fmtER(result.weightedExpenseRatio)}
-          </p>
-          <p className="text-xs text-zinc-500 mt-1">Blended Expense Ratio</p>
-        </div>
-        <div className="vela-card text-center py-4">
-          <p className="text-2xl font-bold tabular text-rose-400">
-            {fmtCurrency(result.totalAnnualFees)}
-          </p>
-          <p className="text-xs text-zinc-500 mt-1">Annual Fees</p>
-        </div>
-        <div className="vela-card text-center py-4">
-          <p className="text-2xl font-bold tabular text-rose-400">
-            {fmtCurrency(result.thirtyYearFeeDrag)}
-          </p>
-          <p className="text-xs text-zinc-500 mt-1">30-Year Fee Drag</p>
-        </div>
-      </div>
-
-      {/* Fee Drag Projection Chart */}
-      <div className="vela-card">
-        <h2 className="text-sm font-medium text-zinc-300 mb-1">
-          Fee Impact Over Time
-        </h2>
-        <p className="text-[10px] text-zinc-500 mb-4">
-          Assuming 8% annual returns  - your fees ({fmtER(result.weightedExpenseRatio)})
-          vs low-cost index ({fmtER(result.lowCostER)})
-        </p>
-        <div className="h-64">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart
-              data={result.projection.filter((_, i) => i % 2 === 0 || i === 30)}
-              margin={{ top: 5, right: 10, left: 0, bottom: 0 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
-              <XAxis
-                dataKey="year"
-                tick={{ fill: "#a1a1aa", fontSize: 11 }}
-                axisLine={false}
-                tickLine={false}
-                tickFormatter={(v) => `${v}yr`}
-              />
-              <YAxis
-                tick={{ fill: "#71717a", fontSize: 11 }}
-                axisLine={false}
-                tickLine={false}
-                tickFormatter={(v) => {
-                  if (v >= 1e6) return `$${(v / 1e6).toFixed(1)}M`;
-                  if (v >= 1e3) return `$${(v / 1e3).toFixed(0)}K`;
-                  return `$${v}`;
-                }}
-                width={60}
-              />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "#18181b",
-                  border: "1px solid #27272a",
-                  borderRadius: 8,
-                  fontSize: 12,
-                }}
-                formatter={(val: number, name: string) => [
-                  `$${val.toLocaleString()}`,
-                  name === "withLowFees" ? "Low-Cost Index" : "Your Fees",
-                ]}
-                labelFormatter={(v) => `Year ${v}`}
-              />
-              <Area
-                type="monotone"
-                dataKey="withLowFees"
-                stroke="rgb(52, 211, 153)"
-                fill="rgba(52, 211, 153, 0.08)"
-                strokeWidth={2}
-                name="withLowFees"
-              />
-              <Area
-                type="monotone"
-                dataKey="withCurrentFees"
-                stroke="rgb(251, 113, 133)"
-                fill="rgba(251, 113, 133, 0.08)"
-                strokeWidth={2}
-                name="withCurrentFees"
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
-        <div className="flex gap-6 mt-2 justify-center">
-          <div className="flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-sm bg-emerald-400" />
-            <span className="text-[10px] text-zinc-400">Low-Cost Index (0.03%)</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-sm bg-rose-400" />
-            <span className="text-[10px] text-zinc-400">Your Fees ({fmtER(result.weightedExpenseRatio)})</span>
-          </div>
-        </div>
-
-        {/* Savings callout */}
-        {result.potentialSavings30yr > 100 && (
-          <div className="mt-4 px-3 py-2.5 bg-emerald-500/5 border border-emerald-500/20 rounded-lg">
-            <p className="text-xs text-emerald-400 font-medium">
-              Switching to low-cost index funds could save you{" "}
-              <span className="tabular">{fmtCurrency(result.potentialSavings10yr)}</span> over 10 years
-              and <span className="tabular">{fmtCurrency(result.potentialSavings30yr)}</span> over 30 years.
-            </p>
+            <Prose className="mt-1 max-w-[560px]">
+              Individual stocks carry no expense ratio, so 0% is correct for them. Funds do carry one,
+              and any figure below can be edited by hand.
+            </Prose>
           </div>
         )}
-      </div>
 
-      {/* Holdings Fee Table */}
-      <div className="vela-card">
-        <h2 className="text-sm font-medium text-zinc-300 mb-3">
-          Holdings Breakdown
-        </h2>
-        <div className="space-y-2">
-          {result.holdings.map((h) => (
-            <HoldingRow
-              key={h.ticker}
-              holding={h}
-              onChangeER={(er) => handleOverride(h.ticker, er)}
-              onReset={() => handleResetOverride(h.ticker)}
-              hasOverride={h.ticker in overrides}
-              knownER={lookupExpenseRatio(h.ticker)}
-              liveER={liveERs[h.ticker] ?? null}
-              fetchingLive={fetchingLive}
-            />
-          ))}
-        </div>
-      </div>
+        {/* ── Fee impact over time ────────────────────────────────────────── */}
 
-      {/* Benchmark Reference */}
-      <div className="vela-card">
-        <h2 className="text-sm font-medium text-zinc-300 mb-3">Popular Fund Expense Ratios</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-          {[
-            { ticker: "VOO", name: "S&P 500" },
-            { ticker: "VTI", name: "Total Market" },
-            { ticker: "QQQ", name: "Nasdaq 100" },
-            { ticker: "ARKK", name: "ARK Innovation" },
-            { ticker: "SPY", name: "SPDR S&P 500" },
-            { ticker: "SCHD", name: "Schwab Dividend" },
-            { ticker: "IWM", name: "Russell 2000" },
-            { ticker: "GLD", name: "Gold" },
-          ].map((fund) => {
-            const er = KNOWN_EXPENSE_RATIOS[fund.ticker] ?? 0;
-            const tier = er <= 0.002 ? "low" : er <= 0.005 ? "moderate" : er <= 0.01 ? "high" : "very-high";
-            return (
-              <div key={fund.ticker} className="bg-zinc-800/50 rounded-lg px-3 py-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-zinc-200">{fund.ticker}</span>
-                  <span className={`text-[10px] font-medium tabular px-1.5 py-0.5 rounded ${TIER_COLORS[tier]}`}>
-                    {fmtER(er)}
-                  </span>
-                </div>
-                <p className="text-[10px] text-zinc-500 mt-0.5">{fund.name}</p>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Info */}
-      <div className="vela-card border-zinc-700">
-        <div className="flex items-start gap-3">
-          <Info className="w-5 h-5 text-zinc-500 mt-0.5 shrink-0" />
-          <div className="space-y-2">
-            <h3 className="text-sm font-medium text-zinc-300">About Fee Analysis</h3>
-            <p className="text-xs text-zinc-500 leading-relaxed">
-              Expense ratios are annual fees charged by ETFs and mutual funds, deducted from
-              your returns. Even small differences compound dramatically over decades.
-              Individual stocks have no expense ratio. The projection assumes 8% annual
-              gross returns and compares your blended fee against a 0.03% benchmark.
-            </p>
+        <Section
+          label="Impact over time"
+          prose={`Two balances compounding at 8% a year: one carrying the blended ${fmtER(result.weightedExpenseRatio)} charged on the book, one carrying the ${fmtER(result.lowCostER)} of a low-cost index benchmark. The gap between the lines is the fee drag.`}
+        >
+          <div className="overflow-x-auto">
+            <div className="min-w-[420px] h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart
+                  data={result.projection.filter((_, i) => i % 2 === 0 || i === 30)}
+                  margin={{ top: 5, right: 10, left: 0, bottom: 0 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1B2638" vertical={false} />
+                  <XAxis
+                    dataKey="year"
+                    tick={{ fill: "#8A97AC", fontSize: 11 }}
+                    axisLine={false}
+                    tickLine={false}
+                    tickFormatter={(v) => `${v}yr`}
+                  />
+                  <YAxis
+                    tick={{ fill: "#8A97AC", fontSize: 11 }}
+                    axisLine={false}
+                    tickLine={false}
+                    tickFormatter={(v) => {
+                      if (v >= 1e6) return `$${(v / 1e6).toFixed(1)}M`;
+                      if (v >= 1e3) return `$${(v / 1e3).toFixed(0)}K`;
+                      return `$${v}`;
+                    }}
+                    width={60}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "#0B1322",
+                      border: "1px solid #1B2638",
+                      borderRadius: 4,
+                      fontSize: 12,
+                      color: "#AEB9CC",
+                    }}
+                    labelStyle={{ color: "#8A97AC" }}
+                    formatter={(val: number, name: string) => [
+                      `$${val.toLocaleString()}`,
+                      name === "withLowFees" ? "Low-cost index" : "Fees on the book",
+                    ]}
+                    labelFormatter={(v) => `Year ${v}`}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="withLowFees"
+                    stroke="#8A97AC"
+                    fill="rgba(138, 151, 172, 0.06)"
+                    strokeWidth={2}
+                    name="withLowFees"
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="withCurrentFees"
+                    stroke="#1AA8BB"
+                    fill="rgba(26, 168, 187, 0.08)"
+                    strokeWidth={2}
+                    name="withCurrentFees"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
           </div>
-        </div>
-      </div>
 
-      {/* Disclaimer */}
-      <div className="text-center pt-4 pb-8 border-t border-zinc-800">
-        <p className="text-xs text-zinc-600">
-          Expense ratios are approximate and may not reflect current fund prospectus values.
-          Actual fee impact depends on contributions, withdrawals, and market returns. Not financial advice.
-        </p>
-      </div>
-    </PageTransition>
+          <Legend
+            items={[
+              {
+                glyph: <span aria-hidden="true" className="w-2 h-2 bg-vela-teal inline-block" />,
+                label: `Fees on the book (${fmtER(result.weightedExpenseRatio)})`,
+              },
+              {
+                glyph: <span aria-hidden="true" className="w-2 h-2 bg-vela-muted inline-block" />,
+                label: `Low-cost index benchmark (${fmtER(result.lowCostER)})`,
+              },
+            ]}
+            hint="8% gross return assumed"
+          />
+
+          {result.potentialSavings30yr > 100 && (
+            <Prose className="mt-5 max-w-[620px]">
+              At a {fmtER(result.lowCostER)} blended rate the same balance would carry{" "}
+              <span className="font-mono tabular-nums text-zinc-100">
+                {fmtCurrency(result.potentialSavings10yr)}
+              </span>{" "}
+              less in fees over ten years and{" "}
+              <span className="font-mono tabular-nums text-zinc-100">
+                {fmtCurrency(result.potentialSavings30yr)}
+              </span>{" "}
+              less over thirty, on the same 8% gross return. That is arithmetic on the ratios, not a
+              view on any fund.
+            </Prose>
+          )}
+        </Section>
+
+        {/* ── Holdings breakdown ──────────────────────────────────────────── */}
+
+        <Section
+          label="By holding"
+          prose="Expense ratio on record for each position and what that ratio costs a year at current market value. Any figure can be edited if a prospectus says otherwise."
+        >
+          <div className="overflow-x-auto">
+            <div className="min-w-[520px] border-y border-vela-border divide-y divide-vela-border">
+              {result.holdings.map((h) => (
+                <HoldingRow
+                  key={h.ticker}
+                  holding={h}
+                  onChangeER={(er) => handleOverride(h.ticker, er)}
+                  onReset={() => handleResetOverride(h.ticker)}
+                  hasOverride={h.ticker in overrides}
+                  knownER={lookupExpenseRatio(h.ticker)}
+                  liveER={liveERs[h.ticker] ?? null}
+                  fetchingLive={fetchingLive}
+                />
+              ))}
+            </div>
+          </div>
+        </Section>
+
+        {/* ── Reference ───────────────────────────────────────────────────── */}
+
+        <Section
+          label="Reference"
+          prose="Published expense ratios for widely held funds, for scale. Listed for comparison only."
+        >
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-4 border-t border-vela-border pt-4">
+            {[
+              { ticker: "VOO", name: "S&P 500" },
+              { ticker: "VTI", name: "Total Market" },
+              { ticker: "QQQ", name: "Nasdaq 100" },
+              { ticker: "ARKK", name: "ARK Innovation" },
+              { ticker: "SPY", name: "SPDR S&P 500" },
+              { ticker: "SCHD", name: "Schwab Dividend" },
+              { ticker: "IWM", name: "Russell 2000" },
+              { ticker: "GLD", name: "Gold" },
+            ].map((fund) => {
+              const er = KNOWN_EXPENSE_RATIOS[fund.ticker] ?? 0;
+              const tier = er <= 0.002 ? "low" : er <= 0.005 ? "moderate" : er <= 0.01 ? "high" : "very-high";
+              return (
+                <div key={fund.ticker} className="min-w-0">
+                  <div className="flex items-baseline justify-between gap-2">
+                    <span className="font-mono text-[12px] font-semibold tracking-[0.02em] text-zinc-100">
+                      {fund.ticker}
+                    </span>
+                    <span className={`font-mono text-[12px] tabular-nums ${TIER_CLASS[tier]}`}>
+                      {fmtER(er)}
+                    </span>
+                  </div>
+                  <p className="mt-0.5 truncate font-mono text-[10px] uppercase tracking-[0.1em] text-vela-muted">
+                    {fund.name}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+
+          <p className="mt-7 border-t border-vela-border pt-4 text-[11px] leading-relaxed text-vela-muted max-w-3xl">
+            An expense ratio is the annual charge a fund deducts from returns; individual stocks carry
+            none. The projection assumes an 8% gross annual return and compares the blended rate on the
+            book against a 0.03% benchmark. Ratios shown are approximate and may not match the current
+            prospectus, and real fee impact also depends on contributions, withdrawals and market
+            returns. Descriptive only, not investment advice.
+          </p>
+        </Section>
+      </PageTransition>
     </TierGate>
-  );
-}
-
-// ── Header ───────────────────────────────────────────────────────────────────
-
-function Header() {
-  return (
-    <div>
-      <h1 className="text-2xl font-display font-bold text-zinc-100 flex items-center gap-3">
-        <Receipt className="w-7 h-7 text-vela-teal" />
-        Fee Analyzer
-      </h1>
-      <p className="text-zinc-500 text-sm mt-1">
-        Understand how investment fees compound to erode your returns over time.
-      </p>
-    </div>
   );
 }
 
@@ -406,28 +411,28 @@ function HoldingRow({
   };
 
   // Source label shown next to ER
-  const sourceLabel = hasOverride
-    ? <span className="text-[9px] text-amber-400 border border-amber-500/30 rounded px-1 py-px">edited</span>
-    : knownER !== null
-    ? <CheckCircle className="w-3 h-3 text-emerald-500/50" />
-    : liveER !== null
-    ? <span className="text-[9px] text-teal-500 border border-teal-500/30 rounded px-1 py-px">live</span>
-    : fetchingLive
-    ? <span className="text-[9px] text-zinc-600 animate-pulse">…</span>
-    : null;
+  const sourceLabel = hasOverride ? (
+    <span className="font-mono text-[9px] uppercase tracking-[0.1em] text-amber-400">edited</span>
+  ) : knownER !== null ? (
+    <span className="font-mono text-[9px] uppercase tracking-[0.1em] text-vela-muted">on file</span>
+  ) : liveER !== null ? (
+    <span className="font-mono text-[9px] uppercase tracking-[0.1em] text-vela-teal">live</span>
+  ) : fetchingLive ? (
+    <span className="font-mono text-[9px] text-vela-muted animate-pulse">…</span>
+  ) : null;
 
   return (
-    <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-zinc-800/50 group">
-      {/* Ticker */}
-      <span className="text-sm font-semibold text-zinc-100 w-14">{holding.ticker}</span>
+    <div className="group flex items-center gap-3 py-2.5">
+      <span className="w-14 shrink-0 font-mono text-[13px] font-semibold tracking-[0.02em] text-zinc-100">
+        {holding.ticker}
+      </span>
 
-      {/* Value */}
-      <span className="text-xs text-zinc-500 tabular w-20 hidden sm:block">
+      <span className="w-20 shrink-0 font-mono text-[11px] tabular-nums text-vela-muted">
         {fmtCurrency(holding.marketValue)}
       </span>
 
-      {/* Expense Ratio (editable) */}
-      <div className="flex items-center gap-1.5">
+      {/* Expense ratio (editable) */}
+      <div className="flex items-center gap-2 min-w-0">
         {editing ? (
           <div className="flex items-center gap-1">
             <input
@@ -443,9 +448,10 @@ function HoldingRow({
               }}
               onBlur={handleSave}
               autoFocus
-              className="w-16 bg-zinc-900 border border-vela-teal/40 rounded px-1.5 py-0.5 text-xs text-zinc-100 tabular outline-none"
+              className="w-16 rounded border border-vela-teal/40 bg-vela-card px-1.5 py-0.5
+                font-mono text-[12px] tabular-nums text-zinc-100 outline-none"
             />
-            <span className="text-[10px] text-zinc-500">%</span>
+            <span className="font-mono text-[10px] text-vela-muted">%</span>
           </div>
         ) : (
           <button
@@ -454,9 +460,8 @@ function HoldingRow({
               setEditing(true);
             }}
             title="Click to edit expense ratio"
-            className={`text-xs tabular font-medium px-1.5 py-0.5 rounded cursor-pointer hover:ring-1 hover:ring-vela-teal/30 transition ${
-              TIER_COLORS[holding.costTier]
-            }`}
+            className={`rounded border border-vela-border px-1.5 py-0.5 font-mono text-[12px] tabular-nums
+              hover:border-vela-teal/40 transition-colors ${TIER_CLASS[holding.costTier]}`}
           >
             {fmtER(holding.expenseRatio)}
           </button>
@@ -466,35 +471,27 @@ function HoldingRow({
           <button
             onClick={onReset}
             title="Reset to auto-detected value"
-            className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 text-zinc-600 hover:text-zinc-400"
+            className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 text-vela-muted hover:text-zinc-100"
           >
             <RotateCcw className="w-3 h-3" />
           </button>
         )}
       </div>
 
-      {/* Annual Fee */}
-      <span className="text-xs text-zinc-400 tabular ml-auto">
+      {/* Annual fee */}
+      <span className="ml-auto shrink-0 font-mono text-[12px] tabular-nums">
         {holding.annualFeeDollars > 0.5 ? (
-          <span className="text-rose-400">
-            -${Math.round(holding.annualFeeDollars).toLocaleString()}/yr
+          <span className="text-zinc-100">
+            −${Math.round(holding.annualFeeDollars).toLocaleString()}/yr
           </span>
         ) : (
-          <span className="text-zinc-600">$0/yr</span>
+          <span className="text-vela-muted">$0/yr</span>
         )}
       </span>
 
       {/* 10yr drag */}
-      <span className="text-[10px] text-zinc-500 tabular w-20 text-right hidden sm:block">
-        {holding.tenYearDrag > 1 ? (
-          <>
-            <TrendingDown className="w-3 h-3 inline mr-0.5 text-rose-400" />
-            <span className="text-rose-400">{fmtCurrency(holding.tenYearDrag)}</span>
-            <span className="text-zinc-600 ml-0.5">10yr</span>
-          </>
-        ) : (
-          <span className="text-zinc-600"> -</span>
-        )}
+      <span className="w-24 shrink-0 text-right font-mono text-[11px] tabular-nums text-vela-muted">
+        {holding.tenYearDrag > 1 ? `${fmtCurrency(holding.tenYearDrag)} 10yr` : "—"}
       </span>
     </div>
   );

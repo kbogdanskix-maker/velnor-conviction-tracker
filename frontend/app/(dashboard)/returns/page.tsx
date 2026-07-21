@@ -1,19 +1,30 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Link from "next/link";
 import useSWR from "swr";
 import { useDefaultPortfolio } from "@/hooks/usePortfolio";
 import { useRiskMetrics } from "@/hooks/useRiskMetrics";
 import { api } from "@/lib/api";
 import { formatCurrency, formatPercent } from "@/lib/formatters";
 import PageTransition from "@/components/celestial/PageTransition";
-import FloatingCard from "@/components/celestial/FloatingCard";
-import RevealOnScroll from "@/components/celestial/RevealOnScroll";
+import DashboardSkeleton from "@/components/shared/DashboardSkeleton";
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip,
   ResponsiveContainer, CartesianGrid, ReferenceLine, Cell,
 } from "recharts";
-import { TrendingUp, TrendingDown, Calendar, Percent, ArrowUpRight, ArrowDownRight, Clock } from "lucide-react";
+import {
+  TopBar,
+  PageHero,
+  StatStrip,
+  StatCell,
+  Section,
+  Panel,
+  PillGroup,
+  Legend,
+  Eyebrow,
+  Prose,
+} from "@/components/instrument";
 
 /* ── custom tooltip ────────────────────────────────────────── */
 
@@ -21,9 +32,13 @@ function MonthlyReturnTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
   const val = payload[0].value as number;
   return (
-    <div style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 8, padding: "8px 12px", fontSize: 12 }}>
-      <p style={{ color: "#71717a", marginBottom: 2 }}>{label}</p>
-      <p style={{ color: val >= 0 ? "#34d399" : "#fb7185" }}>Return: {val.toFixed(2)}%</p>
+    <div className="rounded border border-vela-border bg-vela-card px-3 py-2">
+      <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-vela-muted">{label}</p>
+      <p
+        className={`mt-1 font-mono text-[12px] tabular-nums ${val >= 0 ? "text-gain" : "text-loss"}`}
+      >
+        Return {val.toFixed(2)}%
+      </p>
     </div>
   );
 }
@@ -34,13 +49,13 @@ interface PerfPoint { date: string; value: number; cost_basis: number }
 interface PerfResponse { period: string; data: PerfPoint[] }
 
 type Period = "1mo" | "3mo" | "6mo" | "1y" | "2y" | "5y";
-const PERIODS: { value: Period; label: string }[] = [
-  { value: "1mo", label: "1M" },
-  { value: "3mo", label: "3M" },
-  { value: "6mo", label: "6M" },
-  { value: "1y", label: "1Y" },
-  { value: "2y", label: "2Y" },
-  { value: "5y", label: "5Y" },
+const PERIODS: { key: Period; label: string }[] = [
+  { key: "1mo", label: "1M" },
+  { key: "3mo", label: "3M" },
+  { key: "6mo", label: "6M" },
+  { key: "1y", label: "1Y" },
+  { key: "2y", label: "2Y" },
+  { key: "5y", label: "5Y" },
 ];
 
 /* ── helpers ────────────────────────────────────────────────── */
@@ -90,6 +105,9 @@ function computeMonthlyReturns(data: PerfPoint[]) {
       };
     });
 }
+
+const TH =
+  "py-2.5 font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-vela-muted whitespace-nowrap";
 
 /* ── component ──────────────────────────────────────────────── */
 
@@ -171,350 +189,344 @@ export default function ReturnsPage() {
     };
   }, [series]);
 
-  if (loading) {
-    return (
-      <PageTransition>
-        <div className="p-6 md:p-10 max-w-7xl mx-auto">
-          <div className="h-8 w-48 bg-zinc-800 rounded animate-pulse mb-8" />
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-32 bg-zinc-800/50 rounded-xl animate-pulse" />
-            ))}
-          </div>
-        </div>
-      </PageTransition>
-    );
-  }
+  if (loading) return <DashboardSkeleton />;
 
   if (!hasHoldings || !analysis) {
     return (
       <PageTransition>
-        <div className="p-6 md:p-10 max-w-7xl mx-auto">
-          <div className="mb-6">
-            <h1 className="text-2xl font-display font-bold text-zinc-100">Returns</h1>
-            <p className="text-zinc-400 text-sm mt-1">Track your investment performance</p>
-          </div>
-          <FloatingCard delay={0}>
-            <div className="text-center py-16 text-zinc-400">
-              <TrendingUp className="w-12 h-12 mx-auto mb-4 opacity-40" />
-              <p className="text-lg font-medium text-zinc-300 mb-1">No holdings yet</p>
-              <p>Add positions in your portfolio to see returns analysis.</p>
-            </div>
-          </FloatingCard>
+        <TopBar trail={[{ label: "Lab" }, { label: "Returns" }]} note="no positions yet" />
+        <PageHero title="Returns" meta="Performance of the book over time" />
+        <div className="mt-8">
+          <Panel className="px-6 py-14 text-center">
+            <Eyebrow>Nothing to measure</Eyebrow>
+            <Prose className="mx-auto mt-3 max-w-[380px]">
+              There are no holdings on the book yet. Once positions are recorded, holding-period and
+              annualized returns land here.
+            </Prose>
+            <Link
+              href="/portfolio"
+              className="mt-5 inline-flex items-center rounded border border-vela-teal/25 bg-vela-teal/10 px-3 py-1.5
+                font-mono text-[10px] uppercase tracking-wider text-vela-teal
+                hover:bg-vela-teal/15 hover:border-vela-teal/40 transition-colors"
+            >
+              Go to positions
+            </Link>
+          </Panel>
         </div>
       </PageTransition>
     );
   }
 
-  const { totalCost, totalValue, totalPnl, hpr, annReturn, avgDays, holdingReturns, monthlyData, winRate, winners, losers, best, worst } = analysis;
+  const { totalCost, totalPnl, hpr, annReturn, avgDays, holdingReturns, monthlyData, winRate, winners, losers, best, worst } = analysis;
   const isPositive = periodReturn.pct >= 0;
+  const hprPositive = hpr >= 0;
+  const annPositive = annReturn >= 0;
+
+  const periodPills = (
+    <PillGroup
+      options={PERIODS}
+      value={period}
+      onChange={setPeriod}
+      ariaLabel="Chart period"
+    />
+  );
 
   return (
     <PageTransition>
-      <div className="p-6 md:p-10 max-w-7xl mx-auto space-y-8">
-        <div className="mb-6">
-          <h1 className="text-2xl font-display font-bold text-zinc-100">Returns</h1>
-          <p className="text-zinc-400 text-sm mt-1">Portfolio performance analytics</p>
+      <TopBar
+        trail={[{ label: "Lab" }, { label: "Returns" }]}
+        note={`${holdings.length} ${holdings.length === 1 ? "position" : "positions"} · ${avgDays}d average hold`}
+      />
+
+      <PageHero
+        title="Returns"
+        meta="Holding-period performance of the book"
+        figure={formatPercent(hpr)}
+        figureSub={`${formatCurrency(totalPnl)} unrealized`}
+        figureSubClass={hprPositive ? "text-gain" : "text-loss"}
+      />
+
+      <StatStrip className="mt-6">
+        <StatCell
+          label="Total return"
+          value={formatPercent(hpr)}
+          valueClass={hprPositive ? "text-gain" : "text-loss"}
+          sub={`${formatCurrency(totalPnl)} P&L`}
+          subClass={hprPositive ? "text-gain" : "text-loss"}
+        />
+        <StatCell
+          label="Annualized"
+          value={formatPercent(annReturn)}
+          valueClass={annPositive ? "text-gain" : "text-loss"}
+          sub={
+            risk?.annualized_return != null
+              ? `risk-adj ${formatPercent(risk.annualized_return)}`
+              : `${avgDays}d avg hold`
+          }
+          subClass="text-vela-muted"
+        />
+        <StatCell
+          label="Win rate"
+          value={`${winRate.toFixed(0)}%`}
+          sub={`${winners}W / ${losers}L`}
+        />
+        <StatCell
+          label="Average hold"
+          value={`${avgDays}d`}
+          sub={`${holdings.length} ${holdings.length === 1 ? "position" : "positions"}`}
+        />
+      </StatStrip>
+
+      {/* ── Equity curve ──────────────────────────────────────────────────── */}
+
+      <Section
+        label="Portfolio value"
+        prose="Market value of the book over the selected window, with cost basis marked as a reference line."
+        controls={
+          <>
+            {periodPills}
+            {series.length > 1 && (
+              <p className="font-mono text-[12px] tabular-nums text-vela-muted">
+                <span className="text-zinc-100">
+                  {formatCurrency(series[series.length - 1].value)}
+                </span>{" "}
+                <span className={isPositive ? "text-gain" : "text-loss"}>
+                  {formatPercent(periodReturn.pct)} ({isPositive ? "+" : ""}
+                  {formatCurrency(periodReturn.amt)})
+                </span>
+              </p>
+            )}
+          </>
+        }
+      >
+        <div className="h-64">
+          {perfLoading ? (
+            <div className="h-full flex items-center justify-center">
+              <div className="w-5 h-5 border-2 border-vela-teal/30 border-t-vela-teal rounded-full animate-spin" />
+            </div>
+          ) : series.length < 2 ? (
+            <div className="h-full flex items-center justify-center font-mono text-[11px] text-vela-muted">
+              No performance data for this period
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={series}>
+                <defs>
+                  <linearGradient id="retGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={isPositive ? "#34d399" : "#f43f5e"} stopOpacity={0.2} />
+                    <stop offset="100%" stopColor={isPositive ? "#34d399" : "#f43f5e"} stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#1B2638" vertical={false} />
+                <XAxis dataKey="date" tickFormatter={shortDate} tick={{ fill: "#8A97AC", fontSize: 11 }} axisLine={false} tickLine={false} interval="preserveStartEnd" minTickGap={60} />
+                <YAxis tick={{ fill: "#8A97AC", fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v: number) => `$${(v / 1000).toFixed(0)}k`} width={48} />
+                <Tooltip
+                  contentStyle={{ background: "#0B1322", border: "1px solid #1B2638", borderRadius: 4, fontSize: 12, color: "#AEB9CC" }}
+                  labelStyle={{ color: "#8A97AC" }}
+                  labelFormatter={shortDate}
+                  formatter={(v: number) => [formatCurrency(v), "Value"]}
+                />
+                <ReferenceLine y={totalCost} stroke="#5A6678" strokeDasharray="4 4" label={{ value: "Cost basis", position: "right", fill: "#8A97AC", fontSize: 10 }} />
+                <Area type="monotone" dataKey="value" stroke={isPositive ? "#34d399" : "#f43f5e"} strokeWidth={2} fill="url(#retGrad)" dot={false} animationDuration={800} />
+              </AreaChart>
+            </ResponsiveContainer>
+          )}
         </div>
+      </Section>
 
-        {/* ── Summary Cards ───────────────────────────────────────── */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <FloatingCard delay={0}>
-            <div className="p-5">
-              <div className="flex items-center gap-2 text-zinc-400 text-xs font-medium mb-3">
-                <Percent className="w-3.5 h-3.5" />
-                TOTAL RETURN
-              </div>
-              <p className={`text-2xl font-bold font-display tabular-nums ${hpr >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
-                {formatPercent(hpr)}
-              </p>
-              <p className="text-xs text-zinc-500 mt-1">{formatCurrency(totalPnl)} P&L</p>
-            </div>
-          </FloatingCard>
+      {/* ── Monthly returns ───────────────────────────────────────────────── */}
 
-          <FloatingCard delay={0.1}>
-            <div className="p-5">
-              <div className="flex items-center gap-2 text-zinc-400 text-xs font-medium mb-3">
-                <TrendingUp className="w-3.5 h-3.5" />
-                ANNUALIZED
-              </div>
-              <p className={`text-2xl font-bold font-display tabular-nums ${annReturn >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
-                {formatPercent(annReturn)}
-              </p>
-              <p className="text-xs text-zinc-500 mt-1">
-                {risk?.annualized_return != null ? `Risk-adj: ${formatPercent(risk.annualized_return)}` : `${avgDays}d avg hold`}
-              </p>
-            </div>
-          </FloatingCard>
-
-          <FloatingCard delay={0.2}>
-            <div className="p-5">
-              <div className="flex items-center gap-2 text-zinc-400 text-xs font-medium mb-3">
-                <Calendar className="w-3.5 h-3.5" />
-                WIN RATE
-              </div>
-              <p className="text-2xl font-bold font-display tabular-nums text-zinc-100">
-                {winRate.toFixed(0)}%
-              </p>
-              <p className="text-xs text-zinc-500 mt-1">
-                <span className="text-emerald-400">{winners}W</span>
-                {" / "}
-                <span className="text-rose-400">{losers}L</span>
-              </p>
-            </div>
-          </FloatingCard>
-
-          <FloatingCard delay={0.3}>
-            <div className="p-5">
-              <div className="flex items-center gap-2 text-zinc-400 text-xs font-medium mb-3">
-                <Clock className="w-3.5 h-3.5" />
-                AVG HOLD
-              </div>
-              <p className="text-2xl font-bold font-display tabular-nums text-zinc-100">
-                {avgDays}
-                <span className="text-base font-normal text-zinc-500 ml-1">days</span>
-              </p>
-              <p className="text-xs text-zinc-500 mt-1">{holdings.length} positions</p>
-            </div>
-          </FloatingCard>
-        </div>
-
-        {/* ── Real Equity Curve ─────────────────────────────────────── */}
-        <RevealOnScroll>
-          <FloatingCard delay={0.4}>
-            <div className="p-5">
-              <div className="flex items-center justify-between mb-1">
-                <h2 className="font-display font-semibold text-zinc-100">Portfolio Value</h2>
-                <div className="flex gap-0.5 sm:gap-1">
-                  {PERIODS.map((p) => (
-                    <button
-                      key={p.value}
-                      onClick={() => setPeriod(p.value)}
-                      className={`px-2 py-1 text-xs rounded-md transition-colors ${
-                        period === p.value
-                          ? "bg-vela-teal/20 text-vela-teal font-medium"
-                          : "text-zinc-500 hover:text-zinc-300 hover:bg-white/5"
-                      }`}
-                    >
-                      {p.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              {series.length > 1 && (
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="text-lg font-bold tabular-nums text-zinc-100">{formatCurrency(series[series.length - 1].value)}</span>
-                  <span className={`text-xs font-medium tabular-nums flex items-center gap-0.5 ${isPositive ? "text-emerald-400" : "text-rose-400"}`}>
-                    {isPositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                    {formatPercent(periodReturn.pct)}
-                    <span className="text-zinc-500 ml-1">({isPositive ? "+" : ""}{formatCurrency(periodReturn.amt)})</span>
-                  </span>
-                </div>
-              )}
-              <div className="h-64">
-                {perfLoading ? (
-                  <div className="h-full flex items-center justify-center">
-                    <div className="w-5 h-5 border-2 border-vela-teal/30 border-t-vela-teal rounded-full animate-spin" />
-                  </div>
-                ) : series.length < 2 ? (
-                  <div className="h-full flex items-center justify-center text-sm text-zinc-500">
-                    No performance data for this period
-                  </div>
-                ) : (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={series}>
-                      <defs>
-                        <linearGradient id="retGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor={isPositive ? "#34d399" : "#f43f5e"} stopOpacity={0.2} />
-                          <stop offset="100%" stopColor={isPositive ? "#34d399" : "#f43f5e"} stopOpacity={0} />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
-                      <XAxis dataKey="date" tickFormatter={shortDate} tick={{ fill: "#71717a", fontSize: 11 }} axisLine={false} tickLine={false} interval="preserveStartEnd" minTickGap={60} />
-                      <YAxis tick={{ fill: "#71717a", fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v: number) => `$${(v / 1000).toFixed(0)}k`} width={48} />
-                      <Tooltip
-                        contentStyle={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 8, fontSize: 12, color: "#e4e4e7" }}
-                        labelStyle={{ color: "#71717a" }}
-                        labelFormatter={shortDate}
-                        formatter={(v: number) => [formatCurrency(v), "Value"]}
-                      />
-                      <ReferenceLine y={totalCost} stroke="#3f3f46" strokeDasharray="4 4" label={{ value: "Cost basis", position: "right", fill: "#52525b", fontSize: 10 }} />
-                      <Area type="monotone" dataKey="value" stroke={isPositive ? "#34d399" : "#f43f5e"} strokeWidth={2} fill="url(#retGrad)" dot={false} animationDuration={800} />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                )}
-              </div>
-            </div>
-          </FloatingCard>
-        </RevealOnScroll>
-
-        {/* ── Real Monthly Returns ──────────────────────────────────── */}
-        {monthlyData.length > 0 && (
-          <RevealOnScroll>
-            <FloatingCard delay={0.5}>
-              <div className="p-5">
-                <h2 className="font-display font-semibold text-zinc-100 mb-4">Monthly Returns</h2>
-                <div className="h-48">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={monthlyData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
-                      <XAxis dataKey="month" tick={{ fill: "#71717a", fontSize: 11 }} axisLine={false} tickLine={false} />
-                      <YAxis tick={{ fill: "#71717a", fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}%`} />
-                      <Tooltip cursor={false} content={<MonthlyReturnTooltip />} />
-                      <ReferenceLine y={0} stroke="#3f3f46" />
-                      <Bar dataKey="return_pct" radius={[4, 4, 0, 0]}>
-                        {monthlyData.map((d, i) => (
-                          <Cell key={i} fill={d.return_pct >= 0 ? "#34d399" : "#fb7185"} fillOpacity={0.85} />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-            </FloatingCard>
-          </RevealOnScroll>
-        )}
-
-        {/* ── Best / Worst ────────────────────────────────────────── */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <RevealOnScroll>
-            <FloatingCard delay={0.6}>
-              <div className="p-5">
-                <div className="flex items-center gap-2 text-emerald-400 text-xs font-medium mb-3">
-                  <ArrowUpRight className="w-3.5 h-3.5" />
-                  BEST PERFORMER
-                </div>
-                {best && (
-                  <>
-                    <p className="text-lg font-bold text-zinc-100">{best.ticker}</p>
-                    <div className="flex items-baseline gap-3 mt-2">
-                      <span className={`text-2xl font-display font-bold tabular-nums ${best.hpr >= 0 ? "text-emerald-400" : "text-rose-400"}`}>{formatPercent(best.hpr)}</span>
-                      <span className="text-sm text-zinc-500">{formatCurrency(best.pnl)}</span>
-                    </div>
-                    <p className="text-xs text-zinc-500 mt-1">
-                      {formatPercent(best.contribution)} portfolio contribution · {best.days}d held
-                    </p>
-                  </>
-                )}
-              </div>
-            </FloatingCard>
-          </RevealOnScroll>
-
-          <RevealOnScroll>
-            <FloatingCard delay={0.7}>
-              <div className="p-5">
-                <div className="flex items-center gap-2 text-rose-400 text-xs font-medium mb-3">
-                  <ArrowDownRight className="w-3.5 h-3.5" />
-                  WORST PERFORMER
-                </div>
-                {worst && (
-                  <>
-                    <p className="text-lg font-bold text-zinc-100">{worst.ticker}</p>
-                    <div className="flex items-baseline gap-3 mt-2">
-                      <span className={`text-2xl font-display font-bold tabular-nums ${worst.hpr >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
-                        {formatPercent(worst.hpr)}
-                      </span>
-                      <span className="text-sm text-zinc-500">{formatCurrency(worst.pnl)}</span>
-                    </div>
-                    <p className="text-xs text-zinc-500 mt-1">
-                      {formatPercent(worst.contribution)} portfolio contribution · {worst.days}d held
-                    </p>
-                  </>
-                )}
-              </div>
-            </FloatingCard>
-          </RevealOnScroll>
-        </div>
-
-        {/* ── Holdings Return Table ───────────────────────────────── */}
-        <RevealOnScroll>
-          <FloatingCard delay={0.8}>
-            <div className="p-5">
-              <h2 className="font-display font-semibold text-zinc-100 mb-4">Holdings Performance</h2>
-
-              {/* Desktop table */}
-              <div className="hidden md:block overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="text-xs text-zinc-500 uppercase tracking-wider border-b border-zinc-800">
-                      <th className="text-left py-2 pr-4">Ticker</th>
-                      <th className="text-right py-2 px-3">Weight</th>
-                      <th className="text-right py-2 px-3">Cost</th>
-                      <th className="text-right py-2 px-3">Value</th>
-                      <th className="text-right py-2 px-3">Return</th>
-                      <th className="text-right py-2 px-3">Ann. Return</th>
-                      <th className="text-right py-2 px-3">P&L</th>
-                      <th className="text-right py-2 pl-3">Contribution</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-zinc-800/50">
-                    {holdingReturns.map((h) => (
-                      <tr key={h.ticker} className="hover:bg-white/[0.02] transition-colors">
-                        <td className="py-2.5 pr-4">
-                          <span className="font-medium text-zinc-100">{h.ticker}</span>
-                        </td>
-                        <td className="text-right py-2.5 px-3 text-zinc-400 tabular-nums">{h.weight.toFixed(1)}%</td>
-                        <td className="text-right py-2.5 px-3 text-zinc-400 tabular-nums">{formatCurrency(h.cost)}</td>
-                        <td className="text-right py-2.5 px-3 text-zinc-100 tabular-nums">{formatCurrency(h.value)}</td>
-                        <td className={`text-right py-2.5 px-3 tabular-nums font-medium ${h.hpr >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
-                          {formatPercent(h.hpr)}
-                        </td>
-                        <td className={`text-right py-2.5 px-3 tabular-nums ${h.annualized >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
-                          {formatPercent(h.annualized)}
-                        </td>
-                        <td className={`text-right py-2.5 px-3 tabular-nums ${h.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
-                          {formatCurrency(h.pnl)}
-                        </td>
-                        <td className="text-right py-2.5 pl-3">
-                          <div className="flex items-center justify-end gap-2">
-                            <div className="w-16 h-1.5 rounded-full bg-zinc-800 overflow-hidden">
-                              <div
-                                className={`h-full rounded-full ${h.contribution >= 0 ? "bg-emerald-400" : "bg-rose-400"}`}
-                                style={{ width: `${Math.min(100, Math.abs(h.contribution) * 10)}%` }}
-                              />
-                            </div>
-                            <span className={`text-xs tabular-nums ${h.contribution >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
-                              {formatPercent(h.contribution)}
-                            </span>
-                          </div>
-                        </td>
-                      </tr>
+      {monthlyData.length > 0 && (
+        <Section
+          label="Monthly returns"
+          prose="Month-on-month change in portfolio value across the last twelve months on record."
+        >
+          <div className="overflow-x-auto">
+            <div className="min-w-[420px] h-48">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={monthlyData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1B2638" vertical={false} />
+                  <XAxis dataKey="month" tick={{ fill: "#8A97AC", fontSize: 11 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fill: "#8A97AC", fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}%`} />
+                  <Tooltip cursor={false} content={<MonthlyReturnTooltip />} />
+                  <ReferenceLine y={0} stroke="#1B2638" />
+                  <Bar dataKey="return_pct">
+                    {monthlyData.map((d, i) => (
+                      <Cell key={i} fill={d.return_pct >= 0 ? "#34d399" : "#f43f5e"} fillOpacity={0.85} />
                     ))}
-                  </tbody>
-                </table>
-              </div>
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+          <Legend
+            items={[
+              { glyph: <span aria-hidden="true" className="w-2 h-2 bg-gain inline-block" />, label: "Up month" },
+              { glyph: <span aria-hidden="true" className="w-2 h-2 bg-loss inline-block" />, label: "Down month" },
+            ]}
+            hint="value change, not contributions"
+          />
+        </Section>
+      )}
 
-              {/* Mobile cards */}
-              <div className="md:hidden space-y-3">
-                {holdingReturns.map((h) => (
-                  <div key={h.ticker} className="p-3 rounded-lg bg-zinc-800/30 border border-zinc-800/50">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-medium text-zinc-100">{h.ticker}</span>
-                      <span className={`text-sm font-bold tabular-nums ${h.hpr >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
-                        {formatPercent(h.hpr)}
+      {/* ── Range ─────────────────────────────────────────────────────────── */}
+
+      <Section
+        label="Range"
+        prose="The widest holding-period returns on the book, at either end of the distribution."
+      >
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-6">
+          {best && (
+            <div className="min-w-0 border-t border-vela-border pt-4">
+              <Eyebrow>Highest return</Eyebrow>
+              <p className="mt-2 font-mono text-[15px] font-semibold tracking-[0.02em] text-zinc-100">
+                {best.ticker}
+              </p>
+              <div className="mt-1.5 flex items-baseline gap-3 flex-wrap">
+                <span
+                  className={`font-mono text-[24px] font-medium tabular-nums leading-none ${
+                    best.hpr >= 0 ? "text-gain" : "text-loss"
+                  }`}
+                >
+                  {formatPercent(best.hpr)}
+                </span>
+                <span className="font-mono text-[12px] tabular-nums text-vela-body">
+                  {formatCurrency(best.pnl)}
+                </span>
+              </div>
+              <p className="mt-1.5 font-mono text-[11px] tabular-nums text-vela-muted">
+                {formatPercent(best.contribution)} of portfolio return · {best.days}d held
+              </p>
+            </div>
+          )}
+
+          {worst && (
+            <div className="min-w-0 border-t border-vela-border pt-4">
+              <Eyebrow>Lowest return</Eyebrow>
+              <p className="mt-2 font-mono text-[15px] font-semibold tracking-[0.02em] text-zinc-100">
+                {worst.ticker}
+              </p>
+              <div className="mt-1.5 flex items-baseline gap-3 flex-wrap">
+                <span
+                  className={`font-mono text-[24px] font-medium tabular-nums leading-none ${
+                    worst.hpr >= 0 ? "text-gain" : "text-loss"
+                  }`}
+                >
+                  {formatPercent(worst.hpr)}
+                </span>
+                <span className="font-mono text-[12px] tabular-nums text-vela-body">
+                  {formatCurrency(worst.pnl)}
+                </span>
+              </div>
+              <p className="mt-1.5 font-mono text-[11px] tabular-nums text-vela-muted">
+                {formatPercent(worst.contribution)} of portfolio return · {worst.days}d held
+              </p>
+            </div>
+          )}
+        </div>
+      </Section>
+
+      {/* ── Holdings performance ──────────────────────────────────────────── */}
+
+      <Section
+        label="By holding"
+        prose="Every position with its holding-period return, the annualized equivalent, and its share of the total portfolio return."
+      >
+        {/* Desktop table */}
+        <div className="hidden md:block overflow-x-auto">
+          <table className="w-full min-w-[760px] text-[13px]">
+            <thead>
+              <tr className="border-b border-vela-border">
+                <th className={`${TH} text-left`}>Ticker</th>
+                <th className={`${TH} text-right`}>Weight</th>
+                <th className={`${TH} text-right`}>Cost</th>
+                <th className={`${TH} text-right`}>Value</th>
+                <th className={`${TH} text-right`}>Return</th>
+                <th className={`${TH} text-right`}>Ann. return</th>
+                <th className={`${TH} text-right`}>P&amp;L</th>
+                <th className={`${TH} text-right`}>Contribution</th>
+              </tr>
+            </thead>
+            <tbody>
+              {holdingReturns.map((h) => (
+                <tr key={h.ticker} className="border-b border-vela-border last:border-0">
+                  <td className="py-2.5">
+                    <span className="font-mono text-[13px] font-semibold tracking-[0.02em] text-zinc-100">
+                      {h.ticker}
+                    </span>
+                  </td>
+                  <td className="py-2.5 font-mono tabular-nums text-right text-vela-body">
+                    {h.weight.toFixed(1)}%
+                  </td>
+                  <td className="py-2.5 font-mono tabular-nums text-right text-vela-body">
+                    {formatCurrency(h.cost)}
+                  </td>
+                  <td className="py-2.5 font-mono tabular-nums text-right text-zinc-100">
+                    {formatCurrency(h.value)}
+                  </td>
+                  <td className={`py-2.5 font-mono tabular-nums font-medium text-right ${h.hpr >= 0 ? "text-gain" : "text-loss"}`}>
+                    {formatPercent(h.hpr)}
+                  </td>
+                  <td className={`py-2.5 font-mono tabular-nums text-right ${h.annualized >= 0 ? "text-gain" : "text-loss"}`}>
+                    {formatPercent(h.annualized)}
+                  </td>
+                  <td className={`py-2.5 font-mono tabular-nums text-right ${h.pnl >= 0 ? "text-gain" : "text-loss"}`}>
+                    {formatCurrency(h.pnl)}
+                  </td>
+                  <td className="py-2.5">
+                    <div className="flex items-center justify-end gap-2">
+                      <div className="w-16 h-1.5 overflow-hidden rounded-sm border border-vela-border bg-vela-card">
+                        <div
+                          className={`h-full ${h.contribution >= 0 ? "bg-gain/70" : "bg-loss/70"}`}
+                          style={{ width: `${Math.min(100, Math.abs(h.contribution) * 10)}%` }}
+                        />
+                      </div>
+                      <span className={`w-14 text-right font-mono text-[11px] tabular-nums ${h.contribution >= 0 ? "text-gain" : "text-loss"}`}>
+                        {formatPercent(h.contribution)}
                       </span>
                     </div>
-                    <div className="grid grid-cols-3 gap-2 text-xs">
-                      <div>
-                        <span className="text-zinc-500">P&L</span>
-                        <p className={`tabular-nums ${h.pnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>{formatCurrency(h.pnl)}</p>
-                      </div>
-                      <div>
-                        <span className="text-zinc-500">Ann.</span>
-                        <p className={`tabular-nums ${h.annualized >= 0 ? "text-emerald-400" : "text-rose-400"}`}>{formatPercent(h.annualized)}</p>
-                      </div>
-                      <div>
-                        <span className="text-zinc-500">Weight</span>
-                        <p className="text-zinc-300 tabular-nums">{h.weight.toFixed(1)}%</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Mobile rows */}
+        <div className="md:hidden border-y border-vela-border divide-y divide-vela-border">
+          {holdingReturns.map((h) => (
+            <div key={h.ticker} className="py-3">
+              <div className="flex items-center justify-between gap-3">
+                <span className="font-mono text-[13px] font-semibold tracking-[0.02em] text-zinc-100">
+                  {h.ticker}
+                </span>
+                <span
+                  className={`shrink-0 font-mono text-[13px] font-semibold tabular-nums ${
+                    h.hpr >= 0 ? "text-gain" : "text-loss"
+                  }`}
+                >
+                  {formatPercent(h.hpr)}
+                </span>
+              </div>
+              <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-[11px] tabular-nums text-vela-muted">
+                <span className={h.pnl >= 0 ? "text-gain" : "text-loss"}>
+                  {formatCurrency(h.pnl)}
+                </span>
+                <span className={h.annualized >= 0 ? "text-gain" : "text-loss"}>
+                  {formatPercent(h.annualized)} ann.
+                </span>
+                <span>{h.weight.toFixed(1)}% weight</span>
               </div>
             </div>
-          </FloatingCard>
-        </RevealOnScroll>
-      </div>
+          ))}
+        </div>
+
+        <p className="mt-6 border-t border-vela-border pt-4 text-[11px] leading-relaxed text-vela-muted max-w-3xl">
+          Returns are unrealized and measured against cost basis. Annualized figures extrapolate the
+          holding-period return over a full year and become unstable on short holds. Descriptive
+          only, not investment advice.
+        </p>
+      </Section>
     </PageTransition>
   );
 }

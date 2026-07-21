@@ -1,19 +1,28 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { LayoutGrid, ChevronDown, ChevronUp } from "lucide-react";
-import { motion } from "framer-motion";
+import Link from "next/link";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import {
   PieChart as RPieChart, Pie, Cell, Tooltip, ResponsiveContainer,
   Treemap,
 } from "recharts";
 import { useDefaultPortfolio } from "@/hooks/usePortfolio";
-import { useSectorBreakdown, type SectorEntry, type IndustryEntry, type SectorHolding } from "@/hooks/useSectors";
-import { formatCompact, formatPercent } from "@/lib/formatters";
+import { useSectorBreakdown, type SectorEntry } from "@/hooks/useSectors";
+import { formatCompact } from "@/lib/formatters";
 import PageTransition from "@/components/celestial/PageTransition";
-import FloatingCard from "@/components/celestial/FloatingCard";
-import RevealOnScroll from "@/components/celestial/RevealOnScroll";
+import DashboardSkeleton from "@/components/shared/DashboardSkeleton";
 import ErrorState from "@/components/shared/ErrorState";
+import {
+  TopBar,
+  PageHero,
+  StatStrip,
+  StatCell,
+  Section,
+  Panel,
+  Eyebrow,
+  Prose,
+} from "@/components/instrument";
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -70,12 +79,12 @@ function TreemapContent(props: any) {
   if (width < 40 || height < 30) return null;
   return (
     <g>
-      <rect x={x} y={y} width={width} height={height} rx={4} fill={props.color || "#27272a"} stroke="#18181b" strokeWidth={2} />
+      <rect x={x} y={y} width={width} height={height} rx={2} fill={props.color || "#0B1322"} stroke="#050A16" strokeWidth={2} />
       <text x={x + 6} y={y + 16} fill="#fafafa" fontSize={11} fontWeight={500}>
         {width > 70 ? name : name?.slice(0, 6)}
       </text>
       {height > 40 && Number.isFinite(weight) && (
-        <text x={x + 6} y={y + 30} fill="#a1a1aa" fontSize={10}>
+        <text x={x + 6} y={y + 30} fill="#AEB9CC" fontSize={10}>
           {pctWeight(weight)}
         </text>
       )}
@@ -92,15 +101,6 @@ export default function SectorsPage() {
   const { breakdown, loading, error } = useSectorBreakdown(hasHoldings ? portfolioId : null);
 
   const [expandedSector, setExpandedSector] = useState<string | null>(null);
-
-  const colorMap = useMemo(() => {
-    if (!breakdown) return {};
-    const map: Record<string, string> = {};
-    breakdown.sectors.forEach((s, i) => {
-      map[s.name] = getSectorColor(s.name, i);
-    });
-    return map;
-  }, [breakdown]);
 
   // Treemap data
   const treemapData = useMemo(() => {
@@ -126,267 +126,286 @@ export default function SectorsPage() {
 
   const isEmpty = !loading && (!breakdown || breakdown.sectors.length === 0);
 
-  if (loading || (!breakdown && hasHoldings)) {
+  if (loading || (!breakdown && hasHoldings)) return <DashboardSkeleton />;
+
+  if (error) return <ErrorState message="Failed to load sector breakdown." onRetry={() => window.location.reload()} />;
+
+  if (isEmpty || !breakdown) {
     return (
-      <PageTransition className="space-y-6">
-        <Header />
-        <div className="space-y-3">
-          {[...Array(3)].map((_, i) => (
-            <div key={i} className="vela-card animate-pulse h-24" />
-          ))}
+      <PageTransition>
+        <TopBar trail={[{ label: "Lab" }, { label: "Sectors" }]} note="no positions yet" />
+        <PageHero title="Sectors" meta="Where the book sits across the market" />
+        <div className="mt-8">
+          <Panel className="px-6 py-14 text-center">
+            <Eyebrow>Nothing to break down</Eyebrow>
+            <Prose className="mx-auto mt-3 max-w-[380px]">
+              There are no holdings on the book yet. Once stocks or funds are recorded, their sector
+              and industry weights land here.
+            </Prose>
+            <Link
+              href="/portfolio"
+              className="mt-5 inline-flex items-center rounded border border-vela-teal/25 bg-vela-teal/10 px-3 py-1.5
+                font-mono text-[10px] uppercase tracking-wider text-vela-teal
+                hover:bg-vela-teal/15 hover:border-vela-teal/40 transition-colors"
+            >
+              Go to positions
+            </Link>
+          </Panel>
         </div>
       </PageTransition>
     );
   }
 
-  if (error) return <ErrorState message="Failed to load sector breakdown." onRetry={() => window.location.reload()} />;
+  const topSector = breakdown.sectors[0];
+  const hhi = breakdown.sectors.reduce((sum, s) => sum + s.weight * s.weight, 0);
+  const concentration = hhi > 0.25 ? "High" : hhi > 0.15 ? "Moderate" : "Low";
 
   return (
-    <PageTransition className="space-y-6">
-      <Header />
+    <PageTransition>
+      <TopBar
+        trail={[{ label: "Lab" }, { label: "Sectors" }]}
+        note={`${breakdown.sectors.length} ${breakdown.sectors.length === 1 ? "sector" : "sectors"} · ${breakdown.industries.length} ${breakdown.industries.length === 1 ? "industry" : "industries"}`}
+      />
 
-      {isEmpty ? (
-        <div className="vela-card text-center py-16 space-y-3">
-          <LayoutGrid className="w-10 h-10 text-zinc-600 mx-auto" />
-          <div>
-            <p className="text-zinc-300 font-medium">No holdings to analyze</p>
-            <p className="text-zinc-500 text-sm mt-1">
-              Add stocks or ETFs to your portfolio to see sector breakdown.
-            </p>
+      <PageHero
+        title="Sectors"
+        meta="Where the book sits across the market"
+        figure={pctWeight(topSector?.weight ?? 0)}
+        figureSub={topSector ? `in ${topSector.name}` : undefined}
+      />
+
+      <StatStrip className="mt-6">
+        <StatCell
+          label="Sectors held"
+          value={String(breakdown.sectors.length)}
+          sub={`${breakdown.industries.length} ${breakdown.industries.length === 1 ? "industry" : "industries"}`}
+        />
+        <StatCell
+          label="Largest sector"
+          value={pctWeight(topSector?.weight ?? 0)}
+          sub={topSector?.name ?? "—"}
+        />
+        <StatCell
+          label="Concentration"
+          value={concentration}
+          sub={`HHI ${hhi.toFixed(2)}`}
+        />
+        <StatCell
+          label="Book value"
+          value={formatCompact(breakdown.total_value)}
+          sub="across all sectors"
+        />
+      </StatStrip>
+
+      {/* ── Allocation ────────────────────────────────────────────────────── */}
+
+      <Section
+        label="Allocation"
+        prose="Market value split by sector, shown as a ring and as a proportional map. Each sector keeps the same colour throughout the page."
+      >
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-10 gap-y-8">
+          <div className="min-w-0">
+            <Eyebrow>Sector ring</Eyebrow>
+            <div className="mt-3 h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <RPieChart>
+                  <Pie
+                    data={breakdown.sectors}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={55}
+                    outerRadius={90}
+                    paddingAngle={2}
+                    stroke="none"
+                  >
+                    {breakdown.sectors.map((s, i) => (
+                      <Cell key={s.name} fill={getSectorColor(s.name, i)} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "#0B1322",
+                      border: "1px solid #1B2638",
+                      borderRadius: 4,
+                      fontSize: 12,
+                      color: "#AEB9CC",
+                    }}
+                    labelStyle={{ color: "#8A97AC" }}
+                    formatter={(val: number) => [formatCompact(val), "Value"]}
+                  />
+                </RPieChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2">
+              {breakdown.sectors.map((s, i) => (
+                <span
+                  key={s.name}
+                  className="inline-flex items-center gap-1.5 font-mono text-[11px] text-vela-muted"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="w-2 h-2 inline-block shrink-0"
+                    style={{ backgroundColor: getSectorColor(s.name, i) }}
+                  />
+                  {s.name}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <div className="min-w-0">
+            <Eyebrow>Proportional map</Eyebrow>
+            <div className="mt-3 h-64">
+              {treemapData.length > 0 && (
+                <ResponsiveContainer width="100%" height="100%">
+                  <Treemap
+                    data={treemapData}
+                    dataKey="size"
+                    stroke="none"
+                    content={<TreemapContent />}
+                  />
+                </ResponsiveContainer>
+              )}
+            </div>
           </div>
         </div>
-      ) : breakdown && (
-        <>
-          {/* Summary cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <FloatingCard delay={0}>
-              <div className="text-center py-4 px-4">
-                <p className="text-3xl font-bold tabular text-zinc-100">{breakdown.sectors.length}</p>
-                <p className="text-xs text-zinc-500 mt-1">Sectors</p>
-              </div>
-            </FloatingCard>
-            <FloatingCard delay={0.08}>
-              <div className="text-center py-4 px-4">
-                <p className="text-3xl font-bold tabular text-zinc-100">{breakdown.industries.length}</p>
-                <p className="text-xs text-zinc-500 mt-1">Industries</p>
-              </div>
-            </FloatingCard>
-            <FloatingCard delay={0.16}>
-              <div className="text-center py-4 px-4">
-                <p className="text-3xl font-bold tabular text-vela-teal">
-                  {pctWeight(breakdown.sectors[0]?.weight ?? 0)}
-                </p>
-                <p className="text-xs text-zinc-500 mt-1">Largest Sector</p>
-              </div>
-            </FloatingCard>
-          </div>
+      </Section>
 
-          {/* Charts */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {/* Pie */}
-            <div className="vela-card">
-              <h2 className="text-sm font-medium text-zinc-300 mb-4">Sector Allocation</h2>
-              <div className="h-64 flex items-center justify-center">
-                <ResponsiveContainer width="100%" height="100%">
-                  <RPieChart>
-                    <Pie
-                      data={breakdown.sectors}
-                      dataKey="value"
-                      nameKey="name"
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={55}
-                      outerRadius={90}
-                      paddingAngle={2}
-                      stroke="none"
-                    >
-                      {breakdown.sectors.map((s, i) => (
-                        <Cell key={s.name} fill={getSectorColor(s.name, i)} />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "#18181b",
-                        border: "1px solid #27272a",
-                        borderRadius: 8,
-                        fontSize: 12,
-                      }}
-                      formatter={(val: number) => [formatCompact(val), "Value"]}
-                    />
-                  </RPieChart>
-                </ResponsiveContainer>
-              </div>
-              {/* Legend */}
-              <div className="flex flex-wrap gap-3 mt-2 justify-center">
-                {breakdown.sectors.map((s, i) => (
-                  <div key={s.name} className="flex items-center gap-1.5">
-                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: getSectorColor(s.name, i) }} />
-                    <span className="text-[10px] text-zinc-400">{s.name}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
+      {/* ── Sector detail ─────────────────────────────────────────────────── */}
 
-            {/* Treemap */}
-            <div className="vela-card">
-              <h2 className="text-sm font-medium text-zinc-300 mb-4">Proportional Map</h2>
-              <div className="h-64">
-                {treemapData.length > 0 && (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <Treemap
-                      data={treemapData}
-                      dataKey="size"
-                      stroke="none"
-                      content={<TreemapContent />}
-                    />
-                  </ResponsiveContainer>
-                )}
-              </div>
-            </div>
-          </div>
+      <Section
+        label="By sector"
+        prose="Each sector's weight on the book against its weight in the S&P 500, marked on the bar. Select a row to open its industries and the holdings behind it."
+      >
+        <div className="border-t border-vela-border">
+          {breakdown.sectors.map((sector, i) => {
+            const color = getSectorColor(sector.name, i);
+            const sp500Weight = SP500_SECTORS[sector.name];
+            const isExpanded = expandedSector === sector.name;
+            const overweight = sp500Weight != null ? sector.weight - sp500Weight : null;
 
-          {/* Sector rows with S&P 500 comparison */}
-          <RevealOnScroll>
-          <div className="space-y-3">
-            <h2 className="text-sm font-medium text-zinc-300">Sector Details</h2>
-            {breakdown.sectors.map((sector, i) => {
-              const color = getSectorColor(sector.name, i);
-              const sp500Weight = SP500_SECTORS[sector.name];
-              const isExpanded = expandedSector === sector.name;
-              const overweight = sp500Weight != null ? sector.weight - sp500Weight : null;
-
-              return (
-                <motion.div
-                  key={sector.name}
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.06, duration: 0.4 }}
+            return (
+              <div key={sector.name} className="border-b border-vela-border">
+                <button
+                  onClick={() => setExpandedSector(isExpanded ? null : sector.name)}
+                  aria-expanded={isExpanded}
+                  className="w-full text-left py-3.5 group"
                 >
-                  <button
-                    onClick={() => setExpandedSector(isExpanded ? null : sector.name)}
-                    className="vela-card w-full text-left hover:border-zinc-600 transition-colors group/sector"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-3 h-3 rounded-sm shrink-0" style={{ backgroundColor: color }} />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between">
-                          <h3 className="text-sm font-medium text-zinc-100">{sector.name}</h3>
-                          <div className="flex items-center gap-3">
-                            <div className="text-right">
-                              <p className="text-sm font-semibold tabular text-zinc-100">{pctWeight(sector.weight)}</p>
-                              <p className="text-[10px] text-zinc-500 tabular">{formatCompact(sector.value)}</p>
-                            </div>
-                            {isExpanded ? (
-                              <ChevronUp className="w-4 h-4 text-zinc-500" />
-                            ) : (
-                              <ChevronDown className="w-4 h-4 text-zinc-500" />
-                            )}
-                          </div>
-                        </div>
+                  <div className="flex items-center gap-3">
+                    <span
+                      aria-hidden="true"
+                      className="w-2.5 h-2.5 shrink-0"
+                      style={{ backgroundColor: color }}
+                    />
+                    <span className="min-w-0 flex-1 truncate text-[13.5px] text-zinc-100 group-hover:text-vela-teal transition-colors">
+                      {sector.name}
+                    </span>
+                    <span className="shrink-0 text-right">
+                      <span className="block font-mono text-[13px] font-semibold tabular-nums text-zinc-100">
+                        {pctWeight(sector.weight)}
+                      </span>
+                      <span className="block font-mono text-[10px] tabular-nums text-vela-muted">
+                        {formatCompact(sector.value)}
+                      </span>
+                    </span>
+                    {isExpanded ? (
+                      <ChevronUp className="w-4 h-4 shrink-0 text-vela-muted" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4 shrink-0 text-vela-muted" />
+                    )}
+                  </div>
 
-                        {/* Weight bar with hover glow */}
-                        <div className="mt-2 flex items-center gap-2">
-                          <div className="flex-1 h-1.5 bg-zinc-800 rounded-full overflow-hidden relative">
-                            <div
-                              className="h-full rounded-full transition-all"
-                              style={{
-                                width: `${Math.min(sector.weight * 100, 100)}%`,
-                                backgroundColor: color,
-                                ["--bar-color" as string]: color,
-                              }}
-                            />
-                            {/* S&P 500 marker */}
-                            {sp500Weight != null && (
-                              <div
-                                className="absolute top-0 h-full w-0.5 bg-zinc-400"
-                                style={{ left: `${Math.min(sp500Weight * 100, 100)}%` }}
-                                title={`S&P 500: ${pctWeight(sp500Weight)}`}
-                              />
-                            )}
-                          </div>
-                          {overweight != null && (
-                            <span className={`text-[10px] tabular w-16 text-right ${
-                              overweight > 0.05 ? "text-amber-400" :
-                              overweight < -0.05 ? "text-zinc-400" :
-                              "text-zinc-500"
-                            }`}>
-                              {overweight > 0 ? "+" : ""}{(overweight * 100).toFixed(1)}%
-                            </span>
-                          )}
-                        </div>
-
-                        {sp500Weight != null && (
-                          <p className="text-[10px] text-zinc-600 mt-1">
-                            S&P 500: {pctWeight(sp500Weight)} · You: {pctWeight(sector.weight)}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </button>
-
-                  {/* Expanded: industries + holdings */}
-                  {isExpanded && (
-                    <div className="ml-6 mt-1 space-y-1">
-                      {sectorIndustries.map((ind) => (
-                        <div key={ind.name} className="vela-card py-2 px-3 border-l-2" style={{ borderColor: color }}>
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs text-zinc-300">{ind.name}</span>
-                            <span className="text-xs text-zinc-500 tabular">{pctWeight(ind.weight)}</span>
-                          </div>
-                        </div>
-                      ))}
-                      {sectorHoldings.length > 0 && (
-                        <div className="vela-card py-2 px-3">
-                          <p className="text-[10px] text-zinc-500 mb-1.5 uppercase tracking-wider">Holdings</p>
-                          <div className="flex flex-wrap gap-2">
-                            {sectorHoldings.map((h) => (
-                              <span
-                                key={h.ticker}
-                                className="text-[10px] px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 tabular"
-                              >
-                                {h.ticker} · {pctWeight(h.weight)}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
+                  <div className="mt-2.5 flex items-center gap-3">
+                    <div className="relative h-1.5 flex-1 overflow-hidden rounded-sm border border-vela-border bg-vela-card">
+                      <div
+                        className="h-full"
+                        style={{
+                          width: `${Math.min(sector.weight * 100, 100)}%`,
+                          backgroundColor: color,
+                        }}
+                      />
+                      {sp500Weight != null && (
+                        <span
+                          aria-hidden="true"
+                          className="absolute top-0 h-full w-px bg-zinc-100"
+                          style={{ left: `${Math.min(sp500Weight * 100, 100)}%` }}
+                        />
                       )}
                     </div>
+                    {overweight != null && (
+                      <span
+                        className={`w-24 shrink-0 text-right font-mono text-[10px] tabular-nums ${
+                          overweight > 0.05 ? "text-amber-400" : "text-vela-muted"
+                        }`}
+                      >
+                        {overweight > 0 ? "+" : ""}
+                        {(overweight * 100).toFixed(1)}% vs S&amp;P
+                      </span>
+                    )}
+                  </div>
+
+                  {sp500Weight != null && (
+                    <p className="mt-1.5 font-mono text-[10px] tabular-nums text-vela-muted">
+                      S&amp;P 500 {pctWeight(sp500Weight)} · book {pctWeight(sector.weight)}
+                    </p>
                   )}
-                </motion.div>
-              );
-            })}
-          </div>
-          </RevealOnScroll>
+                </button>
 
-          {/* Concentration insight */}
-          <ConcentrationInsight sectors={breakdown.sectors} />
+                {isExpanded && (
+                  <div
+                    className="mb-4 border-l pl-4 space-y-2.5"
+                    style={{ borderColor: color }}
+                  >
+                    {sectorIndustries.length > 0 && (
+                      <div>
+                        <Eyebrow>Industries</Eyebrow>
+                        <div className="mt-1.5 divide-y divide-vela-border">
+                          {sectorIndustries.map((ind) => (
+                            <div
+                              key={ind.name}
+                              className="flex items-center justify-between gap-3 py-1.5"
+                            >
+                              <span className="min-w-0 truncate text-[13px] text-vela-body">
+                                {ind.name}
+                              </span>
+                              <span className="shrink-0 font-mono text-[11px] tabular-nums text-vela-muted">
+                                {pctWeight(ind.weight)}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {sectorHoldings.length > 0 && (
+                      <div>
+                        <Eyebrow>Holdings</Eyebrow>
+                        <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1.5">
+                          {sectorHoldings.map((h) => (
+                            <span
+                              key={h.ticker}
+                              className="font-mono text-[11px] tabular-nums text-vela-body"
+                            >
+                              <span className="text-zinc-100">{h.ticker}</span>{" "}
+                              {pctWeight(h.weight)}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </Section>
 
-          {/* Disclaimer */}
-          <div className="text-center pt-4 pb-8 border-t border-zinc-800">
-            <p className="text-xs text-zinc-600">
-              Sector data is sourced from Yahoo Finance. ETFs are grouped separately as they span multiple sectors.
-              S&P 500 weights are approximate benchmarks.
-            </p>
-          </div>
-        </>
-      )}
+      {/* ── Concentration ─────────────────────────────────────────────────── */}
+
+      <ConcentrationInsight sectors={breakdown.sectors} />
     </PageTransition>
-  );
-}
-
-// ── Header ───────────────────────────────────────────────────────────────────
-
-function Header() {
-  return (
-    <div>
-      <h1 className="text-2xl font-display font-bold text-zinc-100 flex items-center gap-3">
-        <LayoutGrid className="w-7 h-7 text-vela-teal" />
-        Sector Breakdown
-      </h1>
-      <p className="text-zinc-500 text-sm mt-1">
-        Understand your portfolio diversification across sectors and industries.
-      </p>
-    </div>
   );
 }
 
@@ -405,32 +424,47 @@ function ConcentrationInsight({ sectors }: { sectors: SectorEntry[] }) {
   });
 
   return (
-    <div className={`vela-card px-4 py-3 ${
-      concentration === "high" ? "border-amber-500/20" :
-      concentration === "moderate" ? "border-zinc-700" :
-      "border-vela-teal/20"
-    }`}>
-      <p className="text-xs text-zinc-400">
+    <Section
+      label="Concentration"
+      prose="A read of how tightly the book clusters, using the Herfindahl-Hirschman index of sector weights."
+    >
+      <Prose className="max-w-[620px]">
         {concentration === "high" ? (
           <>
-            Your portfolio is <span className="text-amber-400 font-medium">highly concentrated</span> in {top.name} ({pctWeight(top.weight)}).
-            Consider diversifying across more sectors to reduce risk.
+            Sector weights are tightly clustered, with{" "}
+            <span className="text-zinc-100">{top.name}</span> at{" "}
+            <span className="font-mono tabular-nums text-zinc-100">{pctWeight(top.weight)}</span> of
+            the book. An index above 0.25 is conventionally read as high concentration.
           </>
         ) : concentration === "moderate" ? (
           <>
-            <span className="text-zinc-300 font-medium">Moderate concentration</span>  - {top.name} is your largest sector at {pctWeight(top.weight)}.
-            {sectors.length >= 4 ? " Good spread across multiple sectors." : " Adding exposure to more sectors could help."}
+            Sector weights sit in the middle of the range, with{" "}
+            <span className="text-zinc-100">{top.name}</span> largest at{" "}
+            <span className="font-mono tabular-nums text-zinc-100">{pctWeight(top.weight)}</span>.
+            The book spreads across {sectors.length} {sectors.length === 1 ? "sector" : "sectors"}.
           </>
         ) : (
           <>
-            <span className="text-emerald-400 font-medium">Well diversified</span> across {sectors.length} sectors.
-            No single sector dominates your portfolio.
+            Sector weights are evenly spread across {sectors.length}{" "}
+            {sectors.length === 1 ? "sector" : "sectors"}, with no single sector taking a dominant
+            share. {top.name} is largest at{" "}
+            <span className="font-mono tabular-nums text-zinc-100">{pctWeight(top.weight)}</span>.
           </>
         )}
         {overweightSectors.length > 0 && (
-          <>{" "}You&apos;re overweight vs S&P 500 in: {overweightSectors.map((s) => s.name).join(", ")}.</>
+          <>
+            {" "}
+            Relative to the S&amp;P 500, the book carries more weight in{" "}
+            {overweightSectors.map((s) => s.name).join(", ")}.
+          </>
         )}
+      </Prose>
+
+      <p className="mt-6 border-t border-vela-border pt-4 text-[11px] leading-relaxed text-vela-muted max-w-3xl">
+        Sector data is sourced from Yahoo Finance. Funds are grouped separately because they span
+        multiple sectors, and S&amp;P 500 weights are approximate benchmarks. Descriptive only, not
+        investment advice.
       </p>
-    </div>
+    </Section>
   );
 }
