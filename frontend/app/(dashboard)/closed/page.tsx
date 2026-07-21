@@ -207,7 +207,7 @@ function PositionRow({ pos }: { pos: ClosedPosition }) {
             {ticker}
           </Link>
           <StatusChip pos={pos} />
-          {pos.name && (
+          {pos.name && pos.name !== pos.ticker && (
             <span className="truncate text-[13px] text-vela-body">{pos.name}</span>
           )}
         </div>
