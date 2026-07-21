@@ -3,7 +3,6 @@
 import { useMemo, useState, useCallback } from "react";
 import Link from "next/link";
 import {
-  Zap,
   AlertTriangle,
   TrendingDown,
   TrendingUp,
@@ -14,8 +13,6 @@ import {
   Scissors,
   BarChart2,
   ArrowRight,
-  CheckCircle2,
-  Filter,
   Wallet,
   Sparkles,
   Loader2,
@@ -29,11 +26,20 @@ import { useGoals } from "@/hooks/useGoals";
 import { useRiskMetrics } from "@/hooks/useRiskMetrics";
 import { useSectorBreakdown, type SectorEntry } from "@/hooks/useSectors";
 import PageTransition from "@/components/celestial/PageTransition";
-import FloatingCard from "@/components/celestial/FloatingCard";
-import RevealOnScroll from "@/components/celestial/RevealOnScroll";
 import DashboardSkeleton from "@/components/shared/DashboardSkeleton";
 import ErrorState from "@/components/shared/ErrorState";
 import Disclaimer from "@/components/shared/Disclaimer";
+import {
+  TopBar,
+  PageHero,
+  StatStrip,
+  StatCell,
+  Section,
+  PillGroup,
+  Panel,
+  Eyebrow,
+  Prose,
+} from "@/components/instrument";
 
 // ── Alert types ───────────────────────────────────────────────────────
 
@@ -51,31 +57,12 @@ interface SmartAlert {
   icon: React.ComponentType<{ className?: string }>;
 }
 
-const SEVERITY_STYLES: Record<AlertSeverity, { border: string; bg: string; dot: string; iconColor: string }> = {
-  critical: {
-    border: "border-rose-500/30",
-    bg: "bg-gradient-to-r from-rose-500/10 via-rose-500/5 to-transparent",
-    dot: "bg-rose-400",
-    iconColor: "text-rose-400",
-  },
-  warning: {
-    border: "border-amber-500/30",
-    bg: "bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent",
-    dot: "bg-amber-400",
-    iconColor: "text-amber-400",
-  },
-  info: {
-    border: "border-teal-500/20",
-    bg: "bg-gradient-to-r from-teal-500/8 via-teal-500/3 to-transparent",
-    dot: "bg-teal-400",
-    iconColor: "text-teal-400",
-  },
-  positive: {
-    border: "border-emerald-500/20",
-    bg: "bg-gradient-to-r from-emerald-500/8 via-emerald-500/3 to-transparent",
-    dot: "bg-emerald-400",
-    iconColor: "text-emerald-400",
-  },
+/* Severity is semantic: loss / amber / teal / gain. Never decoration. */
+const SEVERITY_STYLES: Record<AlertSeverity, { label: string; text: string }> = {
+  critical: { label: "Critical", text: "text-loss" },
+  warning: { label: "Warning", text: "text-amber-400" },
+  info: { label: "Info", text: "text-vela-teal" },
+  positive: { label: "Positive", text: "text-gain" },
 };
 
 const CATEGORY_LABELS: Record<AlertCategory, string> = {
@@ -101,6 +88,10 @@ function projectedValue(current: number, monthly: number, months: number, cagr =
 }
 
 // ── Alert generation engine ───────────────────────────────────────────
+//
+// Copy rule: every description is a statement of recorded fact or arithmetic.
+// No imperatives, no prescribed action on a specific holding, no judgement of
+// whether a position or plan is good. Thresholds, not recommendations.
 
 function generateAlerts(
   summary: { total_value: number; holdings: { ticker: string; market_value: number | null; total_cost: number; unrealized_pnl: number | null; unrealized_pnl_pct: number | null; sector?: string; day_change_pct: number | null; quantity: number }[] } | null,
@@ -145,9 +136,7 @@ function generateAlerts(
           category: "portfolio",
           severity: dayPct < -5 ? "warning" : "positive",
           title: `${h.ticker} moved ${dayPct > 0 ? "+" : ""}${dayPct.toFixed(1)}% today`,
-          description: dayPct < 0
-            ? `Significant drop. A moment to check whether the reason you own it still holds.`
-            : `Strong rally. Worth checking whether news is driving it, and how it sits against your thesis.`,
+          description: `Recorded against the previous close. Single-day moves of this size are usually tied to company news or a market-wide move.`,
           action: "View Portfolio",
           link: "/portfolio",
           icon: dayPct < 0 ? TrendingDown : TrendingUp,
@@ -165,7 +154,7 @@ function generateAlerts(
         category: "opportunity",
         severity: totalLosses > 1000 ? "info" : "info",
         title: `$${totalLosses.toFixed(0)} in harvestable losses`,
-        description: `${harvestable.length} position${harvestable.length !== 1 ? "s" : ""} have unrealized losses. Harvesting could save ~$${taxSavings.toFixed(0)} in taxes at the 22% bracket. Remember the 30-day wash sale rule.`,
+        description: `${harvestable.length} position${harvestable.length !== 1 ? "s" : ""} carry unrealized losses. Realising them would offset up to ~$${taxSavings.toFixed(0)} of tax at a 22% marginal rate. The 30-day wash sale rule applies to repurchases.`,
         action: "View Tax Harvest",
         link: "/tax-harvest",
         icon: Scissors,
@@ -201,7 +190,8 @@ function generateAlerts(
         const drop20 = dollarExposed * 0.2;
         const drop30 = dollarExposed * 0.3;
 
-        // Build goal-aware diversification suggestions filtered to sectors not yet held
+        // Name the sectors that are absent from the portfolio. Statement of
+        // absence only — no sector is being put forward as one to add.
         const SP500_SECTORS = ["Healthcare", "Consumer Defensive", "Utilities", "Energy", "Industrials", "Real Estate", "Communication Services", "Basic Materials"];
         const heldSectorNames = new Set(sectorSource.map((s) => s.name.toLowerCase()));
         const missingSectors = SP500_SECTORS.filter((s) => !heldSectorNames.has(s.toLowerCase()));
@@ -213,9 +203,9 @@ function generateAlerts(
           : hasDebt
             ? ["Consumer Defensive", "Utilities", "Real Estate"]
             : ["Healthcare", "Consumer Defensive", "Industrials"];
-        const suggestSectors = prioritySectors.filter((s) => missingSectors.includes(s)).slice(0, 3);
-        const suggestText = suggestSectors.length > 0
-          ? `You currently have zero exposure to ${suggestSectors.join(", ")}.`
+        const absentSectors = prioritySectors.filter((s) => missingSectors.includes(s)).slice(0, 3);
+        const absenceText = absentSectors.length > 0
+          ? `Your portfolio currently records no exposure to ${absentSectors.join(", ")}.`
           : `You hold few of the ${missingSectors.length} other sectors, so your outcome leans heavily on the ones above.`;
 
         // Build a message that references actual sector names and top-2 if relevant
@@ -223,9 +213,9 @@ function generateAlerts(
         if (isDualHeavy && sectorSource[1]) {
           const sec2 = sectorSource[1];
           const sec2Pct = (sec2.value / totalValue) * 100;
-          description = `${topSector.name} (${topPct.toFixed(0)}%) + ${sec2.name} (${sec2Pct.toFixed(0)}%) = ${top2Pct.toFixed(0)}% of your portfolio. A 20% ${topSector.name} correction alone costs ~$${drop20.toLocaleString(undefined, { maximumFractionDigits: 0 })}. ${suggestText}`;
+          description = `${topSector.name} (${topPct.toFixed(0)}%) + ${sec2.name} (${sec2Pct.toFixed(0)}%) = ${top2Pct.toFixed(0)}% of your portfolio. A 20% ${topSector.name} correction alone would be ~$${drop20.toLocaleString(undefined, { maximumFractionDigits: 0 })}. ${absenceText}`;
         } else {
-          description = `$${dollarExposed.toLocaleString(undefined, { maximumFractionDigits: 0 })} rides on ${topSector.name}. A 20% sector downturn = ~$${drop20.toLocaleString(undefined, { maximumFractionDigits: 0 })} loss; a 30% drop = ~$${drop30.toLocaleString(undefined, { maximumFractionDigits: 0 })}. ${suggestText}`;
+          description = `$${dollarExposed.toLocaleString(undefined, { maximumFractionDigits: 0 })} rides on ${topSector.name}. A 20% sector downturn is ~$${drop20.toLocaleString(undefined, { maximumFractionDigits: 0 })}; a 30% drop is ~$${drop30.toLocaleString(undefined, { maximumFractionDigits: 0 })}. ${absenceText}`;
         }
 
         alerts.push({
@@ -273,7 +263,7 @@ function generateAlerts(
           category: "risk",
           severity: debtRatio > 80 ? "critical" : "warning",
           title: `Debt-to-asset ratio at ${debtRatio.toFixed(0)}%`,
-          description: `Your liabilities represent a significant portion of your assets. Prioritize paying down high-interest debt to strengthen your balance sheet.`,
+          description: `Recorded liabilities are ${debtRatio.toFixed(0)}% of recorded assets, so a large share of what you own is financed by debt.`,
           action: "View Net Worth",
           link: "/net-worth",
           icon: AlertTriangle,
@@ -287,7 +277,7 @@ function generateAlerts(
         category: "planning",
         severity: "critical",
         title: "Negative net worth",
-        description: `Your liabilities ($${(nw.total_liabilities / 1000).toFixed(1)}K) exceed your assets ($${(nw.total_assets / 1000).toFixed(1)}K). Focus on debt reduction and building an emergency fund.`,
+        description: `Recorded liabilities ($${(nw.total_liabilities / 1000).toFixed(1)}K) exceed recorded assets ($${(nw.total_assets / 1000).toFixed(1)}K), so net worth is below zero.`,
         action: "View Net Worth",
         link: "/net-worth",
         icon: Wallet,
@@ -305,7 +295,7 @@ function generateAlerts(
         category: "planning",
         severity: "critical",
         title: "Spending exceeds income",
-        description: `You're spending $${Math.abs(cf.total_income - cf.total_expenses).toFixed(0)}/mo more than you earn. This is unsustainable  - review your budget for cuts.`,
+        description: `Recorded spending runs $${Math.abs(cf.total_income - cf.total_expenses).toFixed(0)}/mo above recorded income.`,
         action: "View Budget",
         link: "/budget",
         icon: AlertTriangle,
@@ -316,7 +306,7 @@ function generateAlerts(
         category: "planning",
         severity: "warning",
         title: `Savings rate at ${rate.toFixed(0)}%`,
-        description: `Financial advisors recommend saving at least 20% of income. At ${rate.toFixed(0)}%, you have room to improve. Even small increases compound significantly over time.`,
+        description: `A commonly cited benchmark is 20% of income. Your recorded rate is ${rate.toFixed(0)}%.`,
         action: "View Cash Flow",
         link: "/cash-flow",
         icon: PiggyBank,
@@ -326,8 +316,8 @@ function generateAlerts(
         id: `savhi-${id++}`,
         category: "opportunity",
         severity: "positive",
-        title: `Excellent ${rate.toFixed(0)}% savings rate`,
-        description: `You're saving well above the recommended 20% target. This accelerates your path to financial independence significantly.`,
+        title: `Savings rate at ${rate.toFixed(0)}%`,
+        description: `Your recorded savings rate sits above the commonly cited 20% benchmark.`,
         action: "View FI Tracker",
         link: "/fi",
         icon: PiggyBank,
@@ -360,7 +350,7 @@ function generateAlerts(
           category: "opportunity",
           severity: "positive",
           title: `"${g.name}" is ${pct.toFixed(0)}% complete`,
-          description: `Only $${(g.target_amount - g.current_amount).toLocaleString(undefined, { maximumFractionDigits: 0 })} left. One or two extra contributions could close this out.`,
+          description: `$${(g.target_amount - g.current_amount).toLocaleString(undefined, { maximumFractionDigits: 0 })} remains to reach the target.`,
           action: "View Goals",
           link: "/goals",
           icon: Target,
@@ -380,7 +370,7 @@ function generateAlerts(
             category: "planning",
             severity: deadlineSeverity,
             title: `"${g.name}" is on track to fall short`,
-            description: `At current contributions, you'll reach ~$${projected.toLocaleString(undefined, { maximumFractionDigits: 0 })} by ${new Date(g.target_date!).toLocaleDateString("en-US", { month: "short", year: "numeric" })}, missing the $${g.target_amount.toLocaleString(undefined, { maximumFractionDigits: 0 })} target by $${shortfall.toLocaleString(undefined, { maximumFractionDigits: 0 })}. Increase contributions by ~$${extraNeeded.toFixed(0)}/mo.`,
+            description: `At current contributions the projection reaches ~$${projected.toLocaleString(undefined, { maximumFractionDigits: 0 })} by ${new Date(g.target_date!).toLocaleDateString("en-US", { month: "short", year: "numeric" })}, $${shortfall.toLocaleString(undefined, { maximumFractionDigits: 0 })} below the $${g.target_amount.toLocaleString(undefined, { maximumFractionDigits: 0 })} target. Spread over the remaining ${mo} months that gap is ~$${extraNeeded.toFixed(0)}/mo.`,
             action: "View Goals",
             link: "/goals",
             icon: Target,
@@ -396,7 +386,7 @@ function generateAlerts(
           category: "planning",
           severity: mo < 24 ? "warning" : "info",
           title: `"${g.name}" has no monthly contribution`,
-          description: `At ${pct.toFixed(0)}% with $0/mo recurring and ${mo} months remaining, this goal will likely stall. Set up automatic contributions.`,
+          description: `At ${pct.toFixed(0)}% funded with $0/mo recorded and ${mo} months remaining, the projection does not reach the target.`,
           action: "View Goals",
           link: "/goals",
           icon: Target,
@@ -448,7 +438,7 @@ function generateAlerts(
         category: "risk",
         severity: dd > 30 ? "critical" : "warning",
         title: `Max drawdown of ${dd.toFixed(0)}%`,
-        description: `Your portfolio has experienced a ${dd.toFixed(0)}% peak-to-trough decline. Review whether your allocation matches your risk tolerance.`,
+        description: `${dd.toFixed(0)}% is the largest peak-to-trough decline your portfolio has recorded over the measured period.`,
         action: "View Risk",
         link: "/risk",
         icon: TrendingDown,
@@ -461,7 +451,7 @@ function generateAlerts(
         category: "risk",
         severity: "warning",
         title: "Negative Sharpe ratio",
-        description: `Your portfolio is underperforming a risk-free asset. Consider reviewing your holdings and whether your strategy is working.`,
+        description: `Over the measured period, the portfolio's risk-adjusted return sits below that of a risk-free asset.`,
         action: "Open Reflect",
         link: "/reflect",
         icon: BarChart2,
@@ -476,27 +466,9 @@ function generateAlerts(
   return alerts;
 }
 
-// ── Filter pill ───────────────────────────────────────────────────────
-
-function FilterPill({ label, active, count, onClick }: { label: string; active: boolean; count: number; onClick: () => void }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium transition-all ${
-        active
-          ? "bg-vela-teal/20 text-vela-teal border border-vela-teal/30"
-          : "bg-zinc-800/50 text-zinc-500 border border-zinc-700/50 hover:text-zinc-300 hover:border-zinc-600"
-      }`}
-    >
-      {label}
-      <span className={`text-[10px] px-1.5 py-0.5 rounded ${active ? "bg-vela-teal/30" : "bg-zinc-700/50"}`}>
-        {count}
-      </span>
-    </button>
-  );
-}
-
 // ── Main page ─────────────────────────────────────────────────────────
+
+type FilterKey = AlertCategory | "all";
 
 export default function SmartAlertsPage() {
   const { summary, portfolio, loading: pLoading, error: pError } = useDefaultPortfolio();
@@ -505,13 +477,13 @@ export default function SmartAlertsPage() {
   const { goals, isLoading: gLoading, error: gError } = useGoals();
   const portfolioId = portfolio?.id ?? null;
   const { data: risk, isLoading: rLoading, error: rError } = useRiskMetrics(portfolioId ?? undefined);
-  const { breakdown: sectorData, loading: sLoading } = useSectorBreakdown(portfolioId);
+  const { breakdown: sectorData } = useSectorBreakdown(portfolioId);
 
   // Sectors data loads separately (yfinance call) — don't block core alerts on it
   const loading = pLoading || nwLoading || cfLoading || gLoading || rLoading;
   const error = pError || nwError || cfError || gError || rError;
 
-  const [activeFilter, setActiveFilter] = useState<AlertCategory | "all">("all");
+  const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
 
   // ── AI insight state per-alert ────────────────────────────────────────
   const [insights, setInsights] = useState<Record<string, { text: string; loading: boolean; error?: string }>>({});
@@ -572,7 +544,7 @@ export default function SmartAlertsPage() {
           } catch { /* ignore */ }
         }
       }
-    } catch (e) {
+    } catch {
       setInsights((prev) => ({ ...prev, [alert.id]: { text: "", loading: false, error: "Failed to load insight" } }));
     }
   }, [insights]);
@@ -607,209 +579,221 @@ export default function SmartAlertsPage() {
     return counts;
   }, [allAlerts]);
 
+  const filterOptions = useMemo(() => {
+    const opts: { key: FilterKey; label: string }[] = [{ key: "all", label: `All ${categoryCounts.all}` }];
+    for (const cat of ["portfolio", "risk", "planning", "opportunity"] as AlertCategory[]) {
+      if (categoryCounts[cat] > 0) {
+        opts.push({ key: cat, label: `${CATEGORY_LABELS[cat]} ${categoryCounts[cat]}` });
+      }
+    }
+    return opts;
+  }, [categoryCounts]);
+
   if (error) return <ErrorState message="Failed to load alert data." onRetry={() => window.location.reload()} />;
   if (loading) return <DashboardSkeleton />;
 
+  const sources = [
+    { label: "Portfolio", connected: !!summary, count: summary?.holdings.length ?? 0, unit: "holdings" },
+    { label: "Net worth", connected: !!nw, count: nw ? 1 : 0, unit: "snapshot" },
+    { label: "Cash flow", connected: !!cf, count: cf ? 1 : 0, unit: "snapshot" },
+    { label: "Goals", connected: !!goals && goals.length > 0, count: goals?.length ?? 0, unit: "goals" },
+    { label: "Risk metrics", connected: !!risk, count: risk ? 1 : 0, unit: "analysis" },
+  ];
+  const connectedCount = sources.filter((s) => s.connected).length;
+
   return (
-    <PageTransition className="space-y-6">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-display font-bold text-zinc-100 flex items-center gap-2">
-            <Zap className="w-6 h-6 text-amber-400" />
-            Smart Alerts
-          </h1>
-          <p className="text-sm text-zinc-500 mt-0.5">
-            Automated insights from your portfolio, net worth, cash flow, and goals
-          </p>
-        </div>
-        {insightQuota && (
-          <div className="shrink-0 flex items-center gap-1.5 text-[11px] text-zinc-500 mt-1 border border-zinc-800 rounded px-2.5 py-1">
-            <Sparkles className="w-3 h-3 text-vela-teal" />
-            <span className={insightQuota.remaining <= 2 ? "text-amber-400" : "text-zinc-400"}>
-              {insightQuota.remaining}/{insightQuota.limit} AI insights left today
-            </span>
-          </div>
-        )}
-      </div>
+    <PageTransition>
+      <TopBar
+        trail={[{ label: "Journal" }, { label: "Smart Alerts" }]}
+        note={`${connectedCount} of ${sources.length} sources scanned · sorted by severity`}
+      />
 
-      {/* Summary strip */}
-      <FloatingCard glowColor="rgba(251, 191, 36, 0.08)" tilt={false}>
-        <div className="flex flex-wrap items-center gap-4 sm:gap-8">
-          <div className="text-center">
-            <p className="text-3xl font-display font-bold text-zinc-100 tabular-nums">{allAlerts.length}</p>
-            <p className="text-xs text-zinc-500">Total Alerts</p>
-          </div>
-          <div className="h-10 w-px bg-zinc-800 hidden sm:block" />
-          {severityCounts.critical > 0 && (
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-rose-400 animate-pulse" />
-              <div>
-                <p className="text-sm font-bold text-rose-400 tabular-nums">{severityCounts.critical}</p>
-                <p className="text-[10px] text-zinc-600">Critical</p>
-              </div>
-            </div>
-          )}
-          {severityCounts.warning > 0 && (
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-amber-400" />
-              <div>
-                <p className="text-sm font-bold text-amber-400 tabular-nums">{severityCounts.warning}</p>
-                <p className="text-[10px] text-zinc-600">Warning</p>
-              </div>
-            </div>
-          )}
-          {severityCounts.info > 0 && (
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-teal-400" />
-              <div>
-                <p className="text-sm font-bold text-teal-400 tabular-nums">{severityCounts.info}</p>
-                <p className="text-[10px] text-zinc-600">Info</p>
-              </div>
-            </div>
-          )}
-          {severityCounts.positive > 0 && (
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
-              <div>
-                <p className="text-sm font-bold text-emerald-400 tabular-nums">{severityCounts.positive}</p>
-                <p className="text-[10px] text-zinc-600">Positive</p>
-              </div>
-            </div>
-          )}
-        </div>
-      </FloatingCard>
+      <PageHero
+        title="Smart Alerts"
+        meta="Thresholds crossed in your own recorded data"
+        figure={allAlerts.length.toLocaleString("en-US")}
+        figureSub={allAlerts.length === 1 ? "signal flagged" : "signals flagged"}
+        figureSubClass="text-vela-muted"
+      />
 
-      {/* Filters */}
-      <div className="flex items-center gap-2 flex-wrap">
-        <Filter className="w-3.5 h-3.5 text-zinc-600" />
-        <FilterPill label="All" active={activeFilter === "all"} count={categoryCounts.all} onClick={() => setActiveFilter("all")} />
-        {(["portfolio", "risk", "planning", "opportunity"] as AlertCategory[]).map((cat) =>
-          categoryCounts[cat] > 0 ? (
-            <FilterPill
-              key={cat}
-              label={CATEGORY_LABELS[cat]}
-              active={activeFilter === cat}
-              count={categoryCounts[cat]}
-              onClick={() => setActiveFilter(activeFilter === cat ? "all" : cat)}
-            />
-          ) : null,
-        )}
-      </div>
+      <StatStrip className="mt-6">
+        <StatCell
+          label="Critical"
+          value={severityCounts.critical.toLocaleString("en-US")}
+          valueClass={severityCounts.critical > 0 ? "text-loss" : "text-zinc-100"}
+          sub="highest urgency"
+          subClass="text-vela-muted"
+        />
+        <StatCell
+          label="Warning"
+          value={severityCounts.warning.toLocaleString("en-US")}
+          valueClass={severityCounts.warning > 0 ? "text-amber-400" : "text-zinc-100"}
+          sub="worth a look"
+          subClass="text-vela-muted"
+        />
+        <StatCell
+          label="Info"
+          value={severityCounts.info.toLocaleString("en-US")}
+          valueClass={severityCounts.info > 0 ? "text-vela-teal" : "text-zinc-100"}
+          sub="context only"
+          subClass="text-vela-muted"
+        />
+        <StatCell
+          label="Positive"
+          value={severityCounts.positive.toLocaleString("en-US")}
+          valueClass={severityCounts.positive > 0 ? "text-gain" : "text-zinc-100"}
+          sub="tracking ahead"
+          subClass="text-vela-muted"
+        />
+      </StatStrip>
 
-      {/* Alert list */}
-      {filteredAlerts.length === 0 ? (
-        <div className="vela-card text-center py-16 space-y-4">
-          <CheckCircle2 className="w-12 h-12 text-emerald-400 mx-auto" />
-          <div>
-            <h2 className="text-lg font-medium text-zinc-200">
-              {allAlerts.length === 0 ? "No alerts detected" : "No alerts in this category"}
-            </h2>
-            <p className="text-sm text-zinc-500 mt-1 max-w-md mx-auto">
-              {allAlerts.length === 0
-                ? "Your finances look clean. We'll surface insights as your data changes."
-                : "Try a different filter to see other alerts."}
+      {/* ── Alert list ─────────────────────────────────────────────── */}
+      <Section
+        label="Signals"
+        prose="Observations generated from your portfolio, net worth, cash flow, goals, and risk metrics. Thresholds, not recommendations."
+        controls={
+          insightQuota ? (
+            <p className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.12em]">
+              <Sparkles className="w-3 h-3 shrink-0 text-vela-teal" />
+              <span className={insightQuota.remaining <= 2 ? "text-amber-400" : "text-vela-muted"}>
+                {insightQuota.remaining}/{insightQuota.limit} AI insights left today
+              </span>
             </p>
-          </div>
+          ) : undefined
+        }
+      >
+        <div className="overflow-x-auto pb-1 mb-6">
+          <PillGroup
+            options={filterOptions}
+            value={activeFilter}
+            onChange={(k) => setActiveFilter(k === activeFilter && k !== "all" ? "all" : k)}
+            ariaLabel="Filter alerts by category"
+          />
         </div>
-      ) : (
-        <div className="space-y-3">
-          {filteredAlerts.map((alert, i) => {
-            const style = SEVERITY_STYLES[alert.severity];
-            const insight = insights[alert.id];
-            return (
-              <RevealOnScroll key={alert.id} delay={i * 0.03}>
-                <div className={`rounded-xl border ${style.border} ${style.bg} p-4 sm:p-5 transition-all hover:scale-[1.005]`}>
-                  <div className="flex gap-3 sm:gap-4">
-                    {/* Icon */}
-                    <div className={`shrink-0 mt-0.5 ${style.iconColor}`}>
-                      <alert.icon className="w-5 h-5" />
-                    </div>
 
-                    {/* Content */}
-                    <div className="flex-1 min-w-0 space-y-1.5">
-                      <div className="flex items-start justify-between gap-2">
-                        <h3 className="text-sm font-medium text-zinc-100">{alert.title}</h3>
-                        <span className={`shrink-0 text-[10px] font-medium px-2 py-0.5 rounded border ${style.border} ${style.iconColor}`}>
-                          {alert.severity}
+        {filteredAlerts.length === 0 ? (
+          <Panel className="px-5 py-12 text-center">
+            <Eyebrow>
+              {allAlerts.length === 0 ? "Nothing flagged" : "Nothing in this category"}
+            </Eyebrow>
+            <Prose className="mt-2.5 max-w-[440px] mx-auto">
+              {allAlerts.length === 0
+                ? "No threshold was crossed in the data you have recorded. New signals appear as that data changes."
+                : "Every signal sits in another category. Switch the filter to see them."}
+            </Prose>
+          </Panel>
+        ) : (
+          <div>
+            {filteredAlerts.map((alert) => {
+              const sev = SEVERITY_STYLES[alert.severity];
+              const insight = insights[alert.id];
+              return (
+                <article
+                  key={alert.id}
+                  className="border-t border-vela-border first:border-t-0 py-5 first:pt-0"
+                >
+                  <div className="flex gap-3.5">
+                    <alert.icon className={`w-4 h-4 shrink-0 mt-1 ${sev.text}`} />
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                        <Eyebrow>{CATEGORY_LABELS[alert.category]}</Eyebrow>
+                        <span
+                          className={`font-mono text-[10px] uppercase tracking-[0.14em] ${sev.text}`}
+                        >
+                          {sev.label}
                         </span>
                       </div>
-                      <p className="text-xs text-zinc-400 leading-relaxed">{alert.description}</p>
 
-                      <div className="flex items-center gap-3 pt-1 flex-wrap">
+                      <h3 className="mt-2 text-[15px] font-medium leading-snug text-zinc-100">
+                        {alert.title}
+                      </h3>
+                      <Prose className="mt-1.5 max-w-[680px]">{alert.description}</Prose>
+
+                      <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2">
                         <Link
                           href={alert.link}
-                          className="inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-vela-teal transition-colors"
+                          className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider
+                            text-vela-muted hover:text-vela-teal transition-colors"
                         >
-                          {alert.action} <ArrowRight className="w-3 h-3" />
+                          {alert.action} <ArrowRight className="w-3 h-3 shrink-0" />
                         </Link>
-                        {/* AI insight button — only if no insight loaded yet */}
                         {!insight?.text && (
                           <button
                             onClick={() => fetchInsight(alert)}
                             disabled={insight?.loading}
-                            className="inline-flex items-center gap-1 text-[11px] text-zinc-600 hover:text-vela-teal transition-colors disabled:opacity-50"
+                            className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider
+                              text-vela-muted hover:text-vela-teal transition-colors
+                              disabled:opacity-50 disabled:cursor-not-allowed"
                           >
-                            {insight?.loading
-                              ? <><Loader2 className="w-3 h-3 animate-spin" /> Thinking…</>
-                              : <><Sparkles className="w-3 h-3" /> Get AI insight</>
-                            }
+                            {insight?.loading ? (
+                              <>
+                                <Loader2 className="w-3 h-3 shrink-0 animate-spin" /> Thinking…
+                              </>
+                            ) : (
+                              <>
+                                <Sparkles className="w-3 h-3 shrink-0" /> Get AI insight
+                              </>
+                            )}
                           </button>
                         )}
                       </div>
 
                       {/* Streaming AI insight panel */}
                       {(insight?.text || insight?.error) && (
-                        <div className="mt-3 pt-3 border-t border-zinc-800/60">
+                        <div className="mt-4">
                           {insight.error ? (
-                            <p className="text-xs text-rose-400">{insight.error}</p>
+                            <p className="text-[13px] text-loss">{insight.error}</p>
                           ) : (
-                            <div className="space-y-1">
-                              <div className="flex items-center gap-1.5 mb-1.5">
-                                <Sparkles className="w-3 h-3 text-vela-teal" />
-                                <span className="text-[10px] font-medium text-vela-teal uppercase tracking-wider">Velnor AI</span>
-                              </div>
-                              <p className="text-xs text-zinc-300 leading-relaxed whitespace-pre-line">
-                                {stripAiMarkdown(insight.text)}
-                                {insight.loading && <span className="inline-block w-1 h-3 bg-vela-teal ml-0.5 animate-pulse align-middle" />}
+                            <Panel className="p-4">
+                              <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-vela-teal">
+                                Velnor AI
                               </p>
-                              {insights[alert.id]?.text && <Disclaimer variant="inline" />}
-                            </div>
+                              <p className="mt-2 text-[13.5px] leading-[1.55] text-vela-body whitespace-pre-line">
+                                {stripAiMarkdown(insight.text)}
+                                {insight.loading && (
+                                  <span
+                                    aria-hidden="true"
+                                    className="inline-block w-1 h-3 bg-vela-teal ml-0.5 align-middle animate-pulse"
+                                  />
+                                )}
+                              </p>
+                              {insight.text && <Disclaimer variant="inline" />}
+                            </Panel>
                           )}
                         </div>
                       )}
                     </div>
                   </div>
-                </div>
-              </RevealOnScroll>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Data sources */}
-      <RevealOnScroll delay={0.1}>
-        <div className="vela-card">
-          <h2 className="section-heading mb-3">Data Sources Scanned</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-            {[
-              { label: "Portfolio", connected: !!summary, count: summary?.holdings.length ?? 0, unit: "holdings" },
-              { label: "Net Worth", connected: !!nw, count: nw ? 1 : 0, unit: "snapshot" },
-              { label: "Cash Flow", connected: !!cf, count: cf ? 1 : 0, unit: "snapshot" },
-              { label: "Goals", connected: !!goals && goals.length > 0, count: goals?.length ?? 0, unit: "goals" },
-              { label: "Risk Metrics", connected: !!risk, count: risk ? 1 : 0, unit: "analysis" },
-            ].map((src) => (
-              <div key={src.label} className="text-center py-2">
-                <div className={`w-2 h-2 rounded-full mx-auto mb-1.5 ${src.connected ? "bg-emerald-400" : "bg-zinc-700"}`} />
-                <p className="text-xs font-medium text-zinc-300">{src.label}</p>
-                <p className="text-[10px] text-zinc-600">
-                  {src.connected ? `${src.count} ${src.unit}` : "Not set up"}
-                </p>
-              </div>
-            ))}
+                </article>
+              );
+            })}
           </div>
+        )}
+      </Section>
+
+      {/* ── Data sources ───────────────────────────────────────────── */}
+      <Section
+        label="Data sources scanned"
+        prose="Signals are only as complete as the data behind them."
+      >
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 border-t border-vela-border">
+          {sources.map((src) => (
+            <div key={src.label} className="border-b border-vela-border sm:border-r sm:last:border-r-0 px-4 py-3.5">
+              <div className="flex items-center gap-2">
+                <span
+                  aria-hidden="true"
+                  className={`w-[7px] h-[7px] rotate-45 shrink-0 ${src.connected ? "bg-vela-teal" : "bg-vela-border"}`}
+                />
+                <p className="text-[13px] text-zinc-100 truncate">{src.label}</p>
+              </div>
+              <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.12em] text-vela-muted">
+                {src.connected ? `${src.count} ${src.unit}` : "not set up"}
+              </p>
+            </div>
+          ))}
         </div>
-      </RevealOnScroll>
+      </Section>
     </PageTransition>
   );
 }
