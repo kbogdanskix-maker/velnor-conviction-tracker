@@ -1,19 +1,37 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import VelnorMark from "@/components/shared/VelnorMark";
 
+/** The one route that counts as "entering the app". Login redirects here. */
+const ENTRY_ROUTE = "/dashboard";
 
 /**
- * Full-screen cinematic splash shown once after login.
+ * Full-screen cinematic splash marking entry into the app.
  * Sequence: black → logo scales in with glow → tagline fades in → dissolves to dashboard.
- * Uses sessionStorage so it only plays once per session.
+ *
+ * Plays ONLY on the entry route, and only once per browser session
+ * (`sessionStorage`). Deep-linking straight to an inner page such as
+ * /portfolio or /health-score must NOT trigger it: the splash marks arrival,
+ * it is not a generic page loader.
  */
 export default function SplashScreen({ children }: { children: React.ReactNode }) {
-  const [phase, setPhase] = useState<"splash" | "exit" | "done">("splash");
+  const pathname = usePathname();
+  const isEntry = pathname === ENTRY_ROUTE;
+
+  // Anything other than the entry route renders through immediately, and
+  // deliberately does not consume the once-per-session flag.
+  const [phase, setPhase] = useState<"splash" | "exit" | "done">(
+    isEntry ? "splash" : "done",
+  );
 
   useEffect(() => {
+    if (!isEntry) {
+      setPhase("done");
+      return;
+    }
     // Skip if already shown this session
     if (sessionStorage.getItem("vela-splash-seen")) {
       setPhase("done");
@@ -25,7 +43,7 @@ export default function SplashScreen({ children }: { children: React.ReactNode }
     const exitTimer = setTimeout(() => setPhase("exit"), 2800);
     const doneTimer = setTimeout(() => setPhase("done"), 3600);
     return () => { clearTimeout(exitTimer); clearTimeout(doneTimer); };
-  }, []);
+  }, [isEntry]);
 
   if (phase === "done") {
     return <>{children}</>;
