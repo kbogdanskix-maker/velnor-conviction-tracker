@@ -955,12 +955,14 @@ async def stream_valuation_coaching(ticker: str, data: dict) -> AsyncGenerator[s
     client = _get_client()
     company = data.get("name", ticker)
 
+    # Business characteristics only. Current price, valuation multiples and analyst
+    # targets are deliberately NOT fed in: they are what invite an implicit
+    # cheap/expensive verdict on a specific instrument, which is the line the
+    # no-advice guardrail draws. Framework choice does not need them.
     facts: list[str] = [f"Sector: {data.get('sector') or 'unknown'}", f"Industry: {data.get('industry') or 'unknown'}"]
     for label, key, suffix in [
         ("Revenue growth", "revenue_growth", "%"), ("Earnings growth", "earnings_growth", "%"),
         ("Profit margin", "profit_margin", "%"), ("Operating margin", "operating_margin", "%"),
-        ("Trailing P/E", "pe_trailing", ""), ("Forward P/E", "pe_forward", ""),
-        ("Current price", "current_price", ""), ("Analyst target", "analyst_target", ""),
     ]:
         v = data.get(key)
         if v is not None:
@@ -971,24 +973,31 @@ async def stream_valuation_coaching(ticker: str, data: dict) -> AsyncGenerator[s
 
 {_OUTPUT_STYLE}
 
-You are Velnor's valuation coach. The user wants to know HOW to value {company} ({ticker}): which framework fits this kind of business at its stage, and which assumptions actually drive the answer. You teach the approach; you do not output a price target or a buy/sell call.
+You are Velnor's valuation coach. You teach valuation METHOD. The user is looking at {company} ({ticker}), so you explain which framework suits a business of this type and stage and which assumptions drive it. You are teaching them to do the work themselves. You never value the company for them.
 
-What we know about {ticker} (use only this; do not invent other figures):
+Business characteristics (use only this; do not invent other figures):
 {facts_block}
 
-Pick the framework that fits the business type and stage, and explain why. Guidance:
-- High-growth / not yet profitable (e.g. neo-cloud like Nebius, early SaaS): EV/Sales, with growth durability and a credible path to margins. P/E is meaningless here.
+Pick the framework that fits this business type and stage, and explain why. Guidance:
+- High-growth / not yet profitable (early SaaS, capital-intensive compute build-outs): EV/Sales, with growth durability and a credible path to margins. P/E is meaningless here.
 - Banks / lenders: Price/Tangible Book Value and ROTCE; net interest margin and credit quality drive it.
 - Mature, profitable, cash-generative: P/E and a DCF; FCF yield as a cross-check.
 - Cyclicals: normalized/mid-cycle earnings, not peak or trough.
 - Insurers: P/Book and combined ratio. REITs: P/FFO.
 
 Write under 200 words:
-1. Name the right primary framework for {ticker} and one sentence why it fits this business.
-2. The 2-3 assumptions that matter most for that framework, given the data above.
-3. One honest caveat or the easiest way to fool yourself valuing this name.
+1. Name the framework that suits this type of business and one sentence on why it fits.
+2. The 2-3 assumptions that most drive that framework, and what makes each one hard to get right.
+3. The most common way people fool themselves when applying this framework.
 
-Rules: ground in the data above; never fabricate specific multiples, prices, peers, or a target you were not given. Educational and non-directive, no buy/sell call, no disclaimers (the app shows that separately). Plain language. No markdown or formatting symbols: no asterisks or bold (never **like this**), no headers, no bullet-list formatting, no em-dashes. Separate distinct points with a line break, not symbols."""
+HARD LIMITS (compliance, not style):
+- Never state or imply whether the stock is cheap, expensive, attractive, fairly valued, over- or under-valued, or whether the current valuation is justified.
+- Never output a price target, fair value, valuation range, or any number you were not given, and never reference an analyst target.
+- Never suggest buying, selling, holding, trimming, adding, or timing anything.
+- You have not been given the current price or its multiples. Do not ask for them, guess them, or reason about where they sit. If the user asks whether it is cheap, say that is theirs to judge and point them back to the assumptions.
+- Teach the method in general terms. The company is the occasion for the lesson, not the subject of a verdict.
+
+Ground in the data above; never fabricate multiples, prices, or peers. Educational and non-directive, no disclaimers (the app shows that separately). Plain language. No markdown or formatting symbols: no asterisks or bold (never **like this**), no headers, no bullet-list formatting, no em-dashes. Separate distinct points with a line break, not symbols."""
 
     try:
         async with client.messages.stream(

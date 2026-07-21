@@ -192,8 +192,8 @@ function ValuationPanel({ ticker }: { ticker: string }) {
     <div className="vela-card space-y-4">
       {/* Header row */}
       <div className="flex items-center justify-between">
-        <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-500">
-          Valuation Coaching
+        <p className="text-[10px] font-mono uppercase tracking-widest text-vela-muted">
+          Valuation method
         </p>
         <button
           onClick={handleValuation}
@@ -205,13 +205,13 @@ function ValuationPanel({ ticker }: { ticker: string }) {
             transition-colors"
         >
           <Scale className="w-4 h-4 shrink-0" />
-          {state.loading ? "Thinking..." : "How should I value this?"}
+          {state.loading ? "Working..." : "Which framework fits this business?"}
         </button>
       </div>
 
       {/* Loading state — no text yet */}
       {state.loading && state.text === "" && (
-        <p className="text-[12px] text-zinc-500 italic">Thinking about valuation...</p>
+        <p className="text-[12px] text-vela-muted italic">Working through the framework...</p>
       )}
 
       {/* Error state */}
