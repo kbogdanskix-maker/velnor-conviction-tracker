@@ -1,16 +1,30 @@
 "use client";
 
-import { Target } from "lucide-react";
 import { useCalibration } from "@/lib/calibration";
 import type { ConvictionBucket } from "@/lib/calibration";
 import PageTransition from "@/components/celestial/PageTransition";
 import DashboardSkeleton from "@/components/shared/DashboardSkeleton";
 import ErrorState from "@/components/shared/ErrorState";
+import {
+  TopBar,
+  PageHero,
+  StatStrip,
+  StatCell,
+  Section,
+  Panel,
+  Pips,
+  Prose,
+} from "@/components/instrument";
 
 function fmtPct(v: number | null): string {
-  if (v === null) return "--";
+  if (v === null) return "—";
   const sign = v > 0 ? "+" : "";
   return `${sign}${v.toFixed(1)}%`;
+}
+
+/** Rates are unsigned by nature, so drop the leading plus. */
+function fmtRate(v: number | null): string {
+  return fmtPct(v).replace("+", "");
 }
 
 /** Hit-rate bar for one conviction level. Teal accent, hairline track. */
@@ -19,33 +33,33 @@ function ConvictionBar({ bucket }: { bucket: ConvictionBucket }) {
   const pct = bucket.hit_rate ?? 0;
   return (
     <div className="flex items-center gap-3">
-      <span className="font-mono text-xs text-vela-muted w-12 shrink-0 tabular-nums">
-        {bucket.conviction}/5
+      <span className="flex w-[86px] shrink-0 items-center gap-2">
+        <Pips level={bucket.conviction} size="text-[11px]" />
+        <span className="font-mono text-[10px] tabular-nums text-vela-muted">
+          {bucket.conviction}
+        </span>
       </span>
-      <div className="flex-1 h-6 bg-zinc-900 rounded overflow-hidden border border-zinc-800">
+      <div className="h-5 flex-1 overflow-hidden rounded-sm border border-vela-border bg-vela-card">
         {hasData && (
           <div
-            className="h-full bg-vela-teal/30 border-r border-vela-teal transition-all"
+            className="h-full border-r border-vela-teal bg-vela-teal/25 transition-all"
             style={{ width: `${Math.max(pct, 2)}%` }}
           />
         )}
       </div>
-      <span className="font-mono text-xs w-24 shrink-0 text-right tabular-nums text-zinc-300">
-        {hasData ? `${fmtPct(bucket.hit_rate)}` : "no reviews"}
+      <span className="w-[104px] shrink-0 text-right font-mono text-[11px] tabular-nums">
+        {hasData ? (
+          <span className="text-zinc-100">{fmtRate(bucket.hit_rate)}</span>
+        ) : (
+          <span className="text-vela-muted">no reviews</span>
+        )}
         {bucket.reviewed > 0 && (
-          <span className="text-zinc-600"> ({bucket.wins}/{bucket.reviewed})</span>
+          <span className="text-vela-muted">
+            {" "}
+            ({bucket.wins}/{bucket.reviewed})
+          </span>
         )}
       </span>
-    </div>
-  );
-}
-
-function Stat({ label, value, sub }: { label: string; value: string; sub?: string }) {
-  return (
-    <div className="space-y-0.5">
-      <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-500">{label}</p>
-      <p className="font-mono text-2xl font-semibold tabular-nums text-zinc-100">{value}</p>
-      {sub && <p className="text-xs text-zinc-500">{sub}</p>}
     </div>
   );
 }
@@ -59,119 +73,140 @@ export default function CalibrationPage() {
 
   const { journal, sells } = data;
   const nothingLogged = journal.total_reviewed === 0 && sells.count === 0;
+  const medianPositive = (sells.median_realized_pct ?? 0) >= 0;
 
   return (
     <PageTransition>
-      <div className="max-w-4xl mx-auto space-y-8 py-2">
-        {/* Header */}
-        <div>
-          <div className="flex items-center gap-2">
-            <Target className="w-5 h-5 text-vela-teal" />
-            <h1 className="text-xl font-semibold tracking-tight text-zinc-100">
-              Conviction Calibration
-            </h1>
-          </div>
-          <p className="mt-2 text-sm text-zinc-500 max-w-2xl">
-            Your own track record, in hindsight. How the conviction you logged lined up with how
-            decisions actually turned out, and what your sell timing looks like after the fact.
-            This is a mirror of your past, not a prediction or a recommendation.
-          </p>
-        </div>
+      <TopBar
+        trail={[{ label: "Journal" }, { label: "Calibration" }]}
+        note={
+          nothingLogged
+            ? "nothing scored yet"
+            : `${journal.total_reviewed} reviewed · ${sells.count} sold`
+        }
+      />
 
-        {nothingLogged && (
-          <div className="vela-card">
-            <p className="text-sm text-zinc-400">
+      <PageHero
+        title="Calibration"
+        meta="Your own track record, in hindsight"
+        figure={journal.total_reviewed > 0 ? fmtRate(journal.overall_hit_rate) : undefined}
+        figureSub={
+          journal.total_reviewed > 0
+            ? `hit rate on ${journal.total_reviewed} reviewed`
+            : undefined
+        }
+      />
+
+      <Prose className="mt-5 max-w-[560px]">
+        How the conviction you logged lined up with how decisions actually turned out, and what
+        your sell timing looks like after the fact. This is a mirror of your past, not a
+        prediction or a recommendation.
+      </Prose>
+
+      {nothingLogged && (
+        <div className="mt-8">
+          <Panel className="px-6 py-12 text-center">
+            <Prose className="mx-auto max-w-[420px]">
               Nothing to score yet. Log decisions in your Journal with a conviction level and mark
               how they turned out, or record some sells, and your calibration will build up here.
-            </p>
-          </div>
-        )}
+            </Prose>
+          </Panel>
+        </div>
+      )}
 
-        {/* Conviction calibration */}
-        {journal.total_reviewed > 0 && (
-          <section className="space-y-4">
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
-              <Stat
-                label="Decisions reviewed"
-                value={String(journal.total_reviewed)}
-                sub={`of ${journal.total_logged} logged`}
+      {/* Conviction calibration */}
+      {journal.total_reviewed > 0 && (
+        <>
+          <StatStrip className="mt-6">
+            <StatCell
+              label="Decisions reviewed"
+              value={String(journal.total_reviewed)}
+              sub={`of ${journal.total_logged} logged`}
+            />
+            <StatCell
+              label="Overall hit rate"
+              value={fmtRate(journal.overall_hit_rate)}
+              sub="marked wins ÷ reviewed"
+            />
+            {journal.higher_conviction_wins_more !== null && (
+              <StatCell
+                label="Conviction signal"
+                value={journal.higher_conviction_wins_more ? "Tracks" : "Inverted"}
+                sub={
+                  journal.higher_conviction_wins_more
+                    ? "high conviction won more often"
+                    : "low conviction won more often"
+                }
               />
-              <Stat
-                label="Overall hit rate"
-                value={fmtPct(journal.overall_hit_rate).replace("+", "")}
-                sub="marked wins ÷ reviewed"
-              />
-              {journal.higher_conviction_wins_more !== null && (
-                <Stat
-                  label="Conviction signal"
-                  value={journal.higher_conviction_wins_more ? "Tracks" : "Inverted"}
-                  sub={
-                    journal.higher_conviction_wins_more
-                      ? "high conviction won more often"
-                      : "low conviction won more often"
-                  }
-                />
-              )}
-            </div>
+            )}
+          </StatStrip>
 
-            <div className="vela-card space-y-3">
-              <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-500">
-                Hit rate by conviction level
-              </p>
-              <div className="space-y-2.5">
+          <Section
+            label="Hit rate by conviction"
+            prose="When you were most sure (5 of 5), how often were you right? Well-calibrated investors tend to win more at higher conviction. The pattern is yours to read."
+          >
+            <div className="overflow-x-auto">
+              <div className="min-w-[420px] max-w-[760px] space-y-2.5">
                 {journal.by_conviction.map((b) => (
                   <ConvictionBar key={b.conviction} bucket={b} />
                 ))}
               </div>
-              <p className="text-xs text-zinc-600 pt-1">
-                When you were most sure (5/5), how often were you right? Well-calibrated investors
-                tend to win more at higher conviction. The pattern is yours to read.
-              </p>
             </div>
-          </section>
-        )}
+          </Section>
+        </>
+      )}
 
-        {/* Sell discipline */}
-        {sells.count > 0 && (
-          <section className="space-y-4">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
-              <Stat label="Positions sold" value={String(sells.count)} />
-              <Stat
-                label="Median realized"
-                value={fmtPct(sells.median_realized_pct)}
-                sub="on closed trades"
-              />
-              <Stat
-                label="Ran without you"
-                value={String(sells.sold_before_gains)}
-                sub="up >5% since you sold"
-              />
-              <Stat
-                label="Dodged the drop"
-                value={String(sells.dodged_drops)}
-                sub="down >5% since you sold"
-              />
-            </div>
-            {sells.avg_since_sold_pct !== null && (
-              <div className="vela-card">
-                <p className="text-sm text-zinc-400">
-                  On average, the names you sold are{" "}
-                  <span
-                    className={
-                      sells.avg_since_sold_pct > 0 ? "text-amber-400 font-mono" : "text-gain font-mono"
-                    }
-                  >
-                    {fmtPct(sells.avg_since_sold_pct)}
-                  </span>{" "}
-                  {sells.avg_since_sold_pct > 0
-                    ? "higher than where you exited. Worth reflecting on whether you tend to sell winners early."
-                    : "lower than where you exited, so your sells tended to sidestep declines."}
-                </p>
-              </div>
-            )}
-          </section>
-        )}
-      </div>
+      {/* Sell discipline */}
+      {sells.count > 0 && (
+        <Section
+          label="Sell discipline"
+          prose="Where the names you exited went after you left. Hindsight only, and not a signal to act on."
+        >
+          <StatStrip>
+            <StatCell label="Positions sold" value={String(sells.count)} sub="closed or trimmed" />
+            <StatCell
+              label="Median realized"
+              value={fmtPct(sells.median_realized_pct)}
+              valueClass={
+                sells.median_realized_pct === null
+                  ? "text-vela-muted"
+                  : medianPositive
+                    ? "text-gain"
+                    : "text-loss"
+              }
+              sub="on closed trades"
+            />
+            <StatCell
+              label="Ran without you"
+              value={String(sells.sold_before_gains)}
+              sub="up >5% since you sold"
+            />
+            <StatCell
+              label="Dodged the drop"
+              value={String(sells.dodged_drops)}
+              sub="down >5% since you sold"
+            />
+          </StatStrip>
+
+          {sells.avg_since_sold_pct !== null && (
+            <Panel className="mt-6 px-5 py-4">
+              <Prose className="max-w-[620px]">
+                On average, the names you sold are{" "}
+                <span
+                  className={`font-mono tabular-nums ${
+                    sells.avg_since_sold_pct > 0 ? "text-amber-400" : "text-gain"
+                  }`}
+                >
+                  {fmtPct(sells.avg_since_sold_pct)}
+                </span>{" "}
+                {sells.avg_since_sold_pct > 0
+                  ? "higher than where you exited. Worth reflecting on whether you tend to sell winners early."
+                  : "lower than where you exited, so your sells tended to sidestep declines."}
+              </Prose>
+            </Panel>
+          )}
+        </Section>
+      )}
     </PageTransition>
   );
 }
