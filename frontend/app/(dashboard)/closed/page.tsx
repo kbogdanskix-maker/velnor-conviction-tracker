@@ -1,20 +1,31 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import type { ReactNode } from "react";
 import Link from "next/link";
-import { Archive, ChevronRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { useClosed } from "@/lib/closed";
 import { useThesisList, createThread, addEntry } from "@/lib/thesis";
 import { formatCurrency, formatDate } from "@/lib/formatters";
 import PageTransition from "@/components/celestial/PageTransition";
 import DashboardSkeleton from "@/components/shared/DashboardSkeleton";
 import ErrorState from "@/components/shared/ErrorState";
+import {
+  TopBar,
+  PageHero,
+  StatStrip,
+  StatCell,
+  Section,
+  Panel,
+  Eyebrow,
+  Prose,
+} from "@/components/instrument";
 import type { ClosedPosition } from "@/lib/closed";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function fmtPct(value: number | null): string {
-  if (value === null) return "--";
+  if (value === null) return "—";
   const sign = value > 0 ? "+" : "";
   return `${sign}${value.toFixed(2)}%`;
 }
@@ -29,7 +40,7 @@ function fmtPnlDollar(value: number): string {
 function realizedPnlClass(value: number): string {
   if (value > 0) return "text-gain";
   if (value < 0) return "text-loss";
-  return "text-vela-muted";
+  return "text-zinc-100";
 }
 
 /**
@@ -40,7 +51,7 @@ function realizedPnlClass(value: number): string {
 function sinceSoldClass(pct: number): string {
   if (pct > 0) return "text-amber-400";
   if (pct < 0) return "text-gain";
-  return "text-vela-muted";
+  return "text-zinc-100";
 }
 
 function sinceSoldTag(pct: number): string {
@@ -54,15 +65,45 @@ function sinceSoldTag(pct: number): string {
 function StatusChip({ pos }: { pos: ClosedPosition }) {
   if (pos.still_held) {
     return (
-      <span className="text-[10px] font-mono uppercase tracking-widest px-2 py-0.5 rounded bg-amber-400/10 text-amber-400">
+      <span className="shrink-0 rounded border border-amber-400/30 bg-amber-400/10 px-1.5 py-0.5 font-mono text-[9.5px] uppercase tracking-[0.14em] text-amber-400">
         Trimmed
       </span>
     );
   }
   return (
-    <span className="text-[10px] font-mono uppercase tracking-widest px-2 py-0.5 rounded bg-white/5 text-vela-muted">
+    <span className="shrink-0 rounded border border-vela-border px-1.5 py-0.5 font-mono text-[9.5px] uppercase tracking-[0.14em] text-vela-muted">
       Closed
     </span>
+  );
+}
+
+// ── Stat cell (row-level) ─────────────────────────────────────────────────────
+
+function RowStat({
+  label,
+  value,
+  valueClass = "text-zinc-100",
+  sub,
+  subClass = "text-vela-muted",
+}: {
+  label: ReactNode;
+  value: ReactNode;
+  valueClass?: string;
+  sub?: ReactNode;
+  subClass?: string;
+}) {
+  return (
+    <div className="min-w-0">
+      <Eyebrow>{label}</Eyebrow>
+      <p
+        className={`mt-1.5 font-mono text-[15px] font-semibold tabular-nums leading-none truncate ${valueClass}`}
+      >
+        {value}
+      </p>
+      {sub != null && (
+        <p className={`mt-1 font-mono text-[11px] tabular-nums truncate ${subClass}`}>{sub}</p>
+      )}
+    </div>
   );
 }
 
@@ -115,12 +156,12 @@ function LessonCapture({
   }, [text, saving, threads, pos.ticker, mutateThesis, onSaved]);
 
   return (
-    <div className="mt-4 pt-4 border-t border-vela-border space-y-2">
-      <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-500">
-        Lesson
-      </p>
+    <div className="mt-5 space-y-2">
+      <Eyebrow>Lesson</Eyebrow>
       <textarea
-        className="w-full bg-zinc-900 border border-vela-border rounded text-sm text-zinc-200 placeholder:text-zinc-600 px-3 py-2 resize-none focus:outline-none focus:border-vela-teal/50 transition-colors"
+        className="w-full max-w-[640px] rounded border border-vela-border bg-vela-card px-3 py-2 text-[13.5px]
+          leading-[1.55] text-zinc-100 placeholder:text-vela-muted resize-none
+          focus:outline-none focus:border-vela-teal/50 transition-colors"
         rows={2}
         placeholder="What did this trade teach you?"
         value={text}
@@ -130,12 +171,15 @@ function LessonCapture({
         <button
           onClick={handleSave}
           disabled={!text.trim() || saving}
-          className="text-xs font-mono px-3 py-1.5 rounded bg-vela-teal/10 text-vela-teal border border-vela-teal/20 hover:bg-vela-teal/20 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="inline-flex items-center rounded border border-vela-teal/25 bg-vela-teal/10 px-3 py-1.5
+            font-mono text-[10px] uppercase tracking-wider text-vela-teal
+            hover:bg-vela-teal/15 hover:border-vela-teal/40
+            disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
           {saving ? "Saving..." : "Save to thesis"}
         </button>
         {savedMsg && (
-          <span className="text-xs text-zinc-500 font-mono">
+          <span className="font-mono text-[10px] uppercase tracking-wider text-vela-muted">
             Saved to thesis
           </span>
         )}
@@ -149,108 +193,70 @@ function LessonCapture({
 function PositionRow({ pos }: { pos: ClosedPosition }) {
   const pnlPositive = pos.realized_pnl >= 0;
   const pnlArrow = pnlPositive ? "▲" : "▼";
+  const ticker = pos.ticker.toUpperCase();
 
   return (
-    <div className="vela-card space-y-0">
-      {/* Top: ticker + name + chip + link */}
+    <article className="py-6 first:pt-0">
+      {/* Identity */}
       <div className="flex items-start justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-2 min-w-0">
+        <div className="flex flex-wrap items-center gap-2.5 min-w-0">
           <Link
-            href={`/journey/${pos.ticker.toUpperCase()}`}
-            className="font-mono text-base font-bold text-vela-teal hover:underline underline-offset-2 shrink-0"
+            href={`/journey/${ticker}`}
+            className="shrink-0 font-mono text-[15px] font-semibold tracking-[0.02em] text-vela-teal hover:underline underline-offset-4"
           >
-            {pos.ticker.toUpperCase()}
+            {ticker}
           </Link>
           <StatusChip pos={pos} />
           {pos.name && (
-            <span className="text-xs text-zinc-500 truncate">{pos.name}</span>
+            <span className="truncate text-[13px] text-vela-body">{pos.name}</span>
           )}
         </div>
         <Link
-          href={`/journey/${pos.ticker.toUpperCase()}`}
-          className="text-zinc-600 hover:text-zinc-400 transition-colors shrink-0 mt-0.5"
+          href={`/journey/${ticker}`}
+          className="shrink-0 mt-0.5 inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider
+            text-vela-muted hover:text-vela-teal transition-colors"
           aria-label={`View ${pos.ticker} journey`}
         >
-          <ChevronRight className="w-4 h-4" />
+          <span className="hidden sm:inline">Journey</span>
+          <ChevronRight className="w-3.5 h-3.5 shrink-0" />
         </Link>
       </div>
 
-      {/* Stats grid */}
-      <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-4">
-        {/* Realized P&L */}
-        <div className="space-y-0.5">
-          <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-500">
-            Realized P&amp;L
-          </p>
-          <p
-            className={`font-mono text-base font-semibold tabular-nums ${realizedPnlClass(pos.realized_pnl)}`}
-          >
-            {pnlArrow} {fmtPnlDollar(pos.realized_pnl)}
-          </p>
-          {pos.realized_pnl_pct !== null && (
-            <p
-              className={`font-mono text-xs tabular-nums ${realizedPnlClass(pos.realized_pnl)}`}
-            >
-              {fmtPct(pos.realized_pnl_pct)}
-            </p>
-          )}
-        </div>
+      {/* Figures */}
+      <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-5">
+        <RowStat
+          label="Realized P&L"
+          value={`${pnlArrow} ${fmtPnlDollar(pos.realized_pnl)}`}
+          valueClass={realizedPnlClass(pos.realized_pnl)}
+          sub={pos.realized_pnl_pct !== null ? fmtPct(pos.realized_pnl_pct) : undefined}
+          subClass={realizedPnlClass(pos.realized_pnl)}
+        />
 
-        {/* Since sold */}
-        <div className="space-y-0.5">
-          <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-500">
-            Since you sold
-          </p>
-          {pos.since_sold_pct !== null ? (
-            <>
-              <p
-                className={`font-mono text-base font-semibold tabular-nums ${sinceSoldClass(pos.since_sold_pct)}`}
-              >
-                {fmtPct(pos.since_sold_pct)}
-              </p>
-              <p className="text-[10px] font-mono text-zinc-600">
-                {sinceSoldTag(pos.since_sold_pct)}
-              </p>
-            </>
-          ) : (
-            <p className="font-mono text-base text-zinc-600 tabular-nums">--</p>
-          )}
-        </div>
+        <RowStat
+          label="Since you sold"
+          value={pos.since_sold_pct !== null ? fmtPct(pos.since_sold_pct) : "—"}
+          valueClass={
+            pos.since_sold_pct !== null ? sinceSoldClass(pos.since_sold_pct) : "text-vela-muted"
+          }
+          sub={pos.since_sold_pct !== null ? sinceSoldTag(pos.since_sold_pct) : undefined}
+        />
 
-        {/* Sold date + price */}
-        <div className="space-y-0.5">
-          <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-500">
-            Sold
-          </p>
-          <p className="font-mono text-sm text-zinc-300 tabular-nums">
-            {formatDate(pos.last_sell_date)}
-          </p>
-          {pos.last_sell_price !== null && (
-            <p className="font-mono text-xs text-zinc-500 tabular-nums">
-              @ {formatCurrency(pos.last_sell_price)}
-            </p>
-          )}
-        </div>
+        <RowStat
+          label="Sold"
+          value={formatDate(pos.last_sell_date)}
+          sub={pos.last_sell_price !== null ? `@ ${formatCurrency(pos.last_sell_price)}` : undefined}
+        />
 
-        {/* Proceeds */}
-        <div className="space-y-0.5">
-          <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-500">
-            Proceeds
-          </p>
-          <p className="font-mono text-sm text-zinc-300 tabular-nums">
-            {formatCurrency(pos.total_proceeds)}
-          </p>
-          {pos.first_buy_date && (
-            <p className="font-mono text-xs text-zinc-500 tabular-nums">
-              held since {formatDate(pos.first_buy_date)}
-            </p>
-          )}
-        </div>
+        <RowStat
+          label="Proceeds"
+          value={formatCurrency(pos.total_proceeds)}
+          sub={pos.first_buy_date ? `held since ${formatDate(pos.first_buy_date)}` : undefined}
+        />
       </div>
 
       {/* Lesson capture */}
       <LessonCapture pos={pos} onSaved={() => {}} />
-    </div>
+    </article>
   );
 }
 
@@ -258,12 +264,13 @@ function PositionRow({ pos }: { pos: ClosedPosition }) {
 
 function EmptyState() {
   return (
-    <div className="vela-card flex flex-col items-center justify-center py-16 text-center gap-3">
-      <Archive className="w-8 h-8 text-zinc-700 shrink-0" />
-      <p className="text-sm text-zinc-400 max-w-xs leading-relaxed">
-        No closed positions yet. When you sell, the post-mortem lands here.
-      </p>
-    </div>
+    <Panel className="px-6 py-14 text-center">
+      <Eyebrow>No exits yet</Eyebrow>
+      <Prose className="mx-auto mt-3 max-w-[380px]">
+        Nothing has been sold yet. When you close or trim a position, the post-mortem lands here
+        with what the stock did after you left.
+      </Prose>
+    </Panel>
   );
 }
 
@@ -282,37 +289,91 @@ export default function ClosedPage() {
     );
   }
 
-  return (
-    <PageTransition className="space-y-6">
-      {/* Header */}
-      <div className="space-y-1">
-        <div className="flex items-center gap-2">
-          <Archive className="w-4 h-4 text-zinc-500 shrink-0" />
-          <h1 className="text-lg font-semibold text-zinc-100">
-            Closed &amp; Lessons
-          </h1>
-        </div>
-        <p className="text-sm text-zinc-500">
-          Every position you have sold, and what happened after.{" "}
-          <Link
-            href="/calibration"
-            className="text-vela-teal hover:underline underline-offset-2"
-          >
-            See your calibration
-          </Link>
-          .
-        </p>
-      </div>
+  const count = positions.length;
+  const totalRealized = positions.reduce((sum, p) => sum + p.realized_pnl, 0);
+  const realizedPositive = totalRealized >= 0;
+  const trimmedCount = positions.filter((p) => p.still_held).length;
+  const closedCount = count - trimmedCount;
+  const ranWithout = positions.filter(
+    (p) => p.since_sold_pct !== null && p.since_sold_pct > 0,
+  ).length;
+  const dodged = positions.filter(
+    (p) => p.since_sold_pct !== null && p.since_sold_pct < 0,
+  ).length;
 
-      {/* Position list or empty */}
-      {positions.length === 0 ? (
-        <EmptyState />
-      ) : (
-        <div className="space-y-4">
-          {positions.map((pos) => (
-            <PositionRow key={pos.ticker} pos={pos} />
-          ))}
+  return (
+    <PageTransition>
+      <TopBar
+        trail={[{ label: "Journal" }, { label: "Closed & Lessons" }]}
+        note={
+          count > 0
+            ? `${count} ${count === 1 ? "exit" : "exits"} · most recent first`
+            : "no exits yet"
+        }
+      />
+
+      <PageHero
+        title="Closed & Lessons"
+        meta={
+          <>
+            Post-mortem ledger
+            <span aria-hidden="true" className="mx-2 text-vela-subtle">
+              /
+            </span>
+            <Link
+              href="/calibration"
+              className="text-vela-teal hover:underline underline-offset-4"
+            >
+              See your calibration
+            </Link>
+          </>
+        }
+        figure={count > 0 ? fmtPnlDollar(totalRealized) : undefined}
+        figureSub={count > 0 ? "realized, all exits" : undefined}
+        figureSubClass={realizedPositive ? "text-gain" : "text-loss"}
+      />
+
+      {count === 0 ? (
+        <div className="mt-8">
+          <EmptyState />
         </div>
+      ) : (
+        <>
+          <StatStrip className="mt-6">
+            <StatCell
+              label="Realized P&L"
+              value={fmtPnlDollar(totalRealized)}
+              valueClass={realizedPnlClass(totalRealized)}
+              sub={`${count} ${count === 1 ? "exit" : "exits"}`}
+            />
+            <StatCell
+              label="Fully closed"
+              value={String(closedCount)}
+              sub={`${trimmedCount} trimmed`}
+            />
+            <StatCell
+              label="Ran without you"
+              value={String(ranWithout)}
+              sub="up since you sold"
+            />
+            <StatCell
+              label="Dodged the drop"
+              value={String(dodged)}
+              sub="down since you sold"
+            />
+          </StatStrip>
+
+          <Section
+            label="Exits"
+            prose="Every position you have sold: what the sale realized, where the price went afterwards, and the lesson you wrote down."
+          >
+            <div className="divide-y divide-vela-border">
+              {positions.map((pos) => (
+                <PositionRow key={pos.ticker} pos={pos} />
+              ))}
+            </div>
+          </Section>
+        </>
       )}
     </PageTransition>
   );
