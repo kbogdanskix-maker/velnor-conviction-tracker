@@ -6,7 +6,7 @@ celery_app = Celery(
     "vela",
     broker=settings.REDIS_URL,
     backend=settings.REDIS_URL,
-    include=["app.tasks.import_task", "app.tasks.price_snapshot", "app.tasks.price_alerts"],
+    include=["app.tasks.import_task", "app.tasks.price_snapshot", "app.tasks.price_alerts", "app.tasks.deep_dive_task"],
 )
 
 celery_app.conf.update(

@@ -412,3 +412,45 @@ class ShareToken(Base):
     token: Mapped[str] = mapped_column(String(64), unique=True, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+# ── Deep Dive Reports ─────────────────────────────────────────────────────
+
+class DeepDiveReport(Base):
+    """An equity-research-style report on one ticker, generated on request.
+
+    Rate limited per user (see deep_dive.COOLDOWN_DAYS) because each run is an
+    Opus call with live web search. The rendered report is stored as structured
+    JSON so the page renders from Postgres instead of re-running the model, and
+    so later AI surfaces can cite an existing dive rather than re-researching
+    the same ground.
+
+    `report` follows the schema in services/deep_dive.REPORT_SCHEMA: sourced
+    facts first, the comparison against the user's own recorded thesis last.
+    """
+    __tablename__ = "deep_dive_reports"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    ticker: Mapped[str] = mapped_column(String(20), nullable=False)
+
+    # queued | running | complete | failed
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="queued")
+    report: Mapped[Optional[dict]] = mapped_column(JSONB)
+    error: Mapped[Optional[str]] = mapped_column(Text)
+
+    # Cost/provenance accounting — one row per paid run.
+    model: Mapped[Optional[str]] = mapped_column(String(50))
+    input_tokens: Mapped[Optional[int]] = mapped_column(Integer)
+    output_tokens: Mapped[Optional[int]] = mapped_column(Integer)
+    web_searches: Mapped[Optional[int]] = mapped_column(Integer)
+
+    requested_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+
+    user: Mapped["User"] = relationship("User")
+
+    __table_args__ = (
+        Index("ix_deep_dive_user_requested", "user_id", "requested_at"),
+        Index("ix_deep_dive_user_ticker", "user_id", "ticker"),
+    )
