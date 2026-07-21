@@ -2,21 +2,29 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import {
-  Coins, Calendar, TrendingUp, ArrowUpRight, AlertTriangle, Info,
-  ChevronUp, ChevronDown, Download,
-} from "lucide-react";
+import { AlertTriangle, ChevronUp, ChevronDown, Download } from "lucide-react";
 import PageTransition from "@/components/celestial/PageTransition";
-import RevealOnScroll from "@/components/celestial/RevealOnScroll";
 import { useDefaultPortfolio } from "@/hooks/usePortfolio";
 import { useDividendSummary, type DividendHolding } from "@/hooks/useDividends";
 import { formatCurrency, formatPercent, formatDate } from "@/lib/formatters";
 import { exportCSV } from "@/lib/export";
-import AnimatedNumber from "@/components/celestial/AnimatedNumber";
+import DashboardSkeleton from "@/components/shared/DashboardSkeleton";
 import ErrorState from "@/components/shared/ErrorState";
-import FloatingCard from "@/components/celestial/FloatingCard";
+import {
+  TopBar,
+  PageHero,
+  StatStrip,
+  StatCell,
+  Section,
+  Panel,
+  Eyebrow,
+  Prose,
+} from "@/components/instrument";
 
 type SortKey = "income" | "yield" | "ticker";
+
+const TH =
+  "py-2.5 font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-vela-muted whitespace-nowrap";
 
 export default function DividendsPage() {
   const { portfolio, loading: portfolioLoading, error: portfolioError } = useDefaultPortfolio();
@@ -51,35 +59,51 @@ export default function DividendsPage() {
       : <ChevronDown className="w-3 h-3 inline ml-0.5" />;
   };
 
-  if (loading) {
+  const SortHead = ({ k, label }: { k: SortKey; label: string }) => (
+    <button
+      type="button"
+      onClick={() => toggleSort(k)}
+      className="font-mono text-[10px] uppercase tracking-[0.12em] text-vela-muted hover:text-zinc-100 transition-colors"
+    >
+      {label}
+      <SortIcon k={k} />
+    </button>
+  );
+
+  if (loading) return <DashboardSkeleton />;
+
+  if (portfolioError || dividendError) {
     return (
-      <div className="space-y-6 animate-pulse">
-        <div className="skeleton h-8 w-48" />
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {[...Array(3)].map((_, i) => <div key={i} className="skeleton h-24 rounded-xl" />)}
-        </div>
-        <div className="skeleton h-64 rounded-xl" />
-      </div>
+      <ErrorState
+        message="Failed to load dividend data."
+        onRetry={() => window.location.reload()}
+      />
     );
   }
 
-  if (portfolioError || dividendError) return <ErrorState message="Failed to load dividend data." onRetry={() => window.location.reload()} />;
-
   if (!dividends || dividends.holdings.length === 0) {
     return (
-      <div className="space-y-6">
-        <Header />
-        <div className="vela-card text-center py-16">
-          <Coins className="w-10 h-10 text-zinc-600 mx-auto mb-3" />
-          <p className="text-sm text-zinc-400 font-medium">No holdings yet</p>
-          <p className="text-xs text-zinc-600 mt-1 mb-4">
-            Add holdings to your portfolio to see dividend projections.
-          </p>
-          <Link href="/portfolio" className="btn-primary text-sm">
-            Go to Portfolio
-          </Link>
+      <PageTransition>
+        <TopBar trail={[{ label: "Lab" }, { label: "Dividends" }]} note="no holdings yet" />
+        <PageHero title="Dividends" meta="Projected income from your holdings" />
+        <div className="mt-8">
+          <Panel className="px-6 py-14 text-center">
+            <Eyebrow>Nothing to project</Eyebrow>
+            <Prose className="mx-auto mt-3 max-w-[380px]">
+              There are no holdings on the book yet. Once positions are recorded, their yields,
+              ex-dates and payout ratios land here.
+            </Prose>
+            <Link
+              href="/portfolio"
+              className="mt-5 inline-flex items-center rounded border border-vela-teal/25 bg-vela-teal/10 px-3 py-1.5
+                font-mono text-[10px] uppercase tracking-wider text-vela-teal
+                hover:bg-vela-teal/15 hover:border-vela-teal/40 transition-colors"
+            >
+              Go to positions
+            </Link>
+          </Panel>
         </div>
-      </div>
+      </PageTransition>
     );
   }
 
@@ -93,67 +117,99 @@ export default function DividendsPage() {
     ? Math.ceil((new Date(nextEx.date).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
     : null;
 
+  const exportButton = (
+    <button
+      onClick={() =>
+        exportCSV(
+          dividends.holdings.map((h) => ({
+            Ticker: h.ticker,
+            Shares: h.quantity,
+            Price: h.current_price,
+            "Div/Share": h.dividend_rate ?? "",
+            "Yield %": h.dividend_yield != null ? (h.dividend_yield * 100).toFixed(2) : "",
+            "Annual Income": h.annual_income,
+            "Ex-Date": h.ex_dividend_date ?? "",
+            "Payout Ratio": h.payout_ratio != null ? (h.payout_ratio * 100).toFixed(0) + "%" : "",
+          })),
+          `velnor-dividends-${new Date().toISOString().slice(0, 10)}.csv`,
+        )
+      }
+      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded border border-vela-border
+        font-mono text-[10px] uppercase tracking-wider text-vela-muted
+        hover:text-zinc-100 hover:border-vela-teal/40 transition-colors"
+    >
+      <Download className="w-3.5 h-3.5 shrink-0" />
+      Export
+    </button>
+  );
+
   return (
-    <PageTransition className="space-y-6">
-      <Header holdings={dividends.holdings} />
+    <PageTransition>
+      <TopBar
+        trail={[{ label: "Lab" }, { label: "Dividends" }]}
+        note={
+          daysUntilEx != null && nextEx
+            ? `next ex-date ${nextEx.ticker} · ${daysUntilEx <= 0 ? "today or passed" : `${daysUntilEx}d`}`
+            : `${payingHoldings.length} ${payingHoldings.length === 1 ? "payer" : "payers"} · at current rates`
+        }
+      />
 
-      {/* Summary cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <FloatingCard delay={0}>
-          <SummaryCard
-            label="Annual Income"
-            rawValue={dividends.total_annual_income}
-            formatFn={(n) => formatCurrency(n)}
-            sub={`from ${payingHoldings.length} holding${payingHoldings.length !== 1 ? "s" : ""}`}
-            accent
-          />
-        </FloatingCard>
-        <FloatingCard delay={0.08}>
-          <SummaryCard
-            label="Portfolio Yield"
-            rawValue={(dividends.portfolio_yield ?? 0) * 100}
-            formatFn={(n) => formatPercent(n, false)}
-            sub={`on ${formatCurrency(dividends.total_portfolio_value)} portfolio`}
-          />
-        </FloatingCard>
-        <FloatingCard delay={0.16}>
-          <SummaryCard
-            label="Monthly Average"
-            rawValue={monthlyIncome}
-            formatFn={(n) => formatCurrency(n)}
-            sub="projected at current rates"
-          />
-        </FloatingCard>
-      </div>
+      <PageHero
+        title="Dividends"
+        meta="Projected income at current declared rates"
+        figure={formatCurrency(dividends.total_annual_income)}
+        figureSub={`${formatCurrency(monthlyIncome)} / month`}
+        figureSubClass="text-gain"
+      />
 
-      {/* Upcoming ex-dates */}
+      <StatStrip className="mt-6">
+        <StatCell
+          label="Annual income"
+          value={formatCurrency(dividends.total_annual_income)}
+          valueClass="text-gain"
+          sub={`from ${payingHoldings.length} holding${payingHoldings.length !== 1 ? "s" : ""}`}
+        />
+        <StatCell
+          label="Portfolio yield"
+          value={formatPercent((dividends.portfolio_yield ?? 0) * 100, false)}
+          sub={`on ${formatCurrency(dividends.total_portfolio_value)}`}
+        />
+        <StatCell
+          label="Monthly average"
+          value={formatCurrency(monthlyIncome)}
+          sub="projected at current rates"
+        />
+        <StatCell
+          label="Non-payers"
+          value={String(nonPayingHoldings.length)}
+          sub={nonPayingHoldings.length > 0 ? "no declared dividend" : "every holding pays"}
+        />
+      </StatStrip>
+
+      {/* ── Upcoming ex-dates ─────────────────────────────────────────────── */}
+
       {dividends.next_ex_dates.length > 0 && (
-        <RevealOnScroll>
-        <div className="vela-card">
-          <h2 className="text-sm font-medium text-zinc-300 mb-3 flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-zinc-400" />
-            Upcoming ex-dividend dates
-          </h2>
-          <div className="space-y-1">
+        <Section
+          label="Upcoming"
+          prose="The next ex-dividend dates on record for holdings you already own. Shares held through the ex-date carry the declared payment."
+        >
+          <div className="border-y border-vela-border divide-y divide-vela-border">
             {dividends.next_ex_dates.slice(0, 6).map((ex) => {
               const days = Math.ceil(
                 (new Date(ex.date).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
               );
               const isPast = days < 0;
               return (
-                <div
-                  key={ex.ticker}
-                  className="flex items-center justify-between py-2 border-b border-vela-border last:border-0"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-medium px-2 py-0.5 rounded bg-vela-teal/15 text-vela-teal">
+                <div key={ex.ticker} className="flex items-center justify-between gap-3 py-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="shrink-0 font-mono text-[13px] font-semibold tracking-[0.02em] text-vela-teal">
                       {ex.ticker}
                     </span>
-                    <span className="text-sm text-zinc-300">{formatDate(ex.date)}</span>
+                    <span className="truncate text-[13px] text-vela-body">{formatDate(ex.date)}</span>
                   </div>
                   <span
-                    className={`text-xs font-medium ${
-                      isPast ? "text-zinc-600" : days <= 7 ? "text-amber-400" : "text-zinc-500"
+                    className={`shrink-0 font-mono text-[11px] tabular-nums ${
+                      isPast ? "text-vela-muted" : days <= 7 ? "text-amber-400" : "text-vela-body"
                     }`}
                   >
                     {isPast ? "Passed" : days === 0 ? "Today" : `${days}d away`}
@@ -162,46 +218,35 @@ export default function DividendsPage() {
               );
             })}
           </div>
-        </div>
-        </RevealOnScroll>
+        </Section>
       )}
 
-      {/* Holdings table */}
-      <RevealOnScroll delay={0.05}>
-      <div className="vela-card">
-        <h2 className="text-sm font-medium text-zinc-300 mb-3 flex items-center gap-2">
-          <Coins className="w-4 h-4 text-zinc-400" />
-          Dividend Breakdown
-        </h2>
+      {/* ── Breakdown ─────────────────────────────────────────────────────── */}
 
+      <Section
+        label="Breakdown"
+        prose="Every holding, its declared rate, and what that rate produces on the shares you hold."
+        controls={exportButton}
+      >
         {/* Desktop table */}
         <div className="hidden sm:block overflow-x-auto">
-          <table className="w-full text-xs">
+          <table className="w-full min-w-[720px] text-[13px]">
             <thead>
-              <tr className="text-zinc-500 border-b border-vela-border">
-                <th
-                  className="text-left py-2 font-medium cursor-pointer hover:text-zinc-300"
-                  onClick={() => toggleSort("ticker")}
-                >
-                  Ticker <SortIcon k="ticker" />
+              <tr className="border-b border-vela-border">
+                <th className={`${TH} text-left`}>
+                  <SortHead k="ticker" label="Ticker" />
                 </th>
-                <th className="text-right py-2 font-medium">Shares</th>
-                <th className="text-right py-2 font-medium">Price</th>
-                <th className="text-right py-2 font-medium">Div/Share</th>
-                <th
-                  className="text-right py-2 font-medium cursor-pointer hover:text-zinc-300"
-                  onClick={() => toggleSort("yield")}
-                >
-                  Yield <SortIcon k="yield" />
+                <th className={`${TH} text-right`}>Shares</th>
+                <th className={`${TH} text-right`}>Price</th>
+                <th className={`${TH} text-right`}>Div / share</th>
+                <th className={`${TH} text-right`}>
+                  <SortHead k="yield" label="Yield" />
                 </th>
-                <th
-                  className="text-right py-2 font-medium cursor-pointer hover:text-zinc-300"
-                  onClick={() => toggleSort("income")}
-                >
-                  Annual Income <SortIcon k="income" />
+                <th className={`${TH} text-right`}>
+                  <SortHead k="income" label="Annual income" />
                 </th>
-                <th className="text-right py-2 font-medium">Ex-Date</th>
-                <th className="text-right py-2 font-medium">Payout</th>
+                <th className={`${TH} text-right`}>Ex-date</th>
+                <th className={`${TH} text-right`}>Payout</th>
               </tr>
             </thead>
             <tbody>
@@ -212,124 +257,58 @@ export default function DividendsPage() {
           </table>
         </div>
 
-        {/* Mobile cards */}
-        <div className="sm:hidden space-y-2">
+        {/* Mobile rows */}
+        <div className="sm:hidden border-y border-vela-border divide-y divide-vela-border">
           {sortedHoldings.map((h) => (
-            <MobileHoldingCard key={h.ticker} holding={h} />
+            <MobileHoldingRow key={h.ticker} holding={h} />
           ))}
         </div>
-      </div>
-      </RevealOnScroll>
+      </Section>
 
-      {/* Income projection */}
+      {/* ── Projection ────────────────────────────────────────────────────── */}
+
       {dividends.total_annual_income > 0 && (
-        <RevealOnScroll delay={0.1}>
-        <div className="vela-card bg-zinc-900/50">
-          <div className="flex items-start gap-3">
-            <TrendingUp className="w-4 h-4 text-vela-teal mt-0.5 shrink-0" />
-            <div>
-              <p className="text-xs font-medium text-zinc-300">Income projection</p>
-              <p className="text-xs text-zinc-500 mt-1 leading-relaxed">
-                At current dividend rates, your portfolio generates{" "}
-                <span className="text-gain font-medium">{formatCurrency(dividends.total_annual_income)}/yr</span>{" "}
-                or roughly <span className="text-gain font-medium">{formatCurrency(monthlyIncome)}/mo</span>.
-                {dividends.portfolio_yield > 0 && (
-                  <> That&apos;s a {formatPercent(dividends.portfolio_yield * 100, false)} yield on your {formatCurrency(dividends.total_portfolio_value)} portfolio.</>
-                )}
-              </p>
-              {nonPayingHoldings.length > 0 && (
-                <p className="text-xs text-zinc-600 mt-1">
-                  {nonPayingHoldings.length} holding{nonPayingHoldings.length !== 1 ? "s don\u2019t" : " doesn\u2019t"} pay dividends ({nonPayingHoldings.map(h => h.ticker).join(", ")}).
-                </p>
-              )}
-            </div>
-          </div>
-          <div className="flex items-start gap-2 mt-3 pt-3 border-t border-vela-border text-[10px] text-zinc-600">
-            <Info className="w-3 h-3 mt-0.5 shrink-0" />
-            <span>
-              Projections based on current dividend rates. Companies may change or suspend dividends at any time. Not financial advice.
-            </span>
-          </div>
-        </div>
-        </RevealOnScroll>
+        <Section
+          label="Income projection"
+          prose="What the current declared rates add up to over a full year, before any change in the rates themselves."
+        >
+          <Prose className="max-w-[640px]">
+            At current dividend rates the book generates{" "}
+            <span className="font-mono tabular-nums text-gain">
+              {formatCurrency(dividends.total_annual_income)}
+            </span>{" "}
+            a year, or roughly{" "}
+            <span className="font-mono tabular-nums text-gain">{formatCurrency(monthlyIncome)}</span>{" "}
+            a month.
+            {dividends.portfolio_yield > 0 && (
+              <>
+                {" "}That is a {formatPercent(dividends.portfolio_yield * 100, false)} yield on the{" "}
+                {formatCurrency(dividends.total_portfolio_value)} portfolio value.
+              </>
+            )}
+          </Prose>
+
+          {nonPayingHoldings.length > 0 && (
+            <p className="mt-3 font-mono text-[11px] text-vela-muted">
+              {nonPayingHoldings.length} holding
+              {nonPayingHoldings.length !== 1 ? "s do not" : " does not"} pay a dividend (
+              {nonPayingHoldings.map((h) => h.ticker).join(", ")}).
+            </p>
+          )}
+
+          <p className="mt-6 border-t border-vela-border pt-4 text-[11px] leading-relaxed text-vela-muted max-w-3xl">
+            Projections use the dividend rates currently on record. Companies can change or suspend a
+            dividend at any time, and past rates do not carry forward. Descriptive only, not investment
+            advice.
+          </p>
+        </Section>
       )}
     </PageTransition>
   );
 }
 
 
-// ── Header ───────────────────────────────────────────────────────────────
-
-function Header({ holdings }: { holdings?: DividendHolding[] }) {
-  return (
-    <div className="flex items-start justify-between">
-      <div>
-        <h1 className="text-2xl font-display font-bold text-zinc-100 flex items-center gap-2">
-          <Coins className="w-6 h-6 text-vela-teal" />
-          Dividends
-        </h1>
-        <p className="text-zinc-500 text-sm mt-0.5">
-          Projected income from your holdings  - yields, ex-dates, and payout ratios
-        </p>
-      </div>
-      {holdings && holdings.length > 0 && (
-        <button
-          onClick={() =>
-            exportCSV(
-              holdings.map((h) => ({
-                Ticker: h.ticker,
-                Shares: h.quantity,
-                Price: h.current_price,
-                "Div/Share": h.dividend_rate ?? "",
-                "Yield %": h.dividend_yield != null ? (h.dividend_yield * 100).toFixed(2) : "",
-                "Annual Income": h.annual_income,
-                "Ex-Date": h.ex_dividend_date ?? "",
-                "Payout Ratio": h.payout_ratio != null ? (h.payout_ratio * 100).toFixed(0) + "%" : "",
-              })),
-              `velnor-dividends-${new Date().toISOString().slice(0, 10)}.csv`,
-            )
-          }
-          className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs text-zinc-400 hover:text-zinc-200 bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700/50 transition-colors"
-        >
-          <Download className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Export</span>
-        </button>
-      )}
-    </div>
-  );
-}
-
-
-// ── Summary Card ─────────────────────────────────────────────────────────
-
-function SummaryCard({
-  label,
-  rawValue,
-  formatFn,
-  sub,
-  accent,
-}: {
-  label: string;
-  rawValue: number;
-  formatFn: (n: number) => string;
-  sub: string;
-  accent?: boolean;
-}) {
-  return (
-    <div className="vela-card">
-      <p className="text-xs text-zinc-500 mb-1">{label}</p>
-      <AnimatedNumber
-        value={rawValue}
-        format={formatFn}
-        className={`text-xl font-bold tabular ${accent ? "text-gain" : "text-zinc-100"}`}
-      />
-      <p className="text-[10px] text-zinc-600 mt-0.5">{sub}</p>
-    </div>
-  );
-}
-
-
-// ── Holding Row (Desktop) ────────────────────────────────────────────────
+// ── Holding row (desktop) ────────────────────────────────────────────────────
 
 function HoldingRow({ holding: h }: { holding: DividendHolding }) {
   const yieldPct = h.dividend_yield != null ? h.dividend_yield * 100 : null;
@@ -337,73 +316,97 @@ function HoldingRow({ holding: h }: { holding: DividendHolding }) {
   const payoutHigh = h.payout_ratio != null && h.payout_ratio > 0.9;
 
   return (
-    <tr className="border-b border-zinc-800/50 hover:bg-zinc-800/30">
-      <td className="py-2">
+    <tr className="border-b border-vela-border last:border-0">
+      <td className="py-2.5">
         <div className="flex items-center gap-1.5">
-          <span className="text-zinc-100 font-medium">{h.ticker}</span>
+          <span className="font-mono text-[13px] font-semibold tracking-[0.02em] text-zinc-100">
+            {h.ticker}
+          </span>
           {highYield && (
-            <span title="Yield above 8%  - unusually high">
-              <AlertTriangle className="w-3 h-3 text-amber-400" />
+            <span title="Yield above 8%">
+              <AlertTriangle className="w-3 h-3 text-amber-400 shrink-0" />
             </span>
           )}
         </div>
       </td>
-      <td className="py-2 tabular text-right text-zinc-300">
+      <td className="py-2.5 font-mono tabular-nums text-right text-vela-body">
         {h.quantity.toLocaleString(undefined, { maximumFractionDigits: 2 })}
       </td>
-      <td className="py-2 tabular text-right text-zinc-300">
+      <td className="py-2.5 font-mono tabular-nums text-right text-vela-body">
         {formatCurrency(h.current_price)}
       </td>
-      <td className="py-2 tabular text-right text-zinc-300">
-        {h.dividend_rate != null ? `$${h.dividend_rate.toFixed(2)}` : " -"}
+      <td className="py-2.5 font-mono tabular-nums text-right text-vela-body">
+        {h.dividend_rate != null ? `$${h.dividend_rate.toFixed(2)}` : "—"}
       </td>
-      <td className={`py-2 tabular text-right ${yieldPct != null && yieldPct > 0 ? (highYield ? "text-amber-400" : "text-gain") : "text-zinc-500"}`}>
-        {yieldPct != null ? `${yieldPct.toFixed(2)}%` : " -"}
+      <td
+        className={`py-2.5 font-mono tabular-nums text-right ${
+          yieldPct != null && yieldPct > 0
+            ? highYield
+              ? "text-amber-400"
+              : "text-gain"
+            : "text-vela-muted"
+        }`}
+      >
+        {yieldPct != null ? `${yieldPct.toFixed(2)}%` : "—"}
       </td>
-      <td className={`py-2 tabular text-right font-medium ${h.annual_income > 0 ? "text-gain" : "text-zinc-500"}`}>
-        {h.annual_income > 0 ? formatCurrency(h.annual_income) : " -"}
+      <td
+        className={`py-2.5 font-mono tabular-nums font-medium text-right ${
+          h.annual_income > 0 ? "text-gain" : "text-vela-muted"
+        }`}
+      >
+        {h.annual_income > 0 ? formatCurrency(h.annual_income) : "—"}
       </td>
-      <td className="py-2 tabular text-right text-zinc-400">
-        {h.ex_dividend_date ? formatDate(h.ex_dividend_date) : " -"}
+      <td className="py-2.5 font-mono tabular-nums text-right text-vela-body">
+        {h.ex_dividend_date ? formatDate(h.ex_dividend_date) : "—"}
       </td>
-      <td className={`py-2 tabular text-right ${payoutHigh ? "text-amber-400" : "text-zinc-400"}`}>
-        {h.payout_ratio != null ? `${(h.payout_ratio * 100).toFixed(0)}%` : " -"}
+      <td
+        className={`py-2.5 font-mono tabular-nums text-right ${
+          payoutHigh ? "text-amber-400" : "text-vela-body"
+        }`}
+      >
+        {h.payout_ratio != null ? `${(h.payout_ratio * 100).toFixed(0)}%` : "—"}
       </td>
     </tr>
   );
 }
 
 
-// ── Mobile Holding Card ──────────────────────────────────────────────────
+// ── Holding row (mobile) ─────────────────────────────────────────────────────
 
-function MobileHoldingCard({ holding: h }: { holding: DividendHolding }) {
+function MobileHoldingRow({ holding: h }: { holding: DividendHolding }) {
   const yieldPct = h.dividend_yield != null ? h.dividend_yield * 100 : null;
   const highYield = yieldPct != null && yieldPct > 8;
 
   return (
-    <div className="bg-zinc-800/30 rounded-lg px-3 py-2.5">
-      <div className="flex items-center justify-between mb-1.5">
-        <div className="flex items-center gap-1.5">
-          <span className="text-sm font-medium text-zinc-100">{h.ticker}</span>
-          {highYield && <AlertTriangle className="w-3 h-3 text-amber-400" />}
+    <div className="py-3">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-1.5 min-w-0">
+          <span className="font-mono text-[13px] font-semibold tracking-[0.02em] text-zinc-100">
+            {h.ticker}
+          </span>
+          {highYield && (
+            <span title="Yield above 8%">
+              <AlertTriangle className="w-3 h-3 text-amber-400 shrink-0" />
+            </span>
+          )}
         </div>
-        <span className={`text-sm font-bold tabular ${h.annual_income > 0 ? "text-gain" : "text-zinc-500"}`}>
-          {h.annual_income > 0 ? `+${formatCurrency(h.annual_income)}/yr` : "No div"}
+        <span
+          className={`shrink-0 font-mono text-[13px] font-semibold tabular-nums ${
+            h.annual_income > 0 ? "text-gain" : "text-vela-muted"
+          }`}
+        >
+          {h.annual_income > 0 ? `${formatCurrency(h.annual_income)}/yr` : "No dividend"}
         </span>
       </div>
-      <div className="flex items-center gap-4 text-[10px] text-zinc-500">
-        <span>{h.quantity.toFixed(2)} shares</span>
+      <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-[11px] tabular-nums text-vela-muted">
+        <span>{h.quantity.toFixed(2)} shr</span>
         {yieldPct != null && yieldPct > 0 && (
           <span className={highYield ? "text-amber-400" : "text-gain"}>
             {yieldPct.toFixed(2)}% yield
           </span>
         )}
-        {h.dividend_rate != null && (
-          <span>${h.dividend_rate.toFixed(2)}/share</span>
-        )}
-        {h.ex_dividend_date && (
-          <span>Ex: {formatDate(h.ex_dividend_date)}</span>
-        )}
+        {h.dividend_rate != null && <span>${h.dividend_rate.toFixed(2)}/shr</span>}
+        {h.ex_dividend_date && <span>Ex {formatDate(h.ex_dividend_date)}</span>}
       </div>
     </div>
   );

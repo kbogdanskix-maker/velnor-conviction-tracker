@@ -3,12 +3,36 @@
 import { useState } from "react";
 import Link from "next/link";
 import {
-  Compass, CheckCircle2, Circle, ChevronDown, ChevronRight,
-  ArrowRight, Lightbulb, Rocket,
+  Check, ChevronDown, ChevronRight, ArrowRight,
+  Command, SlidersHorizontal, GraduationCap, UserCheck, Lightbulb,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { useGuideProgress } from "@/hooks/useGuideProgress";
 import { FEATURE_MAP, QUICK_TIPS } from "@/lib/guide-steps";
 import PageTransition from "@/components/celestial/PageTransition";
+import {
+  TopBar,
+  PageHero,
+  StatStrip,
+  StatCell,
+  Section,
+  Eyebrow,
+  Prose,
+} from "@/components/instrument";
+
+/**
+ * Emoji are banned as icons by the design system, and `lib/guide-steps.ts` still
+ * ships an `emoji` field on each quick tip. Tips carry no id, so the map is keyed
+ * by tip title; anything unmapped falls back to a lightbulb.
+ */
+const TIP_ICONS: Record<string, LucideIcon> = {
+  "Command Palette": Command,
+  "Animation Settings": SlidersHorizontal,
+  "Financial Education": GraduationCap,
+  "Advisor Recommendations": UserCheck,
+};
+
+const TOOL_COUNT = FEATURE_MAP.reduce((n, g) => n + g.items.length, 0);
 
 // ── Page ────────────────────────────────────────────────────────────────────
 
@@ -21,157 +45,189 @@ export default function GuidePage() {
     setExpandedGroup((prev) => (prev === label ? null : label));
   }
 
+  const remaining = totalCount - completedCount;
+
   return (
-    <PageTransition className="space-y-8 max-w-4xl mx-auto">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-display font-bold text-zinc-100 flex items-center gap-3">
-          <Compass className="w-7 h-7 text-vela-teal" />
-          Getting Started
-        </h1>
-        <p className="text-zinc-500 text-sm mt-1">
-          Set up your financial dashboard in 5 steps, then explore 40+ tools.
-        </p>
-      </div>
+    <PageTransition>
+      <TopBar
+        trail={[{ label: "Velnor" }, { label: "Guide" }]}
+        note={
+          isLoading
+            ? "reading your account"
+            : allDone
+              ? "setup complete"
+              : `${completedCount} of ${totalCount} steps done`
+        }
+      />
 
-      {/* ─── Section 1: Onboarding Checklist ─────────────────────────────── */}
-      <div className="vela-card space-y-5">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Rocket className="w-5 h-5 text-vela-teal" />
-            <h2 className="text-sm font-medium text-zinc-200">Setup Checklist</h2>
-          </div>
-          <span className="text-xs text-zinc-500">
-            {completedCount} of {totalCount} complete
-          </span>
-        </div>
+      <PageHero
+        title="Getting started"
+        meta={`${totalCount} steps to a working workspace, then ${TOOL_COUNT} tools beyond it`}
+        figure={isLoading ? undefined : `${percentComplete}%`}
+        figureSub={isLoading ? undefined : allDone ? "all set" : `${remaining} left`}
+        figureSubClass={allDone ? "text-gain" : "text-vela-body"}
+      />
 
-        {/* Progress bar */}
-        <div className="relative h-2 bg-zinc-800 rounded-full overflow-hidden">
-          <div
-            className="h-full rounded-full transition-all duration-700 ease-out"
-            style={{
-              width: `${percentComplete}%`,
-              background: allDone
-                ? "linear-gradient(90deg, #34d399, #1AA8BB)"
-                : "linear-gradient(90deg, #1AA8BB, #6366f1)",
-            }}
+      {!isLoading && (
+        <StatStrip className="mt-6">
+          <StatCell
+            label="Steps done"
+            value={`${completedCount}/${totalCount}`}
+            valueClass={allDone ? "text-gain" : "text-zinc-100"}
+            sub={allDone ? "nothing outstanding" : `${remaining} remaining`}
           />
+          <StatCell label="Tools" value={TOOL_COUNT} sub={`${FEATURE_MAP.length} groups`} />
+          <StatCell label="Shortcuts" value={QUICK_TIPS.length} sub="worth knowing" />
+        </StatStrip>
+      )}
+
+      {/* ─── Setup checklist ──────────────────────────────────────────────── */}
+
+      <Section
+        label="Setup"
+        labelAside={isLoading ? undefined : `— ${completedCount}/${totalCount}`}
+        prose="Each step feeds something downstream. The more of your picture the app holds, the less of it you have to restate later."
+      >
+        {/* Progress rail */}
+        <div className="mb-6">
+          <div className="h-[3px] w-full bg-vela-border">
+            <div
+              className={`h-full transition-[width] duration-500 ease-out ${
+                allDone ? "bg-gain" : "bg-vela-teal"
+              }`}
+              style={{ width: `${percentComplete}%` }}
+            />
+          </div>
+          <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.14em] tabular-nums text-vela-muted">
+            {completedCount} of {totalCount} complete
+          </p>
         </div>
 
-        {allDone && (
-          <div className="flex items-center gap-2 text-emerald-400 text-sm font-medium">
-            <CheckCircle2 className="w-4 h-4" />
-            All set! Your dashboard is fully powered.
-          </div>
-        )}
-
-        {/* Steps */}
-        <div className="space-y-3">
+        <div className="divide-y divide-vela-border border-y border-vela-border">
           {steps.map(({ step, complete }) => (
             <div
               key={step.id}
-              className={`flex items-start gap-3 p-3 rounded-lg border transition-colors ${
-                complete
-                  ? "border-emerald-500/20 bg-emerald-500/5"
-                  : "border-zinc-800 bg-zinc-900/50 hover:border-zinc-700"
-              }`}
+              className="flex items-start gap-3.5 py-4 transition-colors hover:bg-vela-teal/[0.03]"
             >
-              {/* Status icon */}
-              <div className="mt-0.5 shrink-0">
+              {/* Status marker */}
+              <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center">
                 {complete ? (
-                  <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                  <Check className="h-4 w-4 text-gain" aria-label="complete" />
                 ) : (
-                  <Circle className="w-5 h-5 text-zinc-600" />
+                  <span
+                    aria-hidden="true"
+                    className="h-[7px] w-[7px] rotate-45 border border-vela-muted"
+                  />
                 )}
-              </div>
+              </span>
 
               {/* Content */}
-              <div className="flex-1 min-w-0">
+              <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <step.icon className={`w-4 h-4 ${complete ? "text-emerald-400" : "text-vela-teal"}`} />
+                  <step.icon
+                    aria-hidden="true"
+                    className={`h-3.5 w-3.5 shrink-0 ${complete ? "text-gain" : "text-vela-teal"}`}
+                  />
                   <h3
-                    className={`text-sm font-medium ${
-                      complete ? "text-emerald-400 line-through decoration-emerald-400/40" : "text-zinc-200"
+                    className={`text-[14px] font-medium leading-snug ${
+                      complete ? "text-vela-muted" : "text-zinc-100"
                     }`}
                   >
                     {step.title}
                   </h3>
                 </div>
-                <p className="text-xs text-zinc-500 mt-1 leading-relaxed">
+                <p className="mt-1.5 text-[13px] leading-[1.55] text-vela-body">
                   {step.description}
                 </p>
               </div>
 
               {/* CTA */}
-              {!complete && (
+              {!complete ? (
                 <Link
                   href={step.href}
-                  className="shrink-0 flex items-center gap-1 text-xs font-medium text-vela-teal hover:text-vela-teal-dim transition-colors"
+                  className="mt-0.5 inline-flex shrink-0 items-center gap-1.5 rounded border border-vela-teal/25 bg-vela-teal/10 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-vela-teal transition-colors hover:border-vela-teal/40 hover:bg-vela-teal/15"
                 >
-                  {step.cta}
-                  <ArrowRight className="w-3 h-3" />
+                  <span className="hidden sm:inline">{step.cta}</span>
+                  <ArrowRight className="h-3 w-3 shrink-0" />
                 </Link>
+              ) : (
+                <span className="mt-1 shrink-0 font-mono text-[10px] uppercase tracking-[0.14em] text-gain">
+                  Done
+                </span>
               )}
             </div>
           ))}
         </div>
-      </div>
+      </Section>
 
-      {/* ─── Section 2: Feature Map ──────────────────────────────────────── */}
-      <div className="space-y-4">
-        <div>
-          <h2 className="text-lg font-semibold text-zinc-100">Explore Features</h2>
-          <p className="text-xs text-zinc-500 mt-0.5">
-            Click a category to see every tool available.
-          </p>
-        </div>
+      {/* ─── Feature map ──────────────────────────────────────────────────── */}
 
-        <div className="space-y-2">
+      <Section
+        label="Everything else"
+        labelAside={`— ${TOOL_COUNT} tools`}
+        prose="Open a group to see what sits inside it. Nothing here is required to use the core workflow."
+      >
+        <div className="divide-y divide-vela-border border-y border-vela-border">
           {FEATURE_MAP.map((group) => {
             const isOpen = expandedGroup === group.label;
             return (
-              <div key={group.label} className="vela-card overflow-hidden">
+              <div key={group.label}>
                 <button
                   onClick={() => toggleGroup(group.label)}
-                  className="w-full flex items-center justify-between p-0 text-left"
+                  aria-expanded={isOpen}
+                  className="flex w-full items-center justify-between gap-4 py-4 text-left transition-colors hover:bg-vela-teal/[0.03]"
                 >
-                  <div>
-                    <h3 className="text-sm font-medium text-zinc-200">{group.label}</h3>
-                    <p className="text-xs text-zinc-500 mt-0.5">
-                      {group.description} &middot; {group.items.length} tools
+                  <div className="min-w-0">
+                    <h3 className="font-display text-[15px] font-semibold text-zinc-100">
+                      {group.label}
+                    </h3>
+                    <p className="mt-1 text-[13px] leading-[1.5] text-vela-body">
+                      {group.description}
                     </p>
                   </div>
-                  {isOpen ? (
-                    <ChevronDown className="w-4 h-4 text-zinc-500 shrink-0" />
-                  ) : (
-                    <ChevronRight className="w-4 h-4 text-zinc-500 shrink-0" />
-                  )}
+                  <span className="flex shrink-0 items-center gap-2.5">
+                    <span className="font-mono text-[10px] uppercase tracking-[0.14em] tabular-nums text-vela-muted">
+                      {group.items.length}
+                    </span>
+                    {isOpen ? (
+                      <ChevronDown className="h-4 w-4 shrink-0 text-vela-muted" aria-hidden="true" />
+                    ) : (
+                      <ChevronRight className="h-4 w-4 shrink-0 text-vela-muted" aria-hidden="true" />
+                    )}
+                  </span>
                 </button>
 
                 {isOpen && (
-                  <div className="mt-4 pt-4 border-t border-zinc-800 space-y-1">
+                  <div className="border-t border-vela-border pb-4 pl-0 sm:pl-5">
                     {group.items.map((item) => (
                       <Link
                         key={item.href}
                         href={item.href}
-                        className="flex items-center gap-3 py-2.5 px-2 -mx-2 rounded-lg hover:bg-zinc-800/60 transition-colors group"
+                        className="group flex items-center gap-3 py-2.5 transition-colors hover:bg-vela-teal/[0.03]"
                       >
-                        <item.icon className="w-4 h-4 text-zinc-500 group-hover:text-vela-teal transition-colors shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm text-zinc-200 group-hover:text-zinc-100">
+                        <item.icon
+                          aria-hidden="true"
+                          className="h-3.5 w-3.5 shrink-0 text-vela-muted transition-colors group-hover:text-vela-teal"
+                        />
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="text-[13.5px] font-medium text-zinc-100">
                               {item.label}
                             </span>
                             {item.tier && (
-                              <span className="text-[9px] uppercase tracking-wider font-semibold bg-vela-teal/15 text-vela-teal px-1.5 py-0.5 rounded">
+                              <span className="rounded bg-vela-teal/15 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.14em] text-vela-teal">
                                 {item.tier}
                               </span>
                             )}
                           </div>
-                          <p className="text-xs text-zinc-500">{item.description}</p>
+                          <p className="mt-0.5 text-[12.5px] leading-snug text-vela-body">
+                            {item.description}
+                          </p>
                         </div>
-                        <ArrowRight className="w-3.5 h-3.5 text-zinc-600 group-hover:text-vela-teal opacity-0 group-hover:opacity-100 transition-all shrink-0" />
+                        <ArrowRight
+                          aria-hidden="true"
+                          className="h-3.5 w-3.5 shrink-0 text-vela-subtle transition-colors group-hover:text-vela-teal"
+                        />
                       </Link>
                     ))}
                   </div>
@@ -180,48 +236,55 @@ export default function GuidePage() {
             );
           })}
         </div>
-      </div>
+      </Section>
 
-      {/* ─── Section 3: Quick Tips ───────────────────────────────────────── */}
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <Lightbulb className="w-5 h-5 text-amber-400" />
-          <h2 className="text-sm font-medium text-zinc-200">Pro Tips</h2>
-        </div>
+      {/* ─── Quick tips ───────────────────────────────────────────────────── */}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <Section
+        label="Worth knowing"
+        prose="Small things that make the app quicker to live in."
+      >
+        <div className="grid grid-cols-1 gap-px border border-vela-border bg-vela-border sm:grid-cols-2">
           {QUICK_TIPS.map((tip) => {
-            const content = (
-              <div className="vela-card hover:border-zinc-700 transition-colors h-full">
-                <div className="flex items-start gap-3">
-                  <span className="text-lg mt-0.5">{tip.emoji}</span>
-                  <div>
-                    <h3 className="text-sm font-medium text-zinc-200">{tip.title}</h3>
-                    <p className="text-xs text-zinc-500 mt-0.5 leading-relaxed">
-                      {tip.description}
-                    </p>
-                  </div>
+            const Icon = TIP_ICONS[tip.title] ?? Lightbulb;
+            const body = (
+              <div className="flex h-full items-start gap-3 bg-vela-bg p-4 transition-colors group-hover:bg-vela-teal/[0.03]">
+                <Icon
+                  aria-hidden="true"
+                  className="mt-0.5 h-4 w-4 shrink-0 text-vela-teal"
+                />
+                <div className="min-w-0">
+                  <h3 className="text-[13.5px] font-medium text-zinc-100">{tip.title}</h3>
+                  <p className="mt-1 text-[12.5px] leading-[1.5] text-vela-body">
+                    {tip.description}
+                  </p>
                 </div>
               </div>
             );
 
             return tip.href ? (
-              <Link key={tip.title} href={tip.href} className="block">
-                {content}
+              <Link key={tip.title} href={tip.href} className="group block">
+                {body}
               </Link>
             ) : (
-              <div key={tip.title}>{content}</div>
+              <div key={tip.title} className="group">
+                {body}
+              </div>
             );
           })}
         </div>
-      </div>
+      </Section>
 
-      {/* Disclaimer */}
-      <div className="text-center pt-4 pb-8 border-t border-zinc-800">
-        <p className="text-xs text-zinc-600">
-          Velnor is a personal finance dashboard. All data stays in your account. Not financial advice.
-        </p>
-      </div>
+      {/* ─── Disclaimer ───────────────────────────────────────────────────── */}
+
+      <Section label="Scope">
+        <Eyebrow>What this app is</Eyebrow>
+        <Prose className="mt-2.5 max-w-[560px]">
+          Velnor is a record-keeping and research workspace for your own money. Your data stays in your
+          account. Nothing here is investment advice, and nothing here is a recommendation to buy or
+          sell any security.
+        </Prose>
+      </Section>
     </PageTransition>
   );
 }
