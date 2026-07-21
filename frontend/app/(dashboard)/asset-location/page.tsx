@@ -23,12 +23,12 @@ import DashboardSkeleton from "@/components/shared/DashboardSkeleton";
 // ── Asset type classification ────────────────────────────────────────
 
 type TaxEfficiency = "tax-inefficient" | "tax-efficient" | "tax-neutral";
-type RecommendedAccount = "tax-advantaged" | "taxable" | "either";
+type ShelterSensitivity = "income-heavy" | "growth-heavy" | "either";
 
 interface AssetClassification {
   ticker: string;
   taxEfficiency: TaxEfficiency;
-  recommendedAccount: RecommendedAccount;
+  shelterSensitivity: ShelterSensitivity;
   reason: string;
   category: string;
   description: string; // plain-English one-liner for beginners
@@ -56,7 +56,7 @@ function classifyHolding(h: Holding): AssetClassification {
   // ── Use asset_type set at trade entry as primary signal ──────────────
   if (assetType === "bond_etf") {
     return {
-      ticker, taxEfficiency: "tax-inefficient", recommendedAccount: "tax-advantaged",
+      ticker, taxEfficiency: "tax-inefficient", shelterSensitivity: "income-heavy",
       category: "Bond ETF", estimatedYield: 0.035,
       description: "A fund holding bonds that pay regular interest income.",
       reason: "Bond interest is taxed as ordinary income. Placing in a tax-advantaged account avoids this.",
@@ -66,7 +66,7 @@ function classifyHolding(h: Holding): AssetClassification {
 
   if (assetType === "reit") {
     return {
-      ticker, taxEfficiency: "tax-inefficient", recommendedAccount: "tax-advantaged",
+      ticker, taxEfficiency: "tax-inefficient", shelterSensitivity: "income-heavy",
       category: "REIT", estimatedYield: 0.035,
       description: "Owns real estate and must pay out 90%+ of income as dividends.",
       reason: "REIT dividends are taxed as ordinary income (no qualified dividend treatment).",
@@ -76,7 +76,7 @@ function classifyHolding(h: Holding): AssetClassification {
 
   if (assetType === "etf") {
     return {
-      ticker, taxEfficiency: "tax-efficient", recommendedAccount: "taxable",
+      ticker, taxEfficiency: "tax-efficient", shelterSensitivity: "growth-heavy",
       category: "ETF", estimatedYield: null,
       description: "A basket of stocks or assets that trades like a single share.",
       reason: "Index/growth ETFs with low turnover are tax-efficient in taxable accounts.",
@@ -86,7 +86,7 @@ function classifyHolding(h: Holding): AssetClassification {
 
   if (assetType === "crypto") {
     return {
-      ticker, taxEfficiency: "tax-inefficient", recommendedAccount: "tax-advantaged",
+      ticker, taxEfficiency: "tax-inefficient", shelterSensitivity: "income-heavy",
       category: "Crypto", estimatedYield: null,
       description: "Digital asset taxed as property. Every trade is a taxable event.",
       reason: "Crypto gains are taxed as property. Tax-advantaged accounts shelter frequent rebalancing.",
@@ -99,7 +99,7 @@ function classifyHolding(h: Holding): AssetClassification {
   // e.g. SHYF→SHY, SPYG→SPY, QQQM→QQQ.) ─────────────────────────────────────
   if (["AGG", "BND", "TLT", "IEF", "SHY", "VCIT", "LQD", "HYG", "TIP", "TIPS"].includes(ticker)) {
     return {
-      ticker, taxEfficiency: "tax-inefficient", recommendedAccount: "tax-advantaged",
+      ticker, taxEfficiency: "tax-inefficient", shelterSensitivity: "income-heavy",
       category: "Bond ETF", estimatedYield: 0.035,
       description: "A fund holding bonds that pay regular interest income.",
       reason: "Bond interest is taxed as ordinary income. Placing in a tax-advantaged account avoids this.",
@@ -109,7 +109,7 @@ function classifyHolding(h: Holding): AssetClassification {
 
   if (["VNQ", "SCHH", "IYR", "XLRE", "RWR"].includes(ticker)) {
     return {
-      ticker, taxEfficiency: "tax-inefficient", recommendedAccount: "tax-advantaged",
+      ticker, taxEfficiency: "tax-inefficient", shelterSensitivity: "income-heavy",
       category: "REIT ETF", estimatedYield: 0.035,
       description: "Owns real estate and must pay out 90%+ of income as dividends.",
       reason: "REIT dividends are taxed as ordinary income (no qualified dividend treatment).",
@@ -119,7 +119,7 @@ function classifyHolding(h: Holding): AssetClassification {
 
   if (["SCHD", "VYM", "DVY", "HDV", "SPYD", "SPHD"].includes(ticker)) {
     return {
-      ticker, taxEfficiency: "tax-neutral", recommendedAccount: "either",
+      ticker, taxEfficiency: "tax-neutral", shelterSensitivity: "either",
       category: "Dividend ETF", estimatedYield: 0.03,
       description: "ETF focused on stocks that pay above-average dividends.",
       reason: "Qualified dividends get preferential tax rates, but high-yield positions may benefit from shelter.",
@@ -129,7 +129,7 @@ function classifyHolding(h: Holding): AssetClassification {
 
   if (["VXUS", "VEA", "VWO", "IEFA", "EEM", "IXUS", "EFA"].includes(ticker)) {
     return {
-      ticker, taxEfficiency: "tax-efficient", recommendedAccount: "taxable",
+      ticker, taxEfficiency: "tax-efficient", shelterSensitivity: "growth-heavy",
       category: "International ETF", estimatedYield: null,
       description: "Holds stocks from non-US markets. Earns a foreign tax credit in taxable accounts.",
       reason: "International stocks in taxable accounts let you claim the foreign tax credit.",
@@ -139,7 +139,7 @@ function classifyHolding(h: Holding): AssetClassification {
 
   if (["VOO", "VTI", "SPY", "QQQ", "IVV", "VUG", "SCHG", "VGT", "IWF"].includes(ticker)) {
     return {
-      ticker, taxEfficiency: "tax-efficient", recommendedAccount: "taxable",
+      ticker, taxEfficiency: "tax-efficient", shelterSensitivity: "growth-heavy",
       category: "Index / Growth ETF", estimatedYield: null,
       description: "Low-cost fund tracking a broad market index with minimal tax events.",
       reason: "Low turnover, qualified dividends. Tax-efficient in taxable accounts.",
@@ -148,7 +148,7 @@ function classifyHolding(h: Holding): AssetClassification {
   }
 
   return {
-    ticker, taxEfficiency: "tax-efficient", recommendedAccount: "taxable",
+    ticker, taxEfficiency: "tax-efficient", shelterSensitivity: "growth-heavy",
     category: "Individual Stock", estimatedYield: null,
     description: "Shares in a single company, eligible for tax-loss harvesting and long-term rates.",
     reason: "Individual stocks can benefit from tax-loss harvesting and long-term capital gains rates.",
@@ -164,9 +164,9 @@ const EFFICIENCY_COLORS: Record<TaxEfficiency, { text: string; bg: string; borde
   "tax-neutral": { text: "text-amber-400", bg: "bg-amber-400/10", border: "border-amber-400/20" },
 };
 
-const ACCOUNT_ICONS: Record<RecommendedAccount, typeof Building2> = {
-  "tax-advantaged": Shield,
-  "taxable": Wallet,
+const ACCOUNT_ICONS: Record<ShelterSensitivity, typeof Building2> = {
+  "income-heavy": Shield,
+  "growth-heavy": Wallet,
   "either": MapPin,
 };
 
@@ -179,15 +179,15 @@ export default function AssetLocationPage() {
   const classifications = useMemo(() => {
     if (!summary) return [];
     return summary.holdings.map(classifyHolding).sort((a, b) => {
-      const order: Record<RecommendedAccount, number> = { "tax-advantaged": 0, either: 1, taxable: 2 };
-      return order[a.recommendedAccount] - order[b.recommendedAccount];
+      const order: Record<ShelterSensitivity, number> = { "income-heavy": 0, either: 1, "growth-heavy": 2 };
+      return order[a.shelterSensitivity] - order[b.shelterSensitivity];
     });
   }, [summary]);
 
   const groups = useMemo(() => {
-    const taxAdv = classifications.filter((c) => c.recommendedAccount === "tax-advantaged");
-    const taxable = classifications.filter((c) => c.recommendedAccount === "taxable");
-    const either = classifications.filter((c) => c.recommendedAccount === "either");
+    const taxAdv = classifications.filter((c) => c.shelterSensitivity === "income-heavy");
+    const taxable = classifications.filter((c) => c.shelterSensitivity === "growth-heavy");
+    const either = classifications.filter((c) => c.shelterSensitivity === "either");
     return { taxAdv, taxable, either };
   }, [classifications]);
 
@@ -200,7 +200,7 @@ export default function AssetLocationPage() {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-display font-bold text-zinc-100 flex items-center gap-2">
-          <MapPin className="w-6 h-6 text-blue-400" />
+          <MapPin className="w-6 h-6 text-vela-teal" />
           Asset Location
         </h1>
         <p className="text-sm text-zinc-500 mt-0.5">
@@ -224,12 +224,12 @@ export default function AssetLocationPage() {
       ) : (
         <>
           {/* Summary */}
-          <FloatingCard glowColor="rgba(59, 130, 246, 0.10)" tilt={false}>
+          <FloatingCard glowColor="rgba(26, 168, 187, 0.10)" tilt={false}>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
               {[
-                { label: "Tax-Advantaged", desc: "401(k), IRA, HSA", items: groups.taxAdv, icon: Shield, color: "text-blue-400" },
-                { label: "Taxable", desc: "Brokerage accounts", items: groups.taxable, icon: Wallet, color: "text-gain" },
-                { label: "Either", desc: "Flexible placement", items: groups.either, icon: MapPin, color: "text-amber-400" },
+                { label: "Income-heavy", desc: "return arrives mostly as taxable income", items: groups.taxAdv, icon: Shield, color: "text-vela-teal" },
+                { label: "Growth-heavy", desc: "return arrives mostly as deferred gains", items: groups.taxable, icon: Wallet, color: "text-vela-body" },
+                { label: "Mixed", desc: "little difference either way", items: groups.either, icon: MapPin, color: "text-vela-muted" },
               ].map((g) => {
                 const value = g.items.reduce((s, c) => s + c.marketValue, 0);
                 const pct = totalValue > 0 ? (value / totalValue) * 100 : 0;
@@ -286,7 +286,7 @@ export default function AssetLocationPage() {
           <RevealOnScroll delay={0.05}>
             <div className="space-y-6">
               {([
-                { label: "Often Held in Tax-Advantaged Accounts", items: groups.taxAdv, color: "border-blue-500/20", icon: Shield, iconColor: "text-blue-400" },
+                { label: "Often Held in Tax-Advantaged Accounts", items: groups.taxAdv, color: "border-blue-500/20", icon: Shield, iconColor: "text-vela-teal" },
                 { label: "Often Held in Taxable Accounts", items: groups.taxable, color: "border-gain/20", icon: Wallet, iconColor: "text-gain" },
                 { label: "Flexible Placement", items: groups.either, color: "border-amber-400/20", icon: MapPin, iconColor: "text-amber-400" },
               ] as const).map((section) => section.items.length > 0 && (
@@ -333,12 +333,12 @@ export default function AssetLocationPage() {
           {/* Educational notes */}
           <RevealOnScroll delay={0.1}>
             <div className="vela-card space-y-2">
-              <h2 className="section-heading mb-3">Key Principles</h2>
+              <h2 className="section-heading mb-3">How account types are taxed</h2>
               {[
-                { icon: Shield, color: "text-blue-400 border-blue-400/20 bg-blue-400/5", text: "Tax-advantaged accounts (401k, IRA, HSA) shelter income from immediate taxation. Put your least tax-efficient holdings here." },
-                { icon: Wallet, color: "text-gain border-gain/20 bg-gain/5", text: "Taxable accounts allow tax-loss harvesting and qualify for long-term capital gains rates. Keep tax-efficient holdings here." },
-                { icon: Info, color: "text-teal-400 border-teal-400/20 bg-teal-400/5", text: "International stocks in taxable accounts let you claim the foreign tax credit on dividends. This benefit is lost in tax-advantaged accounts." },
-                { icon: AlertTriangle, color: "text-amber-400 border-amber-400/20 bg-amber-400/5", text: "These are general guidelines. Your specific tax situation, contribution limits, and investment goals should inform final placement." },
+                { icon: Shield, color: "text-vela-teal border-vela-teal/20 bg-vela-teal/5", text: "Tax-advantaged accounts (401k, IRA, HSA) shelter income from immediate taxation, so the shelter is worth more the more of a return that arrives as taxable income." },
+                { icon: Wallet, color: "text-gain border-gain/20 bg-gain/5", text: "Taxable accounts allow tax-loss harvesting and qualify for long-term capital gains rates, which matters more for returns that arrive as deferred gains than as income." },
+                { icon: Info, color: "text-vela-teal border-vela-teal/20 bg-vela-teal/5", text: "International stocks in taxable accounts let you claim the foreign tax credit on dividends. This benefit is lost in tax-advantaged accounts." },
+                { icon: AlertTriangle, color: "text-amber-400 border-amber-400/20 bg-amber-400/5", text: "These are general mechanics of how account types are taxed, not a plan for your holdings. Contribution limits, your own tax position and your goals all bear on placement, and a tax adviser is the person to weigh them." },
               ].map((note, i) => (
                 <div key={i} className={`flex gap-3 p-3 rounded-lg border ${note.color}`}>
                   <note.icon className="w-4 h-4 shrink-0 mt-0.5" />
