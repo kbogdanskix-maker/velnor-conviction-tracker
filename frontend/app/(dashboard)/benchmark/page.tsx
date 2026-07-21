@@ -53,7 +53,7 @@ function percentileLabel(pct: number): string {
 // ── Profile option configs ───────────────────────────────────────────────────
 
 const RISK_OPTIONS: { value: RiskTolerance; label: string; color: string }[] = [
-  { value: "conservative", label: "Conservative", color: "text-blue-400" },
+  { value: "conservative", label: "Conservative", color: "text-vela-muted" },
   { value: "moderate", label: "Moderate", color: "text-teal-400" },
   { value: "aggressive", label: "Aggressive", color: "text-amber-400" },
 ];

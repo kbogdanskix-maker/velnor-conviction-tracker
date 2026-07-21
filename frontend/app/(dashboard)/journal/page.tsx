@@ -24,7 +24,7 @@ const ACTIONS: { value: JournalAction; label: string; icon: typeof TrendingUp; c
   { value: "sell", label: "Sell", icon: ArrowDownRight, color: "text-rose-400" },
   { value: "add", label: "Add More", icon: Plus, color: "text-emerald-400" },
   { value: "trim", label: "Trim", icon: TrendingDown, color: "text-amber-400" },
-  { value: "hold", label: "Hold", icon: Pause, color: "text-blue-400" },
+  { value: "hold", label: "Hold", icon: Pause, color: "text-vela-muted" },
   { value: "watch", label: "Watch", icon: Eye, color: "text-zinc-400" },
 ];
 

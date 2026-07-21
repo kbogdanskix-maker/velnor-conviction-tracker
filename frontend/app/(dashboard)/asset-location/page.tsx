@@ -257,7 +257,7 @@ export default function AssetLocationPage() {
               <div className="flex h-4 rounded-full overflow-hidden">
                 {groups.taxAdv.length > 0 && (
                   <div
-                    className="bg-blue-500 transition-all duration-700"
+                    className="bg-vela-teal transition-all duration-700"
                     style={{ width: `${(groups.taxAdv.reduce((s, c) => s + c.marketValue, 0) / totalValue) * 100}%` }}
                   />
                 )}
@@ -275,7 +275,7 @@ export default function AssetLocationPage() {
                 )}
               </div>
               <div className="flex items-center gap-6 mt-2 text-xs text-zinc-500 justify-center">
-                <span className="flex items-center gap-1.5"><span className="w-3 h-2 bg-blue-500 rounded" /> Tax-Advantaged</span>
+                <span className="flex items-center gap-1.5"><span className="w-3 h-2 bg-vela-teal rounded" /> Income-heavy</span>
                 <span className="flex items-center gap-1.5"><span className="w-3 h-2 bg-amber-500 rounded" /> Either</span>
                 <span className="flex items-center gap-1.5"><span className="w-3 h-2 bg-gain rounded" /> Taxable</span>
               </div>
@@ -286,7 +286,7 @@ export default function AssetLocationPage() {
           <RevealOnScroll delay={0.05}>
             <div className="space-y-6">
               {([
-                { label: "Often Held in Tax-Advantaged Accounts", items: groups.taxAdv, color: "border-blue-500/20", icon: Shield, iconColor: "text-vela-teal" },
+                { label: "Income-heavy holdings", items: groups.taxAdv, color: "border-vela-teal/20", icon: Shield, iconColor: "text-vela-teal" },
                 { label: "Often Held in Taxable Accounts", items: groups.taxable, color: "border-gain/20", icon: Wallet, iconColor: "text-gain" },
                 { label: "Flexible Placement", items: groups.either, color: "border-amber-400/20", icon: MapPin, iconColor: "text-amber-400" },
               ] as const).map((section) => section.items.length > 0 && (

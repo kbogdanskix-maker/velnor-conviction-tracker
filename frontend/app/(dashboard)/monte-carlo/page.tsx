@@ -316,7 +316,7 @@ export default function MonteCarloPage() {
       ) : result ? (
         <>
           {/* Phase toggle + success rate */}
-          <FloatingCard glowColor="rgba(168, 85, 247, 0.10)" tilt={false}>
+          <FloatingCard glowColor="rgba(26, 168, 187, 0.10)" tilt={false}>
             <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-8">
               {/* Phase toggle */}
               <div className="flex bg-zinc-800 rounded-lg p-1">
@@ -377,12 +377,12 @@ export default function MonteCarloPage() {
                   <AreaChart data={result.percentiles} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
                     <defs>
                       <linearGradient id="mcP90" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="rgb(168, 85, 247)" stopOpacity={0.08} />
-                        <stop offset="100%" stopColor="rgb(168, 85, 247)" stopOpacity={0} />
+                        <stop offset="0%" stopColor="rgb(26, 168, 187)" stopOpacity={0.08} />
+                        <stop offset="100%" stopColor="rgb(26, 168, 187)" stopOpacity={0} />
                       </linearGradient>
                       <linearGradient id="mcP75" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="rgb(168, 85, 247)" stopOpacity={0.15} />
-                        <stop offset="100%" stopColor="rgb(168, 85, 247)" stopOpacity={0.02} />
+                        <stop offset="0%" stopColor="rgb(26, 168, 187)" stopOpacity={0.15} />
+                        <stop offset="100%" stopColor="rgb(26, 168, 187)" stopOpacity={0.02} />
                       </linearGradient>
                       <linearGradient id="mcP50" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="0%" stopColor="rgb(26, 168, 187)" stopOpacity={0.25} />
@@ -429,10 +429,10 @@ export default function MonteCarloPage() {
                   <span className="w-3 h-0.5 bg-teal-500 rounded" /> Median
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <span className="w-3 h-2 bg-purple-500/20 rounded" /> 25th – 75th
+                  <span className="w-3 h-2 bg-vela-teal/20 rounded" /> 25th – 75th
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <span className="w-3 h-2 bg-purple-500/10 rounded" /> 10th – 90th
+                  <span className="w-3 h-2 bg-vela-teal/10 rounded" /> 10th – 90th
                 </span>
               </div>
             </div>
@@ -508,7 +508,7 @@ export default function MonteCarloPage() {
                       step={1200}
                       value={effectiveAnnualContrib}
                       onChange={(e) => setAnnualContribOverride(Number(e.target.value))}
-                      className="w-full accent-purple-500 h-1.5"
+                      className="w-full accent-vela-teal h-1.5"
                     />
                     <p className="text-[10px] text-zinc-600 mt-1">
                       {fmt(effectiveAnnualContrib / 12)}/mo &mdash; adjust if your actual investment contributions differ from net savings
@@ -540,7 +540,7 @@ export default function MonteCarloPage() {
                       step={s.step}
                       value={s.value}
                       onChange={(e) => s.set(Number(e.target.value))}
-                      className="w-full accent-purple-500 h-1.5"
+                      className="w-full accent-vela-teal h-1.5"
                     />
                     <p className="text-[10px] text-zinc-600 mt-1">{s.desc}</p>
                   </div>

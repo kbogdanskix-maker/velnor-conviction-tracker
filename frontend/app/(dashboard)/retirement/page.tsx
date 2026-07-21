@@ -48,7 +48,7 @@ function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: 
     <div className="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-xs shadow-xl">
       <p className="text-zinc-400 mb-1.5">Age {label}</p>
       {payload.map((p) => (
-        <p key={p.dataKey} className={p.dataKey === "balance" ? "text-sky-400" : "text-zinc-400"}>
+        <p key={p.dataKey} className={p.dataKey === "balance" ? "text-vela-teal" : "text-vela-muted"}>
           {p.dataKey === "balance" ? "Portfolio" : "Annual withdrawal"}: {formatCompact(p.value)}
         </p>
       ))}
@@ -220,7 +220,7 @@ export default function RetirementPage() {
                     </div>
                     <input type="range" min={s.min} max={s.max} step={s.step} value={s.value}
                       onChange={(e) => s.set(Number(e.target.value))}
-                      className="w-full accent-sky-500 h-1.5" />
+                      className="w-full accent-vela-teal h-1.5" />
                     <p className="text-[10px] text-zinc-600 mt-1">{s.desc}</p>
                   </div>
                 ))}
