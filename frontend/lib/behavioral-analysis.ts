@@ -4,6 +4,17 @@
  * Detects common cognitive biases from portfolio and journal data.
  * All analysis is client-side, educational only.
  */
+import type { LucideIcon } from "lucide-react";
+import {
+  Anchor,
+  Gauge,
+  History,
+  PieChart,
+  Scissors,
+  TrendingDown,
+  Users,
+} from "lucide-react";
+
 
 export interface BehaviorInput {
   holdings: {
@@ -37,7 +48,7 @@ export interface BiasDetection {
   detected: boolean;
   evidence: string;
   tip: string;
-  emoji: string;
+  icon: LucideIcon;
 }
 
 export interface BehaviorResult {
@@ -64,7 +75,7 @@ export function analyzeBehavior(input: BehaviorInput): BehaviorResult {
       ? `${losers.length} positions are down 15%+ from cost. ${bigLosers.length > 0 ? `${bigLosers.length} are down over 30%.` : ""}`
       : "No significant losing positions detected.",
     tip: "Set stop-loss levels before entering a trade. Ask yourself: would you buy this stock today at the current price?",
-    emoji: "😰",
+    icon: TrendingDown,
   });
 
   // 2. Disposition Effect  - selling winners too early
@@ -87,7 +98,7 @@ export function analyzeBehavior(input: BehaviorInput): BehaviorResult {
       ? `You've locked in small gains on ${earlyWinSells.length} trade(s) while holding ${losers.length} losing position(s).`
       : "No clear disposition effect pattern found.",
     tip: "Let your winners run. Consider trailing stop-losses instead of fixed profit targets.",
-    emoji: "🎯",
+    icon: Scissors,
   });
 
   // 3. Overconcentration Bias
@@ -106,7 +117,7 @@ export function analyzeBehavior(input: BehaviorInput): BehaviorResult {
       ? `Your largest position is ${(topWeight * 100).toFixed(0)}% of the portfolio. Top 3 holdings make up ${(top3Weight * 100).toFixed(0)}%.`
       : "Portfolio concentration is within normal range.",
     tip: "Consider if your conviction justifies the position size. Most advisors suggest no single stock above 10-15%.",
-    emoji: "🎲",
+    icon: PieChart,
   });
 
   // 4. Recency Bias  - overreacting to recent moves
@@ -125,7 +136,7 @@ export function analyzeBehavior(input: BehaviorInput): BehaviorResult {
       ? `You've made ${recentBuys.length} buy decisions in the last 7 days. Make sure you're not chasing momentum.`
       : "No pattern of reactionary trading detected.",
     tip: "Implement a 48-hour cooling period before executing any trade decision.",
-    emoji: "⏰",
+    icon: History,
   });
 
   // 5. Overconfidence  - high conviction on losing trades
@@ -145,7 +156,7 @@ export function analyzeBehavior(input: BehaviorInput): BehaviorResult {
       ? `${highConvLosses.length} of your high-conviction (4-5) trades ended as losses out of ${totalReviewed.length} reviewed.`
       : "Not enough journal data to assess overconfidence.",
     tip: "Track your conviction levels against outcomes. If high-conviction trades lose often, recalibrate your confidence.",
-    emoji: "🦚",
+    icon: Gauge,
   });
 
   // 6. Anchoring  - holding because of cost basis
@@ -163,7 +174,7 @@ export function analyzeBehavior(input: BehaviorInput): BehaviorResult {
       ? `${anchoredPositions.length} position(s) are significantly below cost basis and still held at meaningful size.`
       : "No clear anchoring pattern detected.",
     tip: "Ask: if you had cash instead of this position, would you buy it at today's price?",
-    emoji: "⚓",
+    icon: Anchor,
   });
 
   // 7. FOMO / Herd Behavior
@@ -180,7 +191,7 @@ export function analyzeBehavior(input: BehaviorInput): BehaviorResult {
       ? `${watchToAddActions.length} buy decision(s) were made with low conviction (1-2). This may indicate impulse buying.`
       : "No low-conviction buy patterns detected.",
     tip: "Only buy when you can clearly articulate your thesis. If you can't explain it in a sentence, wait.",
-    emoji: "🐑",
+    icon: Users,
   });
 
   const detectedCount = biases.filter((b) => b.detected).length;

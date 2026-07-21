@@ -94,7 +94,7 @@ export default function BehaviorPage() {
       {result.topBias && (
         <div className="vela-card border-amber-500/20 bg-amber-500/5 px-4 py-3">
           <div className="flex items-start gap-3">
-            <span className="text-xl mt-0.5">{result.topBias.emoji}</span>
+            {(() => { const Icon = result.topBias.icon; return <Icon className="w-5 h-5 shrink-0 mt-0.5 text-amber-400" strokeWidth={1.75} aria-hidden="true" />; })()}
             <div>
               <p className="text-sm font-medium text-amber-400">
                 Top concern: {result.topBias.name}
@@ -191,7 +191,7 @@ function BiasCard({ bias }: { bias: BiasDetection }) {
   return (
     <div className={`vela-card border ${bias.detected ? severityColor[bias.severity] : "border-emerald-500/20 bg-emerald-500/5"}`}>
       <div className="flex items-start gap-3">
-        <span className="text-lg mt-0.5">{bias.emoji}</span>
+        {(() => { const Icon = bias.icon; return <Icon className="w-4 h-4 shrink-0 mt-0.5 text-vela-teal" strokeWidth={1.75} aria-hidden="true" />; })()}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <h3 className={`text-sm font-medium ${bias.detected ? severityColor[bias.severity].split(" ")[0] : "text-emerald-400"}`}>
