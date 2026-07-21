@@ -1,18 +1,16 @@
 "use client";
 
 import { useState, useMemo, useCallback, useRef } from "react";
-import {
-  Calculator, Info, TrendingUp, TrendingDown,
-  ChevronDown, Lightbulb, AlertTriangle, BookOpen, Loader2, Search,
-} from "lucide-react";
+import { ChevronDown, Loader2, Search } from "lucide-react";
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  BarChart, Bar, Cell,
 } from "recharts";
-import { formatCurrency, formatPercent } from "@/lib/formatters";
 import { api } from "@/lib/api";
 import PageTransition from "@/components/celestial/PageTransition";
 import TierGate from "@/components/shared/TierGate";
+import {
+  TopBar, PageHero, StatStrip, StatCell, Section, Eyebrow, Prose, Legend,
+} from "@/components/instrument";
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -131,6 +129,13 @@ const EMPTY_INPUTS: DCFInputs = {
   netDebt: 0,
 };
 
+// ── Shared class strings ────────────────────────────────────────────────────
+
+const fieldClass =
+  "w-full rounded bg-vela-card border border-vela-border px-2.5 py-1.5 " +
+  "font-mono text-[13px] tabular-nums text-zinc-100 placeholder-vela-muted " +
+  "outline-none transition-colors focus:border-vela-teal/60";
+
 // ── Page ────────────────────────────────────────────────────────────────────
 
 export default function DCFPage() {
@@ -234,283 +239,361 @@ export default function DCFPage() {
   ] : [];
 
   const hasData = inputs.currentFCF !== 0 && inputs.sharesOutstanding !== 0;
+  const missingGrowth =
+    (inputs.growthRateY1_5 == null || inputs.growthRateY6_10 == null) && inputs.currentFCF !== 0;
 
   return (
     <TierGate requiredTier="voyager">
-    <PageTransition className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-display font-bold text-zinc-100 flex items-center gap-2">
-          <Calculator className="w-6 h-6 text-vela-teal" />
-          DCF Valuation
-        </h1>
-        <p className="text-zinc-500 text-sm mt-0.5">
-          Discounted Cash Flow model  - estimate what a stock is really worth
-        </p>
-      </div>
+    <PageTransition>
+      <TopBar
+        trail={[{ label: "Research" }, { label: "DCF" }]}
+        note={
+          loading
+            ? "loading fundamentals"
+            : hasData
+              ? `${inputs.ticker} · 10 year forecast`
+              : "no ticker loaded"
+        }
+      />
 
-      {/* Ticker search bar */}
-      <form onSubmit={handleTickerSubmit} className="vela-card flex items-center gap-3">
-        <Search className="w-4 h-4 text-zinc-500 shrink-0" />
-        <input
-          type="text"
-          value={tickerInput}
-          onChange={(e) => handleTickerChange(e.target.value.toUpperCase())}
-          placeholder="Enter ticker symbol (e.g. AAPL, MSFT, NVDA)"
-          className="flex-1 bg-transparent text-zinc-100 placeholder:text-zinc-600 outline-none text-sm"
-          autoFocus
-        />
-        {loading ? (
-          <Loader2 className="w-4 h-4 text-vela-teal animate-spin" />
-        ) : (
-          <button type="submit" className="text-xs text-vela-teal hover:text-vela-teal-dim transition-colors">
-            Load
-          </button>
-        )}
-      </form>
+      <PageHero
+        title="DCF"
+        name={fundamentals?.name ?? undefined}
+        meta={
+          hasData
+            ? `${inputs.ticker} · discounted cash flow`
+            : "Discounted cash flow"
+        }
+        figure={result ? `$${result.intrinsicPrice.toFixed(2)}` : undefined}
+        figureSub={
+          result
+            ? `${result.marginOfSafety >= 0 ? "+" : ""}${result.marginOfSafety.toFixed(1)}% vs market price`
+            : undefined
+        }
+        figureSubClass={upside ? "text-gain" : "text-loss"}
+      />
 
-      {loadError && (
-        <div className="vela-card px-4 py-2 border-rose-500/20">
-          <p className="text-xs text-rose-400">{loadError}</p>
-        </div>
-      )}
+      {/* ── Ticker ───────────────────────────────────────────────────────── */}
 
-      {/* Loaded fundamentals info */}
-      {fundamentals && !loadError && (
-        <div className="vela-card px-4 py-3">
-          <div className="flex items-center justify-between mb-2">
-            <div>
-              <p className="text-sm font-medium text-zinc-100">{fundamentals.name}</p>
-              <p className="text-xs text-zinc-500">{fundamentals.ticker}</p>
+      <Section
+        label="Ticker"
+        prose="Load a company and the model fills in price, free cash flow, share count and net debt from live data. Every assumption stays editable."
+      >
+        <form onSubmit={handleTickerSubmit}>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-vela-muted pointer-events-none" />
+            <input
+              type="text"
+              value={tickerInput}
+              onChange={(e) => handleTickerChange(e.target.value.toUpperCase())}
+              placeholder="Ticker symbol, e.g. AAPL"
+              aria-label="Ticker symbol"
+              className="w-full rounded bg-vela-card border border-vela-border pl-9 pr-24 py-2.5
+                text-sm text-zinc-100 placeholder-vela-muted outline-none transition-colors
+                focus:border-vela-teal/60"
+              autoFocus
+            />
+            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+              {loading ? (
+                <Loader2 className="w-4 h-4 text-vela-teal animate-spin" />
+              ) : (
+                <button
+                  type="submit"
+                  className="font-mono text-[10px] uppercase tracking-wider text-vela-teal
+                    hover:text-vela-teal-dim transition-colors"
+                >
+                  Load
+                </button>
+              )}
             </div>
-            <p className="text-lg font-bold tabular text-zinc-100">
-              ${fundamentals.price?.toFixed(2) ?? " -"}
-            </p>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-1 text-[10px]">
-            <FundRow label="Market Cap" value={fundamentals.market_cap ? `$${(fundamentals.market_cap / 1000).toFixed(0)}B` : " -"} />
-            <FundRow label="FCF (TTM)" value={fundamentals.fcf ? `$${(fundamentals.fcf / 1000).toFixed(1)}B` : "N/A"} highlight={!fundamentals.fcf} />
-            <FundRow label="Shares" value={fundamentals.shares_outstanding ? `${fundamentals.shares_outstanding.toFixed(1)}M` : " -"} />
-            <FundRow label="Rev Growth" value={fundamentals.revenue_growth != null ? `${fundamentals.revenue_growth.toFixed(1)}%` : " -"} />
-            <FundRow label="Cash" value={fundamentals.total_cash != null ? `$${(fundamentals.total_cash / 1000).toFixed(1)}B` : " -"} />
-            <FundRow label="Total Debt" value={fundamentals.total_debt != null ? `$${(fundamentals.total_debt / 1000).toFixed(1)}B` : " -"} />
-            <FundRow
-              label={fundamentals.net_cash != null && fundamentals.net_cash >= 0 ? "Net Cash" : "Net Debt"}
-              value={fundamentals.net_cash != null ? `$${(Math.abs(fundamentals.net_cash) / 1000).toFixed(1)}B` : " -"}
-              highlight={fundamentals.net_cash != null && fundamentals.net_cash < 0}
-            />
-            <FundRow label="P/E (TTM)" value={fundamentals.trailing_pe ? `${fundamentals.trailing_pe.toFixed(1)}x` : " -"} />
-            <FundRow label="Beta" value={fundamentals.beta ? `${fundamentals.beta.toFixed(2)}` : " -"} />
-            <FundRow label="Op. Margin" value={fundamentals.operating_margins ? `${fundamentals.operating_margins.toFixed(1)}%` : " -"} />
-          </div>
-          {!fundamentals.fcf && (
-            <p className="text-[10px] text-amber-400 mt-2">
-              FCF data not available  - enter it manually below.
-            </p>
-          )}
-        </div>
-      )}
+        </form>
 
-      {!hasData && !loading && (
-        <div className="vela-card text-center py-12">
-          <Calculator className="w-10 h-10 text-zinc-600 mx-auto mb-3" />
-          <p className="text-zinc-300 font-medium">Enter a ticker to begin</p>
-          <p className="text-zinc-500 text-sm mt-1">
-            We&apos;ll auto-load price, FCF, shares, and other fundamentals from live data.
-            You can adjust any input after loading.
-          </p>
-        </div>
-      )}
+        {loadError && (
+          <p className="mt-2.5 font-mono text-[11px] text-loss">{loadError}</p>
+        )}
 
-      {hasData && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {/* ── Inputs panel ──────────────────────────────────────────── */}
-          <div className="vela-card space-y-4">
-            <h2 className="text-sm font-medium text-zinc-300">Model Inputs</h2>
-
-            <InputField label="Current FCF ($M)" value={inputs.currentFCF} onChange={(v) => set("currentFCF", Number(v))} step={1000} />
-            <NullableInputField
-              label="Growth Y1–5 (%)"
-              value={inputs.growthRateY1_5}
-              onChange={(v) => set("growthRateY1_5", v)}
-              placeholder="Enter your estimate"
-              step={0.5} min={-50} max={100}
-            />
-            <NullableInputField
-              label="Growth Y6–10 (%)"
-              value={inputs.growthRateY6_10}
-              onChange={(v) => set("growthRateY6_10", v)}
-              placeholder="Enter your estimate"
-              step={0.5} min={-50} max={100}
-            />
-            <InputField label="Discount Rate / WACC (%)" value={inputs.discountRate} onChange={(v) => set("discountRate", Number(v))} step={0.5} min={1} max={30} />
-            <InputField label="Terminal Growth (%)" value={inputs.terminalGrowthRate} onChange={(v) => set("terminalGrowthRate", Number(v))} step={0.5} min={0} max={5} />
-            <InputField label="Shares Outstanding (M)" value={inputs.sharesOutstanding} onChange={(v) => set("sharesOutstanding", Number(v))} step={100} min={1} />
-            <InputField label="Current Price ($)" value={inputs.currentPrice} onChange={(v) => set("currentPrice", Number(v))} step={1} min={0} />
-            <InputField label="Net Debt ($M)" value={inputs.netDebt} onChange={(v) => set("netDebt", Number(v))} step={100} />
-
-            <p className="text-[10px] text-zinc-600">Net Debt = Total Debt − Cash. Negative means net cash (adds to equity value).</p>
-            {(inputs.growthRateY1_5 == null || inputs.growthRateY6_10 == null) && inputs.currentFCF !== 0 && (
-              <p className="text-[10px] text-amber-400 bg-amber-400/5 border border-amber-400/20 rounded-lg px-3 py-2">
-                Enter growth rates above to see the valuation.
+        {/* Loaded fundamentals */}
+        {fundamentals && !loadError && (
+          <div className="mt-6 border-t border-vela-border pt-5">
+            <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
+              <Eyebrow>{fundamentals.ticker} fundamentals</Eyebrow>
+              <p className="font-mono text-[15px] tabular-nums text-zinc-100">
+                ${fundamentals.price?.toFixed(2) ?? "—"}
+              </p>
+            </div>
+            <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-x-6 gap-y-4">
+              <FundCell label="Market cap" value={fundamentals.market_cap ? `$${(fundamentals.market_cap / 1000).toFixed(0)}B` : "—"} />
+              <FundCell label="FCF (TTM)" value={fundamentals.fcf ? `$${(fundamentals.fcf / 1000).toFixed(1)}B` : "N/A"} warn={!fundamentals.fcf} />
+              <FundCell label="Shares" value={fundamentals.shares_outstanding ? `${fundamentals.shares_outstanding.toFixed(1)}M` : "—"} />
+              <FundCell label="Rev growth" value={fundamentals.revenue_growth != null ? `${fundamentals.revenue_growth.toFixed(1)}%` : "—"} />
+              <FundCell label="Cash" value={fundamentals.total_cash != null ? `$${(fundamentals.total_cash / 1000).toFixed(1)}B` : "—"} />
+              <FundCell label="Total debt" value={fundamentals.total_debt != null ? `$${(fundamentals.total_debt / 1000).toFixed(1)}B` : "—"} />
+              <FundCell
+                label={fundamentals.net_cash != null && fundamentals.net_cash >= 0 ? "Net cash" : "Net debt"}
+                value={fundamentals.net_cash != null ? `$${(Math.abs(fundamentals.net_cash) / 1000).toFixed(1)}B` : "—"}
+                warn={fundamentals.net_cash != null && fundamentals.net_cash < 0}
+              />
+              <FundCell label="P/E (TTM)" value={fundamentals.trailing_pe ? `${fundamentals.trailing_pe.toFixed(1)}x` : "—"} />
+              <FundCell label="Beta" value={fundamentals.beta ? `${fundamentals.beta.toFixed(2)}` : "—"} />
+              <FundCell label="Op. margin" value={fundamentals.operating_margins ? `${fundamentals.operating_margins.toFixed(1)}%` : "—"} />
+            </div>
+            {!fundamentals.fcf && (
+              <p className="mt-4 font-mono text-[11px] text-amber-400">
+                No free cash flow figure came back. Enter it by hand below.
               </p>
             )}
-            <p className="text-[10px] text-zinc-600">
-              All values auto-loaded from {inputs.ticker}. Adjust as needed for your thesis.
-            </p>
           </div>
+        )}
 
-          {/* ── Results ───────────────────────────────────────────────── */}
-          <div className="lg:col-span-2 space-y-4">
-            {result && (
-              <>
-                {/* Verdict card */}
-                <div className={`vela-card border ${upside ? "border-gain/30" : "border-loss/30"}`}>
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div>
-                      <p className="text-xs text-zinc-500 uppercase tracking-wider font-semibold mb-1">
-                        {inputs.ticker} Fair Value
-                      </p>
-                      <p className="text-3xl font-bold tabular text-zinc-100">
-                        ${result.intrinsicPrice.toFixed(2)}
-                      </p>
-                      <p className="text-xs text-zinc-500 mt-0.5">
-                        Market price: ${inputs.currentPrice.toFixed(2)}
-                      </p>
-                    </div>
-                    <div className={`flex items-center gap-2 px-4 py-3 rounded-xl ${
-                      upside ? "bg-gain/10" : "bg-loss/10"
-                    }`}>
-                      {upside ? <TrendingUp className="w-5 h-5 text-gain" /> : <TrendingDown className="w-5 h-5 text-loss" />}
-                      <div>
-                        <p className={`text-lg font-bold tabular ${upside ? "text-gain" : "text-loss"}`}>
-                          {result.marginOfSafety >= 0 ? "+" : ""}{result.marginOfSafety.toFixed(1)}%
-                        </p>
-                        <p className="text-[10px] text-zinc-500 uppercase tracking-wider">
-                          {upside ? "Upside" : "Downside"}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+        {!hasData && !loading && (
+          <div className="mt-6 border border-vela-border px-6 py-12 text-center">
+            <Eyebrow>Nothing loaded</Eyebrow>
+            <Prose className="mt-2.5 mx-auto max-w-[380px]">
+              Enter a ticker above to begin. Price, free cash flow, shares and other fundamentals load
+              automatically, and you can adjust any of them afterwards.
+            </Prose>
+          </div>
+        )}
+      </Section>
 
-                {/* Breakdown metrics */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <MetricCard label="PV of Future FCF" value={`$${(result.totalPVofFCF / 1000).toFixed(0)}B`} />
-                  <MetricCard label="PV of Terminal" value={`$${(result.pvTerminalValue / 1000).toFixed(0)}B`} />
-                  <MetricCard label="Enterprise Value" value={`$${(result.enterpriseValue / 1000).toFixed(0)}B`} />
-                  <MetricCard label="Equity Value" value={`$${(result.equityValue / 1000).toFixed(0)}B`} />
-                </div>
+      {hasData && (
+        <>
+          {/* ── Assumptions ──────────────────────────────────────────────── */}
 
-                {/* FCF projection chart */}
-                <div className="vela-card">
-                  <h3 className="text-sm font-medium text-zinc-300 mb-4">
-                    Projected Free Cash Flow ($B)
-                  </h3>
-                  <div className="h-52">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={fcfChartData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
-                        <defs>
-                          <linearGradient id="gradFCF" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="#1AA8BB" stopOpacity={0.25} />
-                            <stop offset="100%" stopColor="#1AA8BB" stopOpacity={0} />
-                          </linearGradient>
-                          <linearGradient id="gradPV" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="#71717a" stopOpacity={0.15} />
-                            <stop offset="100%" stopColor="#71717a" stopOpacity={0} />
-                          </linearGradient>
-                        </defs>
-                        <XAxis dataKey="year" tick={{ fill: "#71717a", fontSize: 11 }} tickLine={false} axisLine={false} />
-                        <YAxis tick={{ fill: "#71717a", fontSize: 11 }} tickLine={false} axisLine={false} tickFormatter={(v: number) => `$${v.toFixed(0)}B`} />
-                        <Tooltip
-                          contentStyle={{ backgroundColor: "#18181b", border: "1px solid #3f3f46", borderRadius: "0.5rem", fontSize: "0.75rem" }}
-                          formatter={(v: number, name: string) => [`$${v.toFixed(1)}B`, name === "fcf" ? "FCF" : "Present Value"]}
-                          labelStyle={{ color: "#a1a1aa" }}
-                        />
-                        <Area type="monotone" dataKey="pv" stroke="#71717a" fill="url(#gradPV)" strokeWidth={1.5} strokeDasharray="4 4" />
-                        <Area type="monotone" dataKey="fcf" stroke="#1AA8BB" fill="url(#gradFCF)" strokeWidth={2} />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  </div>
-                  <div className="flex gap-4 mt-2 text-xs">
-                    <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-vela-teal" /> FCF</span>
-                    <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-zinc-500" /> Present Value</span>
-                  </div>
-                </div>
+          <Section
+            label="Assumptions"
+            prose="These are the inputs the model runs on. Change any of them and every figure below recalculates."
+          >
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-5">
+              <InputField label="Current FCF ($M)" value={inputs.currentFCF} onChange={(v) => set("currentFCF", Number(v))} step={1000} />
+              <NullableInputField
+                label="Growth Y1-5 (%)"
+                value={inputs.growthRateY1_5}
+                onChange={(v) => set("growthRateY1_5", v)}
+                placeholder="Your estimate"
+                step={0.5} min={-50} max={100}
+              />
+              <NullableInputField
+                label="Growth Y6-10 (%)"
+                value={inputs.growthRateY6_10}
+                onChange={(v) => set("growthRateY6_10", v)}
+                placeholder="Your estimate"
+                step={0.5} min={-50} max={100}
+              />
+              <InputField label="Discount rate / WACC (%)" value={inputs.discountRate} onChange={(v) => set("discountRate", Number(v))} step={0.5} min={1} max={30} />
+              <InputField label="Terminal growth (%)" value={inputs.terminalGrowthRate} onChange={(v) => set("terminalGrowthRate", Number(v))} step={0.5} min={0} max={5} />
+              <InputField label="Shares outstanding (M)" value={inputs.sharesOutstanding} onChange={(v) => set("sharesOutstanding", Number(v))} step={100} min={1} />
+              <InputField label="Current price ($)" value={inputs.currentPrice} onChange={(v) => set("currentPrice", Number(v))} step={1} min={0} />
+              <InputField label="Net debt ($M)" value={inputs.netDebt} onChange={(v) => set("netDebt", Number(v))} step={100} />
+            </div>
 
-                {/* Sensitivity toggle */}
-                <button
-                  onClick={() => setShowSensitivity(!showSensitivity)}
-                  className="flex items-center gap-2 text-sm text-zinc-400 hover:text-zinc-200 transition-colors"
-                >
-                  <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${showSensitivity ? "" : "-rotate-90"}`} />
-                  Sensitivity Analysis
-                </button>
+            <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2">
+              <p className="font-mono text-[11px] text-vela-muted">
+                Net debt = total debt − cash. A negative figure is net cash and adds to equity value.
+              </p>
+              <p className="font-mono text-[11px] text-vela-muted">
+                Loaded from {inputs.ticker}
+              </p>
+            </div>
 
-                {/* Sensitivity table */}
-                {showSensitivity && sensitivityData && (
-                  <div className="vela-card overflow-x-auto">
-                    <h3 className="text-sm font-medium text-zinc-300 mb-3">
-                      Fair Value by Growth Rate vs. Discount Rate
-                    </h3>
-                    <table className="w-full text-xs">
-                      <thead>
-                        <tr>
-                          <th className="text-left text-zinc-500 pb-2 pr-3">WACC ↓ / Growth →</th>
-                          {growthSteps.map((g) => (
-                            <th key={g} className={`text-center pb-2 px-2 tabular ${g === inputs.growthRateY1_5 ? "text-vela-teal" : "text-zinc-500"}`}>
-                              {g.toFixed(1)}%
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {discountSteps.map((dr, ri) => (
-                          <tr key={dr} className="border-t border-vela-border">
-                            <td className={`py-2 pr-3 tabular ${dr === inputs.discountRate ? "text-vela-teal font-medium" : "text-zinc-500"}`}>
-                              {dr.toFixed(1)}%
-                            </td>
-                            {sensitivityData[ri].map((price, ci) => {
-                              const isBase = dr === inputs.discountRate && growthSteps[ci] === baseGrowth;
-                              const upsideCell = price > inputs.currentPrice;
-                              return (
-                                <td
-                                  key={ci}
-                                  className={`py-2 px-2 text-center tabular font-medium ${
-                                    isBase
-                                      ? "bg-vela-teal/10 text-vela-teal rounded"
-                                      : upsideCell ? "text-gain" : "text-loss"
-                                  }`}
-                                >
-                                  ${price.toFixed(0)}
-                                </td>
-                              );
-                            })}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                    <p className="text-[10px] text-zinc-600 mt-3">
-                      Green = above market price (upside), Red = below market price (downside). Highlighted cell = your base case.
-                    </p>
-                  </div>
-                )}
+            {missingGrowth && (
+              <p className="mt-4 border border-amber-400/25 px-3 py-2 font-mono text-[11px] text-amber-400">
+                Enter both growth rates to see the valuation.
+              </p>
+            )}
+          </Section>
 
-                {/* Insights */}
-                <DCFInsights result={result} inputs={inputs} fundamentals={fundamentals} />
+          {result && (
+            <>
+              {/* ── Model output ─────────────────────────────────────────── */}
 
-                {/* Disclaimer */}
-                <div className="flex items-start gap-2 text-[10px] text-zinc-600">
-                  <Info className="w-3 h-3 mt-0.5 shrink-0" />
+              <Section
+                label="Model output"
+                prose="What the assumptions above add up to, in present value terms."
+              >
+                <StatStrip>
+                  <StatCell
+                    label="PV of future FCF"
+                    value={`$${(result.totalPVofFCF / 1000).toFixed(0)}B`}
+                    sub="years 1 to 10"
+                  />
+                  <StatCell
+                    label="PV of terminal"
+                    value={`$${(result.pvTerminalValue / 1000).toFixed(0)}B`}
+                    sub="beyond year 10"
+                  />
+                  <StatCell
+                    label="Enterprise value"
+                    value={`$${(result.enterpriseValue / 1000).toFixed(0)}B`}
+                    sub="before net debt"
+                  />
+                  <StatCell
+                    label="Equity value"
+                    value={`$${(result.equityValue / 1000).toFixed(0)}B`}
+                    sub={`$${result.intrinsicPrice.toFixed(2)} per share`}
+                  />
+                </StatStrip>
+
+                <div className="mt-5 flex flex-wrap items-baseline gap-x-6 gap-y-2 font-mono text-[11px] tabular-nums text-vela-muted">
                   <span>
-                    This DCF model uses simplified assumptions. Real valuations require audited financials,
-                    sector-specific adjustments, and professional judgement. Not investment advice.
+                    Market price{" "}
+                    <span className="text-zinc-100">${inputs.currentPrice.toFixed(2)}</span>
+                  </span>
+                  <span aria-hidden="true" className="text-vela-subtle">/</span>
+                  <span>
+                    Model output{" "}
+                    <span className="text-zinc-100">${result.intrinsicPrice.toFixed(2)}</span>
+                  </span>
+                  <span aria-hidden="true" className="text-vela-subtle">/</span>
+                  <span>
+                    Gap{" "}
+                    <span className={upside ? "text-gain" : "text-loss"}>
+                      {result.marginOfSafety >= 0 ? "+" : ""}{result.marginOfSafety.toFixed(1)}%
+                    </span>
                   </span>
                 </div>
-              </>
-            )}
-          </div>
-        </div>
+              </Section>
+
+              {/* ── Projection ───────────────────────────────────────────── */}
+
+              <Section
+                label="Projection"
+                prose="Forecast free cash flow against the same cash flow discounted back to today."
+              >
+                <div className="h-52">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={fcfChartData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                      <defs>
+                        <linearGradient id="gradFCF" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#1AA8BB" stopOpacity={0.25} />
+                          <stop offset="100%" stopColor="#1AA8BB" stopOpacity={0} />
+                        </linearGradient>
+                        <linearGradient id="gradPV" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#8A97AC" stopOpacity={0.15} />
+                          <stop offset="100%" stopColor="#8A97AC" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <XAxis dataKey="year" tick={{ fill: "#8A97AC", fontSize: 11 }} tickLine={false} axisLine={false} />
+                      <YAxis tick={{ fill: "#8A97AC", fontSize: 11 }} tickLine={false} axisLine={false} tickFormatter={(v: number) => `$${v.toFixed(0)}B`} />
+                      <Tooltip
+                        contentStyle={{ backgroundColor: "#0B1322", border: "1px solid #1B2638", borderRadius: "4px", fontSize: "0.75rem" }}
+                        formatter={(v: number, name: string) => [`$${v.toFixed(1)}B`, name === "fcf" ? "FCF" : "Present Value"]}
+                        labelStyle={{ color: "#AEB9CC" }}
+                      />
+                      <Area type="monotone" dataKey="pv" stroke="#8A97AC" fill="url(#gradPV)" strokeWidth={1.5} strokeDasharray="4 4" />
+                      <Area type="monotone" dataKey="fcf" stroke="#1AA8BB" fill="url(#gradFCF)" strokeWidth={2} />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+                <Legend
+                  items={[
+                    {
+                      glyph: <span aria-hidden="true" className="w-2.5 h-[2px] bg-vela-teal inline-block" />,
+                      label: "Free cash flow",
+                    },
+                    {
+                      glyph: <span aria-hidden="true" className="w-2.5 h-[2px] bg-vela-muted inline-block" />,
+                      label: "Present value",
+                    },
+                  ]}
+                  hint="figures in $B"
+                />
+              </Section>
+
+              {/* ── Sensitivity ──────────────────────────────────────────── */}
+
+              <Section
+                label="Sensitivity"
+                prose="How the per share output moves as the two assumptions it is most exposed to change."
+                controls={
+                  <button
+                    onClick={() => setShowSensitivity(!showSensitivity)}
+                    aria-expanded={showSensitivity}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded border
+                      font-mono text-[10px] uppercase tracking-wider transition-colors ${
+                      showSensitivity
+                        ? "bg-vela-teal/10 border-vela-teal/30 text-vela-teal"
+                        : "border-vela-border text-vela-muted hover:text-zinc-100 hover:border-vela-teal/40"
+                    }`}
+                  >
+                    <ChevronDown
+                      className={`w-3.5 h-3.5 shrink-0 transition-transform duration-200 ${showSensitivity ? "" : "-rotate-90"}`}
+                    />
+                    {showSensitivity ? "Hide grid" : "Show grid"}
+                  </button>
+                }
+              >
+                {showSensitivity && sensitivityData && (
+                  <>
+                    <div className="overflow-x-auto border border-vela-border rounded">
+                      <table className="w-full min-w-[520px] text-sm">
+                        <thead>
+                          <tr className="border-b border-vela-border">
+                            <th className="px-3 py-2.5 text-left font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-vela-muted">
+                              WACC ↓ / growth →
+                            </th>
+                            {growthSteps.map((g) => (
+                              <th
+                                key={g}
+                                className={`px-3 py-2.5 text-center font-mono text-[10px] font-medium uppercase tracking-[0.12em] tabular-nums ${
+                                  g === inputs.growthRateY1_5 ? "text-vela-teal" : "text-vela-muted"
+                                }`}
+                              >
+                                {g.toFixed(1)}%
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {discountSteps.map((dr, ri) => (
+                            <tr key={dr} className="border-b border-vela-border last:border-0">
+                              <td
+                                className={`px-3 py-2.5 font-mono text-[11px] tabular-nums ${
+                                  dr === inputs.discountRate ? "text-vela-teal" : "text-vela-muted"
+                                }`}
+                              >
+                                {dr.toFixed(1)}%
+                              </td>
+                              {sensitivityData[ri].map((price, ci) => {
+                                const isBase = dr === inputs.discountRate && growthSteps[ci] === baseGrowth;
+                                const upsideCell = price > inputs.currentPrice;
+                                return (
+                                  <td
+                                    key={ci}
+                                    className={`px-3 py-2.5 text-center font-mono text-[12px] tabular-nums ${
+                                      isBase
+                                        ? "bg-vela-teal/10 text-vela-teal"
+                                        : upsideCell ? "text-gain" : "text-loss"
+                                    }`}
+                                  >
+                                    ${price.toFixed(0)}
+                                  </td>
+                                );
+                              })}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    <p className="mt-3 font-mono text-[11px] text-vela-muted">
+                      Green sits above the market price, red below it. The highlighted cell is your base case.
+                    </p>
+                  </>
+                )}
+              </Section>
+
+              {/* ── Insights ─────────────────────────────────────────────── */}
+
+              <DCFInsights result={result} inputs={inputs} fundamentals={fundamentals} />
+
+              <p className="mt-9 border-t border-vela-border pt-4 text-[11px] leading-relaxed text-vela-muted max-w-3xl">
+                This DCF uses simplified assumptions. Real valuations require audited financials,
+                sector-specific adjustments and professional judgement. Not investment advice.
+              </p>
+            </>
+          )}
+        </>
       )}
     </PageTransition>
     </TierGate>
@@ -520,11 +603,17 @@ export default function DCFPage() {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-function FundRow({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
+function FundCell({ label, value, warn }: { label: string; value: string; warn?: boolean }) {
   return (
-    <div className="flex justify-between">
-      <span className="text-zinc-500">{label}</span>
-      <span className={highlight ? "text-rose-400 font-medium tabular" : "text-zinc-300 font-medium tabular"}>{value}</span>
+    <div className="min-w-0">
+      <Eyebrow>{label}</Eyebrow>
+      <p
+        className={`mt-1 font-mono text-[13px] tabular-nums truncate ${
+          warn ? "text-amber-400" : "text-zinc-100"
+        }`}
+      >
+        {value}
+      </p>
     </div>
   );
 }
@@ -541,8 +630,8 @@ function InputField({
   max?: number;
 }) {
   return (
-    <div>
-      <label className="text-xs text-zinc-500 mb-1 block">{label}</label>
+    <label className="block min-w-0">
+      <Eyebrow className="mb-1.5">{label}</Eyebrow>
       <input
         type={type}
         value={value}
@@ -550,9 +639,9 @@ function InputField({
         step={step}
         min={min}
         max={max}
-        className="input-field w-full tabular"
+        className={fieldClass}
       />
-    </div>
+    </label>
   );
 }
 
@@ -568,8 +657,8 @@ function NullableInputField({
   max?: number;
 }) {
   return (
-    <div>
-      <label className="text-xs text-zinc-500 mb-1 block">{label}</label>
+    <label className="block min-w-0">
+      <Eyebrow className="mb-1.5">{label}</Eyebrow>
       <input
         type="number"
         value={value ?? ""}
@@ -581,18 +670,9 @@ function NullableInputField({
         step={step}
         min={min}
         max={max}
-        className="input-field w-full tabular placeholder:text-zinc-600"
+        className={fieldClass}
       />
-    </div>
-  );
-}
-
-function MetricCard({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-lg bg-zinc-800/50 p-3">
-      <p className="text-[10px] text-zinc-500 uppercase tracking-wider mb-1">{label}</p>
-      <p className="text-sm font-bold text-zinc-200 tabular">{value}</p>
-    </div>
+    </label>
   );
 }
 
@@ -610,110 +690,98 @@ function DCFInsights({ result, inputs, fundamentals }: {
   const upside = result.marginOfSafety >= 0;
   const bigUpside = result.marginOfSafety > 40;
 
-  const insights: { icon: React.ReactNode; title: string; body: string; color: string }[] = [];
+  const insights: { title: string; body: string }[] = [];
 
-  // 1. Main verdict
+  // 1. Main reading
   if (upside && result.marginOfSafety > 5) {
     insights.push({
-      icon: <TrendingUp className="w-4 h-4" />,
-      title: `${result.marginOfSafety.toFixed(0)}% upside to fair value`,
-      body: `On your assumptions, your model's fair value sits above ${inputs.ticker}'s current price. `
-        + `The market would need to grow FCF at ${inputs.growthRateY1_5 ?? 0}% for 5 years to justify a $${result.intrinsicPrice.toFixed(0)} price. `
+      title: `Model output sits ${result.marginOfSafety.toFixed(0)}% above market price`,
+      body: `On your assumptions, the model's per share figure lands above ${inputs.ticker}'s current price. `
+        + `Free cash flow would have to compound at ${inputs.growthRateY1_5 ?? 0}% for five years to justify $${result.intrinsicPrice.toFixed(0)}. `
         + (fundamentals?.trailing_pe
-          ? `Current P/E of ${fundamentals.trailing_pe}x ${fundamentals.trailing_pe < 20 ? "suggests reasonable valuation" : "is above average"}  - cross-check with the sensitivity table.`
-          : `Use the sensitivity table to stress-test different growth scenarios.`),
-      color: "text-emerald-400",
+          ? `The trailing P/E of ${fundamentals.trailing_pe}x ${fundamentals.trailing_pe < 20 ? "sits below the broad market average" : "sits above the broad market average"}, and the sensitivity grid shows how much that reading depends on the inputs.`
+          : `The sensitivity grid shows how much that reading depends on the inputs.`),
     });
   } else if (!upside) {
     insights.push({
-      icon: <Lightbulb className="w-4 h-4" />,
-      title: "Fair value below market price",
-      body: `DCF only values actual cash flows  - it ignores brand premium, M&A speculation, and momentum. `
-        + `A ${Math.abs(result.marginOfSafety).toFixed(0)}% gap could mean the market prices in more than your assumptions do, or that your growth assumptions are conservative. `
+      title: "Model output sits below market price",
+      body: `A DCF values cash flows only. It carries no brand premium, no M&A speculation and no momentum. `
+        + `A ${Math.abs(result.marginOfSafety).toFixed(0)}% gap can mean the market prices in more than your assumptions do, or that those assumptions are conservative. `
         + (fundamentals?.revenue_growth && fundamentals.revenue_growth > (inputs.growthRateY1_5 ?? 0)
-          ? `Note: recent revenue growth (${fundamentals.revenue_growth}%) is higher than your Y1-5 assumption (${inputs.growthRateY1_5 ?? 0}%)  - consider whether this pace is sustainable.`
-          : `Try adjusting growth rates or discount rate to see where the breakeven is.`),
-      color: "text-amber-400",
+          ? `Recent revenue growth of ${fundamentals.revenue_growth}% runs ahead of your Y1-5 assumption of ${inputs.growthRateY1_5 ?? 0}%, which is worth reconciling.`
+          : `Adjusting the growth or discount rate shows where the breakeven sits.`),
     });
   }
 
-  // 2. Big upside sanity check
+  // 2. Large gap sanity check
   if (bigUpside) {
     insights.push({
-      icon: <AlertTriangle className="w-4 h-4" />,
-      title: "Large mispricing  - verify your assumptions",
-      body: `40%+ gaps are rare in liquid markets. Check: is the FCF figure normalized (not a one-time peak)? `
-        + `Is the growth rate sustainable for 5 full years? Are there unmodeled risks (regulation, competition, cyclicality)?`,
-      color: "text-amber-400",
+      title: "Large gap to market price, verify the assumptions",
+      body: `Gaps above 40% are rare in liquid markets. Three checks: is the FCF figure normalized rather than a one-off peak, `
+        + `is the growth rate sustainable for five full years, and are there unmodeled risks such as regulation, competition or cyclicality?`,
     });
   }
 
   // 3. Terminal value weight
   if (terminalPct > 65) {
     insights.push({
-      icon: <BookOpen className="w-4 h-4" />,
-      title: `${terminalPct.toFixed(0)}% of value from terminal  - high sensitivity`,
-      body: `A 0.5% change in terminal growth rate would swing fair value 10-20%. `
-        + `This means the model is betting heavily on what happens after year 10. Stress-test with 2-2.5% terminal growth.`,
-      color: "text-zinc-400",
+      title: `${terminalPct.toFixed(0)}% of value sits in the terminal figure`,
+      body: `A 0.5% change in terminal growth would move the output by roughly 10 to 20%. `
+        + `That much weight past year 10 makes the model highly sensitive to a number nobody can observe. Stress it at 2 to 2.5%.`,
     });
   }
 
   // 4. WACC context
   if (inputs.discountRate >= 12) {
     insights.push({
-      icon: <Lightbulb className="w-4 h-4" />,
-      title: `${inputs.discountRate}% WACC  - conservative`,
-      body: `Most analysts use 8-11%. A higher rate builds in safety but compresses fair value. `
-        + (fundamentals?.beta ? `With ${inputs.ticker}'s beta of ${fundamentals.beta}, CAPM suggests ~${(4.5 + fundamentals.beta * 5.5).toFixed(1)}% WACC.` : ``),
-      color: "text-zinc-400",
+      title: `${inputs.discountRate}% WACC is on the conservative side`,
+      body: `Most published models sit between 8 and 11%. A higher rate builds in slack and compresses the output. `
+        + (fundamentals?.beta ? `With ${inputs.ticker}'s beta of ${fundamentals.beta}, CAPM points to roughly ${(4.5 + fundamentals.beta * 5.5).toFixed(1)}%.` : ``),
     });
   } else if (inputs.discountRate <= 7) {
     insights.push({
-      icon: <AlertTriangle className="w-4 h-4" />,
-      title: `${inputs.discountRate}% WACC  - aggressive`,
-      body: `This inflates fair value meaningfully. Only justified for low-beta, `
-        + `stable-cashflow businesses (utilities, consumer staples). Most equities warrant 9-11%.`,
-      color: "text-amber-400",
+      title: `${inputs.discountRate}% WACC is on the aggressive side`,
+      body: `A rate this low inflates the output meaningfully. It tends to fit only low beta, stable cash flow businesses `
+        + `such as utilities and consumer staples. Most equities are modelled at 9 to 11%.`,
     });
   }
 
   // 5. Growth reality check
   if ((inputs.growthRateY1_5 ?? 0) > 20) {
     insights.push({
-      icon: <AlertTriangle className="w-4 h-4" />,
-      title: "20%+ growth for 5 years  - historically rare",
-      body: `Only ~10% of large caps sustain 20%+ FCF growth over 5 years. `
-        + `Mean reversion is powerful. Try a lower rate to see if the thesis still holds.`,
-      color: "text-amber-400",
+      title: "20%+ growth for five years is historically rare",
+      body: `Roughly one large cap in ten sustains 20%+ FCF growth over five years. Mean reversion is powerful, `
+        + `so it is worth seeing whether the reading holds at a lower rate.`,
     });
   }
 
   insights.push({
-    icon: <BookOpen className="w-4 h-4" />,
     title: "One lens, not the full picture",
-    body: `Cross-check with the Reverse DCF (what growth the market is pricing in) and your own qualitative thesis. `
-      + `${upside ? "A model-to-market gap can persist for years, so weigh conviction against position size." : "A fair value below price is not a sell signal, but it is a prompt to revisit whether your thesis has changed."}`,
-    color: "text-zinc-400",
+    body: `The Reverse DCF shows what growth the market is already pricing in, which is a useful cross-check against this output. `
+      + `${upside ? "A gap between model and market can persist for years, so this reading says nothing on its own about timing." : "An output below the market price is an observation about your assumptions, not a signal."}`,
   });
 
   return (
-    <div className="vela-card bg-zinc-900/50 space-y-4">
-      <h3 className="text-sm font-medium text-zinc-300 flex items-center gap-2">
-        <Lightbulb className="w-4 h-4 text-vela-teal" />
-        What this means
-      </h3>
-      <div className="space-y-3">
+    <Section
+      label="What this means"
+      prose="Plain reading of the numbers above. Descriptive only, not a recommendation."
+    >
+      <div className="border-y border-vela-border divide-y divide-vela-border">
         {insights.map((insight, i) => (
-          <div key={i} className="flex items-start gap-3">
-            <div className={`mt-0.5 shrink-0 ${insight.color}`}>{insight.icon}</div>
-            <div>
-              <p className="text-xs font-medium text-zinc-300">{insight.title}</p>
-              <p className="text-xs text-zinc-500 mt-0.5 leading-relaxed">{insight.body}</p>
+          <div key={i} className="flex items-start gap-3 py-4">
+            <span
+              aria-hidden="true"
+              className="mt-[7px] w-[7px] h-[7px] rotate-45 bg-vela-teal shrink-0"
+            />
+            <div className="min-w-0">
+              <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-zinc-100">
+                {insight.title}
+              </p>
+              <Prose className="mt-1.5 max-w-[640px]">{insight.body}</Prose>
             </div>
           </div>
         ))}
       </div>
-    </div>
+    </Section>
   );
 }

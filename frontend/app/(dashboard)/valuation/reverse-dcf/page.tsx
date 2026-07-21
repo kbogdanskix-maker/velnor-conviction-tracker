@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useMemo, useCallback, useRef } from "react";
-import { RotateCcw, Info, TrendingUp, AlertTriangle, Lightbulb, BookOpen, Search, Loader2 } from "lucide-react";
-import { formatCurrency, formatPercent } from "@/lib/formatters";
+import { Search, Loader2 } from "lucide-react";
 import { api } from "@/lib/api";
 import PageTransition from "@/components/celestial/PageTransition";
 import TierGate from "@/components/shared/TierGate";
+import {
+  TopBar, PageHero, StatStrip, StatCell, Section, Eyebrow, Prose,
+} from "@/components/instrument";
 
 // ── Reverse DCF: What growth rate does the current price imply? ─────────────
 
@@ -90,6 +92,13 @@ const EMPTY_INPUTS: ReverseDCFInputs = {
   netCash: 0,
 };
 
+// ── Shared class strings ────────────────────────────────────────────────────
+
+const fieldClass =
+  "w-full rounded bg-vela-card border border-vela-border px-2.5 py-1.5 " +
+  "font-mono text-[13px] tabular-nums text-zinc-100 placeholder-vela-muted " +
+  "outline-none transition-colors focus:border-vela-teal/60";
+
 // ── Page ────────────────────────────────────────────────────────────────────
 
 export default function ReverseDCFPage() {
@@ -161,209 +170,250 @@ export default function ReverseDCFPage() {
     return solveImpliedGrowth(inputs);
   }, [inputs, hasData]);
 
-  const isReasonable = impliedGrowth >= 0 && impliedGrowth <= 15;
   const isAggressive = impliedGrowth > 15 && impliedGrowth <= 30;
   const isUnrealistic = impliedGrowth > 30 || impliedGrowth < -10;
 
   let verdictColor = "text-gain";
-  let verdictBg = "bg-gain/10";
+  let verdictMarker = "bg-gain";
   let verdictLabel = "Reasonable";
   let verdictDesc = "The market expects modest, achievable growth";
   if (isAggressive) {
     verdictColor = "text-amber-400";
-    verdictBg = "bg-amber-400/10";
+    verdictMarker = "bg-amber-400";
     verdictLabel = "Aggressive";
-    verdictDesc = "The market is pricing in high growth  - any slowdown means downside";
+    verdictDesc = "The market is pricing in high growth, so any slowdown shows up in the price";
   }
   if (isUnrealistic) {
     verdictColor = "text-loss";
-    verdictBg = "bg-loss/10";
+    verdictMarker = "bg-loss";
     verdictLabel = impliedGrowth > 30 ? "Extremely aggressive" : "Market expects decline";
     verdictDesc = impliedGrowth > 30
-      ? "Current price implies near-impossible sustained growth"
+      ? "The current price implies near-impossible sustained growth"
       : "The market is pricing in declining free cash flow";
   }
 
   return (
     <TierGate requiredTier="voyager">
-    <PageTransition className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-display font-bold text-zinc-100 flex items-center gap-2">
-          <RotateCcw className="w-6 h-6 text-vela-teal" />
-          Reverse DCF
-        </h1>
-        <p className="text-zinc-500 text-sm mt-0.5">
-          What growth rate is the market pricing in? Work backwards from the current stock price.
-        </p>
-      </div>
+    <PageTransition>
+      <TopBar
+        trail={[{ label: "Research" }, { label: "Reverse DCF" }]}
+        note={
+          loading
+            ? "loading fundamentals"
+            : hasData
+              ? `${inputs.ticker} · 10 year horizon`
+              : "no ticker loaded"
+        }
+      />
 
-      {/* Ticker search */}
-      <form onSubmit={handleTickerSubmit} className="vela-card flex items-center gap-3">
-        <Search className="w-4 h-4 text-zinc-500 shrink-0" />
-        <input
-          type="text"
-          value={tickerInput}
-          onChange={(e) => handleTickerChange(e.target.value.toUpperCase())}
-          placeholder="Enter ticker symbol (e.g. AAPL, MSFT, NVDA)"
-          className="flex-1 bg-transparent text-zinc-100 placeholder:text-zinc-600 outline-none text-sm"
-          autoFocus
-        />
-        {loading ? (
-          <Loader2 className="w-4 h-4 text-vela-teal animate-spin" />
-        ) : (
-          <button type="submit" className="text-xs text-vela-teal hover:text-vela-teal-dim transition-colors">
-            Load
-          </button>
-        )}
-      </form>
+      <PageHero
+        title="Reverse DCF"
+        name={fundamentals?.name ?? undefined}
+        meta={
+          hasData
+            ? `${inputs.ticker} · implied FCF growth`
+            : "What growth is the price already pricing in?"
+        }
+        figure={hasData ? `${impliedGrowth.toFixed(1)}%` : undefined}
+        figureSub={hasData ? verdictLabel : undefined}
+        figureSubClass={verdictColor}
+      />
 
-      {loadError && (
-        <div className="vela-card px-4 py-2 border-rose-500/20">
-          <p className="text-xs text-rose-400">{loadError}</p>
-        </div>
-      )}
+      {/* ── Ticker ───────────────────────────────────────────────────────── */}
 
-      {/* Loaded fundamentals */}
-      {fundamentals && !loadError && (
-        <div className="vela-card px-4 py-3">
-          <div className="flex items-center justify-between mb-2">
-            <div>
-              <p className="text-sm font-medium text-zinc-100">{fundamentals.name}</p>
-              <p className="text-xs text-zinc-500">{fundamentals.ticker}</p>
-            </div>
-            <p className="text-lg font-bold tabular text-zinc-100">
-              ${fundamentals.price?.toFixed(2) ?? " -"}
-            </p>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-1 text-[10px]">
-            <FundRow label="Market Cap" value={fundamentals.market_cap ? `$${(fundamentals.market_cap / 1000).toFixed(0)}B` : " -"} />
-            <FundRow label="FCF (TTM)" value={fundamentals.fcf ? `$${(fundamentals.fcf / 1000).toFixed(1)}B` : "N/A"} warn={!fundamentals.fcf} />
-            <FundRow label="Shares" value={fundamentals.shares_outstanding ? `${(fundamentals.shares_outstanding / 1000).toFixed(1)}B` : " -"} />
-            <FundRow label="Rev Growth" value={fundamentals.revenue_growth != null ? `${fundamentals.revenue_growth.toFixed(1)}%` : " -"} />
-          </div>
-          {!fundamentals.fcf && (
-            <p className="text-[10px] text-amber-400 mt-2">
-              FCF data not available  - enter it manually below.
-            </p>
-          )}
-        </div>
-      )}
-
-      {!hasData && !loading && (
-        <div className="vela-card text-center py-12">
-          <RotateCcw className="w-10 h-10 text-zinc-600 mx-auto mb-3" />
-          <p className="text-zinc-300 font-medium">Enter a ticker to begin</p>
-          <p className="text-zinc-500 text-sm mt-1">
-            We&apos;ll auto-load price, FCF, shares, and calculate the implied growth rate the market expects.
-          </p>
-        </div>
-      )}
-
-      {hasData && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {/* ── Inputs ────────────────────────────────────────────────── */}
-          <div className="vela-card space-y-4">
-            <h2 className="text-sm font-medium text-zinc-300">Inputs</h2>
-
-            <Field label="Current Price ($)" value={inputs.currentPrice} onChange={(v) => set("currentPrice", Number(v))} step={1} />
-            <Field label="Shares Outstanding (M)" value={inputs.sharesOutstanding} onChange={(v) => set("sharesOutstanding", Number(v))} step={100} />
-            <Field label="Current FCF ($M)" value={inputs.currentFCF} onChange={(v) => set("currentFCF", Number(v))} step={1000} />
-            <Field label="Discount Rate (%)" value={inputs.discountRate} onChange={(v) => set("discountRate", Number(v))} step={0.5} min={1} max={30} />
-            <Field label="Terminal Growth (%)" value={inputs.terminalGrowthRate} onChange={(v) => set("terminalGrowthRate", Number(v))} step={0.5} min={0} max={5} />
-            <Field label="Net Cash ($M)" value={inputs.netCash} onChange={(v) => set("netCash", Number(v))} step={1000} />
-
-            <p className="text-[10px] text-zinc-600">
-              Auto-loaded from {inputs.ticker}. Adjust as needed.
-            </p>
-          </div>
-
-          {/* ── Results ───────────────────────────────────────────────── */}
-          <div className="lg:col-span-2 space-y-4">
-            {/* Implied growth */}
-            <div className={`vela-card border ${isReasonable ? "border-gain/30" : isAggressive ? "border-amber-400/30" : "border-loss/30"}`}>
-              <p className="text-xs text-zinc-500 uppercase tracking-wider font-semibold mb-1">
-                {inputs.ticker}  - Implied FCF Growth Rate
-              </p>
-              <div className="flex items-center gap-4">
-                <p className={`text-4xl font-bold tabular ${verdictColor}`}>
-                  {impliedGrowth.toFixed(1)}%
-                </p>
-                <div>
-                  <span className={`text-xs font-medium px-2 py-1 rounded ${verdictBg} ${verdictColor}`}>
-                    {verdictLabel}
-                  </span>
-                  <p className="text-xs text-zinc-500 mt-1">{verdictDesc}</p>
-                </div>
-              </div>
-              <p className="text-xs text-zinc-600 mt-3">
-                At a {inputs.discountRate}% discount rate and {inputs.terminalGrowthRate}% terminal growth,
-                the current price of ${inputs.currentPrice.toFixed(2)} implies {inputs.ticker} must grow
-                FCF at {impliedGrowth.toFixed(1)}% annually for the next 10 years.
-              </p>
-              {fundamentals?.revenue_growth != null && (
-                <p className="text-xs mt-2">
-                  <span className="text-zinc-500">Recent revenue growth: </span>
-                  <span className={`font-medium ${
-                    fundamentals.revenue_growth > impliedGrowth ? "text-emerald-400" : "text-amber-400"
-                  }`}>
-                    {fundamentals.revenue_growth.toFixed(1)}%
-                  </span>
-                  <span className="text-zinc-600">
-                    {fundamentals.revenue_growth > impliedGrowth
-                      ? "  - currently outpacing what the market requires"
-                      : "  - below what the market is pricing in"}
-                  </span>
-                </p>
+      <Section
+        label="Ticker"
+        prose="Load a company and the model works backwards from its market price to the free cash flow growth rate that price requires."
+      >
+        <form onSubmit={handleTickerSubmit}>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-vela-muted pointer-events-none" />
+            <input
+              type="text"
+              value={tickerInput}
+              onChange={(e) => handleTickerChange(e.target.value.toUpperCase())}
+              placeholder="Ticker symbol, e.g. AAPL"
+              aria-label="Ticker symbol"
+              className="w-full rounded bg-vela-card border border-vela-border pl-9 pr-24 py-2.5
+                text-sm text-zinc-100 placeholder-vela-muted outline-none transition-colors
+                focus:border-vela-teal/60"
+              autoFocus
+            />
+            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+              {loading ? (
+                <Loader2 className="w-4 h-4 text-vela-teal animate-spin" />
+              ) : (
+                <button
+                  type="submit"
+                  className="font-mono text-[10px] uppercase tracking-wider text-vela-teal
+                    hover:text-vela-teal-dim transition-colors"
+                >
+                  Load
+                </button>
               )}
             </div>
-
-            {/* Benchmark comparison */}
-            <div className="vela-card">
-              <h3 className="text-sm font-medium text-zinc-300 mb-4">How does that compare?</h3>
-              <div className="space-y-3">
-                {BENCHMARKS.map((b) => {
-                  const pct = Math.min(100, Math.max(0, (b.value / 35) * 100));
-                  const impliedPct = Math.min(100, Math.max(0, (impliedGrowth / 35) * 100));
-                  return (
-                    <div key={b.label}>
-                      <div className="flex items-center justify-between text-xs mb-1">
-                        <span className="text-zinc-400">{b.label}</span>
-                        <span className="tabular text-zinc-500">{b.value}%</span>
-                      </div>
-                      <div className="relative h-2 bg-zinc-800 rounded-full overflow-hidden">
-                        <div
-                          className="absolute h-full rounded-full bg-zinc-700"
-                          style={{ width: `${pct}%` }}
-                        />
-                        <div
-                          className={`absolute top-0 w-0.5 h-full ${verdictColor.replace("text-", "bg-")}`}
-                          style={{ left: `${impliedPct}%` }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-                <div className="flex items-center gap-2 text-[10px] text-zinc-600 mt-2">
-                  <div className={`w-2 h-2 rounded-full ${verdictColor.replace("text-", "bg-")}`} />
-                  <span>Implied growth for {inputs.ticker} ({impliedGrowth.toFixed(1)}%)</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Insights */}
-            <ReverseDCFInsights inputs={inputs} impliedGrowth={impliedGrowth} fundamentals={fundamentals} />
-
-            {/* Disclaimer */}
-            <div className="flex items-start gap-2 text-[10px] text-zinc-600">
-              <Info className="w-3 h-3 mt-0.5 shrink-0" />
-              <span>
-                Implied growth is a simplified estimate assuming constant growth and a single discount rate.
-                Real-world valuations are more nuanced. Not investment advice.
-              </span>
-            </div>
           </div>
-        </div>
+        </form>
+
+        {loadError && (
+          <p className="mt-2.5 font-mono text-[11px] text-loss">{loadError}</p>
+        )}
+
+        {/* Loaded fundamentals */}
+        {fundamentals && !loadError && (
+          <div className="mt-6 border-t border-vela-border pt-5">
+            <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
+              <Eyebrow>{fundamentals.ticker} fundamentals</Eyebrow>
+              <p className="font-mono text-[15px] tabular-nums text-zinc-100">
+                ${fundamentals.price?.toFixed(2) ?? "—"}
+              </p>
+            </div>
+            <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-4">
+              <FundCell label="Market cap" value={fundamentals.market_cap ? `$${(fundamentals.market_cap / 1000).toFixed(0)}B` : "—"} />
+              <FundCell label="FCF (TTM)" value={fundamentals.fcf ? `$${(fundamentals.fcf / 1000).toFixed(1)}B` : "N/A"} warn={!fundamentals.fcf} />
+              <FundCell label="Shares" value={fundamentals.shares_outstanding ? `${(fundamentals.shares_outstanding / 1000).toFixed(1)}B` : "—"} />
+              <FundCell label="Rev growth" value={fundamentals.revenue_growth != null ? `${fundamentals.revenue_growth.toFixed(1)}%` : "—"} />
+            </div>
+            {!fundamentals.fcf && (
+              <p className="mt-4 font-mono text-[11px] text-amber-400">
+                No free cash flow figure came back. Enter it by hand below.
+              </p>
+            )}
+          </div>
+        )}
+
+        {!hasData && !loading && (
+          <div className="mt-6 border border-vela-border px-6 py-12 text-center">
+            <Eyebrow>Nothing loaded</Eyebrow>
+            <Prose className="mt-2.5 mx-auto max-w-[380px]">
+              Enter a ticker above to begin. Price, free cash flow and share count load automatically,
+              and the implied growth rate is solved from there.
+            </Prose>
+          </div>
+        )}
+      </Section>
+
+      {hasData && (
+        <>
+          {/* ── Assumptions ──────────────────────────────────────────────── */}
+
+          <Section
+            label="Assumptions"
+            prose="The inputs the solver runs on. Change any of them and the implied growth rate below recalculates."
+          >
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-x-6 gap-y-5">
+              <Field label="Current price ($)" value={inputs.currentPrice} onChange={(v) => set("currentPrice", Number(v))} step={1} />
+              <Field label="Shares outstanding (M)" value={inputs.sharesOutstanding} onChange={(v) => set("sharesOutstanding", Number(v))} step={100} />
+              <Field label="Current FCF ($M)" value={inputs.currentFCF} onChange={(v) => set("currentFCF", Number(v))} step={1000} />
+              <Field label="Discount rate (%)" value={inputs.discountRate} onChange={(v) => set("discountRate", Number(v))} step={0.5} min={1} max={30} />
+              <Field label="Terminal growth (%)" value={inputs.terminalGrowthRate} onChange={(v) => set("terminalGrowthRate", Number(v))} step={0.5} min={0} max={5} />
+              <Field label="Net cash ($M)" value={inputs.netCash} onChange={(v) => set("netCash", Number(v))} step={1000} />
+            </div>
+            <p className="mt-5 font-mono text-[11px] text-vela-muted">
+              Loaded from {inputs.ticker}
+            </p>
+          </Section>
+
+          {/* ── Implied growth ───────────────────────────────────────────── */}
+
+          <Section
+            label="Implied growth"
+            prose="The free cash flow growth rate that reconciles today's price with the assumptions above."
+          >
+            <StatStrip>
+              <StatCell
+                label="Implied FCF growth"
+                value={`${impliedGrowth.toFixed(1)}%`}
+                valueClass={verdictColor}
+                sub={verdictLabel}
+                subClass={verdictColor}
+              />
+              <StatCell
+                label="Discount rate"
+                value={`${inputs.discountRate}%`}
+                sub="cost of capital"
+              />
+              <StatCell
+                label="Terminal growth"
+                value={`${inputs.terminalGrowthRate}%`}
+                sub="beyond year 10"
+              />
+              <StatCell
+                label="Recent rev growth"
+                value={
+                  fundamentals?.revenue_growth != null
+                    ? `${fundamentals.revenue_growth.toFixed(1)}%`
+                    : "—"
+                }
+                sub={
+                  fundamentals?.revenue_growth != null
+                    ? fundamentals.revenue_growth > impliedGrowth
+                      ? "above the implied rate"
+                      : "below the implied rate"
+                    : "not reported"
+                }
+                subClass={
+                  fundamentals?.revenue_growth != null
+                    ? fundamentals.revenue_growth > impliedGrowth
+                      ? "text-gain"
+                      : "text-amber-400"
+                    : "text-vela-body"
+                }
+              />
+            </StatStrip>
+
+            <Prose className="mt-5 max-w-[640px]">
+              {verdictDesc}. At a {inputs.discountRate}% discount rate and {inputs.terminalGrowthRate}% terminal
+              growth, the current price of ${inputs.currentPrice.toFixed(2)} implies {inputs.ticker} must grow
+              free cash flow at {impliedGrowth.toFixed(1)}% a year for the next 10 years.
+            </Prose>
+          </Section>
+
+          {/* ── Benchmarks ───────────────────────────────────────────────── */}
+
+          <Section
+            label="Benchmarks"
+            prose="Where that implied rate falls against reference growth rates. The marker is the implied rate, the bar is the benchmark."
+          >
+            <div className="space-y-3">
+              {BENCHMARKS.map((b) => {
+                const pct = Math.min(100, Math.max(0, (b.value / 35) * 100));
+                const impliedPct = Math.min(100, Math.max(0, (impliedGrowth / 35) * 100));
+                return (
+                  <div key={b.label}>
+                    <div className="flex items-center justify-between gap-3 mb-1.5">
+                      <span className="text-[13px] text-vela-body">{b.label}</span>
+                      <span className="font-mono text-[11px] tabular-nums text-vela-muted">{b.value}%</span>
+                    </div>
+                    <div className="relative h-4 overflow-hidden rounded-sm border border-vela-border bg-vela-card">
+                      <div
+                        className="absolute h-full bg-vela-muted/20"
+                        style={{ width: `${pct}%` }}
+                      />
+                      <div
+                        className={`absolute top-0 w-0.5 h-full ${verdictMarker}`}
+                        style={{ left: `${impliedPct}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="mt-3 flex items-center gap-2 font-mono text-[11px] text-vela-muted">
+              <span aria-hidden="true" className={`w-0.5 h-3 ${verdictMarker} inline-block`} />
+              <span>Implied growth for {inputs.ticker} ({impliedGrowth.toFixed(1)}%)</span>
+            </div>
+          </Section>
+
+          {/* ── Insights ─────────────────────────────────────────────────── */}
+
+          <ReverseDCFInsights inputs={inputs} impliedGrowth={impliedGrowth} fundamentals={fundamentals} />
+
+          <p className="mt-9 border-t border-vela-border pt-4 text-[11px] leading-relaxed text-vela-muted max-w-3xl">
+            Implied growth is a simplified estimate assuming constant growth and a single discount rate.
+            Real-world valuations are more nuanced. Not investment advice.
+          </p>
+        </>
       )}
     </PageTransition>
     </TierGate>
@@ -373,11 +423,17 @@ export default function ReverseDCFPage() {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-function FundRow({ label, value, warn }: { label: string; value: string; warn?: boolean }) {
+function FundCell({ label, value, warn }: { label: string; value: string; warn?: boolean }) {
   return (
-    <div className="flex justify-between">
-      <span className="text-zinc-500">{label}</span>
-      <span className={warn ? "text-amber-400 font-medium" : "text-zinc-300 font-medium tabular"}>{value}</span>
+    <div className="min-w-0">
+      <Eyebrow>{label}</Eyebrow>
+      <p
+        className={`mt-1 font-mono text-[13px] tabular-nums truncate ${
+          warn ? "text-amber-400" : "text-zinc-100"
+        }`}
+      >
+        {value}
+      </p>
     </div>
   );
 }
@@ -394,8 +450,8 @@ function Field({
   max?: number;
 }) {
   return (
-    <div>
-      <label className="text-xs text-zinc-500 mb-1 block">{label}</label>
+    <label className="block min-w-0">
+      <Eyebrow className="mb-1.5">{label}</Eyebrow>
       <input
         type={type}
         value={value}
@@ -403,9 +459,9 @@ function Field({
         step={step}
         min={min}
         max={max}
-        className="input-field w-full tabular"
+        className={fieldClass}
       />
-    </div>
+    </label>
   );
 }
 
@@ -417,102 +473,94 @@ function ReverseDCFInsights({ inputs, impliedGrowth, fundamentals }: {
   impliedGrowth: number;
   fundamentals: Fundamentals | null;
 }) {
-  const insights: { icon: React.ReactNode; title: string; body: string; color: string }[] = [];
+  const insights: { title: string; body: string }[] = [];
 
   // Reasonable growth
   if (impliedGrowth >= 0 && impliedGrowth <= 8) {
     insights.push({
-      icon: <Lightbulb className="w-4 h-4" />,
       title: "Low expectations priced in",
-      body: `${impliedGrowth.toFixed(1)}% is around or below S&P 500 average  - typical for mature businesses. `
-        + `If ${inputs.ticker} can outperform through new products or expansion, there's upside potential. `
+      body: `${impliedGrowth.toFixed(1)}% sits around or below the S&P 500 average, which is typical for mature businesses. `
+        + `Anything ${inputs.ticker} delivers above that pace is more than the current price requires. `
         + (fundamentals?.revenue_growth && fundamentals.revenue_growth > impliedGrowth
-          ? `Current revenue growth of ${fundamentals.revenue_growth.toFixed(1)}% already exceeds what the market requires.`
-          : `Low bar means less risk on misses.`),
-      color: "text-emerald-400",
+          ? `Revenue is currently growing at ${fundamentals.revenue_growth.toFixed(1)}%, ahead of what the price requires.`
+          : `A lower bar leaves less distance to fall on a miss.`),
     });
   }
 
   // Moderate 8-15%
   if (impliedGrowth > 8 && impliedGrowth <= 15) {
     insights.push({
-      icon: <Lightbulb className="w-4 h-4" />,
       title: "Above-average growth expected",
-      body: `${impliedGrowth.toFixed(1)}% for 10 years is achievable with strong moats. `
-        + `Companies like MSFT, V, and GOOG have sustained this pace. `
-        + `The key question: does ${inputs.ticker} have durable competitive advantages? `
+      body: `${impliedGrowth.toFixed(1)}% for 10 years is attainable for businesses with strong moats. `
+        + `Names such as MSFT, V and GOOG have sustained that pace. `
+        + `The open question is whether ${inputs.ticker} has comparably durable advantages. `
         + (fundamentals?.trailing_pe
-          ? `Current P/E of ${fundamentals.trailing_pe}x ${fundamentals.trailing_pe > 30 ? "is elevated" : "seems reasonable"} for this growth expectation.`
+          ? `The trailing P/E of ${fundamentals.trailing_pe}x ${fundamentals.trailing_pe > 30 ? "is elevated" : "is unremarkable"} against that expectation.`
           : ``),
-      color: "text-zinc-400",
     });
   }
 
   // Aggressive 15-30%
   if (impliedGrowth > 15 && impliedGrowth <= 30) {
     insights.push({
-      icon: <AlertTriangle className="w-4 h-4" />,
-      title: "High growth priced in  - elevated risk",
-      body: `<5% of large caps sustain ${impliedGrowth.toFixed(0)}%+ FCF growth for a decade. `
-        + `If growth comes in at 12% instead of ${impliedGrowth.toFixed(0)}%, corrections tend to be sharp (20-30%+). `
-        + `Position sizing should reflect this risk.`,
-      color: "text-amber-400",
+      title: "High growth priced in, elevated risk",
+      body: `Fewer than 5% of large caps sustain ${impliedGrowth.toFixed(0)}%+ FCF growth for a decade. `
+        + `If growth lands at 12% instead of ${impliedGrowth.toFixed(0)}%, repricings from this level have historically been sharp, often 20 to 30%. `
+        + `That is the risk the current price carries.`,
     });
   }
 
   // Extreme >30%
   if (impliedGrowth > 30) {
     insights.push({
-      icon: <AlertTriangle className="w-4 h-4" />,
       title: "Near-perfect execution required",
       body: `${impliedGrowth.toFixed(0)}%+ for a decade is almost unheard of at scale. `
-        + `Needs market expansion, margin improvement, and no competitive disruption  - simultaneously. `
-        + `One bad quarter can trigger 20-30% drawdowns at this valuation.`,
-      color: "text-loss",
+        + `It needs market expansion, margin improvement and no competitive disruption, all at once. `
+        + `At this valuation a single weak quarter has historically triggered drawdowns of 20 to 30%.`,
     });
   }
 
   // Negative
   if (impliedGrowth < 0) {
     insights.push({
-      icon: <BookOpen className="w-4 h-4" />,
-      title: "Decline priced in  - potential contrarian opportunity",
-      body: `Market expects ${inputs.ticker}'s cash flows to shrink. `
-        + `Could be rational (secular decline) or an overreaction. `
+      title: "Decline priced in",
+      body: `The market expects ${inputs.ticker}'s cash flows to shrink. `
+        + `That can be rational, as in secular decline, or an overreaction. `
         + (fundamentals?.revenue_growth && fundamentals.revenue_growth > 0
-          ? `Interesting: revenue is actually growing at ${fundamentals.revenue_growth.toFixed(1)}%  - the market may be pricing in a reversal that hasn't happened yet.`
-          : `Understand the bear case before considering a position.`),
-      color: "text-zinc-400",
+          ? `Worth noting: revenue is still growing at ${fundamentals.revenue_growth.toFixed(1)}%, so the price reflects a reversal that has not shown up in the numbers yet.`
+          : `The bear case is what the current price already reflects.`),
     });
   }
 
   // Portfolio context
   insights.push({
-    icon: <BookOpen className="w-4 h-4" />,
-    title: "How to use this",
-    body: `Run Reverse DCF on all your holdings. If most require 15%+ growth, your portfolio is growth-heavy  - `
-      + `strong in bull markets, exposed in corrections. Mix low-implied-growth (5-8%) with moderate growth (10-15%) `
-      + `to balance risk. Compare with the forward DCF to form your own view.`,
-    color: "text-zinc-400",
+    title: "How to read this",
+    body: `Running the same model across your holdings shows the shape of what you own. A book where most names `
+      + `require 15%+ growth behaves differently from one spread across low and moderate implied rates: stronger in `
+      + `bull markets, more exposed in corrections. The forward DCF is the other half of the picture.`,
   });
 
   return (
-    <div className="vela-card bg-zinc-900/50 space-y-4">
-      <h3 className="text-sm font-medium text-zinc-300 flex items-center gap-2">
-        <Lightbulb className="w-4 h-4 text-vela-teal" />
-        What this means
-      </h3>
-      <div className="space-y-3">
+    <Section
+      label="What this means"
+      prose="Plain reading of the implied rate above. Descriptive only, not a recommendation."
+    >
+      <div className="border-y border-vela-border divide-y divide-vela-border">
         {insights.map((insight, i) => (
-          <div key={i} className="flex items-start gap-3">
-            <div className={`mt-0.5 shrink-0 ${insight.color}`}>{insight.icon}</div>
-            <div>
-              <p className="text-xs font-medium text-zinc-300">{insight.title}</p>
-              <p className="text-xs text-zinc-500 mt-0.5 leading-relaxed">{insight.body}</p>
+          <div key={i} className="flex items-start gap-3 py-4">
+            <span
+              aria-hidden="true"
+              className="mt-[7px] w-[7px] h-[7px] rotate-45 bg-vela-teal shrink-0"
+            />
+            <div className="min-w-0">
+              <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-zinc-100">
+                {insight.title}
+              </p>
+              <Prose className="mt-1.5 max-w-[640px]">{insight.body}</Prose>
             </div>
           </div>
         ))}
       </div>
-    </div>
+    </Section>
   );
 }
