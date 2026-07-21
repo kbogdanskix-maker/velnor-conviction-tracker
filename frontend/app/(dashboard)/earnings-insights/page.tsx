@@ -2,8 +2,7 @@
 
 import { useState, useCallback } from "react";
 import {
-  TrendingUp, TrendingDown, Zap, RefreshCw, ChevronDown, ChevronUp,
-  BarChart2, Loader2, AlertCircle, Newspaper,
+  Zap, RefreshCw, ChevronDown, ChevronUp, Loader2, AlertCircle,
 } from "lucide-react";
 import { useDefaultPortfolio, usePortfolioSummary } from "@/hooks/usePortfolio";
 import { formatCurrency, stripAiMarkdown } from "@/lib/formatters";
@@ -13,6 +12,7 @@ import DashboardSkeleton from "@/components/shared/DashboardSkeleton";
 import TierGate from "@/components/shared/TierGate";
 import Disclaimer from "@/components/shared/Disclaimer";
 import { apiStream } from "@/lib/api";
+import { TopBar, PageHero, Section, Eyebrow, Prose } from "@/components/instrument";
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -78,7 +78,7 @@ async function streamEarnings(
   }
 }
 
-// ── Earnings card ────────────────────────────────────────────────────────────
+// ── Earnings row ─────────────────────────────────────────────────────────────
 
 function EarningsCard({
   ticker,
@@ -114,86 +114,100 @@ function EarningsCard({
   const isProfit = (unrealizedPnl ?? 0) >= 0;
 
   return (
-    <div className="vela-card group transition-all duration-200 hover:border-zinc-600">
+    <div className="py-4">
       {/* Header row */}
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-zinc-800 flex items-center justify-center shrink-0">
-            <span className="text-xs font-bold text-zinc-300 tabular-nums">
-              {ticker.slice(0, 4)}
-            </span>
-          </div>
-          <div>
-            <p className="font-semibold text-zinc-100 text-sm">{ticker}</p>
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <span
+            aria-hidden="true"
+            className="w-9 h-9 shrink-0 rounded border border-vela-border
+              flex items-center justify-center font-mono text-[10px] tracking-wide text-vela-muted"
+          >
+            {ticker.slice(0, 4)}
+          </span>
+          <div className="min-w-0">
+            <p className="font-mono text-[14px] font-medium tracking-wide text-zinc-100">{ticker}</p>
             {marketValue != null && (
-              <p className="text-xs text-zinc-500 tabular-nums">{formatCurrency(marketValue)}</p>
+              <p className="mt-0.5 font-mono text-[11px] tabular-nums text-vela-muted">
+                {formatCurrency(marketValue)}
+              </p>
             )}
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 shrink-0 ml-auto">
           {unrealizedPnl != null && (
-            <div className={`text-right ${isProfit ? "text-emerald-400" : "text-rose-400"}`}>
-              <p className="text-xs font-medium tabular-nums">
+            <div className={`text-right ${isProfit ? "text-gain" : "text-loss"}`}>
+              <p className="font-mono text-[12px] tabular-nums">
                 {isProfit ? "+" : ""}{formatCurrency(unrealizedPnl)}
               </p>
               {unrealizedPnlPct != null && (
-                <p className="text-[10px] tabular-nums">
+                <p className="font-mono text-[10.5px] tabular-nums">
                   {isProfit ? "+" : ""}{unrealizedPnlPct.toFixed(1)}%
                 </p>
               )}
             </div>
           )}
 
-          {/* Generate / refresh button */}
+          {/* Expand / collapse */}
           {state.text ? (
             <button
               onClick={() => setExpanded((e) => !e)}
-              className="p-1.5 rounded-md text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 transition-colors"
+              aria-expanded={expanded}
+              aria-label={expanded ? `Collapse ${ticker} briefing` : `Expand ${ticker} briefing`}
+              className="p-1.5 rounded border border-transparent text-vela-muted
+                hover:text-zinc-100 hover:border-vela-border transition-colors"
             >
               {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             </button>
           ) : null}
 
+          {/* Generate / refresh */}
           <button
             onClick={generate}
             disabled={state.loading}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded border
+              font-mono text-[10px] uppercase tracking-wider transition-colors ${
               state.text
-                ? "bg-zinc-800 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-700"
-                : "bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 border border-amber-500/20"
+                ? "border-vela-border text-vela-muted hover:text-zinc-100 hover:border-vela-teal/40"
+                : "bg-vela-teal/10 border-vela-teal/25 text-vela-teal hover:bg-vela-teal/15 hover:border-vela-teal/40"
             }`}
           >
             {state.loading ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              <Loader2 className="w-3.5 h-3.5 shrink-0 animate-spin" />
             ) : state.text ? (
-              <RefreshCw className="w-3.5 h-3.5" />
+              <RefreshCw className="w-3.5 h-3.5 shrink-0" />
             ) : (
-              <Zap className="w-3.5 h-3.5" />
+              <Zap className="w-3.5 h-3.5 shrink-0" />
             )}
-            {state.text ? (state.loading ? "Refreshing…" : "Re-run") : (state.loading ? "Analyzing…" : "Analyze")}
+            {state.text ? (state.loading ? "Refreshing" : "Re-run") : (state.loading ? "Analyzing" : "Analyze")}
           </button>
         </div>
       </div>
 
       {/* Expanded summary */}
       {expanded && (state.text || state.error) && (
-        <div className="mt-4 pt-4 border-t border-zinc-800">
+        <div className="mt-4 border-t border-vela-border pt-4">
           {state.error ? (
-            <div className="flex items-center gap-2 text-rose-400 text-xs">
-              <AlertCircle className="w-4 h-4 shrink-0" />
+            <p className="flex items-start gap-2 font-mono text-[11px] leading-relaxed text-loss">
+              <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-px" />
               {state.error}
-            </div>
+            </p>
           ) : (
-            <div className="relative">
-              <p className="text-xs leading-relaxed text-zinc-300 whitespace-pre-wrap">
+            <div className="max-w-[680px]">
+              <p className="text-[13.5px] leading-[1.55] text-vela-body whitespace-pre-wrap">
                 {stripAiMarkdown(state.text)}
                 {state.loading && (
-                  <span className="inline-block w-1.5 h-3.5 bg-amber-400 ml-0.5 animate-pulse align-middle" />
+                  <span
+                    aria-hidden="true"
+                    className="inline-block w-1.5 h-3.5 bg-vela-teal ml-0.5 animate-pulse align-middle"
+                  />
                 )}
               </p>
               {state.cached && (
-                <p className="text-[10px] text-zinc-600 mt-2">Cached summary</p>
+                <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.14em] text-vela-muted">
+                  Cached summary
+                </p>
               )}
               {state.text && <Disclaimer variant="inline" />}
             </div>
@@ -221,55 +235,55 @@ export default function EarningsInsightsPage() {
   if (loading) return <DashboardSkeleton />;
 
   return (
-    <PageTransition className="space-y-6">
-      {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-display font-bold text-zinc-100 flex items-center gap-2">
-            <BarChart2 className="w-6 h-6 text-amber-400" />
-            Earnings Insights
-          </h1>
-          <p className="text-sm text-zinc-500 mt-0.5">
-            AI-powered earnings briefings for your holdings
-          </p>
-        </div>
-      </div>
+    <PageTransition>
+      <TopBar
+        trail={[{ label: "Research" }, { label: "Earnings" }]}
+        note={
+          sorted.length > 0
+            ? `${sorted.length} ${sorted.length === 1 ? "name" : "names"} · cached 12h`
+            : "no equity holdings"
+        }
+      />
+
+      <PageHero
+        title="Earnings"
+        meta="AI briefings on the names you hold"
+        figure={sorted.length > 0 ? String(sorted.length) : undefined}
+        figureSub={sorted.length > 0 ? (sorted.length === 1 ? "name covered" : "names covered") : undefined}
+        figureSubClass="text-vela-body"
+      />
 
       {sorted.length === 0 ? (
-        <div className="vela-card text-center py-16 space-y-3">
-          <Newspaper className="w-12 h-12 text-zinc-700 mx-auto" />
-          <div>
-            <p className="text-zinc-300 font-medium">No equity holdings found</p>
-            <p className="text-sm text-zinc-500 mt-1">
-              Add stocks to your portfolio to see AI earnings briefings.
-            </p>
-          </div>
+        <div className="mt-8 border border-vela-border px-6 py-14 text-center">
+          <Eyebrow>No equity holdings</Eyebrow>
+          <Prose className="mt-2.5 mx-auto max-w-[360px]">
+            Add stocks to your portfolio and each one gets an earnings briefing here.
+          </Prose>
         </div>
       ) : (
         /* AI briefings gated to Voyager+ (backend enforces too) */
         <TierGate requiredTier="voyager">
-          <RevealOnScroll>
-            <div className="vela-card flex items-start gap-3 bg-amber-500/5 border-amber-500/15">
-              <Zap className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-              <p className="text-xs text-zinc-400 leading-relaxed">
-                Briefings are generated from live yfinance data (EPS history, revenue trends, analyst targets) and recent news.
-                Click <span className="text-amber-400 font-medium">Analyze</span> on any holding to generate. Results are cached for 12 hours.
-              </p>
+          <Section
+            label="Briefings"
+            prose="Each briefing is built from live yfinance data, covering EPS history, revenue trends and analyst targets, plus recent news. Results are cached for 12 hours."
+          >
+            <div className="border-y border-vela-border divide-y divide-vela-border">
+              {sorted.map((h, i) => (
+                <RevealOnScroll key={h.ticker} delay={i * 0.03}>
+                  <EarningsCard
+                    ticker={h.ticker}
+                    marketValue={h.market_value}
+                    unrealizedPnl={h.unrealized_pnl}
+                    unrealizedPnlPct={h.unrealized_pnl_pct}
+                  />
+                </RevealOnScroll>
+              ))}
             </div>
-          </RevealOnScroll>
 
-          <div className="space-y-3">
-            {sorted.map((h, i) => (
-              <RevealOnScroll key={h.ticker} delay={i * 0.03}>
-                <EarningsCard
-                  ticker={h.ticker}
-                  marketValue={h.market_value}
-                  unrealizedPnl={h.unrealized_pnl}
-                  unrealizedPnlPct={h.unrealized_pnl_pct}
-                />
-              </RevealOnScroll>
-            ))}
-          </div>
+            <p className="mt-3 font-mono text-[11px] text-vela-muted">
+              Run one with Analyze. Descriptive summaries only, not a recommendation.
+            </p>
+          </Section>
         </TierGate>
       )}
     </PageTransition>
