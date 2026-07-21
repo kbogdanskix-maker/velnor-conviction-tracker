@@ -24,6 +24,7 @@ import PageTransition from "@/components/celestial/PageTransition";
 import DashboardSkeleton from "@/components/shared/DashboardSkeleton";
 import ErrorState from "@/components/shared/ErrorState";
 import Disclaimer from "@/components/shared/Disclaimer";
+import { Eyebrow, StatCell, StatStrip, Pips, PillGroup } from "@/components/instrument";
 
 // ── Streaming helper ──────────────────────────────────────────────────────────
 
@@ -87,88 +88,6 @@ function InlineBold({ text }: { text: string }) {
         ),
       )}
     </>
-  );
-}
-
-// ── Small primitives ──────────────────────────────────────────────────────────
-
-/** Mono uppercase micro-label — the signature "instrument" eyebrow. */
-function Eyebrow({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  return (
-    <p className={`font-mono text-[10px] uppercase tracking-[0.18em] text-vela-muted ${className}`}>
-      {children}
-    </p>
-  );
-}
-
-/** One cell in the stat rail: label / big value / subtext. */
-function StatCell({
-  label,
-  value,
-  valueClass = "text-zinc-100",
-  sub,
-}: {
-  label: string;
-  value: React.ReactNode;
-  valueClass?: string;
-  sub?: React.ReactNode;
-}) {
-  return (
-    <div className="py-1 md:px-5 md:first:pl-0">
-      <Eyebrow className="mb-1.5">{label}</Eyebrow>
-      <p className={`font-mono text-xl md:text-2xl font-semibold tabular-nums leading-none ${valueClass}`}>
-        {value}
-      </p>
-      {sub != null && (
-        <p className="mt-1.5 font-mono text-[11px] text-vela-muted tabular-nums">{sub}</p>
-      )}
-    </div>
-  );
-}
-
-/** Conviction pips — filled/hollow diamonds for a 1-5 level. */
-function Pips({ level, size = "text-[11px]", className = "" }: { level: number; size?: string; className?: string }) {
-  const n = Math.max(0, Math.min(5, Math.round(level)));
-  return (
-    <span className={`inline-flex items-center gap-0.5 ${className}`} aria-label={`conviction ${n} of 5`}>
-      {[1, 2, 3, 4, 5].map((i) => (
-        <span key={i} className={`${size} leading-none ${i <= n ? "text-vela-teal" : "text-vela-subtle"}`}>
-          {i <= n ? "◆" : "◇"}
-        </span>
-      ))}
-    </span>
-  );
-}
-
-/** Segmented pill group (used for range + event-type filters). */
-function PillGroup<T extends string>({
-  options,
-  value,
-  onChange,
-}: {
-  options: { key: T; label: string }[];
-  value: T;
-  onChange: (v: T) => void;
-}) {
-  return (
-    <div className="inline-flex items-center rounded border border-vela-border overflow-hidden">
-      {options.map((opt) => {
-        const active = opt.key === value;
-        return (
-          <button
-            key={opt.key}
-            onClick={() => onChange(opt.key)}
-            className={`px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider transition-colors ${
-              active
-                ? "bg-vela-teal/15 text-vela-teal"
-                : "text-vela-muted hover:text-zinc-300"
-            }`}
-          >
-            {opt.label}
-          </button>
-        );
-      })}
-    </div>
   );
 }
 
@@ -531,7 +450,7 @@ export default function JourneyTickerPage() {
 
       {/* ── Stat rail ────────────────────────────────────────────────────── */}
       {pos && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-4 border-y border-vela-border/60 py-5 mb-8 md:divide-x md:divide-vela-border/50">
+        <StatStrip className="mb-8">
           <StatCell
             label="Unrealized P&L"
             value={
@@ -573,7 +492,7 @@ export default function JourneyTickerPage() {
               sub={thesisCount > 0 ? `${thesisCount} thesis ${thesisCount === 1 ? "entry" : "entries"}` : "no thesis yet"}
             />
           )}
-        </div>
+        </StatStrip>
       )}
 
       {/* ── The journey: header + filters ────────────────────────────────── */}
