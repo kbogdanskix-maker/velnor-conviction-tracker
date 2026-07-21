@@ -79,8 +79,23 @@ function TreemapContent(props: any) {
   if (width < 40 || height < 30) return null;
   return (
     <g>
-      <rect x={x} y={y} width={width} height={height} rx={2} fill={props.color || "#0B1322"} stroke="#050A16" strokeWidth={2} />
-      <text x={x + 6} y={y + 16} fill="#fafafa" fontSize={11} fontWeight={500}>
+      {/* Sector fills span light pastels (#a78bfa, #f472b6) through dark greys, so
+          no single label colour reads on all of them at full strength. The cell is
+          drawn as a tint of its sector colour over the page background, which keeps
+          the hue identity used by the ring and the legend while giving every cell a
+          mid-to-dark surface — one consistent light label works across the map. */}
+      <rect
+        x={x}
+        y={y}
+        width={width}
+        height={height}
+        rx={2}
+        fill={props.color || "#0B1322"}
+        fillOpacity={0.55}
+        stroke="#050A16"
+        strokeWidth={2}
+      />
+      <text x={x + 6} y={y + 16} fill="#EAEEF5" fontSize={11} fontWeight={500}>
         {width > 70 ? name : name?.slice(0, 6)}
       </text>
       {height > 40 && Number.isFinite(weight) && (
@@ -230,8 +245,9 @@ export default function SectorsPage() {
                       border: "1px solid #1B2638",
                       borderRadius: 4,
                       fontSize: 12,
-                      color: "#AEB9CC",
+                      color: "#EAEEF5",
                     }}
+                    itemStyle={{ color: "#EAEEF5" }}
                     labelStyle={{ color: "#8A97AC" }}
                     formatter={(val: number) => [formatCompact(val), "Value"]}
                   />

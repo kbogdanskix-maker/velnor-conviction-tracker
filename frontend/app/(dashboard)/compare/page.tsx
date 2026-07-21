@@ -302,7 +302,8 @@ export default function ComparePage() {
               <XAxis dataKey="year" tick={{ fill: "#71717a", fontSize: 11 }} />
               <YAxis tick={{ fill: "#71717a", fontSize: 11 }} tickFormatter={(v: number) => `$${(v / 1000).toFixed(0)}k`} />
               <Tooltip cursor={false}
-                contentStyle={{ backgroundColor: "#18181b", border: "1px solid #3f3f46", borderRadius: "0.5rem" }}
+                contentStyle={{ backgroundColor: "#0B1322", border: "1px solid #1B2638", borderRadius: "0.5rem", color: "#EAEEF5" }}
+                itemStyle={{ color: "#EAEEF5" }}
                 labelStyle={{ color: "#e4e4e7" }}
                 formatter={(v: number) => [formatCurrency(v)]}
               />
@@ -331,7 +332,7 @@ export default function ComparePage() {
                 <XAxis type="number" tick={{ fill: "#71717a", fontSize: 11 }} tickFormatter={(v: number) => `${v}%`} />
                 <YAxis type="category" dataKey="name" tick={{ fill: "#a1a1aa", fontSize: 10 }} width={95} />
                 <Tooltip cursor={false}
-                  contentStyle={{ backgroundColor: "#18181b", border: "1px solid #3f3f46", borderRadius: "0.5rem" }}
+                  contentStyle={{ backgroundColor: "#0B1322", border: "1px solid #1B2638", borderRadius: "0.5rem", color: "#EAEEF5" }}
                   labelStyle={{ color: "#e4e4e7" }}
                   itemStyle={{ color: "#e4e4e7" }}
                   formatter={(v: number) => [`${v.toFixed(2)}%`, "Annual Return"]}
@@ -362,7 +363,8 @@ export default function ComparePage() {
                 ))}
                 <Legend wrapperStyle={{ fontSize: "11px", color: "#a1a1aa" }} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: "#18181b", border: "1px solid #3f3f46", borderRadius: "0.5rem" }}
+                  contentStyle={{ backgroundColor: "#0B1322", border: "1px solid #1B2638", borderRadius: "0.5rem", color: "#EAEEF5" }}
+                  itemStyle={{ color: "#EAEEF5" }}
                   labelStyle={{ color: "#e4e4e7" }}
                   formatter={(v: number) => [Number(v).toFixed(2)]}
                 />
@@ -409,12 +411,12 @@ export default function ComparePage() {
                 <XAxis type="number" tick={{ fill: "#71717a", fontSize: 11 }} domain={[0, "dataMax + 0.2"]} tickFormatter={(v: number) => v.toFixed(1)} />
                 <YAxis type="category" dataKey="name" tick={{ fill: "#a1a1aa", fontSize: 10 }} width={95} />
                 <Tooltip cursor={false}
-                  contentStyle={{ backgroundColor: "#18181b", border: "1px solid #3f3f46", borderRadius: "0.5rem" }}
+                  contentStyle={{ backgroundColor: "#0B1322", border: "1px solid #1B2638", borderRadius: "0.5rem", color: "#EAEEF5" }}
                   labelStyle={{ color: "#e4e4e7" }}
                   itemStyle={{ color: "#e4e4e7" }}
                   formatter={(v: number) => [v.toFixed(2), "Sharpe Ratio"]}
                 />
-                <ReferenceLine x={0.7} stroke="#52525b" strokeDasharray="4 4" label={{ value: "0.7 good", position: "top", fill: "#52525b", fontSize: 9 }} />
+                <ReferenceLine x={0.7} stroke="#52525b" strokeDasharray="4 4" label={{ value: "0.7 good", position: "top", fill: "#8A97AC", fontSize: 9 }} />
                 <Bar dataKey="sharpe" radius={[0, 4, 4, 0]}>
                   {sharpeCompData.map((entry, i) => (
                     <Cell key={i} fill={sharpeBarColor(entry.sharpe, entry.isUser)} />

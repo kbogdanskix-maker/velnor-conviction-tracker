@@ -230,11 +230,14 @@ export default function ExpensesPage() {
                       </Pie>
                       <Tooltip
                         contentStyle={{
-                          backgroundColor: "#18181b",
-                          border: "1px solid #27272a",
+                          backgroundColor: "#0B1322",
+                          border: "1px solid #1B2638",
                           borderRadius: 8,
                           fontSize: 12,
+                          color: "#EAEEF5",
                         }}
+                        labelStyle={{ color: "#8A97AC" }}
+                        itemStyle={{ color: "#EAEEF5" }}
                         formatter={(val: number) => [formatCurrency(val), "Monthly"]}
                       />
                     </RPieChart>
@@ -272,11 +275,14 @@ export default function ExpensesPage() {
                     />
                     <Tooltip cursor={false}
                       contentStyle={{
-                        backgroundColor: "#18181b",
-                        border: "1px solid #27272a",
+                        backgroundColor: "#0B1322",
+                        border: "1px solid #1B2638",
                         borderRadius: 8,
                         fontSize: 12,
+                        color: "#EAEEF5",
                       }}
+                      labelStyle={{ color: "#8A97AC" }}
+                      itemStyle={{ color: "#EAEEF5" }}
                       formatter={(val: number) => [formatCurrency(val), "Monthly"]}
                     />
                     <Bar dataKey="value" radius={[4, 4, 0, 0]}>

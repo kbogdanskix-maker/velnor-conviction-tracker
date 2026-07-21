@@ -270,7 +270,9 @@ export default function SubscriptionsPage() {
                     ))}
                   </Pie>
                   <Tooltip
-                    contentStyle={{ backgroundColor: "#18181b", border: "1px solid #3f3f46", borderRadius: "0.5rem" }}
+                    contentStyle={{ backgroundColor: "#0B1322", border: "1px solid #1B2638", borderRadius: "0.5rem", color: "#EAEEF5" }}
+                    labelStyle={{ color: "#8A97AC" }}
+                    itemStyle={{ color: "#EAEEF5" }}
                     formatter={(v: number) => [formatCurrency(v) + "/mo"]}
                   />
                 </PieChart>
@@ -297,7 +299,9 @@ export default function SubscriptionsPage() {
                   <XAxis type="number" tick={{ fill: "#71717a", fontSize: 11 }} tickFormatter={(v: number) => `$${v}`} />
                   <YAxis type="category" dataKey="name" tick={{ fill: "#a1a1aa", fontSize: 11 }} width={70} />
                   <Tooltip cursor={false}
-                    contentStyle={{ backgroundColor: "#18181b", border: "1px solid #3f3f46", borderRadius: "0.5rem" }}
+                    contentStyle={{ backgroundColor: "#0B1322", border: "1px solid #1B2638", borderRadius: "0.5rem", color: "#EAEEF5" }}
+                    labelStyle={{ color: "#8A97AC" }}
+                    itemStyle={{ color: "#EAEEF5" }}
                     formatter={(v: number) => [formatCurrency(v) + "/mo"]}
                   />
                   <Bar dataKey="monthly" fill="#1AA8BB" radius={[0, 4, 4, 0]} />

@@ -477,7 +477,8 @@ export default function DCFPage() {
                       <XAxis dataKey="year" tick={{ fill: "#8A97AC", fontSize: 11 }} tickLine={false} axisLine={false} />
                       <YAxis tick={{ fill: "#8A97AC", fontSize: 11 }} tickLine={false} axisLine={false} tickFormatter={(v: number) => `$${v.toFixed(0)}B`} />
                       <Tooltip
-                        contentStyle={{ backgroundColor: "#0B1322", border: "1px solid #1B2638", borderRadius: "4px", fontSize: "0.75rem" }}
+                        contentStyle={{ backgroundColor: "#0B1322", border: "1px solid #1B2638", borderRadius: "4px", fontSize: "0.75rem", color: "#EAEEF5" }}
+                        itemStyle={{ color: "#EAEEF5" }}
                         formatter={(v: number, name: string) => [`$${v.toFixed(1)}B`, name === "fcf" ? "FCF" : "Present Value"]}
                         labelStyle={{ color: "#AEB9CC" }}
                       />

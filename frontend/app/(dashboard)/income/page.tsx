@@ -197,11 +197,14 @@ export default function IncomePage() {
                     />
                     <Tooltip cursor={false}
                       contentStyle={{
-                        backgroundColor: "#18181b",
-                        border: "1px solid #27272a",
+                        backgroundColor: "#0B1322",
+                        border: "1px solid #1B2638",
                         borderRadius: 8,
                         fontSize: 12,
+                        color: "#EAEEF5",
                       }}
+                      labelStyle={{ color: "#8A97AC" }}
+                      itemStyle={{ color: "#EAEEF5" }}
                       formatter={(val: number) => [formatCurrency(val), "Monthly"]}
                     />
                     <Bar dataKey="monthly" radius={[0, 4, 4, 0]}>
@@ -238,11 +241,14 @@ export default function IncomePage() {
                       </Pie>
                       <Tooltip
                         contentStyle={{
-                          backgroundColor: "#18181b",
-                          border: "1px solid #27272a",
+                          backgroundColor: "#0B1322",
+                          border: "1px solid #1B2638",
                           borderRadius: 8,
                           fontSize: 12,
+                          color: "#EAEEF5",
                         }}
+                        labelStyle={{ color: "#8A97AC" }}
+                        itemStyle={{ color: "#EAEEF5" }}
                         formatter={(val: number) => [formatCompact(val), "Annual"]}
                       />
                     </RPieChart>

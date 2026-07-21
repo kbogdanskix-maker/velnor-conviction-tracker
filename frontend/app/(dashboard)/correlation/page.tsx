@@ -474,7 +474,8 @@ export default function CorrelationPage() {
                         width={40}
                       />
                       <Tooltip cursor={false}
-                        contentStyle={{ backgroundColor: "#0B1322", border: "1px solid #1B2638", borderRadius: 4, fontSize: 12 }}
+                        contentStyle={{ backgroundColor: "#0B1322", border: "1px solid #1B2638", borderRadius: 4, fontSize: 12, color: "#EAEEF5" }}
+                        itemStyle={{ color: "#EAEEF5" }}
                         labelStyle={{ color: "#AEB9CC" }}
                         formatter={(val: number) => [`${(val * 100).toFixed(1)}% avg overlap`, "Overlap"]}
                       />

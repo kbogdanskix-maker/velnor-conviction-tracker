@@ -217,7 +217,9 @@ export default function AnnualReviewPage() {
                         <XAxis type="number" tick={{ fill: "#71717a", fontSize: 11 }} axisLine={false} tickLine={false} />
                         <YAxis type="category" dataKey="label" tick={{ fill: "#71717a", fontSize: 10 }} axisLine={false} tickLine={false} width={70} />
                         <Tooltip cursor={false}
-                          contentStyle={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 8 }}
+                          contentStyle={{ background: "#0B1322", border: "1px solid #1B2638", borderRadius: 8, color: "#EAEEF5" }}
+                          labelStyle={{ color: "#8A97AC" }}
+                          itemStyle={{ color: "#EAEEF5" }}
                           formatter={(v: number) => [`${v} positions`, ""]}
                         />
                         <Bar dataKey="count" radius={[0, 4, 4, 0]}>

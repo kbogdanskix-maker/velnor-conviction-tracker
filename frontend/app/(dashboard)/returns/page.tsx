@@ -321,7 +321,8 @@ export default function ReturnsPage() {
                 <XAxis dataKey="date" tickFormatter={shortDate} tick={{ fill: "#8A97AC", fontSize: 11 }} axisLine={false} tickLine={false} interval="preserveStartEnd" minTickGap={60} />
                 <YAxis tick={{ fill: "#8A97AC", fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v: number) => `$${(v / 1000).toFixed(0)}k`} width={48} />
                 <Tooltip
-                  contentStyle={{ background: "#0B1322", border: "1px solid #1B2638", borderRadius: 4, fontSize: 12, color: "#AEB9CC" }}
+                  contentStyle={{ background: "#0B1322", border: "1px solid #1B2638", borderRadius: 4, fontSize: 12, color: "#EAEEF5" }}
+                  itemStyle={{ color: "#EAEEF5" }}
                   labelStyle={{ color: "#8A97AC" }}
                   labelFormatter={shortDate}
                   formatter={(v: number) => [formatCurrency(v), "Value"]}

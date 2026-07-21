@@ -525,14 +525,14 @@ export default function JourneyTickerPage() {
                       return d.slice(0, 7);
                     }
                   }}
-                  tick={{ fill: "#5A6678", fontSize: 10, fontFamily: "var(--font-mono)" }}
+                  tick={{ fill: "#8A97AC", fontSize: 10, fontFamily: "var(--font-mono)" }}
                   axisLine={false}
                   tickLine={false}
                   dy={6}
                 />
                 <YAxis
                   orientation="right"
-                  tick={{ fill: "#5A6678", fontSize: 10, fontFamily: "var(--font-mono)" }}
+                  tick={{ fill: "#8A97AC", fontSize: 10, fontFamily: "var(--font-mono)" }}
                   axisLine={false}
                   tickLine={false}
                   tickFormatter={(v: number) => `$${v.toFixed(0)}`}

@@ -177,7 +177,7 @@ export default function RetirementPage() {
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgb(39,39,42)" />
                     <XAxis dataKey="age" tick={{ fill: "#71717a", fontSize: 11 }} axisLine={false} tickLine={false}
-                      label={{ value: "Age", position: "bottom", fill: "#52525b", fontSize: 11, offset: -5 }} />
+                      label={{ value: "Age", position: "bottom", fill: "#8A97AC", fontSize: 11, offset: -5 }} />
                     <YAxis tick={{ fill: "#71717a", fontSize: 11 }} axisLine={false} tickLine={false}
                       tickFormatter={(v) => formatCompact(v)} width={65} />
                     <Tooltip content={<ChartTooltip />} />

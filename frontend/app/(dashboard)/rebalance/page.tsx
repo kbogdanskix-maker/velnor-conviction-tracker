@@ -301,7 +301,10 @@ export default function RebalancePage() {
                     border: "1px solid #1B2638",
                     borderRadius: 4,
                     fontSize: 12,
+                    color: "#EAEEF5",
                   }}
+                  labelStyle={{ color: "#8A97AC" }}
+                  itemStyle={{ color: "#EAEEF5" }}
                   formatter={(val: number, name: string) => [
                     `${val.toFixed(1)}%`,
                     name === "current" ? "Current" : "Target",

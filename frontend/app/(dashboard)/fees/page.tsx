@@ -244,8 +244,9 @@ export default function FeesPage() {
                       border: "1px solid #1B2638",
                       borderRadius: 4,
                       fontSize: 12,
-                      color: "#AEB9CC",
+                      color: "#EAEEF5",
                     }}
+                    itemStyle={{ color: "#EAEEF5" }}
                     labelStyle={{ color: "#8A97AC" }}
                     formatter={(val: number, name: string) => [
                       `$${val.toLocaleString()}`,

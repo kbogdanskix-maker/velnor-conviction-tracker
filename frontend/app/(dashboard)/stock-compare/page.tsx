@@ -480,7 +480,7 @@ export default function StockComparePage() {
                             <YAxis type="category" dataKey="ticker" tick={{ fill: "#71717a", fontSize: 11 }} axisLine={false} tickLine={false} width={50} />
                             <Tooltip
                               cursor={false}
-                              contentStyle={{ background: "#18181b", border: "1px solid #3f3f46", borderRadius: 8, fontSize: 12 }}
+                              contentStyle={{ background: "#0B1322", border: "1px solid #1B2638", borderRadius: 8, fontSize: 12, color: "#EAEEF5" }}
                               labelStyle={{ color: "#a1a1aa" }}
                               itemStyle={{ color: "#e4e4e7" }}
                               formatter={(v: number) => [fmtB(v), "Market Cap"]}

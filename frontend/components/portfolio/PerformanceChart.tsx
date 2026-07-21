@@ -142,11 +142,14 @@ export default function PerformanceChart({ portfolioId }: Props) {
             />
             <Tooltip
               contentStyle={{
-                backgroundColor: "#18181b",
-                border: "1px solid #27272a",
+                backgroundColor: "#0B1322",
+                border: "1px solid #1B2638",
                 borderRadius: 8,
                 fontSize: 12,
+                color: "#EAEEF5",
               }}
+              labelStyle={{ color: "#8A97AC" }}
+              itemStyle={{ color: "#EAEEF5" }}
               labelFormatter={shortDate}
               formatter={(value: number) => [formatCurrency(value), "Value"]}
             />
@@ -157,7 +160,7 @@ export default function PerformanceChart({ portfolioId }: Props) {
               label={{
                 value: "Cost basis",
                 position: "right",
-                fill: "#52525b",
+                fill: "#8A97AC",
                 fontSize: 10,
               }}
             />

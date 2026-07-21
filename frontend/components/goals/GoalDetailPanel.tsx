@@ -188,11 +188,14 @@ export default function GoalDetailPanel({ goal, open, onOpenChange }: Props) {
                     />
                     <RechartsTooltip
                       contentStyle={{
-                        background: "#27272a",
-                        border: "1px solid #3f3f46",
+                        background: "#0B1322",
+                        border: "1px solid #1B2638",
                         borderRadius: "8px",
                         fontSize: "12px",
+                        color: "#EAEEF5",
                       }}
+                      labelStyle={{ color: "#8A97AC" }}
+                      itemStyle={{ color: "#EAEEF5" }}
                       labelFormatter={formatChartDate}
                       formatter={(val: number, name: string) => [
                         formatCurrency(val),

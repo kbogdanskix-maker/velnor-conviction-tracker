@@ -395,7 +395,7 @@ export default function MonteCarloPage() {
                       tick={{ fill: "#71717a", fontSize: 11 }}
                       axisLine={false}
                       tickLine={false}
-                      label={{ value: "Years", position: "bottom", fill: "#52525b", fontSize: 11, offset: -5 }}
+                      label={{ value: "Years", position: "bottom", fill: "#8A97AC", fontSize: 11, offset: -5 }}
                     />
                     <YAxis
                       tick={{ fill: "#71717a", fontSize: 11 }}

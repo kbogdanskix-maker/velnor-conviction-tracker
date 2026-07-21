@@ -509,7 +509,7 @@ function OptionsOIChart({ chain, expiry }: { chain: OptionsChain; expiry: string
               width={36}
             />
             <Tooltip cursor={false}
-              contentStyle={{ background: "#0c1a19", border: "1px solid rgba(26, 168, 187,0.35)", borderRadius: 8, fontSize: 11 }}
+              contentStyle={{ background: "#0c1a19", border: "1px solid rgba(26, 168, 187,0.35)", borderRadius: 8, fontSize: 11, color: "#EAEEF5" }}
               labelStyle={{ color: "#1AA8BB", fontSize: 10, fontWeight: 600 }}
               itemStyle={{ color: "#5eead4" }}
               formatter={(value: number, name: string) => [
@@ -614,7 +614,7 @@ function IVByStrike({ chain, expiry }: { chain: OptionsChain; expiry: string }) 
               domain={["dataMin - 5", "dataMax + 5"]}
             />
             <Tooltip cursor={false}
-              contentStyle={{ background: "#0c1a19", border: "1px solid rgba(26, 168, 187,0.35)", borderRadius: 8, fontSize: 11 }}
+              contentStyle={{ background: "#0c1a19", border: "1px solid rgba(26, 168, 187,0.35)", borderRadius: 8, fontSize: 11, color: "#EAEEF5" }}
               labelStyle={{ color: "#1AA8BB", fontSize: 10, fontWeight: 600 }}
               itemStyle={{ color: "#5eead4" }}
               formatter={(value: number) => [`${value}%`, "IV"]}
