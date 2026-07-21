@@ -2,26 +2,24 @@
 
 import { useMemo } from "react";
 import Link from "next/link";
-import {
-  Shield,
-  TrendingDown,
-  Activity,
-  Gauge,
-  ArrowRight,
-  AlertTriangle,
-  CheckCircle2,
-  Info,
-  Zap,
-} from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useDefaultPortfolio } from "@/hooks/usePortfolio";
 import { useRiskMetrics } from "@/hooks/useRiskMetrics";
 import type { RiskMetrics } from "@/hooks/useRiskMetrics";
 import type { Holding } from "@/hooks/usePortfolio";
 import PageTransition from "@/components/celestial/PageTransition";
-import FloatingCard from "@/components/celestial/FloatingCard";
-import RevealOnScroll from "@/components/celestial/RevealOnScroll";
 import DashboardSkeleton from "@/components/shared/DashboardSkeleton";
 import ErrorState from "@/components/shared/ErrorState";
+import {
+  TopBar,
+  PageHero,
+  StatStrip,
+  StatCell,
+  Section,
+  Panel,
+  Eyebrow,
+  Prose,
+} from "@/components/instrument";
 
 // ── Risk grading ─────────────────────────────────────────────────────
 
@@ -30,16 +28,23 @@ type Grade = "A" | "B" | "C" | "D" | "F";
 interface GradeInfo {
   grade: Grade;
   label: string;
+  /** Literal Tailwind text class. Never build these dynamically. */
   color: string;
-  bg: string;
+  /** Literal Tailwind background class for the score bar. */
+  bar: string;
 }
 
 function gradeFromScore(score: number): GradeInfo {
-  if (score >= 80) return { grade: "A", label: "Excellent", color: "text-gain", bg: "bg-gain/15" };
-  if (score >= 65) return { grade: "B", label: "Good", color: "text-teal-400", bg: "bg-teal-400/15" };
-  if (score >= 50) return { grade: "C", label: "Moderate", color: "text-amber-400", bg: "bg-amber-400/15" };
-  if (score >= 35) return { grade: "D", label: "Elevated", color: "text-orange-400", bg: "bg-orange-400/15" };
-  return { grade: "F", label: "High Risk", color: "text-loss", bg: "bg-loss/15" };
+  if (score >= 80) return { grade: "A", label: "Steady", color: "text-gain", bar: "bg-gain" };
+  if (score >= 65) return { grade: "B", label: "Contained", color: "text-gain", bar: "bg-gain/70" };
+  if (score >= 50) return { grade: "C", label: "Moderate", color: "text-amber-400", bar: "bg-amber-400" };
+  if (score >= 35) return { grade: "D", label: "Elevated", color: "text-orange-400", bar: "bg-orange-400" };
+  return { grade: "F", label: "Wide", color: "text-loss", bar: "bg-loss" };
+}
+
+/** Fill width for the per-metric score bar, keyed off the grade letter. */
+function gradeWidth(grade: Grade): number {
+  return grade === "A" ? 95 : grade === "B" ? 75 : grade === "C" ? 55 : grade === "D" ? 35 : 15;
 }
 
 // ── Metric definitions ───────────────────────────────────────────────
@@ -50,7 +55,6 @@ interface MetricDef {
   description: string;
   format: (v: number) => string;
   grade: (v: number) => GradeInfo;
-  icon: typeof Shield;
   idealRange: string;
 }
 
@@ -58,7 +62,7 @@ const METRICS: MetricDef[] = [
   {
     key: "sharpe_ratio",
     label: "Sharpe Ratio",
-    description: "Risk-adjusted return  - higher means better returns per unit of risk taken",
+    description: "Return per unit of volatility taken over the measured period.",
     format: (v) => v.toFixed(2),
     grade: (v) => {
       if (v >= 1.5) return gradeFromScore(90);
@@ -67,13 +71,12 @@ const METRICS: MetricDef[] = [
       if (v >= 0) return gradeFromScore(40);
       return gradeFromScore(15);
     },
-    icon: Gauge,
     idealRange: "> 1.0",
   },
   {
     key: "annualized_volatility",
     label: "Annualized Volatility",
-    description: "Standard deviation of returns  - measures how much your portfolio swings",
+    description: "Standard deviation of returns, annualized. How widely the book swings.",
     format: (v) => `${v.toFixed(1)}%`,
     grade: (v) => {
       // v is already a percentage (e.g., 15.0 = 15%)
@@ -83,13 +86,12 @@ const METRICS: MetricDef[] = [
       if (v < 30) return gradeFromScore(40);
       return gradeFromScore(15);
     },
-    icon: Activity,
     idealRange: "< 15%",
   },
   {
     key: "max_drawdown",
     label: "Max Drawdown",
-    description: "Largest peak-to-trough decline  - the worst loss from a high point",
+    description: "Largest peak to trough decline recorded in the period.",
     format: (v) => `${v.toFixed(1)}%`,
     grade: (v) => {
       // v is already a percentage (e.g., -12.3 = -12.3%)
@@ -100,13 +102,12 @@ const METRICS: MetricDef[] = [
       if (abs < 35) return gradeFromScore(40);
       return gradeFromScore(15);
     },
-    icon: TrendingDown,
     idealRange: "> -20%",
   },
   {
     key: "beta",
     label: "Portfolio Beta",
-    description: "Sensitivity to market movements  - 1.0 = moves like the market",
+    description: "Sensitivity to the broad market. 1.00 moves in line with the index.",
     format: (v) => v.toFixed(2),
     grade: (v) => {
       const diff = Math.abs(v - 1);
@@ -116,7 +117,6 @@ const METRICS: MetricDef[] = [
       if (v > 1.5) return gradeFromScore(25);
       return gradeFromScore(60);
     },
-    icon: Zap,
     idealRange: "0.7 – 1.2",
   },
 ];
@@ -155,9 +155,9 @@ function analyzeConcentration(holdings: Holding[]): ConcentrationResult {
 
   let warning: string | null = null;
   if (topHolding && topHolding.pct > 30) {
-    warning = `${topHolding.ticker} represents ${topHolding.pct.toFixed(0)}% of your portfolio`;
+    warning = `${topHolding.ticker} accounts for ${topHolding.pct.toFixed(0)}% of the book`;
   } else if (top3Pct > 60) {
-    warning = `Top 3 holdings make up ${top3Pct.toFixed(0)}% of your portfolio`;
+    warning = `The three largest positions account for ${top3Pct.toFixed(0)}% of the book`;
   }
 
   return { topHolding, top3Pct, hhi, grade: gradeFromScore(score), warning };
@@ -201,293 +201,234 @@ function computeOverallScore(risk: RiskMetrics, holdings: Holding[]): number {
   return weights > 0 ? Math.round(total / weights) : 50;
 }
 
-// ── Insights engine ──────────────────────────────────────────────────
+// ── Observations ─────────────────────────────────────────────────────
 
-interface Insight {
-  type: "success" | "warning" | "info";
+interface Observation {
+  tone: "gain" | "caution" | "neutral";
   text: string;
 }
 
-function generateInsights(risk: RiskMetrics, holdings: Holding[]): Insight[] {
-  const insights: Insight[] = [];
+function generateInsights(risk: RiskMetrics, holdings: Holding[]): Observation[] {
+  const insights: Observation[] = [];
   const conc = analyzeConcentration(holdings);
 
   if (risk.sharpe_ratio != null) {
     if (risk.sharpe_ratio >= 1.0) {
-      insights.push({ type: "success", text: `Your risk-adjusted returns are strong  - Sharpe of ${risk.sharpe_ratio.toFixed(2)} indicates efficient risk usage.` });
+      insights.push({
+        tone: "gain",
+        text: `Sharpe of ${risk.sharpe_ratio.toFixed(2)} means the period's return was large relative to the volatility recorded alongside it.`,
+      });
     } else if (risk.sharpe_ratio < 0.5) {
-      insights.push({ type: "warning", text: "Low Sharpe ratio suggests you're not being adequately compensated for the risk you're taking." });
+      insights.push({
+        tone: "caution",
+        text: "Sharpe below 0.50 means the period's return was small relative to the volatility recorded alongside it.",
+      });
     }
   }
 
   if (risk.annualized_volatility != null) {
     if (risk.annualized_volatility > 25) {
-      insights.push({ type: "warning", text: `Volatility of ${risk.annualized_volatility.toFixed(0)}% is high. Lower-volatility asset classes like bonds have historically dampened swings like this.` });
+      insights.push({
+        tone: "caution",
+        text: `Annualized volatility of ${risk.annualized_volatility.toFixed(0)}% sits in the upper band for an equity book. Day to day swings are correspondingly wide.`,
+      });
     } else if (risk.annualized_volatility < 12) {
-      insights.push({ type: "success", text: "Your portfolio has low volatility  - smooth sailing through market turbulence." });
+      insights.push({
+        tone: "gain",
+        text: "Annualized volatility is under 12%, a narrow band for an equity book over this window.",
+      });
     }
   }
 
   if (risk.max_drawdown != null && Math.abs(risk.max_drawdown) > 20) {
-    insights.push({ type: "warning", text: `Your worst drawdown was ${Math.abs(risk.max_drawdown).toFixed(0)}%  - make sure you can tolerate this level of decline psychologically and financially.` });
+    insights.push({
+      tone: "caution",
+      text: `The deepest peak to trough decline in the period was ${Math.abs(risk.max_drawdown).toFixed(0)}%. That is the size of drop this book has already carried.`,
+    });
   }
 
   if (risk.beta != null) {
     if (risk.beta > 1.3) {
-      insights.push({ type: "info", text: `Your portfolio amplifies market moves by ${((risk.beta - 1) * 100).toFixed(0)}%  - it will fall harder in downturns.` });
+      insights.push({
+        tone: "neutral",
+        text: `Beta of ${risk.beta.toFixed(2)} means index moves have historically translated into moves about ${((risk.beta - 1) * 100).toFixed(0)}% larger here, in both directions.`,
+      });
     } else if (risk.beta < 0.7) {
-      insights.push({ type: "info", text: "Low beta means your portfolio is defensive  - it won't keep pace in strong bull markets but offers downside protection." });
+      insights.push({
+        tone: "neutral",
+        text: `Beta of ${risk.beta.toFixed(2)} means index moves have historically translated into smaller moves here, in both directions.`,
+      });
     }
   }
 
   if (conc.warning) {
-    insights.push({ type: "warning", text: conc.warning + ". Consider rebalancing to reduce single-stock risk." });
+    insights.push({
+      tone: "caution",
+      text: `${conc.warning}, so the book's outcome is closely tied to that weight.`,
+    });
   }
 
   if (holdings.length < 5) {
-    insights.push({ type: "warning", text: `Only ${holdings.length} holding${holdings.length === 1 ? "" : "s"}  - consider diversifying across more positions.` });
+    insights.push({
+      tone: "caution",
+      text: `${holdings.length} position${holdings.length === 1 ? "" : "s"} on the book, so single name moves carry a large share of the result.`,
+    });
   } else if (holdings.length >= 15) {
-    insights.push({ type: "success", text: `Well-diversified across ${holdings.length} positions.` });
+    insights.push({
+      tone: "gain",
+      text: `${holdings.length} positions on the book, so no single name dominates the weighting by construction.`,
+    });
   }
 
   if (risk.annualized_return != null && risk.annualized_volatility != null) {
     const efficiency = risk.annualized_return / risk.annualized_volatility;
     if (efficiency > 0.8) {
-      insights.push({ type: "success", text: "Your return-to-volatility ratio is efficient  - you're getting strong returns relative to the risk." });
+      insights.push({
+        tone: "gain",
+        text: "Annualized return exceeded 80% of annualized volatility over the window measured.",
+      });
     }
   }
 
   return insights;
 }
 
-// ── Gauge component ──────────────────────────────────────────────────
+// ── Composite scale ──────────────────────────────────────────────────
 
-function RiskGauge({ score, size = "lg" }: { score: number; size?: "lg" | "sm" }) {
-  const grade = gradeFromScore(score);
-  const isLg = size === "lg";
-  const radius = isLg ? 70 : 40;
-  const strokeWidth = isLg ? 10 : 6;
-  const cx = isLg ? 90 : 50;
-  const cy = isLg ? 85 : 48;
-  const svgW = isLg ? 180 : 100;
-  const svgH = isLg ? 100 : 60;
-  const circumference = Math.PI * radius;
-  const filled = (score / 100) * circumference;
-
+/** Linear 0-100 scale with the composite marked on it. */
+function ScoreScale({ score, grade }: { score: number; grade: GradeInfo }) {
   return (
-    <div className="flex flex-col items-center">
-      <svg width={svgW} height={svgH} viewBox={`0 0 ${svgW} ${svgH}`}>
-        <path
-          d={`M ${cx - radius} ${cy} A ${radius} ${radius} 0 0 1 ${cx + radius} ${cy}`}
-          fill="none"
-          stroke="rgb(39, 39, 42)"
-          strokeWidth={strokeWidth}
-          strokeLinecap="round"
-        />
-        <path
-          d={`M ${cx - radius} ${cy} A ${radius} ${radius} 0 0 1 ${cx + radius} ${cy}`}
-          fill="none"
-          stroke="currentColor"
-          className={grade.color}
-          strokeWidth={strokeWidth}
-          strokeLinecap="round"
-          strokeDasharray={`${filled} ${circumference}`}
-          style={{ transition: "stroke-dasharray 1s ease-out" }}
-        />
-        <text
-          x={cx}
-          y={cy - (isLg ? 16 : 8)}
-          textAnchor="middle"
-          className="fill-zinc-100 font-bold"
-          style={{ fontSize: isLg ? 36 : 20 }}
-        >
-          {score}
-        </text>
-        <text
-          x={cx}
-          y={cy + (isLg ? 4 : 4)}
-          textAnchor="middle"
-          className="fill-zinc-500"
-          style={{ fontSize: isLg ? 11 : 9 }}
-        >
-          / 100
-        </text>
-      </svg>
-      <div className={`text-center mt-1 ${isLg ? "text-sm" : "text-xs"}`}>
-        <span className={`font-semibold ${grade.color}`}>{grade.label}</span>
+    <div>
+      <div className="h-2 w-full border border-vela-border bg-vela-card">
+        <div className={`h-full ${grade.bar}`} style={{ width: `${score}%` }} />
+      </div>
+      <div className="mt-1.5 flex justify-between font-mono text-[10px] tabular-nums text-vela-muted">
+        <span>0</span>
+        <span>35</span>
+        <span>50</span>
+        <span>65</span>
+        <span>80</span>
+        <span>100</span>
       </div>
     </div>
   );
 }
 
-// ── Metric card ──────────────────────────────────────────────────────
+// ── Metric row ───────────────────────────────────────────────────────
 
-function MetricCard({ def, value }: { def: MetricDef; value: number | null }) {
+function MetricRow({ def, value }: { def: MetricDef; value: number | null }) {
   if (value == null) {
     return (
-      <div className="vela-card opacity-50">
-        <div className="flex items-center gap-2 mb-3">
-          <def.icon className="w-4 h-4 text-zinc-500" />
-          <span className="text-sm font-medium text-zinc-400">{def.label}</span>
+      <div className="py-3.5">
+        <div className="flex items-baseline justify-between gap-4">
+          <Eyebrow>{def.label}</Eyebrow>
+          <span className="font-mono text-[13px] text-vela-muted">insufficient data</span>
         </div>
-        <p className="text-xs text-zinc-600">Insufficient data</p>
       </div>
     );
   }
 
   const grade = def.grade(value);
-  const Icon = def.icon;
 
   return (
-    <div className="vela-card group hover:border-zinc-600 transition-colors">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <div className={`p-1.5 rounded-md ${grade.bg}`}>
-            <Icon className={`w-4 h-4 ${grade.color}`} />
-          </div>
-          <span className="text-sm font-medium text-zinc-300">{def.label}</span>
-        </div>
-        <span className={`text-xs font-bold px-2 py-0.5 rounded ${grade.bg} ${grade.color}`}>
-          {grade.grade}
+    <div className="py-3.5">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+        <Eyebrow>{def.label}</Eyebrow>
+        <span className="font-mono text-[11px] tabular-nums text-vela-muted">
+          reference {def.idealRange}
         </span>
       </div>
 
-      <div className="flex items-baseline gap-2 mb-2">
-        <span className="text-2xl font-display font-bold text-zinc-100 tabular-nums">
+      <div className="mt-1.5 flex items-baseline gap-3">
+        <span className="font-mono text-xl md:text-[22px] font-semibold tabular-nums leading-none text-zinc-100">
           {def.format(value)}
         </span>
-        <span className="text-xs text-zinc-600">ideal {def.idealRange}</span>
+        <span className={`font-mono text-[11px] uppercase tracking-[0.14em] ${grade.color}`}>
+          {grade.grade} · {grade.label}
+        </span>
       </div>
 
-      <p className="text-xs text-zinc-500 leading-relaxed">{def.description}</p>
-
-      {/* Score bar */}
-      <div className="mt-3 h-1.5 rounded-full bg-zinc-800 overflow-hidden">
+      <div className="mt-2.5 h-1 w-full max-w-[320px] bg-vela-card">
         <div
-          className={`h-full rounded-full transition-all duration-1000 ease-out ${
-            grade.grade === "A" ? "bg-gain" :
-            grade.grade === "B" ? "bg-teal-400" :
-            grade.grade === "C" ? "bg-amber-400" :
-            grade.grade === "D" ? "bg-orange-400" :
-            "bg-loss"
-          }`}
-          style={{
-            width: `${
-              grade.grade === "A" ? 95 :
-              grade.grade === "B" ? 75 :
-              grade.grade === "C" ? 55 :
-              grade.grade === "D" ? 35 :
-              15
-            }%`,
-          }}
+          className={`h-full ${grade.bar}`}
+          style={{ width: `${gradeWidth(grade.grade)}%` }}
         />
       </div>
+
+      <p className="mt-2 text-[13px] leading-[1.55] text-vela-body max-w-[460px]">
+        {def.description}
+      </p>
     </div>
   );
 }
 
-// ── Concentration card ───────────────────────────────────────────────
+// ── Concentration ────────────────────────────────────────────────────
 
-function ConcentrationCard({ holdings }: { holdings: Holding[] }) {
+function WeightBars({ holdings }: { holdings: Holding[] }) {
   const total = holdings.reduce((s, h) => s + (h.market_value ?? 0), 0);
   const sorted = [...holdings]
     .map((h) => ({ ticker: h.ticker, pct: total > 0 ? ((h.market_value ?? 0) / total) * 100 : 0 }))
     .sort((a, b) => b.pct - a.pct)
     .slice(0, 8);
 
-  const conc = analyzeConcentration(holdings);
-
   return (
-    <div className="vela-card">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <div className={`p-1.5 rounded-md ${conc.grade.bg}`}>
-            <Shield className={`w-4 h-4 ${conc.grade.color}`} />
-          </div>
-          <span className="text-sm font-medium text-zinc-300">Concentration Risk</span>
-        </div>
-        <span className={`text-xs font-bold px-2 py-0.5 rounded ${conc.grade.bg} ${conc.grade.color}`}>
-          {conc.grade.grade}
-        </span>
-      </div>
-
-      <div className="space-y-2 mb-4">
+    <div className="overflow-x-auto">
+      <div className="min-w-[320px] max-w-[640px] space-y-2.5">
         {sorted.map((h) => (
           <div key={h.ticker} className="flex items-center gap-3">
-            <span className="text-xs font-mono text-zinc-400 w-12 shrink-0">{h.ticker}</span>
-            <div className="flex-1 h-2 rounded-full bg-zinc-800 overflow-hidden">
+            <span className="w-14 shrink-0 font-mono text-[11px] tracking-[0.02em] text-vela-teal">
+              {h.ticker}
+            </span>
+            <div className="h-4 flex-1 border border-vela-border bg-vela-card">
               <div
-                className={`h-full rounded-full transition-all duration-700 ${
-                  h.pct > 25 ? "bg-loss" : h.pct > 15 ? "bg-amber-400" : "bg-teal-500"
+                className={`h-full ${
+                  h.pct > 25 ? "bg-loss/60" : h.pct > 15 ? "bg-amber-400/60" : "bg-vela-teal/35"
                 }`}
                 style={{ width: `${Math.min(h.pct, 100)}%` }}
               />
             </div>
-            <span className="text-xs text-zinc-500 tabular-nums w-12 text-right">{h.pct.toFixed(1)}%</span>
+            <span className="w-12 shrink-0 text-right font-mono text-[11px] tabular-nums text-vela-body">
+              {h.pct.toFixed(1)}%
+            </span>
           </div>
         ))}
-      </div>
-
-      {/* Summary stats */}
-      <div className="grid grid-cols-2 gap-3 pt-3 border-t border-zinc-800">
-        <div>
-          <p className="text-xs text-zinc-500">Top holding</p>
-          <p className="text-sm font-medium text-zinc-200 tabular-nums">
-            {conc.topHolding ? `${conc.topHolding.ticker} (${conc.topHolding.pct.toFixed(0)}%)` : " -"}
-          </p>
-        </div>
-        <div>
-          <p className="text-xs text-zinc-500">Top 3 concentration</p>
-          <p className="text-sm font-medium text-zinc-200 tabular-nums">{conc.top3Pct.toFixed(0)}%</p>
-        </div>
-        <div>
-          <p className="text-xs text-zinc-500">HHI score</p>
-          <p className="text-sm font-medium text-zinc-200 tabular-nums">{(conc.hhi * 10000).toFixed(0)}</p>
-        </div>
-        <div>
-          <p className="text-xs text-zinc-500">Positions</p>
-          <p className="text-sm font-medium text-zinc-200 tabular-nums">{holdings.length}</p>
-        </div>
       </div>
     </div>
   );
 }
-
-// ── Insight card ─────────────────────────────────────────────────────
-
-const INSIGHT_ICONS = {
-  success: CheckCircle2,
-  warning: AlertTriangle,
-  info: Info,
-};
-
-const INSIGHT_COLORS = {
-  success: "text-gain border-gain/20 bg-gain/5",
-  warning: "text-amber-400 border-amber-400/20 bg-amber-400/5",
-  info: "text-teal-400 border-teal-400/20 bg-teal-400/5",
-};
 
 // ── Empty state ──────────────────────────────────────────────────────
 
 function EmptyRisk() {
   return (
-    <div className="vela-card text-center py-16 space-y-4">
-      <Shield className="w-12 h-12 text-zinc-700 mx-auto" />
-      <div>
-        <h2 className="text-lg font-medium text-zinc-300">No risk data yet</h2>
-        <p className="text-sm text-zinc-500 mt-1 max-w-md mx-auto">
-          Add trades to your portfolio and accumulate some history. Risk metrics need at least 30 days of data.
-        </p>
-      </div>
-      <Link
-        href="/portfolio"
-        className="inline-flex items-center gap-2 btn-primary text-sm"
-      >
-        Go to Portfolio <ArrowRight className="w-4 h-4" />
-      </Link>
+    <div className="mt-8">
+      <Panel className="px-6 py-14 text-center">
+        <Eyebrow>Not enough history</Eyebrow>
+        <Prose className="mx-auto mt-3 max-w-[420px]">
+          Risk metrics need a run of daily marks to compute. Record trades on the book and let the
+          history build, and volatility, drawdown and beta will land here.
+        </Prose>
+        <Link
+          href="/portfolio"
+          className="mt-5 inline-flex items-center gap-1.5 rounded border border-vela-teal/25 bg-vela-teal/10 px-3 py-1.5
+            font-mono text-[10px] uppercase tracking-wider text-vela-teal
+            hover:bg-vela-teal/15 hover:border-vela-teal/40 transition-colors"
+        >
+          Go to positions
+          <ArrowRight className="w-3.5 h-3.5 shrink-0" />
+        </Link>
+      </Panel>
     </div>
   );
 }
+
+// ── Cross links ──────────────────────────────────────────────────────
+
+const RELATED = [
+  { href: "/correlation", label: "Diversification", desc: "How much the holdings repeat each other" },
+  { href: "/stress-index", label: "Stress Index", desc: "Composite reading across the whole picture" },
+  { href: "/rebalance", label: "Rebalance", desc: "Drift against your stated target weights" },
+];
 
 // ── Main page ────────────────────────────────────────────────────────
 
@@ -512,119 +453,203 @@ export default function RiskDashboardPage() {
 
   if (loading || riskLoading) return <DashboardSkeleton />;
 
-  if (portfolioError || riskError) return <ErrorState message="Failed to load risk metrics." onRetry={() => window.location.reload()} />;
+  if (portfolioError || riskError)
+    return <ErrorState message="Failed to load risk metrics." onRetry={() => window.location.reload()} />;
 
   const noData = !hasHoldings || !risk || risk.data_points < 2;
+  const compositeGrade = overallScore != null ? gradeFromScore(overallScore) : null;
+  const returnPositive = (risk?.annualized_return ?? 0) >= 0;
 
   return (
-    <PageTransition className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-display font-bold text-zinc-100">Risk Dashboard</h1>
-        <p className="text-sm text-zinc-500 mt-0.5">
-          Understand the risk profile of your portfolio
-        </p>
-      </div>
+    <PageTransition>
+      <TopBar
+        trail={[{ label: "Lab" }, { label: "Risk" }]}
+        note={
+          noData
+            ? "not enough history yet"
+            : `${risk.data_points} daily marks · measured, not forecast`
+        }
+      />
+
+      <PageHero
+        title="Risk"
+        meta="Volatility, drawdown and concentration on the book"
+        figure={overallScore != null ? String(overallScore) : undefined}
+        figureSub={compositeGrade ? `${compositeGrade.grade} · ${compositeGrade.label}` : undefined}
+        figureSubClass={compositeGrade ? compositeGrade.color : "text-vela-body"}
+      />
+
+      <Prose className="mt-5 max-w-[560px]">
+        Four measured metrics plus a concentration reading, folded into one composite out of 100. All
+        of it looks backwards at the history on record. None of it is a prediction or a
+        recommendation.
+      </Prose>
 
       {noData ? (
         <EmptyRisk />
       ) : (
         <>
-          {/* Hero  - Overall Score + Annualized Return */}
-          <FloatingCard glowColor="rgba(26, 168, 187, 0.12)" tilt={false}>
-            <div className="flex flex-col sm:flex-row items-center gap-6 sm:gap-10 py-2">
-              {overallScore != null && <RiskGauge score={overallScore} />}
+          <StatStrip className="mt-6">
+            <StatCell
+              label="Annualized return"
+              value={risk.annualized_return != null ? `${risk.annualized_return.toFixed(1)}%` : "—"}
+              valueClass={
+                risk.annualized_return == null
+                  ? "text-vela-muted"
+                  : returnPositive
+                    ? "text-gain"
+                    : "text-loss"
+              }
+              sub="over the measured window"
+            />
+            <StatCell
+              label="Volatility"
+              value={
+                risk.annualized_volatility != null
+                  ? `${risk.annualized_volatility.toFixed(1)}%`
+                  : "—"
+              }
+              sub="annualized"
+            />
+            <StatCell
+              label="Max drawdown"
+              value={risk.max_drawdown != null ? `${risk.max_drawdown.toFixed(1)}%` : "—"}
+              valueClass={risk.max_drawdown != null ? "text-loss" : "text-vela-muted"}
+              sub="deepest peak to trough"
+            />
+            <StatCell
+              label="Positions"
+              value={String(summary?.holdings.length ?? 0)}
+              sub={`${risk.data_points} daily marks`}
+            />
+          </StatStrip>
 
-              <div className="flex-1 text-center sm:text-left space-y-3">
-                <div>
-                  <p className="text-xs text-zinc-500 uppercase tracking-widest mb-1">Risk-Adjusted Profile</p>
-                  <p className="text-sm text-zinc-400 leading-relaxed max-w-md">
-                    {overallScore != null && overallScore >= 70
-                      ? "Your portfolio is well-managed from a risk perspective. Keep monitoring as conditions change."
-                      : overallScore != null && overallScore >= 50
-                      ? "Your risk profile is moderate. Consider optimizing concentration or adding hedges."
-                      : "Your portfolio has elevated risk. Review the metrics below for specific areas to improve."}
-                  </p>
-                </div>
-
-                {risk?.annualized_return != null && (
-                  <div className="flex items-center gap-6 justify-center sm:justify-start">
-                    <div>
-                      <p className="text-xs text-zinc-500">Annualized Return</p>
-                      <p className={`text-lg font-display font-bold tabular-nums ${risk.annualized_return >= 0 ? "text-gain" : "text-loss"}`}>
-                        {risk.annualized_return.toFixed(1)}%
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-zinc-500">Data Points</p>
-                      <p className="text-lg font-display font-bold tabular-nums text-zinc-200">
-                        {risk.data_points}
-                      </p>
-                    </div>
-                  </div>
-                )}
+          {/* Composite */}
+          {overallScore != null && compositeGrade && (
+            <Section
+              label="Composite"
+              prose="One number weighting Sharpe at 30, volatility at 25, drawdown at 25 and concentration at 20. It describes the record, it does not rank the book against anyone else's."
+            >
+              <div className="max-w-[640px]">
+                <ScoreScale score={overallScore} grade={compositeGrade} />
+                <Prose className="mt-4">
+                  {overallScore >= 70
+                    ? "The composite sits in the upper part of its range for this window. Readings move as the underlying history extends."
+                    : overallScore >= 50
+                      ? "The composite sits mid range for this window. The breakdown below shows which inputs carry it."
+                      : "The composite sits in the lower part of its range for this window. The breakdown below shows which inputs carry it."}
+                </Prose>
               </div>
-            </div>
-          </FloatingCard>
+            </Section>
+          )}
 
-          {/* Metric cards grid */}
-          <RevealOnScroll>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Metrics */}
+          <Section
+            label="Metrics"
+            prose="Each figure is computed from the daily marks on record. The reference band next to it is a conventional range, not a target set for you."
+          >
+            <div className="border-y border-vela-border divide-y divide-vela-border">
               {METRICS.map((def) => (
-                <MetricCard key={def.key} def={def} value={risk?.[def.key] as number | null} />
+                <MetricRow key={def.key} def={def} value={risk?.[def.key] as number | null} />
               ))}
             </div>
-          </RevealOnScroll>
+          </Section>
 
-          {/* Concentration + Insights */}
-          <RevealOnScroll delay={0.05}>
-            <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-              {/* Concentration  - takes 3 cols */}
-              <div className="lg:col-span-3">
-                {summary && <ConcentrationCard holdings={summary.holdings} />}
+          {/* Concentration */}
+          {summary && concentration && (
+            <Section
+              label="Concentration"
+              labelAside={`grade ${concentration.grade.grade}`}
+              prose="How the book's value is spread across names. The Herfindahl index squares every weight and sums them, so a single dominant position pushes it up sharply."
+            >
+              <WeightBars holdings={summary.holdings} />
+
+              <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-5 border-t border-vela-border pt-4">
+                <div className="min-w-0">
+                  <Eyebrow>Top holding</Eyebrow>
+                  <p className="mt-1.5 font-mono text-[15px] tabular-nums text-zinc-100 truncate">
+                    {concentration.topHolding
+                      ? `${concentration.topHolding.ticker} ${concentration.topHolding.pct.toFixed(0)}%`
+                      : "—"}
+                  </p>
+                </div>
+                <div className="min-w-0">
+                  <Eyebrow>Top three</Eyebrow>
+                  <p className="mt-1.5 font-mono text-[15px] tabular-nums text-zinc-100">
+                    {concentration.top3Pct.toFixed(0)}%
+                  </p>
+                </div>
+                <div className="min-w-0">
+                  <Eyebrow>HHI</Eyebrow>
+                  <p className="mt-1.5 font-mono text-[15px] tabular-nums text-zinc-100">
+                    {(concentration.hhi * 10000).toFixed(0)}
+                  </p>
+                </div>
+                <div className="min-w-0">
+                  <Eyebrow>Positions</Eyebrow>
+                  <p className="mt-1.5 font-mono text-[15px] tabular-nums text-zinc-100">
+                    {summary.holdings.length}
+                  </p>
+                </div>
               </div>
+            </Section>
+          )}
 
-              {/* Insights  - takes 2 cols */}
-              <div className="lg:col-span-2 space-y-3">
-                <h2 className="section-heading">Insights</h2>
-                {insights.length === 0 ? (
-                  <p className="text-xs text-zinc-600">Not enough data for insights yet.</p>
-                ) : (
-                  insights.map((ins, i) => {
-                    const Icon = INSIGHT_ICONS[ins.type];
-                    return (
-                      <div key={i} className={`flex gap-3 p-3 rounded-lg border ${INSIGHT_COLORS[ins.type]}`}>
-                        <Icon className="w-4 h-4 shrink-0 mt-0.5" />
-                        <p className="text-xs leading-relaxed text-zinc-300">{ins.text}</p>
-                      </div>
-                    );
-                  })
-                )}
+          {/* Observations */}
+          <Section
+            label="Observations"
+            prose="Plain readings of the figures above. Descriptive only, with no view on what any position should do next."
+          >
+            {insights.length === 0 ? (
+              <p className="font-mono text-[11px] text-vela-muted">
+                Not enough history for observations yet.
+              </p>
+            ) : (
+              <div className="border-y border-vela-border divide-y divide-vela-border max-w-[720px]">
+                {insights.map((ins, i) => (
+                  <div key={i} className="flex gap-3 py-3">
+                    <span
+                      aria-hidden="true"
+                      className={`mt-[5px] w-[7px] h-[7px] rotate-45 shrink-0 ${
+                        ins.tone === "gain"
+                          ? "bg-gain"
+                          : ins.tone === "caution"
+                            ? "bg-amber-400"
+                            : "bg-vela-teal"
+                      }`}
+                    />
+                    <p className="text-[13.5px] leading-[1.55] text-vela-body">{ins.text}</p>
+                  </div>
+                ))}
               </div>
-            </div>
-          </RevealOnScroll>
+            )}
+          </Section>
 
-          {/* Cross-links */}
-          <RevealOnScroll delay={0.1}>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {[
-                { href: "/correlation", label: "Diversification", desc: "Correlation matrix & diversity grade", icon: Activity },
-                { href: "/stress-index", label: "Stress Index", desc: "Overall financial health score", icon: Gauge },
-                { href: "/rebalance", label: "Rebalance", desc: "Target allocation optimizer", icon: Shield },
-              ].map((link) => (
-                <Link key={link.href} href={link.href} className="vela-card group hover:border-zinc-600 transition-colors flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-zinc-800 group-hover:bg-vela-teal/10 transition-colors">
-                    <link.icon className="w-4 h-4 text-zinc-500 group-hover:text-vela-teal transition-colors" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-zinc-200">{link.label}</p>
-                    <p className="text-xs text-zinc-500">{link.desc}</p>
-                  </div>
-                  <ArrowRight className="w-4 h-4 text-zinc-700 group-hover:text-zinc-400 transition-colors" />
+          {/* Related */}
+          <Section label="Elsewhere">
+            <div className="border-y border-vela-border divide-y divide-vela-border">
+              {RELATED.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="group flex items-center gap-4 py-3.5 transition-colors"
+                >
+                  <span className="w-40 shrink-0 font-mono text-[11px] uppercase tracking-[0.14em] text-vela-muted group-hover:text-vela-teal transition-colors">
+                    {link.label}
+                  </span>
+                  <span className="min-w-0 flex-1 text-[13px] text-vela-body truncate">
+                    {link.desc}
+                  </span>
+                  <ArrowRight className="w-3.5 h-3.5 shrink-0 text-vela-muted group-hover:text-vela-teal transition-colors" />
                 </Link>
               ))}
             </div>
-          </RevealOnScroll>
+          </Section>
+
+          <p className="mt-8 border-t border-vela-border pt-4 text-[11px] leading-relaxed text-vela-muted max-w-3xl">
+            Metrics are computed from the price history on record and describe what already happened.
+            They carry no view on any individual holding and are not investment advice.
+          </p>
         </>
       )}
     </PageTransition>

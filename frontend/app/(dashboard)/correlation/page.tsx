@@ -1,31 +1,47 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Shield, AlertTriangle, CheckCircle, TrendingDown, Info } from "lucide-react";
 import { motion } from "framer-motion";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
-  ScatterChart, Scatter, ZAxis,
 } from "recharts";
 import { useDefaultPortfolio } from "@/hooks/usePortfolio";
 import { useCorrelation } from "@/hooks/useCorrelation";
-import { formatPercent } from "@/lib/formatters";
 import PageTransition from "@/components/celestial/PageTransition";
 import TierGate from "@/components/shared/TierGate";
-import FloatingCard from "@/components/celestial/FloatingCard";
-import GlowBorder from "@/components/celestial/GlowBorder";
-import RevealOnScroll from "@/components/celestial/RevealOnScroll";
 import ErrorState from "@/components/shared/ErrorState";
+import {
+  TopBar,
+  PageHero,
+  StatStrip,
+  StatCell,
+  Section,
+  Panel,
+  PillGroup,
+  Legend,
+  Eyebrow,
+  Prose,
+} from "@/components/instrument";
 
 // ── Types & Helpers ─────────────────────────────────────────────────────────
 
-const PERIODS = [
-  { value: "3mo", label: "3M" },
-  { value: "6mo", label: "6M" },
-  { value: "1y", label: "1Y" },
-  { value: "2y", label: "2Y" },
-  { value: "5y", label: "5Y" },
+type PeriodKey = "3mo" | "6mo" | "1y" | "2y" | "5y";
+
+const PERIODS: { key: PeriodKey; label: string }[] = [
+  { key: "3mo", label: "3M" },
+  { key: "6mo", label: "6M" },
+  { key: "1y", label: "1Y" },
+  { key: "2y", label: "2Y" },
+  { key: "5y", label: "5Y" },
 ];
+
+const PERIOD_WORDS: Record<PeriodKey, string> = {
+  "3mo": "3-month",
+  "6mo": "6-month",
+  "1y": "1-year",
+  "2y": "2-year",
+  "5y": "5-year",
+};
 
 interface RiskCluster {
   tickers: string[];
@@ -45,8 +61,8 @@ interface DivScore {
   grade: "A" | "B" | "C" | "D" | "F";
   score: number; // 0-100
   summary: string;
+  /** Literal Tailwind text class. Never assembled at runtime. */
   color: string;
-  bgColor: string;
 }
 
 function computeDivScore(avgCorr: number, highPairs: number, negativePairs: number, totalPairs: number): DivScore {
@@ -58,11 +74,42 @@ function computeDivScore(avgCorr: number, highPairs: number, negativePairs: numb
   score += Math.min(negativePairs * 5, 15); // bonus for negative correlations (max +15)
   score = Math.max(0, Math.min(100, score));
 
-  if (score >= 80) return { grade: "A", score, summary: "Excellent diversification. Your holdings move independently, reducing risk effectively.", color: "text-emerald-400", bgColor: "bg-emerald-500" };
-  if (score >= 65) return { grade: "B", score, summary: "Good diversification. Most holdings provide genuine risk reduction, with some room to improve.", color: "text-emerald-400", bgColor: "bg-emerald-500" };
-  if (score >= 50) return { grade: "C", score, summary: "Average diversification. Several holdings move together, limiting risk reduction benefits.", color: "text-amber-400", bgColor: "bg-amber-500" };
-  if (score >= 35) return { grade: "D", score, summary: "Weak diversification. Many holdings are highly correlated  - a broad downturn would hit most of your portfolio simultaneously.", color: "text-orange-400", bgColor: "bg-orange-500" };
-  return { grade: "F", score, summary: "Poor diversification. Your portfolio essentially behaves like one or two stocks. A single sector move could affect everything.", color: "text-rose-400", bgColor: "bg-rose-500" };
+  if (score >= 80)
+    return {
+      grade: "A",
+      score,
+      summary: "Holdings have moved largely independently of one another over this window.",
+      color: "text-gain",
+    };
+  if (score >= 65)
+    return {
+      grade: "B",
+      score,
+      summary: "Most holdings moved independently, with a few pairs tracking each other closely.",
+      color: "text-gain",
+    };
+  if (score >= 50)
+    return {
+      grade: "C",
+      score,
+      summary: "Several holdings moved together over this window, so their return paths repeat.",
+      color: "text-amber-400",
+    };
+  if (score >= 35)
+    return {
+      grade: "D",
+      score,
+      summary:
+        "Most pairs moved together over this window, so a broad move in the group reached most of the book at once.",
+      color: "text-orange-400",
+    };
+  return {
+    grade: "F",
+    score,
+    summary:
+      "The book behaved close to a single position over this window. One shared move reached nearly everything.",
+    color: "text-loss",
+  };
 }
 
 function findClusters(tickers: string[], matrix: number[][]): RiskCluster[] {
@@ -99,8 +146,8 @@ function findClusters(tickers: string[], matrix: number[][]): RiskCluster[] {
         tickers: group.map((i) => tickers[i]),
         avgCorrelation: count > 0 ? total / count : 0,
         label: group.length >= 3
-          ? `These ${group.length} stocks move closely together  - holding all of them doesn't add much diversification`
-          : "These two stocks tend to move in the same direction",
+          ? `These ${group.length} names moved closely together over the window, so their return paths largely repeat.`
+          : "These two names moved in the same direction over the window.",
       });
     }
   }
@@ -119,15 +166,15 @@ function buildOverlapPairs(tickers: string[], matrix: number[][]): OverlapPair[]
 
       if (corr >= 0.85) {
         severity = "danger";
-        explanation = `Nearly identical movement  - holding both barely adds diversification. Consider keeping only one.`;
+        explanation = "Nearly identical movement. The two return paths repeat each other.";
       } else if (corr >= 0.7) {
         severity = "warning";
-        explanation = `Strong overlap  - these stocks usually rise and fall together. You're doubling down on similar risk.`;
+        explanation = "Strong overlap. These two typically rose and fell together over the window.";
       } else {
         severity = "ok";
         explanation = corr < -0.2
-          ? "Natural hedge  - these move in opposite directions, which helps protect your portfolio."
-          : "Low overlap  - these provide genuine diversification benefit.";
+          ? "These two moved in opposite directions over the window."
+          : "Low overlap. Their return paths were largely independent over the window.";
       }
 
       pairs.push({ t1: tickers[i], t2: tickers[j], correlation: corr, severity, explanation });
@@ -138,24 +185,24 @@ function buildOverlapPairs(tickers: string[], matrix: number[][]): OverlapPair[]
   return pairs;
 }
 
-// What an investor can actually DO about it
+/** Neutral readings of what the overlap figures describe. No instruments named, no actions implied. */
 function getSuggestions(avgCorr: number, clusters: RiskCluster[], negPairs: number): string[] {
   const tips: string[] = [];
 
   if (avgCorr > 0.6) {
-    tips.push("Bonds and treasuries have historically moved opposite to stocks during crashes, which is why some portfolios hold them as a diversifier.");
+    tips.push("Average pairwise overlap sits above 0.60. Overlap at that level generally reflects shared return drivers across the names held, for example a common sector, factor or currency exposure.");
   }
   if (clusters.length > 0) {
-    tips.push("You have tightly correlated groups. Selling one stock from each cluster and rotating into a different sector would improve diversification without reducing your number of holdings.");
+    tips.push("Tightly correlated groups appear above. Inside a cluster the names contributed a similar return path over the window rather than distinct ones.");
   }
   if (avgCorr > 0.4 && negPairs === 0) {
-    tips.push("Adding international stocks (VXUS, EFA) or commodities (GLD, GSG) could introduce valuable low-correlation exposure.");
+    tips.push("No pair in the book showed negative overlap over this window. Negative overlap arises where return drivers differ, which is more common between asset classes than between names inside one of them.");
   }
   if (avgCorr > 0.3) {
-    tips.push("REITs (VNQ) and utilities (XLU) often have lower correlation with growth stocks  - worth considering for balance.");
+    tips.push("Overlap is measured on daily returns and is not fixed. Correlations across equities have historically risen during broad selloffs, so a calm-period reading is usually the lower one.");
   }
   if (tips.length === 0) {
-    tips.push("Your diversification looks solid. Continue monitoring as correlations can shift during market crises.");
+    tips.push("Overlap across this book is low for the window measured. Correlations shift over time and have historically risen during broad selloffs.");
   }
   return tips.slice(0, 3);
 }
@@ -167,7 +214,7 @@ export default function CorrelationPage() {
   const portfolioId = portfolio?.id ?? null;
   const hasHoldings = (summary?.holdings?.length ?? 0) >= 2;
 
-  const [period, setPeriod] = useState("1y");
+  const [period, setPeriod] = useState<PeriodKey>("1y");
   const { correlation, loading, error } = useCorrelation(hasHoldings ? portfolioId : null, period);
 
   // Compute everything
@@ -199,293 +246,314 @@ export default function CorrelationPage() {
 
   const isEmpty = !loading && (!hasHoldings || !correlation || correlation.tickers.length < 2);
 
+  const periodControl = hasHoldings ? (
+    <PillGroup
+      options={PERIODS}
+      value={period}
+      onChange={setPeriod}
+      ariaLabel="Measurement window"
+    />
+  ) : null;
+
   return (
     <TierGate requiredTier="navigator">
-    <PageTransition className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-display font-bold text-zinc-100 flex items-center gap-3">
-          <Shield className="w-7 h-7 text-vela-teal" />
-          Diversification Score
-        </h1>
-        <p className="text-zinc-500 text-sm mt-1">
-          How well your holdings protect you when markets move. Higher score = less risk from concentration.
-        </p>
-      </div>
+      <PageTransition>
+        <TopBar
+          trail={[{ label: "Lab" }, { label: "Diversification" }]}
+          note={
+            analysis
+              ? `${correlation?.tickers.length ?? 0} holdings · ${PERIOD_WORDS[period]} daily returns`
+              : "needs at least two holdings"
+          }
+        />
 
-      {/* Period selector */}
-      {hasHoldings && (
-        <div className="flex gap-1">
-          {PERIODS.map((p) => (
-            <button
-              key={p.value}
-              onClick={() => setPeriod(p.value)}
-              className={`px-3 py-1 text-xs rounded transition-colors ${
-                period === p.value
-                  ? "bg-vela-teal/20 text-vela-teal"
-                  : "bg-zinc-800 text-zinc-400 hover:text-zinc-300"
-              }`}
+        <PageHero
+          title="Diversification"
+          meta="How much your holdings repeat one another"
+          figure={analysis ? analysis.divScore.score.toFixed(0) : undefined}
+          figureSub={analysis ? `grade ${analysis.divScore.grade} · out of 100` : undefined}
+          figureSubClass={analysis ? analysis.divScore.color : "text-vela-body"}
+        />
+
+        <Prose className="mt-5 max-w-[560px]">
+          Overlap is the correlation of daily returns between two holdings. A high reading means the
+          two price paths repeated each other over the window. This page describes what the returns
+          did, not what any position should do next.
+        </Prose>
+
+        {hasHoldings && <div className="mt-6">{periodControl}</div>}
+
+        {error ? (
+          <div className="mt-8">
+            <ErrorState
+              message="Failed to load correlation data."
+              onRetry={() => window.location.reload()}
+            />
+          </div>
+        ) : loading ? (
+          <div className="mt-8 space-y-3">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="h-20 border border-vela-border bg-vela-card animate-pulse" />
+            ))}
+          </div>
+        ) : isEmpty ? (
+          <div className="mt-8">
+            <Panel className="px-6 py-14 text-center">
+              <Eyebrow>Needs at least two holdings</Eyebrow>
+              <Prose className="mx-auto mt-3 max-w-[400px]">
+                Overlap is measured between pairs, so a second position has to be on the book before
+                anything can be computed here.
+              </Prose>
+            </Panel>
+          </div>
+        ) : analysis ? (
+          <>
+            <StatStrip className="mt-6">
+              <StatCell
+                label="Average overlap"
+                value={analysis.avgCorr.toFixed(2)}
+                valueClass={analysis.avgCorr > 0.5 ? "text-amber-400" : "text-gain"}
+                sub="across every pair"
+              />
+              <StatCell
+                label="Overlap above 0.70"
+                value={String(analysis.highPairs)}
+                valueClass={analysis.highPairs > 0 ? "text-amber-400" : "text-zinc-100"}
+                sub={analysis.highPairs === 1 ? "pair" : "pairs"}
+              />
+              <StatCell
+                label="Opposite moving"
+                value={String(analysis.negativePairs)}
+                sub="pairs below -0.20"
+              />
+              <StatCell
+                label="Window"
+                value={PERIOD_WORDS[period].replace("-", " ")}
+                sub="daily returns"
+              />
+            </StatStrip>
+
+            <Section
+              label="Score"
+              prose="The score starts at 100 and is reduced by average overlap and by the share of pairs above 0.70, then credited for pairs that move in opposite directions."
             >
-              {p.label}
-            </button>
-          ))}
-        </div>
-      )}
+              <Panel className="px-5 py-4 max-w-[640px]">
+                <div className="flex items-baseline gap-3">
+                  <span
+                    className={`font-display text-[34px] font-bold leading-none ${analysis.divScore.color}`}
+                  >
+                    {analysis.divScore.grade}
+                  </span>
+                  <span className="font-mono text-[15px] tabular-nums text-zinc-100">
+                    {analysis.divScore.score.toFixed(0)} / 100
+                  </span>
+                </div>
+                <Prose className="mt-3">{analysis.divScore.summary}</Prose>
+              </Panel>
+            </Section>
 
-      {error ? (
-        <ErrorState message="Failed to load correlation data." onRetry={() => window.location.reload()} />
-      ) : loading ? (
-        <div className="space-y-3">
-          {[...Array(3)].map((_, i) => (
-            <div key={i} className="vela-card animate-pulse h-24" />
-          ))}
-        </div>
-      ) : isEmpty ? (
-        <div className="vela-card text-center py-16 space-y-3">
-          <Shield className="w-10 h-10 text-zinc-600 mx-auto" />
-          <div>
-            <p className="text-zinc-300 font-medium">Need at least 2 holdings</p>
-            <p className="text-zinc-500 text-sm mt-1">
-              Add more stocks to your portfolio to see your diversification score.
-            </p>
-          </div>
-        </div>
-      ) : analysis && (
-        <>
-          {/* Big Grade Card  - wrapped in GlowBorder */}
-          <GlowBorder speed={4}>
-            <div className="py-8 text-center px-6">
-              <motion.div
-                className="inline-flex items-center justify-center w-20 h-20 rounded-2xl border-2 border-zinc-700 mb-3"
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: 0.3, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            {/* Clusters */}
+            {analysis.clusters.length > 0 && (
+              <Section
+                label="Clusters"
+                prose="Groups where every pairwise overlap sits at 0.60 or above. Inside a group the return paths largely repeat."
               >
-                <span className={`text-5xl font-black ${analysis.divScore.color}`}>
-                  {analysis.divScore.grade}
-                </span>
-              </motion.div>
-              <div className="max-w-md mx-auto">
-                <p className={`text-lg font-semibold ${analysis.divScore.color}`}>
-                  {analysis.divScore.score.toFixed(0)}/100
-                </p>
-                <p className="text-sm text-zinc-400 mt-2 leading-relaxed">
-                  {analysis.divScore.summary}
-                </p>
-              </div>
-            </div>
-          </GlowBorder>
-
-          {/* Quick stats */}
-          <div className="grid grid-cols-3 gap-4">
-            <FloatingCard delay={0.1}>
-              <div className="text-center py-3 px-3">
-                <p className={`text-2xl font-bold tabular ${analysis.avgCorr > 0.5 ? "text-amber-400" : "text-emerald-400"}`}>
-                  {analysis.avgCorr.toFixed(2)}
-                </p>
-                <p className="text-[10px] text-zinc-500 mt-1">
-                  Avg Overlap
-                </p>
-              </div>
-            </FloatingCard>
-            <FloatingCard delay={0.18}>
-              <div className="text-center py-3 px-3">
-                <p className={`text-2xl font-bold tabular ${analysis.highPairs > 0 ? "text-rose-400" : "text-zinc-100"}`}>
-                  {analysis.highPairs}
-                </p>
-                <p className="text-[10px] text-zinc-500 mt-1">
-                  High-Overlap Pairs
-                </p>
-              </div>
-            </FloatingCard>
-            <FloatingCard delay={0.26}>
-              <div className="text-center py-3 px-3">
-                <p className="text-2xl font-bold tabular text-vela-teal">{analysis.negativePairs}</p>
-                <p className="text-[10px] text-zinc-500 mt-1">
-                  Natural Hedges
-                </p>
-              </div>
-            </FloatingCard>
-          </div>
-
-          {/* Risk Clusters */}
-          {analysis.clusters.length > 0 && (
-            <div className="space-y-3">
-              <h2 className="text-sm font-medium text-zinc-300 flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 text-amber-400" />
-                Risk Clusters
-              </h2>
-              <p className="text-xs text-zinc-500 -mt-1">
-                Stocks that move together act like a single bet  - if one drops, they all likely will.
-              </p>
-              {analysis.clusters.map((cluster, i) => (
-                <div key={i} className="vela-card border-amber-500/10">
-                  <div className="flex items-start gap-3">
-                    <div className="w-2 h-2 rounded-full bg-amber-500 mt-1.5 shrink-0" />
-                    <div>
-                      <div className="flex flex-wrap gap-1.5 mb-1.5">
-                        {cluster.tickers.map((t) => (
-                          <span key={t} className="px-2 py-0.5 text-xs font-medium bg-zinc-800 text-zinc-200 rounded">
-                            {t}
-                          </span>
-                        ))}
+                <div className="border-y border-vela-border divide-y divide-vela-border max-w-[720px]">
+                  {analysis.clusters.map((cluster, i) => (
+                    <div key={i} className="py-3.5">
+                      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                        <span className="font-mono text-[13px] tracking-[0.02em] text-vela-teal">
+                          {cluster.tickers.join(" · ")}
+                        </span>
+                        <span className="font-mono text-[11px] tabular-nums text-vela-muted">
+                          avg {(cluster.avgCorrelation * 100).toFixed(0)}%
+                        </span>
                       </div>
-                      <p className="text-xs text-zinc-400">{cluster.label}</p>
-                      <p className="text-[10px] text-zinc-600 mt-0.5">
-                        Average overlap: {(cluster.avgCorrelation * 100).toFixed(0)}%
+                      <p className="mt-1.5 text-[13px] leading-[1.55] text-vela-body">
+                        {cluster.label}
                       </p>
                     </div>
+                  ))}
+                </div>
+              </Section>
+            )}
+
+            {/* Pairs */}
+            <Section
+              label="Pairs"
+              prose="Every combination of two holdings, ranked by how closely their daily returns tracked each other."
+            >
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-10 gap-y-8">
+                <div>
+                  <Eyebrow>Highest overlap</Eyebrow>
+                  <p className="mt-1.5 text-[13px] leading-[1.55] text-vela-body">
+                    The pairs whose returns tracked each other most closely over the window.
+                  </p>
+                  <div className="mt-3 border-y border-vela-border divide-y divide-vela-border">
+                    {analysis.pairs
+                      .filter((p) => p.severity !== "ok")
+                      .slice(0, 5)
+                      .map((p) => (
+                        <PairRow key={`${p.t1}-${p.t2}`} pair={p} />
+                      ))}
+                    {analysis.pairs.filter((p) => p.severity !== "ok").length === 0 && (
+                      <p className="py-4 font-mono text-[11px] text-vela-muted">
+                        No pair reached 0.70 over this window.
+                      </p>
+                    )}
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
 
-          {/* Most Overlapping & Best Hedges */}
-          <RevealOnScroll>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {/* Most overlapping */}
-            <div className="space-y-3">
-              <h2 className="text-sm font-medium text-zinc-300">Most Overlapping</h2>
-              <p className="text-xs text-zinc-500 -mt-1">
-                These pairs move in sync  - consider if you really need both.
-              </p>
-              {analysis.pairs
-                .filter((p) => p.severity !== "ok")
-                .slice(0, 5)
-                .map((p) => (
-                  <PairCard key={`${p.t1}-${p.t2}`} pair={p} />
-                ))}
-              {analysis.pairs.filter((p) => p.severity !== "ok").length === 0 && (
-                <div className="vela-card py-4 text-center">
-                  <CheckCircle className="w-5 h-5 text-emerald-400 mx-auto mb-1" />
-                  <p className="text-xs text-zinc-400">No concerning overlap detected</p>
+                <div>
+                  <Eyebrow>Lowest overlap</Eyebrow>
+                  <p className="mt-1.5 text-[13px] leading-[1.55] text-vela-body">
+                    The pairs whose returns tracked each other least closely. Negative values mean
+                    they moved in opposite directions.
+                  </p>
+                  <div className="mt-3 border-y border-vela-border divide-y divide-vela-border">
+                    {analysis.pairs
+                      .slice()
+                      .sort((a, b) => a.correlation - b.correlation)
+                      .slice(0, 5)
+                      .map((p) => (
+                        <PairRow key={`low-${p.t1}-${p.t2}`} pair={p} />
+                      ))}
+                  </div>
                 </div>
-              )}
-            </div>
+              </div>
+            </Section>
 
-            {/* Best hedges */}
-            <div className="space-y-3">
-              <h2 className="text-sm font-medium text-zinc-300">Best Hedges</h2>
-              <p className="text-xs text-zinc-500 -mt-1">
-                Low or negative overlap = one may rise when the other falls.
-              </p>
-              {analysis.pairs
-                .slice()
-                .sort((a, b) => a.correlation - b.correlation)
-                .slice(0, 5)
-                .map((p) => (
-                  <PairCard key={`hedge-${p.t1}-${p.t2}`} pair={p} />
-                ))}
-            </div>
-          </div>
-          </RevealOnScroll>
-
-          {/* Constellation cluster visualization */}
-          {correlation && correlation.tickers.length >= 3 && (
-            <RevealOnScroll delay={0.05}>
-              <div className="vela-card overflow-hidden">
-                <h2 className="text-sm font-medium text-zinc-300 mb-1">Constellation Map</h2>
-                <p className="text-xs text-zinc-500 mb-4">Holdings as stars  - connected lines show high overlap. Brighter connections = stronger overlap.</p>
+            {/* Constellation map */}
+            {correlation && correlation.tickers.length >= 3 && (
+              <Section
+                label="Map"
+                prose="Each holding is a node on the ring. A line is drawn where overlap reaches 0.40, and it thickens at 0.70."
+              >
                 <ConstellationViz
                   tickers={correlation.tickers}
                   matrix={correlation.matrix}
                   holdingAvgs={analysis.holdingAvgs}
                 />
-              </div>
-            </RevealOnScroll>
-          )}
+                <Legend
+                  items={[
+                    {
+                      glyph: <span aria-hidden="true" className="inline-block w-4 h-px bg-[#f59e0b]" />,
+                      label: "overlap 0.40 to 0.70",
+                    },
+                    {
+                      glyph: <span aria-hidden="true" className="inline-block w-4 h-[2px] bg-[#ef4444]" />,
+                      label: "overlap above 0.70",
+                    },
+                  ]}
+                  hint="node size tracks average overlap"
+                />
+              </Section>
+            )}
 
-          {/* Per-holding bar chart: who's the least diversified? */}
-          {analysis.holdingAvgs.length > 0 && (
-            <div className="vela-card">
-              <h2 className="text-sm font-medium text-zinc-300 mb-1">Overlap Score by Holding</h2>
-              <p className="text-xs text-zinc-500 mb-4">
-                Higher bars = more overlap with the rest of your portfolio. Consider replacing the highest-overlap holdings for better diversification.
-              </p>
-              <div className="h-48">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={analysis.holdingAvgs} margin={{ top: 0, right: 10, left: 0, bottom: 0 }}>
-                    <XAxis
-                      dataKey="ticker"
-                      tick={{ fill: "#a1a1aa", fontSize: 11 }}
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <YAxis
-                      domain={[-0.2, 1]}
-                      tick={{ fill: "#71717a", fontSize: 11 }}
-                      axisLine={false}
-                      tickLine={false}
-                      tickFormatter={(v: number) => `${(v * 100).toFixed(0)}%`}
-                      width={40}
-                    />
-                    <Tooltip cursor={false}
-                      contentStyle={{ backgroundColor: "#18181b", border: "1px solid #27272a", borderRadius: 8, fontSize: 12 }}
-                      formatter={(val: number) => [`${(val * 100).toFixed(1)}% avg overlap`, "Overlap"]}
-                    />
-                    <Bar dataKey="avg" radius={[4, 4, 0, 0]}>
-                      {analysis.holdingAvgs.map((d, i) => (
-                        <Cell key={i} fill={d.color} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          )}
+            {/* Per-holding bar chart */}
+            {analysis.holdingAvgs.length > 0 && (
+              <Section
+                label="By holding"
+                prose="Each name's average overlap with the rest of the book. Taller bars mean that name's daily returns tracked the others more closely."
+              >
+                <div className="h-48">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={analysis.holdingAvgs} margin={{ top: 0, right: 10, left: 0, bottom: 0 }}>
+                      <XAxis
+                        dataKey="ticker"
+                        tick={{ fill: "#8A97AC", fontSize: 11 }}
+                        axisLine={false}
+                        tickLine={false}
+                      />
+                      <YAxis
+                        domain={[-0.2, 1]}
+                        tick={{ fill: "#8A97AC", fontSize: 11 }}
+                        axisLine={false}
+                        tickLine={false}
+                        tickFormatter={(v: number) => `${(v * 100).toFixed(0)}%`}
+                        width={40}
+                      />
+                      <Tooltip cursor={false}
+                        contentStyle={{ backgroundColor: "#0B1322", border: "1px solid #1B2638", borderRadius: 4, fontSize: 12 }}
+                        labelStyle={{ color: "#AEB9CC" }}
+                        formatter={(val: number) => [`${(val * 100).toFixed(1)}% avg overlap`, "Overlap"]}
+                      />
+                      <Bar dataKey="avg" radius={[2, 2, 0, 0]}>
+                        {analysis.holdingAvgs.map((d, i) => (
+                          <Cell key={i} fill={d.color} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+                <Legend
+                  items={[
+                    {
+                      glyph: <span aria-hidden="true" className="inline-block w-2.5 h-2.5 bg-[#34d399]" />,
+                      label: "under 0.40",
+                    },
+                    {
+                      glyph: <span aria-hidden="true" className="inline-block w-2.5 h-2.5 bg-[#f59e0b]" />,
+                      label: "0.40 to 0.60",
+                    },
+                    {
+                      glyph: <span aria-hidden="true" className="inline-block w-2.5 h-2.5 bg-[#ef4444]" />,
+                      label: "above 0.60",
+                    },
+                  ]}
+                />
+              </Section>
+            )}
 
-          {/* Actionable suggestions */}
-          <RevealOnScroll delay={0.1}>
-          <div className="space-y-3">
-            <h2 className="text-sm font-medium text-zinc-300 flex items-center gap-2">
-              <TrendingDown className="w-4 h-4 text-vela-teal" />
-              How to Improve
-            </h2>
-            {analysis.suggestions.map((tip, i) => (
-              <div key={i} className="vela-card py-3 px-4 border-vela-teal/5">
-                <p className="text-xs text-zinc-400 leading-relaxed">
-                  <span className="text-vela-teal font-medium">{i + 1}.</span> {tip}
-                </p>
+            {/* Reading notes */}
+            <Section
+              label="What the reading describes"
+              prose="Context on the figures above. Observational only, with no view on any individual holding."
+            >
+              <div className="border-y border-vela-border divide-y divide-vela-border max-w-[720px]">
+                {analysis.suggestions.map((tip, i) => (
+                  <div key={i} className="flex gap-3 py-3">
+                    <span className="shrink-0 font-mono text-[11px] tabular-nums text-vela-muted pt-[3px]">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <p className="text-[13.5px] leading-[1.55] text-vela-body">{tip}</p>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-          </RevealOnScroll>
+            </Section>
 
-          {/* Educational note */}
-          <div className="vela-card px-4 py-3">
-            <div className="flex items-start gap-2">
-              <Info className="w-4 h-4 text-zinc-500 mt-0.5 shrink-0" />
-              <div className="text-xs text-zinc-500 leading-relaxed space-y-1">
-                <p>
-                  <span className="text-zinc-300 font-medium">What is diversification?</span>{" "}
-                  When your investments don&apos;t all move together, bad days for one stock can be offset by good days for another.
-                  The less your holdings overlap, the smoother your portfolio&apos;s ride.
-                </p>
-                <p>
-                  <span className="text-zinc-300 font-medium">Overlap score</span>{" "}
-                  measures how much two stocks move in sync (0% = completely independent, 100% = identical movement).
-                  Scores above 70% mean the stocks offer very little diversification from each other.
-                </p>
+            {/* Definitions */}
+            <Section label="Definitions">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-6 max-w-[820px]">
+                <div>
+                  <Eyebrow>Diversification</Eyebrow>
+                  <p className="mt-2 text-[13px] leading-[1.55] text-vela-body">
+                    When holdings do not all move together, a weak day for one name can coincide with
+                    a strong day for another. The less the price paths repeat, the narrower the swing
+                    in the combined book.
+                  </p>
+                </div>
+                <div>
+                  <Eyebrow>Overlap</Eyebrow>
+                  <p className="mt-2 text-[13px] leading-[1.55] text-vela-body">
+                    The correlation of two holdings&apos; daily returns, shown here as a percentage.
+                    0% is fully independent movement, 100% is identical movement. Readings above 70%
+                    mean the two return paths are close to interchangeable.
+                  </p>
+                </div>
               </div>
-            </div>
-          </div>
+            </Section>
 
-          {/* Disclaimer */}
-          <div className="text-center pt-4 pb-8 border-t border-zinc-800">
-            <p className="text-xs text-zinc-600">
-              Based on {period === "3mo" ? "3-month" : period === "6mo" ? "6-month" : period === "2y" ? "2-year" : period === "5y" ? "5-year" : "1-year"} daily
-              returns. Correlations shift during market crises. Not financial advice.
+            <p className="mt-8 border-t border-vela-border pt-4 text-[11px] leading-relaxed text-vela-muted max-w-3xl">
+              Computed from {PERIOD_WORDS[period]} daily returns. Correlations are not stable and have
+              historically risen during market stress. Descriptive only, not investment advice.
             </p>
-          </div>
-        </>
-      )}
-    </PageTransition>
+          </>
+        ) : null}
+      </PageTransition>
     </TierGate>
   );
 }
-
-// ── Pair Card ────────────────────────────────────────────────────────────────
 
 // ── Constellation Visualization ──────────────────────────────────────────────
 
@@ -531,23 +599,12 @@ function ConstellationViz({
     }
   }
 
-  // Map avg correlation to star size
+  // Map avg correlation to node size
   const avgMap = new Map(holdingAvgs.map((h) => [h.ticker, h]));
 
   return (
-    <div className="relative">
+    <div className="border border-vela-border px-2 py-3">
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto max-h-80" preserveAspectRatio="xMidYMid meet">
-        {/* Defs for glow filter */}
-        <defs>
-          <filter id="starGlow" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="3" result="blur" />
-            <feMerge>
-              <feMergeNode in="blur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-        </defs>
-
         {/* Connection lines */}
         {lines.map((line, i) => (
           <motion.line
@@ -562,46 +619,31 @@ function ConstellationViz({
           />
         ))}
 
-        {/* Star nodes */}
+        {/* Nodes */}
         {tickers.map((ticker, i) => {
           const pos = positions[i];
           const holding = avgMap.get(ticker);
           const avgCorr = holding?.avg ?? 0;
-          const starSize = 4 + avgCorr * 4; // 4-8px based on how correlated
-          const starColor = holding?.color ?? "#1AA8BB";
+          const nodeSize = 4 + avgCorr * 4; // 4-8px based on average overlap
+          const nodeColor = holding?.color ?? "#1AA8BB";
 
           return (
             <g key={ticker}>
-              {/* Glow circle */}
               <motion.circle
                 cx={pos.x}
                 cy={pos.y}
-                r={starSize + 4}
-                fill={starColor}
-                opacity={0.15}
-                filter="url(#starGlow)"
-                initial={{ scale: 0 }}
-                animate={{ scale: [1, 1.3, 1] }}
-                transition={{ delay: 0.5 + i * 0.05, duration: 3, repeat: Infinity, ease: "easeInOut" }}
-              />
-              {/* Core star */}
-              <motion.circle
-                cx={pos.x}
-                cy={pos.y}
-                r={starSize}
-                fill={starColor}
+                r={nodeSize}
+                fill={nodeColor}
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.4 + i * 0.05, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
               />
-              {/* Label */}
               <motion.text
                 x={pos.x}
-                y={pos.y + starSize + 14}
+                y={pos.y + nodeSize + 14}
                 textAnchor="middle"
-                fill="#a1a1aa"
+                fill="#AEB9CC"
                 fontSize="10"
-                fontWeight="500"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.6 + i * 0.05, duration: 0.3 }}
@@ -616,41 +658,38 @@ function ConstellationViz({
   );
 }
 
-// ── Pair Card ────────────────────────────────────────────────────────────────
+// ── Pair row ─────────────────────────────────────────────────────────────────
 
-function PairCard({ pair }: { pair: OverlapPair }) {
+function PairRow({ pair }: { pair: OverlapPair }) {
   const overlapPct = pair.correlation * 100;
-  const barColor =
-    pair.severity === "danger" ? "bg-rose-500" :
-    pair.severity === "warning" ? "bg-amber-500" :
-    pair.correlation < -0.2 ? "bg-zinc-500" :
-    "bg-emerald-500";
-  const textColor =
-    pair.severity === "danger" ? "text-rose-400" :
+  const barClass =
+    pair.severity === "danger" ? "bg-loss/60" :
+    pair.severity === "warning" ? "bg-amber-400/60" :
+    pair.correlation < -0.2 ? "bg-vela-teal/40" :
+    "bg-gain/50";
+  const textClass =
+    pair.severity === "danger" ? "text-loss" :
     pair.severity === "warning" ? "text-amber-400" :
-    pair.correlation < -0.2 ? "text-zinc-400" :
-    "text-emerald-400";
+    pair.correlation < -0.2 ? "text-vela-teal" :
+    "text-gain";
 
   return (
-    <div className="vela-card py-2.5 px-3">
-      <div className="flex items-center justify-between mb-1">
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-medium text-zinc-200">{pair.t1}</span>
-          <span className="text-[10px] text-zinc-600">&amp;</span>
-          <span className="text-xs font-medium text-zinc-200">{pair.t2}</span>
-        </div>
-        <span className={`text-sm font-bold tabular ${textColor}`}>
+    <div className="py-3">
+      <div className="flex items-baseline justify-between gap-3">
+        <span className="min-w-0 truncate font-mono text-[13px] tracking-[0.02em] text-zinc-100">
+          {pair.t1} <span className="text-vela-muted">/</span> {pair.t2}
+        </span>
+        <span className={`shrink-0 font-mono text-[13px] tabular-nums ${textClass}`}>
           {overlapPct.toFixed(0)}%
         </span>
       </div>
-      {/* Overlap bar */}
-      <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden mb-1.5">
+      <div className="mt-1.5 h-1 w-full bg-vela-card">
         <div
-          className={`h-full rounded-full ${barColor}`}
+          className={`h-full ${barClass}`}
           style={{ width: `${Math.max(Math.abs(overlapPct), 3)}%` }}
         />
       </div>
-      <p className="text-[10px] text-zinc-500">{pair.explanation}</p>
+      <p className="mt-1.5 text-[12.5px] leading-[1.5] text-vela-body">{pair.explanation}</p>
     </div>
   );
 }
