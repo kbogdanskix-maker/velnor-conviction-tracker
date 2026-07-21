@@ -5,7 +5,6 @@ import { Plus, Download } from "lucide-react";
 import { exportCSV } from "@/lib/export";
 import { useDefaultPortfolio, ensurePortfolio } from "@/hooks/usePortfolio";
 import type { Portfolio } from "@/hooks/usePortfolio";
-import PnLSummary from "@/components/portfolio/PnLSummary";
 import HoldingsTable from "@/components/portfolio/HoldingsTable";
 import AllocationPie from "@/components/charts/AllocationPie";
 import TransactionsTable from "@/components/portfolio/TransactionsTable";
@@ -16,9 +15,9 @@ import PerformanceChart from "@/components/portfolio/PerformanceChart";
 import TickerDetailModal from "@/components/shared/TickerDetailModal";
 import DashboardSkeleton from "@/components/shared/DashboardSkeleton";
 import { mutate } from "swr";
-import PageTransition, { MotionSection } from "@/components/celestial/PageTransition";
-import FloatingCard from "@/components/celestial/FloatingCard";
-import RevealOnScroll from "@/components/celestial/RevealOnScroll";
+import PageTransition from "@/components/celestial/PageTransition";
+import { TopBar, PageHero, StatStrip, StatCell, Section } from "@/components/instrument";
+import { formatCurrency, formatPercent } from "@/lib/formatters";
 
 export default function PortfolioPage() {
   const { portfolio, summary, loading, hasHoldings, mutateSummary } = useDefaultPortfolio();
@@ -45,97 +44,151 @@ export default function PortfolioPage() {
     return <DashboardSkeleton />;
   }
 
-  return (
-    <PageTransition className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-display font-bold text-zinc-100">Portfolio</h1>
-          <p className="text-zinc-500 text-sm mt-0.5">
-            {currentPortfolio?.name ?? "My Portfolio"}
-          </p>
-        </div>
-        {hasHoldings && (
-          <div className="flex items-center gap-2">
-            {summary && (
-              <button
-                onClick={() =>
-                  exportCSV(
-                    summary.holdings.map((h) => ({
-                      Ticker: h.ticker,
-                      Quantity: h.quantity,
-                      "Avg Cost": h.avg_cost_basis,
-                      "Total Cost": h.total_cost,
-                      "Current Price": h.current_price ?? "",
-                      "Market Value": h.market_value ?? "",
-                      "P&L": h.unrealized_pnl ?? "",
-                      "P&L %": h.unrealized_pnl_pct ?? "",
-                      "Day Change %": h.day_change_pct ?? "",
-                    })),
-                    `vela-portfolio-${new Date().toISOString().slice(0, 10)}.csv`,
-                  )
-                }
-                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs text-zinc-400 hover:text-zinc-200 bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700/50 transition-colors"
-              >
-                <Download className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Export</span>
-              </button>
-            )}
-            <button onClick={handleAddTrade} className="btn-primary text-sm flex items-center gap-2">
-              <Plus className="w-4 h-4" />
-              <span className="hidden sm:inline">Add trade</span>
-            </button>
-          </div>
-        )}
-      </div>
+  const dayPositive = (summary?.day_change ?? 0) >= 0;
+  const pnlPositive = (summary?.unrealized_pnl ?? 0) >= 0;
+  const holdingCount = summary?.holdings.length ?? 0;
 
-      {/* Content */}
+  const actions = hasHoldings ? (
+    <div className="flex items-center gap-2">
+      {summary && (
+        <button
+          onClick={() =>
+            exportCSV(
+              summary.holdings.map((h) => ({
+                Ticker: h.ticker,
+                Quantity: h.quantity,
+                "Avg Cost": h.avg_cost_basis,
+                "Total Cost": h.total_cost,
+                "Current Price": h.current_price ?? "",
+                "Market Value": h.market_value ?? "",
+                "P&L": h.unrealized_pnl ?? "",
+                "P&L %": h.unrealized_pnl_pct ?? "",
+                "Day Change %": h.day_change_pct ?? "",
+              })),
+              `velnor-positions-${new Date().toISOString().slice(0, 10)}.csv`,
+            )
+          }
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded border border-vela-border
+            font-mono text-[10px] uppercase tracking-wider text-vela-muted
+            hover:text-zinc-100 hover:border-vela-teal/40 transition-colors"
+        >
+          <Download className="w-3.5 h-3.5 shrink-0" />
+          Export
+        </button>
+      )}
+      <button
+        onClick={handleAddTrade}
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded
+          bg-vela-teal/10 border border-vela-teal/25 text-vela-teal
+          font-mono text-[10px] uppercase tracking-wider
+          hover:bg-vela-teal/15 hover:border-vela-teal/40 transition-colors"
+      >
+        <Plus className="w-3.5 h-3.5 shrink-0" />
+        Add trade
+      </button>
+    </div>
+  ) : null;
+
+  return (
+    <PageTransition>
+      <TopBar
+        trail={[{ label: "Journal" }, { label: "Positions" }]}
+        note={
+          hasHoldings
+            ? `${holdingCount} ${holdingCount === 1 ? "position" : "positions"} · marked at last close`
+            : "no positions yet"
+        }
+      />
+
+      <PageHero
+        title="Positions"
+        meta={currentPortfolio?.name ?? "My Portfolio"}
+        figure={summary ? formatCurrency(summary.total_value) : undefined}
+        figureSub={
+          summary ? (
+            <>
+              {dayPositive ? "▲" : "▼"} {formatPercent(Math.abs(summary.day_change_pct), false)} today
+            </>
+          ) : undefined
+        }
+        figureSubClass={dayPositive ? "text-gain" : "text-loss"}
+      />
+
       {!hasHoldings ? (
-        <EmptyPortfolio onAddTrade={handleAddTrade} />
+        <div className="mt-8">
+          <EmptyPortfolio onAddTrade={handleAddTrade} />
+        </div>
       ) : summary ? (
         <>
-          <FloatingCard glowColor="rgba(26, 168, 187, 0.15)" tilt={false}>
-            <PnLSummary summary={summary} />
-          </FloatingCard>
+          <StatStrip className="mt-6">
+            <StatCell
+              label="Unrealized P&L"
+              value={`${pnlPositive ? "+" : "−"}${formatCurrency(Math.abs(summary.unrealized_pnl))}`}
+              valueClass={pnlPositive ? "text-gain" : "text-loss"}
+              sub={formatPercent(summary.unrealized_pnl_pct)}
+              subClass={pnlPositive ? "text-gain" : "text-loss"}
+            />
+            <StatCell
+              label="Cost basis"
+              value={formatCurrency(summary.total_cost)}
+              sub={`${holdingCount} ${holdingCount === 1 ? "position" : "positions"}`}
+            />
+            <StatCell
+              label="Today"
+              value={`${dayPositive ? "+" : "−"}${formatCurrency(Math.abs(summary.day_change))}`}
+              valueClass={dayPositive ? "text-gain" : "text-loss"}
+              sub={formatPercent(summary.day_change_pct)}
+              subClass={dayPositive ? "text-gain" : "text-loss"}
+            />
+            <StatCell
+              label="Realized P&L"
+              value={
+                summary.realized_pnl !== 0
+                  ? `${summary.realized_pnl >= 0 ? "+" : "−"}${formatCurrency(Math.abs(summary.realized_pnl))}`
+                  : "—"
+              }
+              valueClass={
+                summary.realized_pnl === 0
+                  ? "text-zinc-100"
+                  : summary.realized_pnl > 0
+                    ? "text-gain"
+                    : "text-loss"
+              }
+              sub="closed trades"
+            />
+          </StatStrip>
 
           {currentPortfolio && (
-            <RevealOnScroll>
+            <Section
+              label="Performance"
+              prose="Portfolio value over time, measured against what you paid."
+            >
               <PerformanceChart portfolioId={currentPortfolio.id} />
-            </RevealOnScroll>
+            </Section>
           )}
 
-          <RevealOnScroll>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2 space-y-2">
-                <h2 className="section-heading">Holdings</h2>
-                <HoldingsTable
-                  holdings={summary.holdings}
-                  onTickerClick={(ticker) => setSelectedTicker(ticker)}
-                />
-              </div>
-              <div className="space-y-4">
-                <AllocationPie holdings={summary.holdings} />
-                <PortfolioPerformance />
-              </div>
-            </div>
-          </RevealOnScroll>
+          <Section label="Holdings" controls={actions}>
+            <HoldingsTable
+              holdings={summary.holdings}
+              onTickerClick={(ticker) => setSelectedTicker(ticker)}
+            />
+          </Section>
 
-          {/* Activity timeline */}
+          <Section label="Allocation">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-10 gap-y-8">
+              <AllocationPie holdings={summary.holdings} />
+              <PortfolioPerformance />
+            </div>
+          </Section>
+
           {currentPortfolio && (
-            <RevealOnScroll delay={0.1}>
-              <div>
-                <h2 className="section-heading mb-3">Activity</h2>
-                <TransactionsTable
-                  portfolioId={currentPortfolio.id}
-                  onMutate={handleMutate}
-                />
-              </div>
-            </RevealOnScroll>
+            <Section label="Activity" labelAside="— append-only">
+              <TransactionsTable portfolioId={currentPortfolio.id} onMutate={handleMutate} />
+            </Section>
           )}
         </>
       ) : null}
 
-      {/* Add transaction modal */}
       {currentPortfolio && (
         <AddTransactionModal
           portfolioId={currentPortfolio.id}
@@ -145,7 +198,6 @@ export default function PortfolioPage() {
         />
       )}
 
-      {/* Ticker detail modal */}
       <TickerDetailModal
         ticker={selectedTicker}
         open={!!selectedTicker}
