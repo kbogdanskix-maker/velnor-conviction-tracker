@@ -248,8 +248,34 @@ These are the bugs that keep biting Velnor. Every phase must verify them on the 
    `overflow` parent or pushed off-screen. The sidebar collapse toggle is the classic offender.
 5. **Verify, don't assume.** Confirm contrast and fit in the running app (or a faithful mockup), not from
    the diff.
+6. **NEVER build a Tailwind class name at runtime.** `color.replace("text-","bg-")`, `` `bg-${x}` ``, or
+   any string-assembled utility is invisible to Tailwind's scanner, so no CSS is emitted and the element
+   silently renders unstyled (usually invisible). Always map to **literal** class strings. This has now
+   bitten twice: the Reverse DCF benchmark marker and the health-score grade dot.
 
-## 12. Changelog
+## 12. The instrument kit (`components/instrument/`) — compose, don't copy
+
+The editorial "instrument" pattern is implemented once, in `components/instrument/index.tsx`. Pages
+**compose** these; never re-declare the class strings inline.
+
+`Eyebrow` · `SectionLabel` · `Prose` · `TopBar` · `PageHero` · `StatStrip` / `StatCell` · `Pips` ·
+`PillGroup` · `StateSpectrum` · `Panel` · `Legend` · `Section`
+
+**Page skeleton:** `TopBar` (breadcrumb rail + right-hand note) → `PageHero` (display title, optional
+inline name, mono meta line, right-aligned primary figure) → `StatStrip` (hairline-bounded rail of
+figures) → hairline `Section`s. No stacked boxed `vela-card`s.
+
+**Text-tone contract (this is the fix for the recurring invisible-text bug):**
+- `vela-body` `#AEB9CC` — readable body copy and prose. **Default for anything a user reads.**
+- `vela-muted` `#8A97AC` — mono micro-labels, eyebrows, secondary figures.
+- `vela-subtle` `#5A6678` — **decoration only**: `aria-hidden` separators, inactive glyphs, hover-reveal
+  icons. Never text carrying meaning.
+
+Reference implementations: `app/(dashboard)/portfolio/page.tsx` (canonical) and
+`app/(dashboard)/journey/[ticker]/page.tsx` (the original, and the source of the pattern).
+Visual source of truth: the user's mockup `~/Downloads/Velnor Stock Journey.html`.
+
+## 13. Changelog
 
 - **2026-06-22** — Initial system. Direction: "Instrument" (anti-slop). Display = Bricolage
   Grotesque (working pick; Chakra Petch / Clash Display documented as swaps). Teal as sole
@@ -270,3 +296,11 @@ These are the bugs that keep biting Velnor. Every phase must verify them on the 
   showpiece — interactive sail/constellation). Added 21st.dev animation-sourcing rule (borrow
   mechanics, re-skin to our motion tokens). Priority confirmed **app-first**: shared layer →
   dashboard shell → app pages, with the landing celestial showpiece as a later delight.
+- **2026-07-21** — **Instrument kit extracted** (§12). The editorial pattern proven on Stock Journey is
+  now shared code in `components/instrument/`, and the app spine was re-skinned to compose it. Added the
+  **`vela-body` `#AEB9CC`** token for readable prose (taken from the user's own mockup, which uses a
+  lighter body tone than `vela-muted`), and made the three-tone text contract explicit: body / muted /
+  subtle, with **`vela-subtle` demoted to decoration only**. Added §11.6 banning runtime-assembled
+  Tailwind class names after that bug shipped invisible elements twice. Note: a leading `—` in
+  `Section labelAside` is a deliberate exception to the em-dash ban, matching the mockup's
+  "Thesis log — append-only".
