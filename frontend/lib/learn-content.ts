@@ -21,12 +21,12 @@ export const CATEGORY_LABELS: Record<LearnCategory, string> = {
 };
 
 export const CATEGORY_COLORS: Record<LearnCategory, { bg: string; text: string; border: string }> = {
-  valuation: { bg: "bg-teal-500/10",    text: "text-teal-400",    border: "border-teal-500/30" },
+  valuation: { bg: "bg-vela-teal/10",   text: "text-vela-teal",   border: "border-vela-teal/30" },
   portfolio: { bg: "bg-emerald-500/10", text: "text-emerald-400", border: "border-emerald-500/30" },
   tax:       { bg: "bg-amber-500/10",   text: "text-amber-400",   border: "border-amber-500/30" },
   risk:      { bg: "bg-rose-500/10",    text: "text-rose-400",    border: "border-rose-500/30" },
-  planning:  { bg: "bg-sky-500/10",     text: "text-sky-400",     border: "border-sky-500/30" },
-  macro:     { bg: "bg-purple-500/10",  text: "text-purple-400",  border: "border-purple-500/30" },
+  planning:  { bg: "bg-vela-border/40", text: "text-vela-body",   border: "border-vela-border" },
+  macro:     { bg: "bg-vela-teal/10",   text: "text-vela-teal",   border: "border-vela-teal/30" },
   advanced:  { bg: "bg-orange-500/10",  text: "text-orange-400",  border: "border-orange-500/30" },
 };
 

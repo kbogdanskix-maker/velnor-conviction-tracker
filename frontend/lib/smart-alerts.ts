@@ -341,30 +341,26 @@ function formatK(v: number): string {
 
 export const SEVERITY_CONFIG: Record<
   AlertSeverity,
-  { bg: string; icon: string; border: string; text: string }
+  { bg: string; border: string; text: string }
 > = {
   critical: {
     bg: "bg-rose-500/10",
-    icon: "🔴",
-    border: "border-rose-500/30",
+        border: "border-rose-500/30",
     text: "text-rose-400",
   },
   warning: {
     bg: "bg-amber-500/10",
-    icon: "🟡",
-    border: "border-amber-500/30",
+        border: "border-amber-500/30",
     text: "text-amber-400",
   },
   info: {
-    bg: "bg-blue-500/10",
-    icon: "🔵",
-    border: "border-blue-500/30",
-    text: "text-blue-400",
+    bg: "bg-vela-teal/10",
+        border: "border-vela-teal/30",
+    text: "text-vela-teal",
   },
   positive: {
     bg: "bg-emerald-500/10",
-    icon: "🟢",
-    border: "border-emerald-500/30",
+        border: "border-emerald-500/30",
     text: "text-emerald-400",
   },
 };

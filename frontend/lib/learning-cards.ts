@@ -435,10 +435,10 @@ export const CATEGORY_LABELS: Record<CardCategory, string> = {
 };
 
 export const CATEGORY_COLORS: Record<CardCategory, string> = {
-  portfolio: "text-blue-400 bg-blue-400/10 border-blue-400/20",
+  portfolio: "text-vela-teal bg-vela-teal/10 border-vela-teal/20",
   tax: "text-amber-400 bg-amber-400/10 border-amber-400/20",
   income: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20",
   risk: "text-rose-400 bg-rose-400/10 border-rose-400/20",
-  planning: "text-violet-400 bg-violet-400/10 border-violet-400/20",
+  planning: "text-vela-body bg-vela-border/40 border-vela-border",
   fundamentals: "text-zinc-300 bg-zinc-400/10 border-zinc-400/20",
 };
