@@ -19,8 +19,9 @@ const config: Config = {
           card: "#0B1322",        // solid card surface
           "card-hover": "#111A2E",// raised surface
           border: "#1B2638",      // hairline border
-          muted: "#8A97AC",       // muted text
-          subtle: "#5A6678",      // faint text
+          body: "#AEB9CC",        // secondary body text — readable prose (~9.3:1)
+          muted: "#8A97AC",       // muted text / mono micro-labels (~6.6:1)
+          subtle: "#5A6678",      // faint text — DECORATION ONLY, never readable copy
         },
         // P&L — semantic only, never decoration
         gain: "#34d399",   // emerald-400
