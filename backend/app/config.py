@@ -67,6 +67,11 @@ class Settings(BaseSettings):
     # Claude API (for AI features)
     ANTHROPIC_API_KEY: str = "your-anthropic-api-key"
 
+    # Deep Dive: operator-authored house style for the research report.
+    # Drop a markdown file at this path and it is appended to the prompt.
+    # It sits AFTER the no-advice guardrail and cannot relax it.
+    DEEP_DIVE_GUIDELINE_PATH: str = "deep_dive_guideline.md"
+
     # Stripe (billing)
     STRIPE_SECRET_KEY: str = "your-stripe-secret-key"
     STRIPE_WEBHOOK_SECRET: str = "your-stripe-webhook-secret"

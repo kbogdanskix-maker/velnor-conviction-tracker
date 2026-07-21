@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import json
 import logging
+from pathlib import Path
 from typing import Any
 
 from anthropic import AsyncAnthropic
@@ -43,6 +44,30 @@ def _get_client() -> AsyncAnthropic:
     if _client is None:
         _client = AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)
     return _client
+
+
+def load_guideline() -> str | None:
+    """Operator-authored house style, if one has been dropped on disk.
+
+    Lets the guideline be edited without a code change or redeploy. Read per
+    run rather than cached, because runs are rare (one per user per cooldown)
+    and an edit should take effect on the next dive. Resolved relative to the
+    backend package root so it works regardless of the worker's CWD.
+
+    Whatever it says, it is appended AFTER the guardrail and cannot relax it
+    (see _build_system).
+    """
+    path = Path(settings.DEEP_DIVE_GUIDELINE_PATH)
+    if not path.is_absolute():
+        path = Path(__file__).resolve().parents[2] / path
+    try:
+        text = path.read_text(encoding="utf-8").strip()
+    except FileNotFoundError:
+        return None
+    except OSError as e:
+        logger.warning("Deep dive guideline at %s unreadable: %s", path, e)
+        return None
+    return text or None
 
 
 # ── Report schema ─────────────────────────────────────────────────────────────
@@ -393,7 +418,7 @@ async def generate_deep_dive(
 ) -> dict[str, Any]:
     """Run one deep dive. Returns {report, usage}. Raises on unrecoverable failure."""
     client = _get_client()
-    system = _build_system(ticker, _build_context_block(context), guideline)
+    system = _build_system(ticker, _build_context_block(context), guideline or load_guideline())
 
     tools: list[dict[str, Any]] = [
         {"type": "web_search_20260209", "name": "web_search", "max_uses": MAX_WEB_SEARCHES},
