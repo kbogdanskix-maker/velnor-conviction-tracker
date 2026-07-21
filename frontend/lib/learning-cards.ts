@@ -5,11 +5,39 @@
  *  - id:        unique key (also used for dismiss persistence)
  *  - title:     short headline
  *  - body:      1-2 sentence educational explanation
+ *  - icon:      lucide icon rendered beside the title
  *  - category:  grouping for /learn page
  *  - trigger:   function that returns true when the card is relevant
  *  - link?:     optional internal route for deeper content
  *  - priority:  higher = shown first (1-10)
  */
+
+import type { LucideIcon } from "lucide-react";
+import {
+  AlertTriangle,
+  BatteryLow,
+  Calculator,
+  Coins,
+  Compass,
+  Flag,
+  Hourglass,
+  LayoutGrid,
+  LifeBuoy,
+  LineChart,
+  PieChart,
+  PiggyBank,
+  Receipt,
+  Repeat,
+  Ruler,
+  Scale,
+  ShieldAlert,
+  Sprout,
+  Target,
+  TrendingUp,
+  Trophy,
+  Umbrella,
+  Wheat,
+} from "lucide-react";
 
 // ── Context shape passed to trigger functions ──────────────────────
 
@@ -95,7 +123,7 @@ export interface LearningCard {
   priority: number;
   trigger: (ctx: CardContext) => boolean;
   link?: string;
-  emoji?: string;
+  icon: LucideIcon;
 }
 
 // ── Card Definitions ───────────────────────────────────────────────
@@ -109,7 +137,7 @@ export const LEARNING_CARDS: LearningCard[] = [
     body: "One of your holdings makes up over 40% of your portfolio. Concentrated positions amplify both gains and losses, so it's worth checking if this fits your risk tolerance.",
     category: "portfolio",
     priority: 9,
-    emoji: "⚖️",
+    icon: PieChart,
     link: "/portfolio",
     trigger: (ctx) => ctx.holdings.some((h) => h.weight > 0.4),
   },
@@ -119,7 +147,7 @@ export const LEARNING_CARDS: LearningCard[] = [
     body: "Your portfolio has fewer than 5 holdings. Spreading across more stocks, sectors, or asset classes can reduce the impact of any single investment's decline.",
     category: "portfolio",
     priority: 7,
-    emoji: "🧩",
+    icon: LayoutGrid,
     link: "/portfolio",
     trigger: (ctx) => ctx.holdings.length > 0 && ctx.holdings.length < 5,
   },
@@ -129,7 +157,7 @@ export const LEARNING_CARDS: LearningCard[] = [
     body: "One of your positions is up over 50%. A position that runs takes up a larger share of your portfolio than you originally chose, which is worth knowing when you review your own allocation.",
     category: "portfolio",
     priority: 6,
-    emoji: "🚀",
+    icon: TrendingUp,
     trigger: (ctx) => ctx.holdings.some((h) => h.gain_pct > 0.5),
   },
   {
@@ -138,7 +166,7 @@ export const LEARNING_CARDS: LearningCard[] = [
     body: "A position is down more than 20%. Before selling, evaluate if the thesis still holds. Selling purely on emotion often locks in losses at the worst time.",
     category: "portfolio",
     priority: 7,
-    emoji: "🛟",
+    icon: LifeBuoy,
     trigger: (ctx) => ctx.holdings.some((h) => h.loss_pct < -0.2),
   },
   {
@@ -147,7 +175,7 @@ export const LEARNING_CARDS: LearningCard[] = [
     body: "Your smallest position is less than 2% of your portfolio. A position that size moves the total very little either way, which is the trade-off of holding a long tail of small names.",
     category: "portfolio",
     priority: 4,
-    emoji: "📐",
+    icon: Ruler,
     trigger: (ctx) =>
       ctx.holdings.length > 5 && ctx.holdings.some((h) => h.weight < 0.02),
   },
@@ -160,7 +188,7 @@ export const LEARNING_CARDS: LearningCard[] = [
     body: "A holding is approaching 1 year. Gains on shares held over 365 days are taxed at the lower long-term capital gains rate (0-20%) instead of your ordinary income rate.",
     category: "tax",
     priority: 9,
-    emoji: "⏳",
+    icon: Hourglass,
     link: "/tax",
     trigger: (ctx) =>
       !!ctx.tax &&
@@ -179,7 +207,7 @@ export const LEARNING_CARDS: LearningCard[] = [
     body: "You have positions with unrealized losses. How tax-loss harvesting works: realized losses offset realized capital gains, and up to $3,000 of ordinary income per year in the US. The 30-day wash sale rule disallows the loss if you rebuy the same security inside that window. Whether it applies to you is a question for your tax adviser.",
     category: "tax",
     priority: 8,
-    emoji: "🌾",
+    icon: Wheat,
     link: "/tax",
     trigger: (ctx) => !!ctx.tax && ctx.tax.harvestable_losses > 50,
   },
@@ -189,7 +217,7 @@ export const LEARNING_CARDS: LearningCard[] = [
     body: "You have short-term unrealized gains. How the US holding period works: a gain realized inside a year is taxed as ordinary income (roughly 22-37%), while past a year it is taxed at the long-term rate. The threshold is a fact about the tax code, not a signal about these positions.",
     category: "tax",
     priority: 7,
-    emoji: "💸",
+    icon: Receipt,
     link: "/tax",
     trigger: (ctx) => !!ctx.tax && ctx.tax.short_term_gains > 500,
   },
@@ -202,7 +230,7 @@ export const LEARNING_CARDS: LearningCard[] = [
     body: "A holding yields over 8%. Unusually high yields can signal a company in distress, where the price dropped and inflated the yield. Always verify the payout ratio and business health.",
     category: "income",
     priority: 8,
-    emoji: "🚩",
+    icon: Flag,
     link: "/dividends",
     trigger: (ctx) =>
       !!ctx.dividends && ctx.dividends.holdings.some((h) => h.yield > 0.08),
@@ -213,7 +241,7 @@ export const LEARNING_CARDS: LearningCard[] = [
     body: "A stock is paying out over 90% of its earnings as dividends. This leaves little room for reinvestment or growth, and the dividend may be at risk of a cut.",
     category: "income",
     priority: 7,
-    emoji: "🪫",
+    icon: BatteryLow,
     link: "/dividends",
     trigger: (ctx) =>
       !!ctx.dividends &&
@@ -227,7 +255,7 @@ export const LEARNING_CARDS: LearningCard[] = [
     body: "Your holdings produce dividend income. You can reinvest dividends for compounding or use them as passive income. Both are valid strategies depending on your goals.",
     category: "income",
     priority: 3,
-    emoji: "💰",
+    icon: Coins,
     link: "/dividends",
     trigger: (ctx) =>
       !!ctx.dividends && ctx.dividends.total_annual_income > 0,
@@ -241,7 +269,7 @@ export const LEARNING_CARDS: LearningCard[] = [
     body: "With only one holding, your portfolio's fate is tied to a single company. Even great companies face unexpected events, and diversification is your primary defense.",
     category: "risk",
     priority: 10,
-    emoji: "🥚",
+    icon: ShieldAlert,
     link: "/portfolio",
     trigger: (ctx) => ctx.holdings.length === 1,
   },
@@ -251,7 +279,7 @@ export const LEARNING_CARDS: LearningCard[] = [
     body: "Your liabilities exceed your portfolio value. While some debt (like mortgages) is normal, high debt relative to investments can limit your financial flexibility.",
     category: "risk",
     priority: 8,
-    emoji: "⚠️",
+    icon: AlertTriangle,
     link: "/net-worth",
     trigger: (ctx) =>
       !!ctx.netWorth &&
@@ -264,7 +292,7 @@ export const LEARNING_CARDS: LearningCard[] = [
     body: "Your liabilities currently exceed your assets. Focus on high-interest debt first (avalanche method), then build your asset base. Every small step compounds over time.",
     category: "risk",
     priority: 9,
-    emoji: "📈",
+    icon: Sprout,
     link: "/net-worth",
     trigger: (ctx) => !!ctx.netWorth && ctx.netWorth.net_worth < 0,
   },
@@ -277,7 +305,7 @@ export const LEARNING_CARDS: LearningCard[] = [
     body: "Financial experts recommend saving at least 15-20% of income. Even a 1% increase adds up dramatically over decades thanks to compounding. Review your cash flow for opportunities.",
     category: "planning",
     priority: 7,
-    emoji: "🐷",
+    icon: PiggyBank,
     link: "/cash-flow",
     trigger: (ctx) =>
       !!ctx.cashFlow &&
@@ -290,7 +318,7 @@ export const LEARNING_CARDS: LearningCard[] = [
     body: "You're saving over 30% of your income. At that rate the common question becomes where surplus savings sit: invested, held as cash reserve, or against debt. Each has a different risk and liquidity profile.",
     category: "planning",
     priority: 3,
-    emoji: "🌟",
+    icon: Trophy,
     link: "/cash-flow",
     trigger: (ctx) =>
       !!ctx.cashFlow &&
@@ -303,7 +331,7 @@ export const LEARNING_CARDS: LearningCard[] = [
     body: "One of your goals is less than 25% funded with the target date approaching. The three variables in any funding gap are the contribution, the timeline, and the target itself.",
     category: "planning",
     priority: 6,
-    emoji: "🎯",
+    icon: Target,
     link: "/goals",
     trigger: (ctx) => {
       if (!ctx.goals) return false;
@@ -324,7 +352,7 @@ export const LEARNING_CARDS: LearningCard[] = [
     body: "Goals give your money a purpose. Whether it's an emergency fund, vacation, or retirement, defining clear targets makes it easier to stay motivated and track progress.",
     category: "planning",
     priority: 5,
-    emoji: "🧭",
+    icon: Compass,
     link: "/goals",
     trigger: (ctx) => !ctx.goals || ctx.goals.length === 0,
   },
@@ -337,7 +365,7 @@ export const LEARNING_CARDS: LearningCard[] = [
     body: "Before investing aggressively, most advisors recommend 3-6 months of expenses in a liquid, safe account. This prevents forced selling during unexpected events.",
     category: "fundamentals",
     priority: 5,
-    emoji: "🏥",
+    icon: Umbrella,
     link: "/savings",
     trigger: (ctx) =>
       ctx.portfolioValue > 0 &&
@@ -349,7 +377,7 @@ export const LEARNING_CARDS: LearningCard[] = [
     body: "Your cost basis determines how much tax you owe when selling. FIFO (first in, first out) is the default method. The IRS uses it unless you specify otherwise.",
     category: "fundamentals",
     priority: 3,
-    emoji: "📊",
+    icon: Calculator,
     link: "/tax",
     trigger: (ctx) => ctx.holdings.length >= 2,
   },
@@ -359,7 +387,7 @@ export const LEARNING_CARDS: LearningCard[] = [
     body: "Dollar-cost averaging means investing a fixed amount on a regular schedule. It reduces the risk of buying at a peak and works best with a long time horizon.",
     category: "fundamentals",
     priority: 2,
-    emoji: "🔄",
+    icon: Repeat,
     trigger: (ctx) => ctx.holdings.length >= 1,
   },
   {
@@ -368,7 +396,7 @@ export const LEARNING_CARDS: LearningCard[] = [
     body: "Over time, winners grow and losers shrink, drifting your allocation from its target. Rebalancing quarterly or when any position drifts 5%+ from target keeps risk in check.",
     category: "fundamentals",
     priority: 3,
-    emoji: "⚖️",
+    icon: Scale,
     link: "/portfolio",
     trigger: (ctx) =>
       ctx.holdings.length >= 3 &&
@@ -380,7 +408,7 @@ export const LEARNING_CARDS: LearningCard[] = [
     body: "At a 10% annual return, $10,000 grows to $67,275 in 20 years and $174,494 in 30 years. Time in the market matters more than timing the market.",
     category: "fundamentals",
     priority: 1,
-    emoji: "✨",
+    icon: LineChart,
     trigger: () => true, // universal  - always available on /learn page
   },
 ];

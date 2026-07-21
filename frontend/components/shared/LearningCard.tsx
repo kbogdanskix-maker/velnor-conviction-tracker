@@ -14,6 +14,7 @@ interface LearningCardProps {
 
 export default function LearningCard({ card, onDismiss, compact }: LearningCardProps) {
   const colorClass = CATEGORY_COLORS[card.category];
+  const Icon = card.icon;
 
   const content = (
     <div
@@ -48,7 +49,11 @@ export default function LearningCard({ card, onDismiss, compact }: LearningCardP
 
       {/* Title */}
       <div className="flex items-start gap-2">
-        {card.emoji && <span className="text-base leading-tight">{card.emoji}</span>}
+        <Icon
+          className={`shrink-0 text-vela-teal ${compact ? "w-3.5 h-3.5 mt-0.5" : "w-4 h-4 mt-0.5"}`}
+          strokeWidth={1.75}
+          aria-hidden="true"
+        />
         <div className="min-w-0">
           <h3 className={`font-medium text-zinc-100 ${compact ? "text-xs" : "text-sm"}`}>
             {card.title}
