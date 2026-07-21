@@ -45,7 +45,7 @@ export function SectionLabel({
       className={`font-mono text-[11px] font-medium uppercase tracking-[0.22em] text-vela-muted ${className}`}
     >
       {children}
-      {aside != null && <span className="ml-2 text-vela-subtle">{aside}</span>}
+      {aside != null && <span className="ml-2 text-vela-muted/70">{aside}</span>}
     </h2>
   );
 }
