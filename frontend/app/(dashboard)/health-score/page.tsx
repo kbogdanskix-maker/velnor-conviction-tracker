@@ -491,8 +491,8 @@ export default function HealthScorePage() {
         <p className="text-sm text-zinc-500 mt-0.5">
           A holistic assessment of your financial well-being across 5 dimensions
           {goalContext && goals && goals.length > 0 && (
-            <span className="ml-2 text-[11px] text-teal-500/80 font-medium">
-              · weights adjusted for your {goalContext.hasRetirement ? "retirement" : goalContext.hasHouseOrDebt ? "home/debt" : goalContext.horizon + "-term"} goals
+            <span className="text-[11px] text-teal-500/80 font-medium">
+              , weights adjusted for your {goalContext.hasRetirement ? "retirement" : goalContext.hasHouseOrDebt ? "home/debt" : goalContext.horizon + "-term"} goals
             </span>
           )}
         </p>
