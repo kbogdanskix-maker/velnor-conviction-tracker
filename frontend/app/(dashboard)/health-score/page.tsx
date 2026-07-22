@@ -32,7 +32,6 @@ interface Dimension {
   score: number; // 0-100
   grade: "A" | "B" | "C" | "D" | "F";
   icon: React.ComponentType<{ className?: string }>;
-  color: string;
   insight: string;
   link: string;
   linkLabel: string;
@@ -166,9 +165,9 @@ function computeHealthScore(
     const basePts = holdingCount >= 3 ? 20 : holdingCount * 7; // 20 base pts for having a real portfolio
     divScore = Math.min(100, Math.round(holdingPts + sectorPts + basePts));
 
-    if (sectors.size <= 2) divInsight = `Only ${sectors.size} sector${sectors.size === 1 ? "" : "s"}  - consider diversifying across more industries.`;
-    else if (holdingCount < 5) divInsight = `${holdingCount} holdings across ${sectors.size} sectors  - adding more positions would improve resilience.`;
-    else divInsight = `${holdingCount} holdings across ${sectors.size} sectors  - well diversified.`;
+    if (sectors.size <= 2) divInsight = `${sectors.size} sector${sectors.size === 1 ? "" : "s"} across ${holdingCount} holding${holdingCount === 1 ? "" : "s"}, a concentrated spread.`;
+    else if (holdingCount < 5) divInsight = `${holdingCount} holdings across ${sectors.size} sectors, a narrow book.`;
+    else divInsight = `${holdingCount} holdings across ${sectors.size} sectors, broadly spread.`;
   }
   dims.push({
     key: "diversification",
@@ -176,7 +175,6 @@ function computeHealthScore(
     score: divScore,
     grade: toGrade(divScore),
     icon: ShieldCheck,
-    color: "teal",
     insight: divInsight,
     link: "/correlation",
     linkLabel: "View Diversification",
@@ -193,10 +191,10 @@ function computeHealthScore(
     else if (rate >= 0) savScore = 40;
     else savScore = 15;
 
-    if (rate >= 20) savInsight = `${rate.toFixed(0)}% savings rate  - excellent. You're well above the recommended 20%.`;
-    else if (rate >= 10) savInsight = `${rate.toFixed(0)}% savings rate  - good, but aim for 20%+ to accelerate wealth building.`;
-    else if (rate >= 0) savInsight = `${rate.toFixed(0)}% savings rate  - below the 20% target. Review expenses for reduction opportunities.`;
-    else savInsight = `Negative savings rate  - expenses exceed income. This needs immediate attention.`;
+    if (rate >= 20) savInsight = `${rate.toFixed(0)}% savings rate, above the commonly cited 20% benchmark.`;
+    else if (rate >= 10) savInsight = `${rate.toFixed(0)}% savings rate, below the commonly cited 20% benchmark.`;
+    else if (rate >= 0) savInsight = `${rate.toFixed(0)}% savings rate, well below the commonly cited 20% benchmark.`;
+    else savInsight = `Negative savings rate: expenses exceed income this period.`;
   }
   dims.push({
     key: "savings",
@@ -204,7 +202,6 @@ function computeHealthScore(
     score: savScore,
     grade: toGrade(savScore),
     icon: PiggyBank,
-    color: "emerald",
     insight: savInsight,
     link: "/cash-flow",
     linkLabel: "View Cash Flow",
@@ -217,19 +214,19 @@ function computeHealthScore(
     const debtToAsset = netWorth.total_assets > 0 ? (netWorth.total_liabilities / netWorth.total_assets) * 100 : 0;
     if (netWorth.total_liabilities === 0) {
       debtScore = 100;
-      debtInsight = "No liabilities  - debt-free! Outstanding position.";
+      debtInsight = "No liabilities recorded: a debt-free position.";
     } else if (debtToAsset < 20) {
       debtScore = 90;
-      debtInsight = `Debt-to-asset ratio of ${debtToAsset.toFixed(0)}%  - very manageable.`;
+      debtInsight = `Debt-to-asset ratio of ${debtToAsset.toFixed(0)}%, a low level.`;
     } else if (debtToAsset < 40) {
       debtScore = 70;
-      debtInsight = `Debt-to-asset ratio of ${debtToAsset.toFixed(0)}%  - moderate. Focus on paying down high-interest debt.`;
+      debtInsight = `Debt-to-asset ratio of ${debtToAsset.toFixed(0)}%, a moderate level.`;
     } else if (debtToAsset < 70) {
       debtScore = 45;
-      debtInsight = `Debt-to-asset ratio of ${debtToAsset.toFixed(0)}%  - elevated. Prioritize debt reduction.`;
+      debtInsight = `Debt-to-asset ratio of ${debtToAsset.toFixed(0)}%, an elevated level.`;
     } else {
       debtScore = 20;
-      debtInsight = `Debt-to-asset ratio of ${debtToAsset.toFixed(0)}%  - critical. Liabilities significantly outweigh assets.`;
+      debtInsight = `Debt-to-asset ratio of ${debtToAsset.toFixed(0)}%: liabilities outweigh assets.`;
     }
   }
   dims.push({
@@ -238,7 +235,6 @@ function computeHealthScore(
     score: debtScore,
     grade: toGrade(debtScore),
     icon: Wallet,
-    color: "sky",
     insight: debtInsight,
     link: "/net-worth",
     linkLabel: "View Net Worth",
@@ -268,9 +264,9 @@ function computeHealthScore(
 
     perfScore = Math.min(100, sharpePts + volPts + ddPts);
 
-    if (sharpe >= 1.0) perfInsight = `Sharpe ${sharpe.toFixed(2)} with ${vol.toFixed(0)}% vol  - strong risk-adjusted returns.`;
-    else if (sharpe >= 0.5) perfInsight = `Sharpe ${sharpe.toFixed(2)}  - decent returns for the risk taken. Vol at ${vol.toFixed(0)}%.`;
-    else perfInsight = `Sharpe ${sharpe.toFixed(2)}  - returns don't adequately compensate for ${vol.toFixed(0)}% volatility.`;
+    if (sharpe >= 1.0) perfInsight = `Sharpe ${sharpe.toFixed(2)} at ${vol.toFixed(0)}% volatility, a strong risk-adjusted reading.`;
+    else if (sharpe >= 0.5) perfInsight = `Sharpe ${sharpe.toFixed(2)} at ${vol.toFixed(0)}% volatility, a moderate reading.`;
+    else perfInsight = `Sharpe ${sharpe.toFixed(2)} against ${vol.toFixed(0)}% volatility, a low reading.`;
   }
   dims.push({
     key: "performance",
@@ -278,7 +274,6 @@ function computeHealthScore(
     score: perfScore,
     grade: toGrade(perfScore),
     icon: TrendingUp,
-    color: "violet",
     insight: perfInsight,
     link: "/risk",
     linkLabel: "View Risk Metrics",
@@ -303,13 +298,13 @@ function computeHealthScore(
     const urgent = goalData.filter((g) => g.mo < 12 && g.pct < 70);
 
     if (ctx.hasUrgentUnderfunded && urgent.length > 0) {
-      goalInsight = `"${urgent[0].name}" is due within a year at ${urgent[0].pct.toFixed(0)}%. Urgently increase contributions.`;
+      goalInsight = `"${urgent[0].name}" is due within a year, currently ${urgent[0].pct.toFixed(0)}% funded.`;
     } else if (goalScore >= 75) {
-      goalInsight = `${onTrack}/${goals.length} goals over 50% complete. Excellent progress.`;
+      goalInsight = `${onTrack}/${goals.length} goals over 50% complete.`;
     } else if (goalScore >= 40) {
-      goalInsight = `${onTrack}/${goals.length} goals over 50%. Making progress. Keep contributing.`;
+      goalInsight = `${onTrack}/${goals.length} goals over 50% complete.`;
     } else {
-      goalInsight = `Goals averaging ${weightedProgress.toFixed(0)}% completion. Consider increasing monthly contributions.`;
+      goalInsight = `Goals averaging ${weightedProgress.toFixed(0)}% completion.`;
     }
   }
   dims.push({
@@ -318,7 +313,6 @@ function computeHealthScore(
     score: goalScore,
     grade: toGrade(goalScore),
     icon: CheckCircle2,
-    color: "amber",
     insight: goalInsight,
     link: "/goals",
     linkLabel: "View Goals",
@@ -516,12 +510,12 @@ export default function HealthScorePage() {
             </div>
             <p className="text-sm text-zinc-400 max-w-md">
               {overallScore >= 80
-                ? "Your finances are in excellent shape. Keep maintaining your healthy habits."
+                ? "Your five dimensions read strong across the board."
                 : overallScore >= 60
-                  ? "Solid foundation with room for improvement. Focus on the areas below."
+                  ? "A solid overall reading. Some dimensions score lower than others, broken out below."
                   : overallScore >= 40
-                    ? "Several areas need attention. Prioritize the action items below."
-                    : "Your financial health needs immediate attention. Start with the highest-priority items."}
+                    ? "Several dimensions score lower than others. Each is broken out below."
+                    : "Several dimensions score low. Each is broken out below."}
             </p>
             <div className="flex gap-4 text-xs text-zinc-500 justify-center sm:justify-start pt-1">
               {dimensions.map((d) => (
@@ -577,11 +571,11 @@ export default function HealthScorePage() {
         ))}
       </div>
 
-      {/* Action items */}
+      {/* Lowest-scoring dimensions */}
       {actionItems.length > 0 && (
         <RevealOnScroll delay={0.15}>
           <div className="vela-card space-y-3">
-            <h2 className="section-heading">Priority Actions</h2>
+            <h2 className="section-heading">Where you score lowest</h2>
             <div className="space-y-2">
               {actionItems.map((item, i) => (
                 <Link
