@@ -12,6 +12,7 @@ venv/
 
 # Build output
 .next/
+.next-verify/
 out/
 dist/
 build/

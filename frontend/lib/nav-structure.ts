@@ -6,7 +6,7 @@ import {
   GraduationCap, Activity, Brain, Scale, BadgePercent,
   LayoutGrid, Calendar, GitBranch, Shield,
   ArrowLeftRight, Scissors, MapPin, Star, GitCompare,
-  Zap, MessageCircle, StickyNote, Building2, Route, Archive, Telescope,
+  Zap, MessageCircle, StickyNote, Building2, Route, Archive,
 } from "lucide-react";
 
 export interface NavItem {
@@ -48,7 +48,6 @@ export const NAV_GROUPS: NavGroup[] = [
     label: "Research",
     items: [
       { href: "/screener", label: "Screener", icon: BarChart2 },
-      { href: "/deep-dive", label: "Deep Dive", icon: Telescope },
       { href: "/company", label: "Company Deep-Dive", icon: Building2 },
       { href: "/earnings-insights", label: "Earnings AI", icon: TrendingUp },
       { href: "/valuation/dcf", label: "DCF", icon: FileText },

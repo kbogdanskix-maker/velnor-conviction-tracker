@@ -5,6 +5,7 @@ import useSWR from "swr";
 import { api, apiStreamPost } from "@/lib/api";
 import PageTransition from "@/components/celestial/PageTransition";
 import TierGate from "@/components/shared/TierGate";
+import DeepDivePanel from "@/components/deep-dive/DeepDivePanel";
 import Disclaimer from "@/components/shared/Disclaimer";
 import { stripAiMarkdown } from "@/lib/formatters";
 import { useDefaultPortfolio } from "@/hooks/usePortfolio";
@@ -398,6 +399,9 @@ function CompanyDeepDive() {
           subClass="text-vela-muted"
         />
       </StatStrip>
+
+      {/* ── AI deep dive ───────────────────────────────────────── */}
+      <DeepDivePanel ticker={ticker} />
 
       {/* ── AI valuation coaching ──────────────────────────────── */}
       <ValuationPanel ticker={ticker} />
