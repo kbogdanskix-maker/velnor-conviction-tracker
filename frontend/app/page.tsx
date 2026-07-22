@@ -193,7 +193,7 @@ function WaitlistForm({ id, large = false }: { id: string; large?: boolean }) {
   if (state === "success") {
     return (
       <div className={`flex items-center gap-3 ${large ? "text-base" : "text-sm"}`}>
-        <span className="flex items-center justify-center w-8 h-8 rounded-full bg-gain/15">
+        <span className="flex items-center justify-center w-8 h-8 rounded bg-gain/15">
           <span className="text-gain">{icons.check}</span>
         </span>
         <span className="text-zinc-200">You&apos;re on the list. We&apos;ll email you the moment early access opens.</span>
@@ -209,13 +209,13 @@ function WaitlistForm({ id, large = false }: { id: string; large?: boolean }) {
         placeholder="you@example.com"
         value={email}
         onChange={(e) => { setEmail(e.target.value); if (state === "error") setState("idle"); }}
-        className={`glass-input flex-1 ${large ? "px-5 py-3.5 text-base" : "px-4 py-3 text-sm"} rounded-xl`}
+        className={`glass-input flex-1 ${large ? "px-5 py-3.5 text-base" : "px-4 py-3 text-sm"} rounded`}
         autoComplete="email"
       />
       <button
         type="submit"
         disabled={state === "loading"}
-        className={`btn-primary whitespace-nowrap ${large ? "px-8 py-3.5 text-base" : "px-6 py-3 text-sm"} rounded-xl font-semibold tracking-wide disabled:opacity-50 flex items-center gap-2 justify-center`}
+        className={`btn-primary whitespace-nowrap ${large ? "px-8 py-3.5 text-base" : "px-6 py-3 text-sm"} rounded font-semibold tracking-wide disabled:opacity-50 flex items-center gap-2 justify-center`}
       >
         {state === "loading" ? (
           <span className="w-4 h-4 border-2 border-zinc-900/30 border-t-zinc-900 rounded-full animate-spin" />
@@ -239,7 +239,7 @@ function BearingDemo() {
         <span className="text-[10px] font-mono uppercase tracking-widest text-vela-teal/90 bg-vela-teal/10 border border-vela-teal/25 px-2 py-0.5 rounded">
           Preview · Reflect
         </span>
-        <span className="text-[10px] text-zinc-600">a glimpse of Velnor&apos;s portfolio AI</span>
+        <span className="text-[10px] text-vela-muted">a glimpse of Velnor&apos;s portfolio AI</span>
       </div>
       {/* chart header */}
       <div className="flex items-center justify-between gap-3 pb-4 border-b border-zinc-800/70">
@@ -247,7 +247,7 @@ function BearingDemo() {
           <span className="text-vela-teal">{icons.compass}</span>
           <span className="text-sm font-medium">Set your bearing</span>
         </div>
-        <span className="font-mono text-[11px] text-zinc-600 tabular-nums">HEADING {b.deg}</span>
+        <span className="font-mono text-[11px] text-vela-muted tabular-nums">HEADING {b.deg}</span>
       </div>
 
       {/* bearing selector */}
@@ -269,14 +269,14 @@ function BearingDemo() {
 
       {/* the read */}
       <div className="mt-4 flex gap-3">
-        <div className="w-7 h-7 min-w-7 rounded-full bg-teal-700 flex items-center justify-center text-white text-[11px] font-semibold mt-0.5">
+        <div className="w-7 h-7 min-w-7 rounded-full bg-vela-teal flex items-center justify-center text-vela-bg text-[11px] font-semibold mt-0.5">
           V
         </div>
         <p key={b.key} className="bearing-reply text-[13.5px] leading-relaxed text-zinc-300">
           {b.reply}
         </p>
       </div>
-      <p className="text-[11px] text-zinc-600 mt-4 pt-3 border-t border-zinc-800/70">
+      <p className="text-[11px] text-vela-body mt-4 pt-3 border-t border-zinc-800/70">
         Same portfolio. Different bearing. Velnor re-charts the read, grounded in your real numbers, never generic.
       </p>
     </div>
@@ -338,7 +338,7 @@ export default function LandingPage() {
           <div className="leading-none">
             <span className="text-xl font-display font-semibold tracking-tight">Velnor</span>
           </div>
-          <span className="hidden sm:inline ml-2 font-mono text-[10px] text-zinc-600 tracking-widest uppercase">Celestial navigation for your money</span>
+          <span className="hidden sm:inline ml-2 font-mono text-[10px] text-vela-muted tracking-widest uppercase">Celestial navigation for your money</span>
         </div>
         <a href="/login" className="btn-ghost text-sm font-medium">Sign in</a>
       </nav>
@@ -372,7 +372,7 @@ export default function LandingPage() {
             </Reveal>
             <Reveal delay={260}><WaitlistForm id="hero-email" large /></Reveal>
             <Reveal delay={340}>
-              <p className="text-zinc-600 text-xs mt-4 font-mono tracking-wide">Free to join · no spam · unsubscribe anytime</p>
+              <p className="text-vela-muted text-xs mt-4 font-mono tracking-wide">Free to join. No spam. Unsubscribe anytime.</p>
             </Reveal>
           </div>
 
@@ -415,7 +415,7 @@ export default function LandingPage() {
           {/* the merge node */}
           <Reveal delay={160} className="flex md:flex-col items-center justify-center gap-2">
             <div className="hidden md:block w-px h-12 bg-gradient-to-b from-transparent to-vela-teal/40" />
-            <div className="w-12 h-12 rounded-xl bg-vela-teal/15 border border-vela-teal/40 flex items-center justify-center text-vela-teal shrink-0">
+            <div className="w-12 h-12 rounded bg-vela-teal/15 border border-vela-teal/40 flex items-center justify-center text-vela-teal shrink-0">
               {icons.compass}
             </div>
             <div className="hidden md:block w-px h-12 bg-gradient-to-b from-vela-teal/40 to-transparent" />
@@ -436,7 +436,7 @@ export default function LandingPage() {
           </Reveal>
         </div>
         <Reveal delay={300}>
-          <div className="mt-6 rounded-2xl p-5 border border-vela-teal/25 bg-vela-teal/[0.04] relative overflow-hidden text-center">
+          <div className="mt-6 rounded-md p-5 border border-vela-teal/25 bg-vela-teal/[0.04] relative overflow-hidden text-center">
             <div className="absolute inset-0 bg-gradient-to-br from-vela-teal/[0.06] via-transparent to-transparent" />
             <p className="relative text-sm text-zinc-200">
               <span className="text-vela-teal font-medium">Velnor</span> puts your investing at the center,
@@ -498,7 +498,7 @@ export default function LandingPage() {
               That&apos;s the point: it engages your objective and your own reasoning, not a
               one-size-fits-all risk score. Try it on the right.
             </p>
-            <p className="text-zinc-600 text-sm">And it never makes up a number. If it doesn&apos;t have the figure, it tells you.</p>
+            <p className="text-vela-body text-sm">And it never makes up a number. If it doesn&apos;t have the figure, it tells you.</p>
           </Reveal>
           <Reveal delay={150}><BearingDemo /></Reveal>
         </div>
@@ -535,7 +535,7 @@ export default function LandingPage() {
 
       {/* ── Footer ────────────────────────────────────────────────────── */}
       <footer className="relative z-10 border-t border-zinc-800/40 px-6 py-8">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-zinc-600 text-xs">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-vela-muted text-xs">
           <div className="flex items-center gap-2">
             <VelnorMark className="w-5 h-4 text-vela-teal" />
             <span>Velnor &copy; {new Date().getFullYear()}</span>
