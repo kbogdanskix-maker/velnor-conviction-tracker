@@ -4,11 +4,19 @@ import { createServerClient } from "@supabase/ssr";
 const PUBLIC_PATHS = ["/login", "/register", "/auth/callback", "/health", "/privacy", "/terms"];
 const EXACT_PUBLIC = ["/"];
 
+/** True only for an exact match or a genuine sub-path (`/health` or `/health/x`),
+ *  never a longer sibling like `/health-score`. Plain `startsWith` let any
+ *  `/health*` / `/login*` path skip the session-refresh below. */
+function isPublicPath(pathname: string): boolean {
+  if (EXACT_PUBLIC.includes(pathname)) return true;
+  return PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/"));
+}
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Allow public paths
-  if (PUBLIC_PATHS.some((p) => pathname.startsWith(p)) || EXACT_PUBLIC.includes(pathname)) {
+  if (isPublicPath(pathname)) {
     return NextResponse.next();
   }
 
@@ -37,7 +45,9 @@ export async function proxy(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user && !pathname.startsWith("/login") && !pathname.startsWith("/register")) {
+  // Public paths (login/register included) already returned above, so any
+  // unauthenticated request that reaches here is for a protected route.
+  if (!user) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
