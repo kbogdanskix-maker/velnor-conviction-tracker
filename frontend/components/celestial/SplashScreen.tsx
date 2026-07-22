@@ -12,17 +12,21 @@ const ENTRY_ROUTE = "/dashboard";
  * Full-screen cinematic splash marking entry into the app.
  * Sequence: black → logo scales in with glow → tagline fades in → dissolves to dashboard.
  *
- * Plays ONLY on the entry route, and only once per browser session
- * (`sessionStorage`). Deep-linking straight to an inner page such as
- * /portfolio or /health-score must NOT trigger it: the splash marks arrival,
- * it is not a generic page loader.
+ * Plays on EVERY arrival at the entry route: on app startup and again each time
+ * the user navigates to Dashboard. It previously carried a
+ * `sessionStorage["vela-splash-seen"]` gate, which made it look "gone" — once
+ * seen in a tab it never replayed. That gate is deliberately removed.
+ *
+ * Deep-linking straight to an inner page such as /portfolio or /health-score
+ * still must NOT trigger it: the splash marks arrival, it is not a page loader.
+ *
+ * Because it now replays, it must always be escapable: any click or key press
+ * dismisses it, and `prefers-reduced-motion` skips it outright.
  */
 export default function SplashScreen({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isEntry = pathname === ENTRY_ROUTE;
 
-  // Anything other than the entry route renders through immediately, and
-  // deliberately does not consume the once-per-session flag.
   const [phase, setPhase] = useState<"splash" | "exit" | "done">(
     isEntry ? "splash" : "done",
   );
@@ -32,18 +36,37 @@ export default function SplashScreen({ children }: { children: React.ReactNode }
       setPhase("done");
       return;
     }
-    // Skip if already shown this session
-    if (sessionStorage.getItem("vela-splash-seen")) {
+    // A replaying full-screen animation is exactly what reduced-motion is for.
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       setPhase("done");
       return;
     }
-    sessionStorage.setItem("vela-splash-seen", "1");
+
+    // Re-arm on each arrival: this component lives in the layout and survives
+    // navigation, so without this the phase would stay "done" forever.
+    setPhase("splash");
 
     // Logo appears instantly, tagline at 1s, begin exit at 2.8s
     const exitTimer = setTimeout(() => setPhase("exit"), 2800);
     const doneTimer = setTimeout(() => setPhase("done"), 3600);
-    return () => { clearTimeout(exitTimer); clearTimeout(doneTimer); };
-  }, [isEntry]);
+
+    // Escape hatch, so nobody is held behind 3.6s of animation twice in a row.
+    // Armed after a beat: the very click that navigated here must not also
+    // dismiss the splash it just triggered.
+    const skip = () => setPhase("done");
+    const armTimer = setTimeout(() => {
+      window.addEventListener("pointerdown", skip);
+      window.addEventListener("keydown", skip);
+    }, 400);
+
+    return () => {
+      clearTimeout(exitTimer);
+      clearTimeout(doneTimer);
+      clearTimeout(armTimer);
+      window.removeEventListener("pointerdown", skip);
+      window.removeEventListener("keydown", skip);
+    };
+  }, [isEntry, pathname]);
 
   if (phase === "done") {
     return <>{children}</>;
