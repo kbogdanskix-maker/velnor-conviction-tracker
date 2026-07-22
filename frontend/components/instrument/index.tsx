@@ -45,7 +45,9 @@ export function SectionLabel({
       className={`font-mono text-[11px] font-medium uppercase tracking-[0.22em] text-vela-muted ${className}`}
     >
       {children}
-      {aside != null && <span className="ml-2 text-vela-muted/70">{aside}</span>}
+      {/* The leading space is load-bearing: ml-2 is visual only, so without it
+          the label and its aside run together for screen readers ("SETUP4/5"). */}
+      {aside != null && <span className="ml-2 text-vela-muted/70">{" "}{aside}</span>}
     </h2>
   );
 }

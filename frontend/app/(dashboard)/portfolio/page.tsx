@@ -182,7 +182,7 @@ export default function PortfolioPage() {
           </Section>
 
           {currentPortfolio && (
-            <Section label="Activity" labelAside="— append-only">
+            <Section label="Activity" labelAside="append-only">
               <TransactionsTable portfolioId={currentPortfolio.id} onMutate={handleMutate} />
             </Section>
           )}

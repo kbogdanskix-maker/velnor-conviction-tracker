@@ -132,7 +132,7 @@ export default function WatchlistPage() {
 
           <Section
             label="Tracked"
-            labelAside={`— ${items.length}`}
+            labelAside={`${items.length}`}
             prose="Tap a ticker to open its quote detail. Removing a name here does not touch your positions."
             controls={addButton}
           >
@@ -260,7 +260,7 @@ function WatchlistRow({
 
 function EmptyWatchlist({ onAdd }: { onAdd: () => void }) {
   return (
-    <Section label="Tracked" labelAside="— empty">
+    <Section label="Tracked" labelAside="empty">
       <div className="border border-vela-border px-6 py-14 flex flex-col items-center text-center">
         <div className="w-10 h-10 rounded border border-vela-border flex items-center justify-center mb-4">
           <Eye className="w-4 h-4 text-vela-teal" />

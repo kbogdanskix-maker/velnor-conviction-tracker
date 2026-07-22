@@ -440,7 +440,7 @@ export default function ScreenerPage() {
         label="Results"
         labelAside={
           isLoading
-            ? "— loading"
+            ? "loading"
             : hasActiveFilters
               ? `— ${filtered.length} of ${stocks.length}`
               : `— ${filtered.length}`

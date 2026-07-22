@@ -79,7 +79,7 @@ export default function NewsPage() {
       />
 
       {isEmpty ? (
-        <Section label="Feed" labelAside="— empty">
+        <Section label="Feed" labelAside="empty">
           <div className="border border-vela-border px-6 py-14 text-center">
             <Eyebrow>Nothing to read yet</Eyebrow>
             <Prose className="mx-auto mt-2.5 max-w-[340px]">
@@ -91,7 +91,7 @@ export default function NewsPage() {
       ) : (
         <Section
           label="Stories"
-          labelAside={`— ${filtered.length}`}
+          labelAside={`${filtered.length}`}
           prose="Headlines are pulled from public wires. Nothing here is filtered or ranked by us, and none of it is a view on your positions."
           controls={tickerFilter}
         >

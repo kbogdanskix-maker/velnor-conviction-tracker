@@ -85,7 +85,7 @@ export default function GuidePage() {
 
       <Section
         label="Setup"
-        labelAside={isLoading ? undefined : `— ${completedCount}/${totalCount}`}
+        labelAside={isLoading ? undefined : `${completedCount}/${totalCount}`}
         prose="Each step feeds something downstream. The more of your picture the app holds, the less of it you have to restate later."
       >
         {/* Progress rail */}
@@ -164,7 +164,7 @@ export default function GuidePage() {
 
       <Section
         label="Everything else"
-        labelAside={`— ${TOOL_COUNT} tools`}
+        labelAside={`${TOOL_COUNT} tools`}
         prose="Open a group to see what sits inside it. Nothing here is required to use the core workflow."
       >
         <div className="divide-y divide-vela-border border-y border-vela-border">
