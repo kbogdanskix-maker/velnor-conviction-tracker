@@ -247,8 +247,8 @@ export default function GoalDetailPanel({ goal, open, onOpenChange }: Props) {
                 : "bg-loss/10 text-loss"
             }`}>
               {hitsTarget
-                ? `On track \u2014 projected to reach ${formatCurrency(targetAmount)} before your target date`
-                : `Gap of ${formatCurrency(targetAmount - projectedFinal)} \u2014 consider increasing contributions or return rate`}
+                ? `On track: projected to reach ${formatCurrency(targetAmount)} before your target date`
+                : `Projected ${formatCurrency(targetAmount - projectedFinal)} short of the target at the current contribution and return rate`}
             </div>
 
             {/* Notes */}

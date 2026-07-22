@@ -303,7 +303,7 @@ function riskAlerts(input: AlertInput): SmartAlert[] {
     alerts.push({
       id: "negative-nw",
       title: `Net worth is ${formatK(input.netWorth.netWorth)}`,
-      message: `Liabilities significantly exceed assets. Prioritize debt reduction.`,
+      message: `Liabilities exceed assets by more than $10K.`,
       severity: "critical",
       category: "risk",
       timestamp: now,

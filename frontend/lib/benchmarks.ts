@@ -247,16 +247,16 @@ export function calculateBenchmarks(input: BenchmarkInput): BenchmarkResult {
       label: "Savings Rate",
       userValue: input.savingsRate * 100,
       benchmarkValue: target * 100,
-      benchmarkLabel: `Recommended for your profile`,
+      benchmarkLabel: `Benchmark for your profile`,
       unit: "percent",
       higherIsBetter: true,
       percentile: pct,
       personalized: true,
       insight: input.savingsRate >= target
-        ? `Great. You're meeting the recommended savings target for your income and situation.`
+        ? `At or above the ${(target * 100).toFixed(0)}% savings benchmark for your income and situation.`
         : input.savingsRate >= target * 0.5
-          ? `You're saving, but below the recommended ${(target * 100).toFixed(0)}% for your profile. Look for areas to cut back.`
-          : `Your savings rate is well below the ${(target * 100).toFixed(0)}% target. Even small increases compound significantly.`,
+          ? `Below the ${(target * 100).toFixed(0)}% savings benchmark for your profile.`
+          : `Well below the ${(target * 100).toFixed(0)}% savings benchmark for your profile.`,
     });
   }
 
@@ -273,7 +273,7 @@ export function calculateBenchmarks(input: BenchmarkInput): BenchmarkResult {
         ? "Adjusted (aggressive: fewer, deeper)"
         : input.profile.riskTolerance === "conservative"
           ? "Adjusted (conservative: more spread)"
-          : "Recommended diversification",
+          : "Benchmark diversification",
       unit: "number",
       higherIsBetter: true,
       percentile: Math.min(pct, 90),
@@ -299,10 +299,10 @@ export function calculateBenchmarks(input: BenchmarkInput): BenchmarkResult {
       percentile: invPct,
       personalized: true,
       insight: input.topHoldingWeight <= target
-        ? `Within the recommended concentration limit for your risk tolerance.`
+        ? `Within the ${(target * 100).toFixed(0)}% concentration benchmark for your risk tolerance.`
         : input.profile.riskTolerance === "aggressive"
-          ? `Above your ${(target * 100).toFixed(0)}% limit, even for an aggressive approach. High risk.`
-          : `Your largest position exceeds the ${(target * 100).toFixed(0)}% limit. Consider rebalancing.`,
+          ? `Above the ${(target * 100).toFixed(0)}% benchmark, high even for an aggressive profile.`
+          : `Largest position is above the ${(target * 100).toFixed(0)}% benchmark for your profile.`,
     });
   }
 
@@ -327,7 +327,7 @@ export function calculateBenchmarks(input: BenchmarkInput): BenchmarkResult {
         ? "Very healthy debt levels relative to your profile."
         : ratio <= target
           ? `Manageable debt for your ${input.profile.careerStage} career stage.`
-          : `Debt is above the ${(target * 100).toFixed(0)}% threshold for your profile. Prioritize paydown.`,
+          : `Debt is above the ${(target * 100).toFixed(0)}% threshold for your profile.`,
     });
   }
 
@@ -347,8 +347,8 @@ export function calculateBenchmarks(input: BenchmarkInput): BenchmarkResult {
       percentile: Math.min(pct, 95),
       personalized: true,
       insight: investPct >= target
-        ? `You're investing a healthy portion of your net worth for your profile.`
-        : `Consider moving more to investments, adjusted for your ${input.profile.riskTolerance} risk tolerance.`,
+        ? `At or above the invested-share benchmark for your profile.`
+        : `Below the invested-share benchmark for your ${input.profile.riskTolerance} risk tolerance.`,
     });
   }
 
@@ -373,10 +373,10 @@ export function calculateBenchmarks(input: BenchmarkInput): BenchmarkResult {
       percentile: pct,
       personalized: true,
       insight: monthsCovered >= target
-        ? `You have ${monthsCovered.toFixed(1)} months of expenses covered. Well prepared.`
+        ? `${monthsCovered.toFixed(1)} months of expenses covered, at or above the ${target}-month benchmark.`
         : monthsCovered >= target * 0.5
-          ? `${monthsCovered.toFixed(1)} months covered. Aim for ${target} months${!input.profile.hasStableIncome ? " especially with variable income" : ""}.`
-          : `Only ${monthsCovered.toFixed(1)} months of expenses covered. Building this buffer should be a priority.`,
+          ? `${monthsCovered.toFixed(1)} of ${target} benchmark months covered${!input.profile.hasStableIncome ? ", against variable income" : ""}.`
+          : `${monthsCovered.toFixed(1)} of ${target} benchmark months covered.`,
     });
   }
 

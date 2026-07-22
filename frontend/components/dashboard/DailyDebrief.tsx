@@ -95,15 +95,15 @@ function getDebriefGreeting(tone: string, itemCount: number): string {
     switch (tone) {
       case "casual": return "Nothing major happening right now. Enjoy the calm.";
       case "concise": return "No notable updates.";
-      case "encouraging": return "All quiet on the market front  - a good time to review your strategy!";
+      case "encouraging": return "All quiet on the market front. Nothing flagged in your data today.";
       default: return "No significant developments to report at this time.";
     }
   }
   switch (tone) {
-    case "casual": return `Here's what's been going on  - ${itemCount} things worth knowing:`;
+    case "casual": return `Here's what has been going on: ${itemCount} things worth knowing:`;
     case "concise": return `${itemCount} updates:`;
     case "encouraging": return `Stay informed! Here are ${itemCount} developments that matter for your journey:`;
-    default: return `Your daily briefing  - ${itemCount} key development${itemCount > 1 ? "s" : ""}:`;
+    default: return `Your daily briefing: ${itemCount} key development${itemCount > 1 ? "s" : ""}:`;
   }
 }
 
