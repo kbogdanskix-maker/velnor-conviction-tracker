@@ -134,7 +134,7 @@ export const LEARNING_CARDS: LearningCard[] = [
   {
     id: "concentration-risk",
     title: "Concentration Risk",
-    body: "One of your holdings makes up over 40% of your portfolio. Concentrated positions amplify both gains and losses, so it's worth checking if this fits your risk tolerance.",
+    body: "One of your holdings makes up over 40% of your portfolio. Concentrated positions amplify both gains and losses: a larger share of your return, up or down, rides on that single name.",
     category: "portfolio",
     priority: 9,
     icon: PieChart,

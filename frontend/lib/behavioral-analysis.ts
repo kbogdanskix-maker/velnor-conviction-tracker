@@ -133,9 +133,9 @@ export function analyzeBehavior(input: BehaviorInput): BehaviorResult {
     severity: recentBuys.length >= 3 ? "high" : recentBuys.length >= 2 ? "moderate" : "low",
     detected: recentBuys.length >= 2,
     evidence: recentBuys.length >= 2
-      ? `You've made ${recentBuys.length} buy decisions in the last 7 days. Make sure you're not chasing momentum.`
+      ? `You've made ${recentBuys.length} buy decisions in the last 7 days, a faster pace than a typical week.`
       : "No pattern of reactionary trading detected.",
-    tip: "Implement a 48-hour cooling period before executing any trade decision.",
+    tip: "A cooling-off period between a price move and a decision is one way traders separate a reaction from a plan.",
     icon: History,
   });
 
