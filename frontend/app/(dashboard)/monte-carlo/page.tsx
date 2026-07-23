@@ -559,9 +559,9 @@ export default function MonteCarloPage() {
 
                   if (phase === "withdrawal") {
                     if (result.successRate >= 95) {
-                      insights.push({ type: "success", text: `At these inputs, ${result.successRate.toFixed(0)}% of simulations ended with funds remaining  - a very strong result.` });
+                      insights.push({ type: "success", text: `At these inputs, ${result.successRate.toFixed(0)}% of simulations ended with funds remaining, a very strong result.` });
                     } else if (result.successRate >= 80) {
-                      insights.push({ type: "info", text: `${result.successRate.toFixed(0)}% success rate is generally considered acceptable, but consider having a fallback plan for the ${(100 - result.successRate).toFixed(0)}% where funds run out.` });
+                      insights.push({ type: "info", text: `${result.successRate.toFixed(0)}% of simulations ended with funds remaining. In the other ${(100 - result.successRate).toFixed(0)}%, funds ran out before the horizon.` });
                     } else {
                       insights.push({ type: "warning", text: `At these inputs, only ${result.successRate.toFixed(0)}% of simulations ended with funds remaining. Adjusting the withdrawal, retirement age, or savings inputs above will show how the outcome changes.` });
                     }

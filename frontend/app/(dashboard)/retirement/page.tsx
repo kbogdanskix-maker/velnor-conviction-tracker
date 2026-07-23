@@ -239,7 +239,7 @@ export default function RetirementPage() {
                   if (canRetire) {
                     ins.push({ type: "success", text: `At a 4% withdrawal rate your portfolio sustains ${formatCurrency(sustainableMonthly)}/mo - ${sustainableMonthly >= monthlyExpenses ? "comfortably covering" : "close to"} your current ${formatCurrency(monthlyExpenses)}/mo in expenses${annualSS > 0 ? `, plus ${formatCurrency(annualSS / 12)}/mo Social Security` : ""}.` });
                   } else if (depletionAge) {
-                    ins.push({ type: "warning", text: `Portfolio runs out at age ${depletionAge}. Consider retiring later, increasing savings now, or reducing expenses. Even ${formatCurrency(200)}/mo more today significantly extends the runway.` });
+                    ins.push({ type: "warning", text: `At these inputs the portfolio runs out at age ${depletionAge}. A later retirement age, higher savings, or lower expenses each push that date out. The inputs above show how much: even ${formatCurrency(200)}/mo more extends the runway noticeably.` });
                   }
 
                   if (annualSS > 0 && ssStartAge > retireAge) {

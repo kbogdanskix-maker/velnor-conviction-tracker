@@ -1,5 +1,52 @@
 # Velnor compliance + coherence audit — 2026-07-01
 
+## ✅ FOLLOW-UP SWEEP (2026-07-22) — frontend deterministic insight strings
+
+The 07-01 pass hardened the **backend AI prompts** and removed ticker recs, but it
+did **not** fully catch the frontend's own **computed-insight strings** (the
+deterministic text each page assembles from the user's numbers). B4 claimed
+`lib/benchmarks.ts` was reworded, but only its ticker recs were — the metric-insight
+strings still gave directives until this sweep. Deterministic/rule-based output counts
+as advice the same as AI output (robo-advice is still advice), so these mattered.
+
+Reworded to state the metric against a named benchmark (grade/number carries the
+standing, reader draws the conclusion). All string-only, logic unchanged; type-check +
+12 tests + production build clean. Commits `44dd242`, `a207508`, `93d91e3`, `6019acd`,
+`f7cebbd`, plus the two below.
+
+- **`app/(dashboard)/health-score`** — every dimension insight, the hero summary, and
+  the "Priority Actions" section (renamed "Where you score lowest"). "Urgently increase
+  contributions" / "Focus on paying down debt" / "Consider rebalancing" etc. all → metric
+  statements. Removed a dead `Dimension.color` field that still carried banned hues.
+  **Verified live authed** (health-score, goals, benchmark all render observational,
+  console-clean).
+- **`lib/benchmarks.ts`** — the remaining B4 gap: concentration/debt/savings/invest/
+  emergency insights de-directived; "Recommended ..." labels → "Benchmark ...".
+- **`lib/smart-alerts.ts`** (the live path, now wired) — "Prioritize debt reduction" →
+  states the shortfall.
+- **`components/goals/GoalDetailPanel.tsx`** — "consider increasing contributions" →
+  "projected $X short at the current contribution and return rate" (also dropped 2 em-dashes).
+- **`components/dashboard/DailyDebrief.tsx`** — softened "a good time to review your
+  strategy"; cleared "  - " separators.
+- **`lib/learning-cards.ts`** (renders on dashboard) — concentration card's "worth
+  checking if this fits your risk tolerance" (a suitability nudge on a >40% position) →
+  pure explanation.
+- **`lib/behavioral-analysis.ts`** (/behavior) — recency-bias EVIDENCE field carried a
+  directive; moved the caution to the tip, evidence now observational. Other tips left:
+  behavior-level Socratic framing, which the operating line permits.
+- **B7 closed** — `monte-carlo` ("consider having a fallback plan" → states the failure
+  share) and `retirement` ("Consider retiring later, increasing savings...") → both now
+  describe what moves the outcome and point at the inputs, no imperative.
+
+Also fixed here, adjacent: `proxy.ts` (live Next 16 middleware) matched public paths with
+`startsWith`, so `/health-score` matched `/health` and skipped session-refresh — now
+segment-boundary matched (not an auth bypass; the dashboard layout gates server-side).
+
+**learn-content.ts intentionally NOT swept** — generic educational course material, not
+tied to the user's holdings, which the operating line permits.
+
+---
+
 ## ✅ RESOLUTION LOG (2026-07-01, same day — fixes applied)
 All findings below except §E fixed in this pass. Backend imports + frontend
 type-check both clean. NOT browser-verified (authed pages + live AI/backend
