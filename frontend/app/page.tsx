@@ -365,7 +365,7 @@ export default function LandingPage() {
             </Reveal>
             <Reveal delay={180}>
               <p className="text-zinc-400 text-lg max-w-xl leading-relaxed mb-9">
-                Velnor is where your <span className="text-zinc-200">investing convictions</span> live.
+                Velnor is where your <span className="text-zinc-200">investing convictions</span>{" "}live.
                 Write down why you bought, watch each thesis play out against the price, and see how
                 right you&apos;ve actually been over time. Built for investors who make their own calls.
               </p>
