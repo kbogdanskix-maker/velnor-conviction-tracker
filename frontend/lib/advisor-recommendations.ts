@@ -27,7 +27,7 @@ const RECS: { match: (ctx: AdvisorContext) => boolean; rec: AdvisorRec }[] = [
     rec: {
       title: "Certified Financial Planner",
       credential: "CFP",
-      reason: "Holistic retirement and wealth planning  - investment strategy, tax efficiency, estate basics.",
+      reason: "Holistic retirement and wealth planning: investment strategy, tax efficiency, estate basics.",
       when: "You have retirement goals or significant assets to manage across accounts.",
     },
   },
@@ -36,7 +36,7 @@ const RECS: { match: (ctx: AdvisorContext) => boolean; rec: AdvisorRec }[] = [
     rec: {
       title: "Chartered Financial Analyst",
       credential: "CFA",
-      reason: "Deep investment analysis  - portfolio construction, asset allocation, risk management.",
+      reason: "Deep investment analysis: portfolio construction, asset allocation, risk management.",
       when: "You're actively managing a sizeable portfolio and want institutional-grade insight.",
     },
   },
@@ -45,7 +45,7 @@ const RECS: { match: (ctx: AdvisorContext) => boolean; rec: AdvisorRec }[] = [
     rec: {
       title: "Certified Public Accountant",
       credential: "CPA",
-      reason: "Tax optimization  - capital gains harvesting, dividend taxation, estimated payments.",
+      reason: "Tax optimization: capital gains harvesting, dividend taxation, estimated payments.",
       when: "Your investment income is material or your tax situation is getting complex.",
     },
   },
@@ -54,7 +54,7 @@ const RECS: { match: (ctx: AdvisorContext) => boolean; rec: AdvisorRec }[] = [
     rec: {
       title: "Certified Mortgage Advisor",
       credential: "CMA",
-      reason: "Loan structuring  - rate comparison, pre-approval strategy, refinancing analysis.",
+      reason: "Loan structuring: rate comparison, pre-approval strategy, refinancing analysis.",
       when: "You're planning a major purchase that involves financing.",
     },
   },
@@ -63,7 +63,7 @@ const RECS: { match: (ctx: AdvisorContext) => boolean; rec: AdvisorRec }[] = [
     rec: {
       title: "Accredited Financial Counselor",
       credential: "AFC",
-      reason: "Debt management and budgeting  - payoff strategy, cash flow planning, financial wellness.",
+      reason: "Debt management and budgeting: payoff strategy, cash flow planning, financial wellness.",
       when: "You want a structured plan to reduce liabilities and improve cash flow.",
     },
   },
@@ -72,7 +72,7 @@ const RECS: { match: (ctx: AdvisorContext) => boolean; rec: AdvisorRec }[] = [
     rec: {
       title: "College Financial Advisor",
       credential: "529 / FAFSA Specialist",
-      reason: "Education funding  - 529 plan selection, financial aid strategy, scholarship search.",
+      reason: "Education funding: 529 plan selection, financial aid strategy, scholarship search.",
       when: "You're saving for education expenses and want to maximize tax advantages.",
     },
   },
@@ -81,7 +81,7 @@ const RECS: { match: (ctx: AdvisorContext) => boolean; rec: AdvisorRec }[] = [
     rec: {
       title: "Estate Planning Attorney",
       credential: "JD / TEP",
-      reason: "Wealth transfer  - trusts, wills, power of attorney, estate tax minimization.",
+      reason: "Wealth transfer: trusts, wills, power of attorney, estate tax minimization.",
       when: "Your net worth warrants succession planning to protect your family.",
     },
   },
@@ -90,7 +90,7 @@ const RECS: { match: (ctx: AdvisorContext) => boolean; rec: AdvisorRec }[] = [
     rec: {
       title: "Certified Financial Counselor",
       credential: "CFC",
-      reason: "Financial foundations  - emergency fund sizing, insurance review, basic budgeting.",
+      reason: "Financial foundations: emergency fund sizing, insurance review, basic budgeting.",
       when: "You're building your safety net or want help with foundational money habits.",
     },
   },

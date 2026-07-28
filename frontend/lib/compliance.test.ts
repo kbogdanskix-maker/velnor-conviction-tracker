@@ -22,6 +22,7 @@ import { calculateBenchmarks, DEFAULT_PROFILE, type BenchmarkInput, type RiskPro
 import { evaluateAlerts, type AlertInput } from "./smart-alerts";
 import { analyzeBehavior, type BehaviorInput } from "./behavioral-analysis";
 import { LEARNING_CARDS } from "./learning-cards";
+import { getAdvisorRecommendations } from "./advisor-recommendations";
 
 /**
  * Instrument-level directives: a buy/sell/trim/rebalance/suitability call on the
@@ -173,6 +174,33 @@ describe("learning cards give no per-holding directive", () => {
     for (const card of LEARNING_CARDS) {
       expectClean(card.body, `card ${card.id} body`);
       expectClean(card.title, `card ${card.id} title`);
+    }
+  });
+});
+
+// ── Advisor recommendations ─────────────────────────────────────────
+// Pointing at a licensed professional is the guardrail's *permitted* form of
+// "recommendation". This guards the copy: the reason/when text must stay clean
+// of instrument directives and voice tells (the reason fields had "  - "
+// separators before this sweep).
+
+describe("advisor recommendations stay clean", () => {
+  // A context that triggers every rule so all reason/when strings are exercised.
+  const recs = getAdvisorRecommendations({
+    goalIcons: ["sunset", "home", "car", "graduation-cap", "shield"],
+    netWorth: 2_000_000,
+    hasPortfolio: true,
+    totalLiabilities: 80_000,
+    savingsRate: 5,
+    annualDividendIncome: 8_000,
+  });
+  it("returns professional pointers", () => {
+    expect(recs.length).toBeGreaterThan(0);
+  });
+  it("reason and when text is clean", () => {
+    for (const r of recs) {
+      expectClean(r.reason, `advisor ${r.credential} reason`);
+      expectClean(r.when, `advisor ${r.credential} when`);
     }
   });
 });
