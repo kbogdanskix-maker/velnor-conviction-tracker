@@ -95,7 +95,7 @@ export const LEARN_CONTENT: LearnItem[] = [
     title: "5-Step Stock Analysis Framework",
     tagline: "A repeatable process for evaluating any stock before you commit capital.",
     readMin: 8,
-    aiAngle: "Walk through each step of this framework applied to [TICKER]  - moat assessment, financial quality, and what the current price implies.",
+    aiAngle: "Walk through each step of this framework applied to [TICKER] - moat assessment, financial quality, and what the current price implies.",
     steps: [
       {
         title: "Understand the business first",
@@ -108,7 +108,7 @@ export const LEARN_CONTENT: LearnItem[] = [
         tip: "Be skeptical of companies that describe their moat in terms of patents. Patents expire. Network effects and switching costs are harder to dislodge.",
       },
       {
-        title: "Read the financials  - but look at the right numbers",
+        title: "Read the financials - but look at the right numbers",
         body: "Revenue growth rate, free cash flow margin (not net income), return on invested capital, and debt relative to operating cash flow.\n\nFCF is harder to manipulate than earnings. ROIC above the cost of capital means the business creates value. ROIC below it destroys value, regardless of growth rate. A company growing fast while destroying capital is not a good business.",
         tool: { label: "Open DCF Tool", href: "/valuation/dcf" },
       },
@@ -172,7 +172,7 @@ export const LEARN_CONTENT: LearnItem[] = [
     title: "When to Sell: A Decision Framework",
     tagline: "Five clear conditions that justify selling. \"It went up\" is not one of them.",
     readMin: 5,
-    aiAngle: "Evaluate [TICKER] against each sell condition  - thesis integrity, valuation, and concentration  - to surface whether action is warranted.",
+    aiAngle: "Evaluate [TICKER] against each sell condition - thesis integrity, valuation, and concentration - to surface whether action is warranted.",
     steps: [
       {
         title: "Your thesis has been invalidated",
@@ -248,7 +248,7 @@ export const LEARN_CONTENT: LearnItem[] = [
     title: "Building Your First DCF",
     tagline: "Discounted cash flow analysis, explained practically without the finance degree.",
     readMin: 9,
-    aiAngle: "Estimate the key DCF inputs for [TICKER]  - FCF, growth rate, discount rate  - and show what assumptions the current price requires.",
+    aiAngle: "Estimate the key DCF inputs for [TICKER] - FCF, growth rate, discount rate - and show what assumptions the current price requires.",
     steps: [
       {
         title: "Start with free cash flow, not earnings",
@@ -328,7 +328,7 @@ export const LEARN_CONTENT: LearnItem[] = [
     title: "P/E Ratios: The Most Misused Metric in Finance",
     tagline: "How to actually interpret price-to-earnings, and stop making the mistake everyone makes.",
     readMin: 6,
-    aiAngle: "Contextualize [TICKER]'s P/E against its growth rate, sector peers, and historical range  - and whether the multiple is justified.",
+    aiAngle: "Contextualize [TICKER]'s P/E against its growth rate, sector peers, and historical range - and whether the multiple is justified.",
     opening: "The P/E ratio is cited everywhere and understood almost nowhere. A stock gets called cheap at P/E 12 and expensive at P/E 35 as if those numbers carry meaning in isolation. They don't.",
     sections: [
       {
@@ -564,7 +564,7 @@ export const LEARN_CONTENT: LearnItem[] = [
       },
       {
         title: "Check the cash flow statement, not just income",
-        body: "The income statement is on the first page of financial statements and gets most of the attention. The cash flow statement is typically several pages later and is more revealing.\n\nLook at Cash from operations and Capital expenditures. Calculate free cash flow. If FCF has been declining for three consecutive years while EPS has risen, something is worth investigating. Also review Changes in working capital  - rapid growth in receivables relative to revenue is a warning sign.",
+        body: "The income statement is on the first page of financial statements and gets most of the attention. The cash flow statement is typically several pages later and is more revealing.\n\nLook at Cash from operations and Capital expenditures. Calculate free cash flow. If FCF has been declining for three consecutive years while EPS has risen, something is worth investigating. Also review Changes in working capital - rapid growth in receivables relative to revenue is a warning sign.",
         tool: { label: "Open DCF Tool", href: "/valuation/dcf" },
       },
       {
@@ -586,12 +586,12 @@ export const LEARN_CONTENT: LearnItem[] = [
     title: "Building Your Emergency Fund",
     tagline: "The one financial move that protects everything else you are trying to build.",
     readMin: 4,
-    aiAngle: "Assess how an emergency fund interacts with a [TICKER] position  - opportunity cost, liquidity, and whether you are investing money you may need.",
+    aiAngle: "Assess how an emergency fund interacts with a [TICKER] position - opportunity cost, liquidity, and whether you are investing money you may need.",
     steps: [
       {
         title: "Size it correctly for your situation",
-        body: "The standard advice is three to six months of expenses. The right number depends on your situation:\n\n- Single income household, or variable income: six months minimum\n- Dual income household with stable employment: three months is defensible\n- Self-employed or commission-based income: nine to twelve months\n- Approaching retirement or in retirement: twelve to twenty-four months\n\nThe fund covers essential monthly expenses only  - housing, food, utilities, insurance, minimum debt payments. Not discretionary spending.",
-        tip: "Calculate the number precisely. Vague targets ('a few months') lead to underfunding. A specific number  - $22,400  - is easier to work toward than 'enough.'",
+        body: "The standard advice is three to six months of expenses. The right number depends on your situation:\n\n- Single income household, or variable income: six months minimum\n- Dual income household with stable employment: three months is defensible\n- Self-employed or commission-based income: nine to twelve months\n- Approaching retirement or in retirement: twelve to twenty-four months\n\nThe fund covers essential monthly expenses only - housing, food, utilities, insurance, minimum debt payments. Not discretionary spending.",
+        tip: "Calculate the number precisely. Vague targets ('a few months') lead to underfunding. A specific number - $22,400 - is easier to work toward than 'enough.'",
       },
       {
         title: "Keep it liquid and boring",
@@ -603,7 +603,7 @@ export const LEARN_CONTENT: LearnItem[] = [
       },
       {
         title: "Review it annually and after major life changes",
-        body: "If your expenses have increased  - new mortgage, new child, higher insurance  - recalculate the target. If you used any of the fund, replenishing it takes priority over other financial goals until it is restored.\n\nThe fund is not a savings vehicle to be optimized. Once it is at target, leave it alone and focus capital elsewhere.",
+        body: "If your expenses have increased - new mortgage, new child, higher insurance - recalculate the target. If you used any of the fund, replenishing it takes priority over other financial goals until it is restored.\n\nThe fund is not a savings vehicle to be optimized. Once it is at target, leave it alone and focus capital elsewhere.",
       },
     ],
   },
@@ -615,11 +615,11 @@ export const LEARN_CONTENT: LearnItem[] = [
     title: "Evaluating a Dividend Stock",
     tagline: "Yield is not a reason to buy. It is a starting point for five harder questions.",
     readMin: 6,
-    aiAngle: "Evaluate [TICKER]'s dividend quality  - yield, payout ratio, coverage, growth history, and sustainability.",
+    aiAngle: "Evaluate [TICKER]'s dividend quality - yield, payout ratio, coverage, growth history, and sustainability.",
     steps: [
       {
         title: "Look at payout ratio before yield",
-        body: "Yield tells you what the company is paying relative to its stock price. Payout ratio tells you whether it can sustain it.\n\nPayout ratio = dividends per share / earnings per share. A ratio below 60% is generally sustainable. Above 80%, and a business slowdown puts the dividend at risk. Above 100%, the company is paying out more than it earns  - which is only sustainable if it has the cash reserves and conviction to maintain it.",
+        body: "Yield tells you what the company is paying relative to its stock price. Payout ratio tells you whether it can sustain it.\n\nPayout ratio = dividends per share / earnings per share. A ratio below 60% is generally sustainable. Above 80%, and a business slowdown puts the dividend at risk. Above 100%, the company is paying out more than it earns - which is only sustainable if it has the cash reserves and conviction to maintain it.",
         tip: "Use FCF payout ratio instead of earnings payout ratio for a cleaner picture. Some businesses with high depreciation (utilities, REITs) have earnings payout ratios above 100% while FCF coverage is fine.",
       },
       {
@@ -628,16 +628,16 @@ export const LEARN_CONTENT: LearnItem[] = [
       },
       {
         title: "Understand how dividends affect total return",
-        body: "Dividends are not free money. When a stock pays a dividend, the share price drops by approximately the dividend amount on the ex-dividend date. The total return  - price appreciation plus dividends  - is what matters, not the yield in isolation.\n\nA 6% yielder that appreciates 0% per year returns 6% total. A 1% yielder growing earnings at 18% per year may return 20% total. Chasing yield at the expense of growth is a common and costly mistake.",
+        body: "Dividends are not free money. When a stock pays a dividend, the share price drops by approximately the dividend amount on the ex-dividend date. The total return - price appreciation plus dividends - is what matters, not the yield in isolation.\n\nA 6% yielder that appreciates 0% per year returns 6% total. A 1% yielder growing earnings at 18% per year may return 20% total. Chasing yield at the expense of growth is a common and costly mistake.",
       },
       {
         title: "Assess dividend coverage from free cash flow",
-        body: "Dividends are paid in cash. Verify that the company generates enough free cash flow to fund them.\n\nDividend coverage ratio = FCF / total dividends paid. A ratio above 1.5x is comfortable. Below 1.0x, the dividend requires either debt or asset sales to fund  - neither is sustainable indefinitely.\n\nAlso check the debt load. A highly leveraged company that maintains a dividend through a downturn may survive, but paying shareholders while loaded with debt is a choice that limits financial flexibility.",
+        body: "Dividends are paid in cash. Verify that the company generates enough free cash flow to fund them.\n\nDividend coverage ratio = FCF / total dividends paid. A ratio above 1.5x is comfortable. Below 1.0x, the dividend requires either debt or asset sales to fund - neither is sustainable indefinitely.\n\nAlso check the debt load. A highly leveraged company that maintains a dividend through a downturn may survive, but paying shareholders while loaded with debt is a choice that limits financial flexibility.",
         tool: { label: "Open DCF Tool", href: "/valuation/dcf" },
       },
       {
         title: "Think about the tax treatment",
-        body: "Qualified dividends (from most US corporations, held more than 60 days) are taxed at long-term capital gains rates: 0%, 15%, or 20%. Non-qualified dividends  - from REITs, MLPs, and short-held positions  - are taxed as ordinary income.\n\nFor high-income investors, a REIT yielding 5% in a taxable account can have an effective after-tax yield below 3%. The same holding inside a Roth IRA is fully sheltered.",
+        body: "Qualified dividends (from most US corporations, held more than 60 days) are taxed at long-term capital gains rates: 0%, 15%, or 20%. Non-qualified dividends - from REITs, MLPs, and short-held positions - are taxed as ordinary income.\n\nFor high-income investors, a REIT yielding 5% in a taxable account can have an effective after-tax yield below 3%. The same holding inside a Roth IRA is fully sheltered.",
       },
     ],
   },
@@ -649,7 +649,7 @@ export const LEARN_CONTENT: LearnItem[] = [
     title: "Short Selling: The Mechanics and the Math",
     tagline: "How shorting actually works, why the risk profile is fundamentally different from going long, and why most retail investors shouldn't do it.",
     readMin: 6,
-    aiAngle: "Assess whether [TICKER] has characteristics that make it a credible short candidate  - and the risks of that position.",
+    aiAngle: "Assess whether [TICKER] has characteristics that make it a credible short candidate - and the risks of that position.",
     opening: "Short selling is the practice of profiting from a stock's decline. It sounds symmetrical to buying. It is not. The mechanics create a risk profile that is structurally different in ways that matter enormously.",
     sections: [
       {
@@ -673,7 +673,7 @@ export const LEARN_CONTENT: LearnItem[] = [
     ],
     takeaways: [
       "Short positions have unlimited theoretical loss, unlike long positions capped at 100%",
-      "Being analytically correct is insufficient  - timing and borrow cost both matter",
+      "Being analytically correct is insufficient - timing and borrow cost both matter",
       "High short interest creates short squeeze risk that can overwhelm any fundamental thesis",
       "Put options are a structurally safer tool for most retail investors with a bearish view",
     ],
@@ -684,35 +684,35 @@ export const LEARN_CONTENT: LearnItem[] = [
     type: "deepdive",
     category: "portfolio",
     title: "Options Explained Without the Complexity Theater",
-    tagline: "Calls, puts, covered calls, and protective puts  - what they actually do and when they make sense.",
+    tagline: "Calls, puts, covered calls, and protective puts - what they actually do and when they make sense.",
     readMin: 8,
-    aiAngle: "Assess the options landscape for [TICKER]  - implied volatility, key strike levels, and whether a covered call or protective put could make sense.",
+    aiAngle: "Assess the options landscape for [TICKER] - implied volatility, key strike levels, and whether a covered call or protective put could make sense.",
     opening: "Options have a reputation for being complex. The math can be. The core concepts are not. An option is a contract that gives you the right, but not the obligation, to buy or sell a stock at a specific price before a specific date. That sentence contains the entire framework.",
     sections: [
       {
         heading: "Calls: the right to buy",
-        body: "A call option gives you the right to buy 100 shares of a stock at the strike price before the expiration date.\n\nYou pay a premium upfront. If the stock rises above the strike price before expiration, you can exercise the option and buy at the lower strike price  - or sell the option itself for a profit.\n\nIf the stock stays below the strike price, the option expires worthless and you lose the premium. Maximum loss is the premium paid. Maximum gain is theoretically unlimited as the stock rises.\n\nCalls are a leveraged way to bet on a stock rising. A stock move of 10% can produce a call option gain of 50 to 100% or more, depending on the strike and expiry.",
+        body: "A call option gives you the right to buy 100 shares of a stock at the strike price before the expiration date.\n\nYou pay a premium upfront. If the stock rises above the strike price before expiration, you can exercise the option and buy at the lower strike price - or sell the option itself for a profit.\n\nIf the stock stays below the strike price, the option expires worthless and you lose the premium. Maximum loss is the premium paid. Maximum gain is theoretically unlimited as the stock rises.\n\nCalls are a leveraged way to bet on a stock rising. A stock move of 10% can produce a call option gain of 50 to 100% or more, depending on the strike and expiry.",
       },
       {
         heading: "Puts: the right to sell",
-        body: "A put option gives you the right to sell 100 shares at the strike price before expiration.\n\nA protective put is bought on a stock you already own. If the stock falls below the strike price, you can sell at the higher strike price. It is portfolio insurance  - you pay a premium (the option cost) to limit your downside.\n\nA speculative put is bought without the underlying stock, to profit from a decline.",
+        body: "A put option gives you the right to sell 100 shares at the strike price before expiration.\n\nA protective put is bought on a stock you already own. If the stock falls below the strike price, you can sell at the higher strike price. It is portfolio insurance - you pay a premium (the option cost) to limit your downside.\n\nA speculative put is bought without the underlying stock, to profit from a decline.",
         callout: "Buying a put to protect a long position you hold is not pessimism. It is risk management. The premium is the cost of insurance.",
       },
       {
         heading: "Covered calls: generating income from stocks you own",
-        body: "A covered call means you sell a call option on shares you already hold. You collect the premium immediately. In exchange, you cap your upside at the strike price.\n\nExample: you own 100 shares of XYZ at $50. You sell a call with a $55 strike for $2 premium. You collect $200. If the stock stays below $55 at expiration, you keep the $200 and your shares. If it rises above $55, your shares are called away at $55  - you miss the upside above that.\n\nCovered calls are most useful on positions where you have a price target anyway, or where you want to incrementally reduce exposure while earning income.",
+        body: "A covered call means you sell a call option on shares you already hold. You collect the premium immediately. In exchange, you cap your upside at the strike price.\n\nExample: you own 100 shares of XYZ at $50. You sell a call with a $55 strike for $2 premium. You collect $200. If the stock stays below $55 at expiration, you keep the $200 and your shares. If it rises above $55, your shares are called away at $55 - you miss the upside above that.\n\nCovered calls are most useful on positions where you have a price target anyway, or where you want to incrementally reduce exposure while earning income.",
         tool: { label: "View Your Holdings", href: "/portfolio" },
       },
       {
         heading: "The critical variable: implied volatility",
-        body: "Options are priced based partly on implied volatility  - the market's expectation of how much the stock will move. High implied volatility means expensive options. Low implied volatility means cheaper ones.\n\nBuying options when implied volatility is high (before earnings, after a spike in uncertainty) means you are paying a premium for protection. Selling options (covered calls) when implied volatility is high earns richer premiums.\n\nUnderstanding whether you are buying or selling volatility is more important than understanding the math. Options buyers need large moves to profit. Options sellers profit from stability.",
+        body: "Options are priced based partly on implied volatility - the market's expectation of how much the stock will move. High implied volatility means expensive options. Low implied volatility means cheaper ones.\n\nBuying options when implied volatility is high (before earnings, after a spike in uncertainty) means you are paying a premium for protection. Selling options (covered calls) when implied volatility is high earns richer premiums.\n\nUnderstanding whether you are buying or selling volatility is more important than understanding the math. Options buyers need large moves to profit. Options sellers profit from stability.",
       },
     ],
     takeaways: [
-      "Calls give the right to buy; puts give the right to sell  - both require paying a premium",
+      "Calls give the right to buy; puts give the right to sell - both require paying a premium",
       "Covered calls generate income from existing holdings by capping upside at the strike price",
-      "Protective puts are portfolio insurance  - you pay a premium to limit downside on a position you hold",
-      "Implied volatility determines option pricing  - high IV means expensive to buy, lucrative to sell",
+      "Protective puts are portfolio insurance - you pay a premium to limit downside on a position you hold",
+      "Implied volatility determines option pricing - high IV means expensive to buy, lucrative to sell",
     ],
   },
 
@@ -724,7 +724,7 @@ export const LEARN_CONTENT: LearnItem[] = [
     tagline: "Not all assets perform the same in inflationary environments. The standard playbook is less reliable than most investors assume.",
     readMin: 6,
     aiAngle: "Assess how [TICKER]'s business model, pricing power, and cost structure would hold up in a sustained inflationary environment.",
-    opening: "The 2021 to 2023 inflation cycle was the first in 40 years significant enough to matter to most investors. The textbook responses  - buy real assets, avoid long-duration bonds  - were partially right and partially wrong. The reality is more nuanced.",
+    opening: "The 2021 to 2023 inflation cycle was the first in 40 years significant enough to matter to most investors. The textbook responses - buy real assets, avoid long-duration bonds - were partially right and partially wrong. The reality is more nuanced.",
     sections: [
       {
         heading: "What inflation actually does to asset prices",
@@ -736,17 +736,17 @@ export const LEARN_CONTENT: LearnItem[] = [
         callout: "Pricing power is the single most important characteristic for an equity to hold up in inflation. Companies that can raise prices without losing customers compound through inflationary periods.",
       },
       {
-        heading: "The real asset case  - and its limits",
-        body: "Real assets (commodities, real estate, infrastructure) have historically provided inflation protection. Commodity prices often rise directly with inflation. Real estate rents tend to escalate with prices.\n\nThe limits: real estate is highly leveraged in rising rate environments, which compresses returns. Commodity exposure is volatile and timing-dependent. Infrastructure is capital-intensive and depends on regulatory frameworks.\n\nTIPS (Treasury Inflation-Protected Securities) offer direct inflation linkage with no credit risk. The tradeoff is low real yields  - they protect purchasing power without generating real returns.",
+        heading: "The real asset case - and its limits",
+        body: "Real assets (commodities, real estate, infrastructure) have historically provided inflation protection. Commodity prices often rise directly with inflation. Real estate rents tend to escalate with prices.\n\nThe limits: real estate is highly leveraged in rising rate environments, which compresses returns. Commodity exposure is volatile and timing-dependent. Infrastructure is capital-intensive and depends on regulatory frameworks.\n\nTIPS (Treasury Inflation-Protected Securities) offer direct inflation linkage with no credit risk. The tradeoff is low real yields - they protect purchasing power without generating real returns.",
         tool: { label: "View Macro Dashboard", href: "/macro" },
       },
       {
         heading: "The practical portfolio implication",
-        body: "Rather than large structural shifts, the more durable inflation response is at the stock selection level:\n\n- Prioritize businesses with demonstrated pricing power over the past two years\n- Be cautious on high-duration growth stocks when inflation resurges\n- Ensure debt-heavy companies in the portfolio have fixed-rate financing\n- Review commodity and energy exposure  - small allocations provide hedging without speculation\n\nMacro shifts at the portfolio level (sell all bonds, buy all commodities) are difficult to time and often arrive after the move has already happened.",
+        body: "Rather than large structural shifts, the more durable inflation response is at the stock selection level:\n\n- Prioritize businesses with demonstrated pricing power over the past two years\n- Be cautious on high-duration growth stocks when inflation resurges\n- Ensure debt-heavy companies in the portfolio have fixed-rate financing\n- Review commodity and energy exposure - small allocations provide hedging without speculation\n\nMacro shifts at the portfolio level (sell all bonds, buy all commodities) are difficult to time and often arrive after the move has already happened.",
       },
     ],
     takeaways: [
-      "Pricing power is the key equity characteristic in inflationary environments  - not sector",
+      "Pricing power is the key equity characteristic in inflationary environments - not sector",
       "High-duration growth stocks are doubly hurt: rising discount rates compress multiples while input costs rise",
       "Real assets offer inflation protection but come with their own structural risks",
       "Stock-level selection for pricing power is more durable than broad macro portfolio shifts",
@@ -760,7 +760,7 @@ export const LEARN_CONTENT: LearnItem[] = [
     title: "Index Funds vs. Stock Picking: An Honest Assessment",
     tagline: "The evidence favors indexing for most investors. Understanding why helps you decide where active management might still make sense.",
     readMin: 6,
-    aiAngle: "Assess whether [TICKER] has the characteristics  - moat, pricing power, long runway  - that would justify owning it individually rather than through an index.",
+    aiAngle: "Assess whether [TICKER] has the characteristics - moat, pricing power, long runway - that would justify owning it individually rather than through an index.",
     opening: "The indexing debate is often framed as a binary: either you believe in active management or you don't. The reality is more granular. Indexing wins on average. Individual stock selection can win in specific circumstances. The question is whether your circumstances qualify.",
     sections: [
       {
@@ -774,7 +774,7 @@ export const LEARN_CONTENT: LearnItem[] = [
       },
       {
         heading: "A rational framework for combining both",
-        body: "Most sophisticated investors use a core-satellite approach:\n\nThe core  - 70 to 80% of the portfolio  - is indexed in low-cost broad market ETFs. This ensures market returns with minimal cost and effort.\n\nThe satellite  - 20 to 30%  - is allocated to individual stocks or sector bets where you have genuine conviction and analytical work to support it.\n\nThis approach lets you pursue alpha without betting your financial future on your ability to beat a market that defeats most professionals.",
+        body: "Most sophisticated investors use a core-satellite approach:\n\nThe core - 70 to 80% of the portfolio - is indexed in low-cost broad market ETFs. This ensures market returns with minimal cost and effort.\n\nThe satellite - 20 to 30% - is allocated to individual stocks or sector bets where you have genuine conviction and analytical work to support it.\n\nThis approach lets you pursue alpha without betting your financial future on your ability to beat a market that defeats most professionals.",
         tool: { label: "View Portfolio Allocation", href: "/portfolio" },
       },
       {
@@ -783,9 +783,9 @@ export const LEARN_CONTENT: LearnItem[] = [
       },
     ],
     takeaways: [
-      "85 to 90% of active funds underperform over 15 years  - fees and market efficiency are structural headwinds",
+      "85 to 90% of active funds underperform over 15 years - fees and market efficiency are structural headwinds",
       "Individual stock selection can add value in small-caps, deep-knowledge sectors, or with genuine informational edge",
-      "A core-satellite approach  - indexed core plus high-conviction individuals  - is the most rational structure for most investors",
+      "A core-satellite approach - indexed core plus high-conviction individuals - is the most rational structure for most investors",
       "Individual stocks are legitimate if you have low costs, real analytical work, long horizons, and emotional discipline",
     ],
   },
@@ -799,11 +799,11 @@ export const LEARN_CONTENT: LearnItem[] = [
     title: "Running a Concentrated Portfolio",
     tagline: "Deliberately owning 8 to 12 positions requires a different set of disciplines than diversification. Here is the operating framework.",
     readMin: 8,
-    aiAngle: "Assess how [TICKER] fits within a high-conviction concentrated portfolio  - weight, thesis strength, and its role in the overall construction.",
+    aiAngle: "Assess how [TICKER] fits within a high-conviction concentrated portfolio - weight, thesis strength, and its role in the overall construction.",
     steps: [
       {
         title: "Accept the premise: concentration is the strategy",
-        body: "A concentrated portfolio is not a diversified portfolio with positions removed. It is a fundamentally different approach to investing, based on the premise that genuine understanding of a small number of excellent businesses  - held for long periods  - outperforms broad exposure to businesses you know less well.\n\nThis premise is supported by evidence. The best long-term investment returns have come from concentrated ownership of exceptional businesses. So have the worst. Concentration amplifies outcomes. The discipline is ensuring your outcomes are amplified in the right direction.",
+        body: "A concentrated portfolio is not a diversified portfolio with positions removed. It is a fundamentally different approach to investing, based on the premise that genuine understanding of a small number of excellent businesses - held for long periods - outperforms broad exposure to businesses you know less well.\n\nThis premise is supported by evidence. The best long-term investment returns have come from concentrated ownership of exceptional businesses. So have the worst. Concentration amplifies outcomes. The discipline is ensuring your outcomes are amplified in the right direction.",
         tip: "The minimum requirement to run a concentrated portfolio: you must be able to explain each holding in two sentences, name the key risk to the thesis, and state the condition under which you would sell.",
       },
       {
@@ -837,18 +837,18 @@ export const LEARN_CONTENT: LearnItem[] = [
     type: "playbook",
     category: "advanced",
     title: "Sizing a High-Conviction Position",
-    tagline: "The framework for going 15 to 20% in a single name  - what justifies it and what disciplines it.",
+    tagline: "The framework for going 15 to 20% in a single name - what justifies it and what disciplines it.",
     readMin: 6,
-    aiAngle: "Work through the conviction sizing framework for a potential 15 to 20% position in [TICKER]  - thesis quality, downside scenario, and portfolio impact.",
+    aiAngle: "Work through the conviction sizing framework for a potential 15 to 20% position in [TICKER] - thesis quality, downside scenario, and portfolio impact.",
     steps: [
       {
         title: "Establish that the conviction is earned, not felt",
-        body: "High conviction is not an emotion. It is the product of specific work:\n\n- You have read several years of filings and understand how the business makes money in detail\n- You have a variant view from consensus  - you believe something about the business that the market price does not reflect\n- You can articulate the downside scenario and explain why you are comfortable with it\n- You have held the position through at least one meaningful correction and maintained the thesis\n\nConviction built on a compelling narrative, an enthusiastic CEO, or three years of rising stock price is not conviction. It is recency bias with a thesis stapled to it.",
+        body: "High conviction is not an emotion. It is the product of specific work:\n\n- You have read several years of filings and understand how the business makes money in detail\n- You have a variant view from consensus - you believe something about the business that the market price does not reflect\n- You can articulate the downside scenario and explain why you are comfortable with it\n- You have held the position through at least one meaningful correction and maintained the thesis\n\nConviction built on a compelling narrative, an enthusiastic CEO, or three years of rising stock price is not conviction. It is recency bias with a thesis stapled to it.",
         tip: "If your conviction increased after the stock went up, examine whether the new information is doing the work or whether the price action is.",
       },
       {
         title: "Run the downside scenario before you size up",
-        body: "Before increasing to a large position, build the bear case explicitly:\n\nWhat is the worst realistic outcome for this business over three years? Not the catastrophic scenario  - the plausible bad outcome. What does the stock price look like in that scenario?\n\nNow calculate: if this position falls 40% from a 15% weight, your total portfolio falls 6%. Is that acceptable? Can you fund living expenses, stay invested, and not be forced to sell? If the answer to any of those questions is no, the size is too large regardless of conviction.",
+        body: "Before increasing to a large position, build the bear case explicitly:\n\nWhat is the worst realistic outcome for this business over three years? Not the catastrophic scenario - the plausible bad outcome. What does the stock price look like in that scenario?\n\nNow calculate: if this position falls 40% from a 15% weight, your total portfolio falls 6%. Is that acceptable? Can you fund living expenses, stay invested, and not be forced to sell? If the answer to any of those questions is no, the size is too large regardless of conviction.",
       },
       {
         title: "Build the position over time, not all at once",
@@ -856,7 +856,7 @@ export const LEARN_CONTENT: LearnItem[] = [
       },
       {
         title: "Set an explicit maximum and honor it",
-        body: "Define the maximum percentage before you start buying. 15%, 18%, 20%  - pick a number and treat it as a hard ceiling.\n\nThe natural temptation as a position appreciates is to let it run. If a 15% position doubles, it becomes 25 to 27% of your portfolio through appreciation alone. At that point, you are no longer choosing to run a 20% position. It has chosen itself. Systematic trimming back to your maximum maintains the structure you chose.",
+        body: "Define the maximum percentage before you start buying. 15%, 18%, 20% - pick a number and treat it as a hard ceiling.\n\nThe natural temptation as a position appreciates is to let it run. If a 15% position doubles, it becomes 25 to 27% of your portfolio through appreciation alone. At that point, you are no longer choosing to run a 20% position. It has chosen itself. Systematic trimming back to your maximum maintains the structure you chose.",
       },
       {
         title: "Review the size decision annually, not just the thesis",
@@ -873,11 +873,11 @@ export const LEARN_CONTENT: LearnItem[] = [
     title: "Identifying Asymmetric Bets",
     tagline: "Situations where the upside is 5x or more and the downside is definable. How to find them, size them, and not confuse them with speculation.",
     readMin: 7,
-    aiAngle: "Assess whether [TICKER] has the characteristics of a genuine asymmetric setup  - identifiable downside, large optionality on the upside.",
+    aiAngle: "Assess whether [TICKER] has the characteristics of a genuine asymmetric setup - identifiable downside, large optionality on the upside.",
     steps: [
       {
         title: "Understand what asymmetry actually means",
-        body: "An asymmetric bet is one where the expected upside, probability-weighted, is significantly larger than the expected downside. This requires two things to be true simultaneously: you can define the downside with reasonable confidence, and the upside is much larger.\n\nThis is different from a volatile stock or a speculative position. A speculative position has undefined, potentially unlimited downside. An asymmetric bet has a floor you can estimate  - a balance sheet, a liquidation value, a contract in place  - and a ceiling that is much higher than the current price.",
+        body: "An asymmetric bet is one where the expected upside, probability-weighted, is significantly larger than the expected downside. This requires two things to be true simultaneously: you can define the downside with reasonable confidence, and the upside is much larger.\n\nThis is different from a volatile stock or a speculative position. A speculative position has undefined, potentially unlimited downside. An asymmetric bet has a floor you can estimate - a balance sheet, a liquidation value, a contract in place - and a ceiling that is much higher than the current price.",
         tip: "The floor is as important as the ceiling. If you cannot articulate what the stock is worth in the bad scenario, you do not have an asymmetric bet. You have speculation.",
       },
       {
@@ -919,7 +919,7 @@ export const LEARN_CONTENT: LearnItem[] = [
       },
       {
         heading: "The businesses where this logic actually holds",
-        body: "The 'ignore valuation' argument is valid for a narrow category of businesses:\n\n- Platforms with network effects that become more valuable as they grow (the 100th user on a network adds more value than the first)\n- Software businesses with high switching costs and recurring revenue, where customer acquisition today generates 5 to 10 years of subscription revenue\n- Marketplaces that are approaching or have achieved winner-take-most dynamics in their category\n- Businesses compounding at 25 to 35% per year where time in the investment is the primary value driver\n\nFor businesses outside this category  - cyclicals, commodities, traditional retail, most industrials  - ignoring valuation is not a sophisticated strategy. It is a rationalization for overpaying.",
+        body: "The 'ignore valuation' argument is valid for a narrow category of businesses:\n\n- Platforms with network effects that become more valuable as they grow (the 100th user on a network adds more value than the first)\n- Software businesses with high switching costs and recurring revenue, where customer acquisition today generates 5 to 10 years of subscription revenue\n- Marketplaces that are approaching or have achieved winner-take-most dynamics in their category\n- Businesses compounding at 25 to 35% per year where time in the investment is the primary value driver\n\nFor businesses outside this category - cyclicals, commodities, traditional retail, most industrials - ignoring valuation is not a sophisticated strategy. It is a rationalization for overpaying.",
       },
       {
         heading: "The right tool: unit economics",
@@ -935,7 +935,7 @@ export const LEARN_CONTENT: LearnItem[] = [
       "Conventional valuation metrics fail for businesses deliberately suppressing profits to build competitive position",
       "Network effects, switching costs, and marketplace dynamics create businesses where conventional metrics mislead",
       "Unit economics (LTV/CAC, contribution margin by cohort) are the right lens for these businesses",
-      "Even for these businesses, long-horizon DCF sensitivity analysis is required  - only the best case justifying the price is not a margin of safety",
+      "Even for these businesses, long-horizon DCF sensitivity analysis is required - only the best case justifying the price is not a margin of safety",
     ],
   },
 
@@ -965,13 +965,13 @@ export const LEARN_CONTENT: LearnItem[] = [
       },
       {
         heading: "When adding during a drawdown is right and when it is not",
-        body: "Averaging down into a high-conviction position during a market-driven drawdown  - where fundamentals are intact and the decline reflects broad selling rather than business deterioration  - is historically one of the highest-return actions available.\n\nThe condition is critical: the thesis must be intact. Adding to a position because the price is lower, without confirming the business is still what you thought it was, is not conviction. It is anchoring to a cost basis.\n\nFor each position during a drawdown, the question is binary: do the fundamentals support the original thesis? If yes, the drawdown is an opportunity. If the answer is uncertain, wait for more information before adding. If no, the size of the loss is irrelevant to the sell decision.",
+        body: "Averaging down into a high-conviction position during a market-driven drawdown - where fundamentals are intact and the decline reflects broad selling rather than business deterioration - is historically one of the highest-return actions available.\n\nThe condition is critical: the thesis must be intact. Adding to a position because the price is lower, without confirming the business is still what you thought it was, is not conviction. It is anchoring to a cost basis.\n\nFor each position during a drawdown, the question is binary: do the fundamentals support the original thesis? If yes, the drawdown is an opportunity. If the answer is uncertain, wait for more information before adding. If no, the size of the loss is irrelevant to the sell decision.",
       },
     ],
     takeaways: [
       "A 40 to 50% drawdown is the expected experience of a high-beta concentrated portfolio over any decade",
       "Recovery math is severe: a 50% drawdown requires a 100% return to break even",
-      "The capitulation zone  - maximum psychological pain  - coincides with maximum negative news, the worst time to sell",
+      "The capitulation zone - maximum psychological pain - coincides with maximum negative news, the worst time to sell",
       "Pre-drawdown preparation (cash runway, written theses, explicit hold conditions) determines whether you survive behavioral mistakes",
     ],
   },
@@ -984,16 +984,16 @@ export const LEARN_CONTENT: LearnItem[] = [
     tagline: "The framing that divides investing into two camps is analytically wrong and practically harmful. Here is a more useful model.",
     readMin: 6,
     aiAngle: "Assess whether [TICKER] is best understood as a growth investment, a value investment, or something that transcends the distinction.",
-    opening: "Every year, financial media tracks whether 'growth is outperforming value' or vice versa. Entire fund categories are built around the distinction. And yet, Warren Buffett has said explicitly that growth and value are not separate approaches  - growth is a component of value. He is right. The framing is a simplification that leads to real analytical errors.",
+    opening: "Every year, financial media tracks whether 'growth is outperforming value' or vice versa. Entire fund categories are built around the distinction. And yet, Warren Buffett has said explicitly that growth and value are not separate approaches - growth is a component of value. He is right. The framing is a simplification that leads to real analytical errors.",
     sections: [
       {
         heading: "What the labels actually mean in practice",
         body: "In practice, 'value' stocks are those trading at low multiples relative to current earnings, book value, or cash flow. 'Growth' stocks trade at high multiples relative to current fundamentals.\n\nThe problem: a stock trading at P/E 8 is not cheap if its earnings are about to decline. A stock trading at P/E 40 is not expensive if it is compounding earnings at 30% annually.\n\nThe labels describe current multiples, not future returns. Current multiples are only half the valuation equation. The other half is what the business will earn in the future.",
-        callout: "A business is worth the present value of its future cash flows. Whether those cash flows are mostly 'now' or mostly 'later' determines the multiple  - but value is the same concept either way.",
+        callout: "A business is worth the present value of its future cash flows. Whether those cash flows are mostly 'now' or mostly 'later' determines the multiple - but value is the same concept either way.",
       },
       {
         heading: "GARP: growth at a reasonable price",
-        body: "The analytical framework that bridges the false dichotomy is GARP  - Growth At a Reasonable Price. It asks: for the growth rate this business can sustain, is the current multiple reasonable?\n\nA useful check: the PEG ratio (P/E divided by expected earnings growth rate). A PEG below 1.0 suggests the multiple may not fully reflect the growth available. A PEG above 2.0 means the growth is priced in and more.\n\nGARP is not a formula. It is a discipline: paying a premium multiple is defensible when growth is durable and reinvestment opportunities are rich. Paying a premium multiple for growth that is fading or cyclical is not.",
+        body: "The analytical framework that bridges the false dichotomy is GARP - Growth At a Reasonable Price. It asks: for the growth rate this business can sustain, is the current multiple reasonable?\n\nA useful check: the PEG ratio (P/E divided by expected earnings growth rate). A PEG below 1.0 suggests the multiple may not fully reflect the growth available. A PEG above 2.0 means the growth is priced in and more.\n\nGARP is not a formula. It is a discipline: paying a premium multiple is defensible when growth is durable and reinvestment opportunities are rich. Paying a premium multiple for growth that is fading or cyclical is not.",
       },
       {
         heading: "When 'growth' stocks are the real value plays",
@@ -1006,7 +1006,7 @@ export const LEARN_CONTENT: LearnItem[] = [
       },
     ],
     takeaways: [
-      "Growth and value are not opposing strategies  - growth is a component of intrinsic value",
+      "Growth and value are not opposing strategies - growth is a component of intrinsic value",
       "Low P/E is not cheap if earnings are declining; high P/E is not expensive if growth more than compensates",
       "GARP (Growth at a Reasonable Price) is the practical synthesis: premium multiples are defensible when growth is durable",
       "Return on incremental invested capital and reinvestment runway are more important than current margins",
@@ -1064,7 +1064,7 @@ export const LEARN_CONTENT: LearnItem[] = [
     title: "Managing a Drawdown: What to Do When a Position Goes Wrong",
     tagline: "The 48-hour rule, the thesis review, and when cutting a loss is the right answer.",
     readMin: 6,
-    aiAngle: "Walk through the drawdown decision framework for [TICKER]  - whether the thesis is intact, whether this is temporary, and what to do next.",
+    aiAngle: "Walk through the drawdown decision framework for [TICKER] - whether the thesis is intact, whether this is temporary, and what to do next.",
     steps: [
       {
         title: "Wait 48 hours before doing anything",
@@ -1160,7 +1160,7 @@ export const LEARN_CONTENT: LearnItem[] = [
       },
     ],
     takeaways: [
-      "Concentration amplifies outcomes  - the best and worst returns both come from concentrated portfolios",
+      "Concentration amplifies outcomes - the best and worst returns both come from concentrated portfolios",
       "A majority of individual stocks underperform the market, which argues for concentrating in your highest-conviction ideas",
       "Above 20% in any single position without exceptional circumstances crosses from investing to speculation",
       "Systematic trimming when positions grow large preserves the thesis while managing the risk exposure",

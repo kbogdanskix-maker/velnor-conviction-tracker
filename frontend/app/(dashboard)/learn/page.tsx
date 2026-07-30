@@ -420,7 +420,7 @@ function PositionFromLossTool() {
           {pv > 0 && <ToolResult label="As % of portfolio" value={`${posPct.toFixed(1)}%`} />}
           {posPct > 20 && (
             <p className="text-[11px] text-orange-400/80 mt-2">
-              Above 20%  - consider whether the thesis justifies this concentration.
+              This sizing puts over 20% of the portfolio into one position.
             </p>
           )}
         </div>
@@ -538,7 +538,7 @@ function ExpectedValueTool() {
             label="Expected return"
             value={fmtPct(evReturn)}
             highlight
-            sub={isPositive ? "Positive expected value  - asymmetry exists" : "Negative expected value  - risk may not be compensated"}
+            sub={isPositive ? "Positive expected value - asymmetry exists" : "Negative expected value - risk may not be compensated"}
           />
           <div className="mt-2 space-y-1">
             {[
@@ -879,7 +879,7 @@ function DetailDrawer({
         {/* Disclaimer */}
         <div className="px-6 py-3 border-t border-zinc-800 shrink-0">
           <p className="text-[10px] text-zinc-700 text-center">
-            Educational content only  - not personalized financial, tax, or investment advice.
+            Educational content only - not personalized financial, tax, or investment advice.
           </p>
         </div>
       </div>

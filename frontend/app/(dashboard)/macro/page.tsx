@@ -35,7 +35,7 @@ export default function MacroPage() {
           Macro
         </h1>
         <p className="text-zinc-500 text-sm mt-0.5">
-          Bond yields, inflation, and Fed policy  - how they affect your portfolio
+          Bond yields, inflation, and Fed policy - how they affect your portfolio
         </p>
       </div>
 

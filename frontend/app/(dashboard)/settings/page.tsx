@@ -92,10 +92,10 @@ export default function SettingsPage() {
           <div>
             <label className="text-xs text-zinc-500 mb-1 block">Base Currency</label>
             <select className="input-field w-full" defaultValue="USD">
-              <option value="USD">USD  - US Dollar</option>
-              <option value="EUR">EUR  - Euro</option>
-              <option value="GBP">GBP  - British Pound</option>
-              <option value="PLN">PLN  - Polish Zloty</option>
+              <option value="USD">USD - US Dollar</option>
+              <option value="EUR">EUR - Euro</option>
+              <option value="GBP">GBP - British Pound</option>
+              <option value="PLN">PLN - Polish Zloty</option>
             </select>
           </div>
         </div>
@@ -279,7 +279,7 @@ export default function SettingsPage() {
           <div className="flex items-center justify-between py-2 border-b border-vela-border">
             <div>
               <p className="text-sm text-zinc-200">Plan</p>
-              <p className="text-xs text-zinc-500">Free tier  - all features included during beta</p>
+              <p className="text-xs text-zinc-500">Free tier - all features included during beta</p>
             </div>
             <span className="text-[10px] font-medium bg-vela-teal/15 text-vela-teal px-2 py-0.5 rounded">Beta</span>
           </div>

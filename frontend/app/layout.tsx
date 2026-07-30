@@ -9,7 +9,7 @@ const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono", displ
 export const metadata: Metadata = {
   title: {
     default: "Velnor",
-    template: "%s  - Velnor",
+    template: "%s - Velnor",
   },
   description: "Your wealth, in motion. Portfolio tracking, valuation tools, and market intelligence for investors.",
   openGraph: {

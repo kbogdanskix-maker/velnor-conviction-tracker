@@ -409,7 +409,7 @@ export const LEARNING_CARDS: LearningCard[] = [
     category: "fundamentals",
     priority: 1,
     icon: LineChart,
-    trigger: () => true, // universal  - always available on /learn page
+    trigger: () => true, // universal - always available on /learn page
   },
 ];
 

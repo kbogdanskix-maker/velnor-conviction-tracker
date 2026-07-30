@@ -328,7 +328,7 @@ export default function TaxHarvestPage() {
                 { icon: AlertTriangle, color: "text-amber-400 border-amber-400/20 bg-amber-400/5", text: "Wash sale rule: You cannot repurchase the same or substantially identical security within 30 days before or after selling at a loss." },
                 { icon: Info, color: "text-teal-400 border-teal-400/20 bg-teal-400/5", text: "Capital losses first offset capital gains. Excess losses can offset up to $3,000 of ordinary income per year, with the rest carried forward." },
                 { icon: DollarSign, color: "text-teal-400 border-teal-400/20 bg-teal-400/5", text: "Tax savings are estimated. Your actual savings depend on your tax bracket, filing status, and other factors. Consult a tax professional." },
-                { icon: TrendingDown, color: "text-zinc-400 border-zinc-700 bg-zinc-800/50", text: "Harvesting doesn't change your economic position  - you're selling low and can reinvest. The benefit is purely from the tax deduction timing." },
+                { icon: TrendingDown, color: "text-zinc-400 border-zinc-700 bg-zinc-800/50", text: "Harvesting doesn't change your economic position - you're selling low and can reinvest. The benefit is purely from the tax deduction timing." },
               ].map((note, i) => (
                 <div key={i} className={`flex gap-3 p-3 rounded-lg border ${note.color}`}>
                   <note.icon className="w-4 h-4 shrink-0 mt-0.5" />

@@ -285,7 +285,7 @@ export default function AnnualReviewPage() {
                         </div>
                       ))}
                       {review.losers.length === 0 && (
-                        <p className="text-sm text-zinc-500 text-center py-4">No losing positions  - nice!</p>
+                        <p className="text-sm text-zinc-500 text-center py-4">No losing positions - nice!</p>
                       )}
                     </div>
                   </div>

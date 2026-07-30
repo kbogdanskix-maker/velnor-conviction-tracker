@@ -205,7 +205,7 @@ export default function TaxPage() {
         <div className="flex items-start gap-2 pt-2 border-t border-vela-border text-[10px] text-zinc-600">
           <Info className="w-3 h-3 mt-0.5 shrink-0" />
           <span>
-            Estimates only  - uses FIFO (first-in, first-out) by earliest buy date. Consult a tax professional for actual tax obligations. Not financial or tax advice.
+            Estimates only - uses FIFO (first-in, first-out) by earliest buy date. Consult a tax professional for actual tax obligations. Not financial or tax advice.
           </span>
         </div>
       </div>

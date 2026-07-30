@@ -153,7 +153,7 @@ function ConfidenceBadge({ rate }: { rate: number }) {
   return (
     <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded ${bg} ${color} text-xs font-medium`}>
       <Icon className="w-3.5 h-3.5" />
-      {label}  - {rate.toFixed(0)}% success
+      {label} - {rate.toFixed(0)}% success
     </div>
   );
 }
@@ -568,12 +568,12 @@ export default function MonteCarloPage() {
                   }
 
                   if (result.medianFinal > (nwSummary?.net_worth ?? 0) * 3) {
-                    insights.push({ type: "success", text: `The median outcome grows your wealth to ${fmt(result.medianFinal, true)}  - more than 3x your current net worth.` });
+                    insights.push({ type: "success", text: `The median outcome grows your wealth to ${fmt(result.medianFinal, true)} - more than 3x your current net worth.` });
                   }
 
                   const spread = result.p90Final - result.p10Final;
                   if (spread > result.medianFinal * 2) {
-                    insights.push({ type: "info", text: `Wide range of outcomes in today's dollars  - the gap between optimistic and pessimistic is ${fmt(spread, true)}. This reflects market uncertainty over ${years} years, not a flaw in the projection.` });
+                    insights.push({ type: "info", text: `Wide range of outcomes in today's dollars - the gap between optimistic and pessimistic is ${fmt(spread, true)}. This reflects market uncertainty over ${years} years, not a flaw in the projection.` });
                   }
 
                   if (volatility > 20) {

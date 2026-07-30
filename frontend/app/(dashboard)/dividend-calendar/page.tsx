@@ -349,17 +349,17 @@ export default function DividendCalendarPage() {
             <p className="text-xs text-zinc-400">
               {payingMonths >= 10 ? (
                 <>
-                  <span className="text-emerald-400 font-medium">Excellent coverage</span>  - you receive dividends in {payingMonths} out of 12 months.
+                  <span className="text-emerald-400 font-medium">Excellent coverage</span> - you receive dividends in {payingMonths} out of 12 months.
                   This provides consistent passive income throughout the year.
                 </>
               ) : payingMonths >= 6 ? (
                 <>
-                  <span className="text-zinc-300 font-medium">Good coverage</span>  - dividends expected in {payingMonths} months.
+                  <span className="text-zinc-300 font-medium">Good coverage</span> - dividends expected in {payingMonths} months.
                   Adding stocks with different payment schedules could fill the gaps.
                 </>
               ) : (
                 <>
-                  <span className="text-amber-400 font-medium">Sparse coverage</span>  - dividends only in {payingMonths} month{payingMonths !== 1 ? "s" : ""}.
+                  <span className="text-amber-400 font-medium">Sparse coverage</span> - dividends only in {payingMonths} month{payingMonths !== 1 ? "s" : ""}.
                   Consider diversifying with dividend payers that have staggered schedules for more consistent income.
                 </>
               )}

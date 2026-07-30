@@ -160,8 +160,8 @@ export default function ComparePage() {
 
   // Colours for return bars relative to user's own return
   function returnBarColor(returnVal: number, isUser: boolean): string {
-    if (isUser) return "#1AA8BB";          // teal  - your portfolio
-    if (returnVal > userReturn) return "#f43f5e";  // rose  - benchmark beats you
+    if (isUser) return "#1AA8BB";          // teal - your portfolio
+    if (returnVal > userReturn) return "#f43f5e";  // rose - benchmark beats you
     if (returnVal < userReturn) return "#34d399";  // emerald - you beat benchmark
     return "#71717a";
   }
@@ -515,12 +515,12 @@ export default function ComparePage() {
       <div className="vela-card p-5">
         <h3 className="text-sm font-semibold text-zinc-300 mb-3">Understanding the Metrics</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
-          <div><span className="font-medium text-zinc-300">Annual Return</span><span className="text-zinc-500">  - Average yearly return (historical, not guaranteed).</span></div>
-          <div><span className="font-medium text-zinc-300">Volatility</span><span className="text-zinc-500">  - Standard deviation of returns. Higher = more price swings.</span></div>
-          <div><span className="font-medium text-zinc-300">Max Drawdown</span><span className="text-zinc-500">  - Worst peak-to-trough decline. How bad can it get?</span></div>
-          <div><span className="font-medium text-zinc-300">Sharpe Ratio</span><span className="text-zinc-500">  - Return per unit of risk. Higher is better (above 0.7 is good).</span></div>
-          <div><span className="font-medium text-zinc-300">Dividend Yield</span><span className="text-zinc-500">  - Annual dividends as % of price. Income component.</span></div>
-          <div><span className="font-medium text-zinc-300">Expense Ratio</span><span className="text-zinc-500">  - Annual fund management cost. Lower is better.</span></div>
+          <div><span className="font-medium text-zinc-300">Annual Return</span><span className="text-zinc-500"> - Average yearly return (historical, not guaranteed).</span></div>
+          <div><span className="font-medium text-zinc-300">Volatility</span><span className="text-zinc-500"> - Standard deviation of returns. Higher = more price swings.</span></div>
+          <div><span className="font-medium text-zinc-300">Max Drawdown</span><span className="text-zinc-500"> - Worst peak-to-trough decline. How bad can it get?</span></div>
+          <div><span className="font-medium text-zinc-300">Sharpe Ratio</span><span className="text-zinc-500"> - Return per unit of risk. Higher is better (above 0.7 is good).</span></div>
+          <div><span className="font-medium text-zinc-300">Dividend Yield</span><span className="text-zinc-500"> - Annual dividends as % of price. Income component.</span></div>
+          <div><span className="font-medium text-zinc-300">Expense Ratio</span><span className="text-zinc-500"> - Annual fund management cost. Lower is better.</span></div>
         </div>
       </div>
     </PageTransition>

@@ -227,7 +227,7 @@ export default function NetWorthPage() {
             {userLiabilities.length === 0 ? (
               <div className="vela-card text-center py-8">
                 <CreditCard className="w-6 h-6 text-zinc-600 mx-auto mb-2" />
-                <p className="text-sm text-zinc-500">No liabilities  - nice!</p>
+                <p className="text-sm text-zinc-500">No liabilities - nice!</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -695,7 +695,7 @@ function ConfirmDeleteDialog({
           </Dialog.Title>
           <p className="text-sm text-zinc-400 mb-1">
             <span className="font-medium text-zinc-200">{item?.name}</span>{" "}
-             - {formatCurrency(item?.value)}
+            - {formatCurrency(item?.value)}
           </p>
           <p className="text-xs text-zinc-500 mb-5">
             This cannot be undone.

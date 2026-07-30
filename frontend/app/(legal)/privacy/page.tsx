@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { LegalTitle, Section, UL, LI, A } from "../parts";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy — Velnor",
+  title: "Privacy Policy",
   description: "How Velnor collects, uses, and protects your personal data under the GDPR.",
 };
 

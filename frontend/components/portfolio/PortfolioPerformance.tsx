@@ -88,16 +88,16 @@ function sharpeHint(v: number | null | undefined): string {
   if (v == null) return "Needs price history to calculate";
   if (v >= 2) return "Strong risk-adjusted returns";
   if (v >= 1) return "Decent returns for the risk taken";
-  if (v >= 0.5) return "Moderate  - index funds might do better";
-  return "Low  - you're taking on a lot of risk for the return";
+  if (v >= 0.5) return "Moderate: modest return per unit of risk";
+  return "Low: little return for the risk carried";
 }
 
 function volHint(v: number | null | undefined): string {
   if (v == null) return "Needs price history to calculate";
-  if (v <= 12) return "Low volatility  - steady portfolio";
-  if (v <= 20) return "Moderate  - typical for a diversified mix";
-  if (v <= 30) return "High  - expect meaningful daily swings";
-  return "Very high  - concentrated or growth-heavy";
+  if (v <= 12) return "Low volatility: steady portfolio";
+  if (v <= 20) return "Moderate: typical for a diversified mix";
+  if (v <= 30) return "High: meaningful daily swings";
+  return "Very high: concentrated or growth-heavy";
 }
 
 function betaHint(v: number | null | undefined): string {
@@ -105,13 +105,13 @@ function betaHint(v: number | null | undefined): string {
   if (v > 1.3) return "Amplifies market moves significantly";
   if (v > 1) return "Slightly more volatile than the market";
   if (v > 0.7) return "Roughly tracks the broader market";
-  return "Defensive  - less sensitive to market swings";
+  return "Defensive: less sensitive to market swings";
 }
 
 function drawdownHint(v: number | null | undefined): string {
   if (v == null) return "Needs price history to calculate";
-  if (v <= 10) return "Mild  - you weathered downturns well";
-  if (v <= 20) return "Moderate  - check if near-term goals are exposed";
-  if (v <= 35) return "Significant  - painful if you needed to sell";
-  return "Severe  - consider whether your timeline can handle this";
+  if (v <= 10) return "Mild: the portfolio held up through past declines";
+  if (v <= 20) return "Moderate: a decline of this size takes time to recover";
+  if (v <= 35) return "Significant: a fall this deep locks in losses if sold at the bottom";
+  return "Severe: declines of this depth have historically taken years to recover";
 }

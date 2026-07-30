@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { LegalTitle, Section, UL, LI, A } from "../parts";
 
 export const metadata: Metadata = {
-  title: "Terms of Service — Velnor",
+  title: "Terms of Service",
   description: "The terms that govern your use of Velnor, including that it is not investment advice.",
 };
 

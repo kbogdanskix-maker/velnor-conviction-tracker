@@ -488,10 +488,10 @@ export default function SubscriptionsPage() {
       <div className="vela-card p-5">
         <h3 className="text-sm font-semibold text-zinc-300 mb-3">Subscription Audit Tips</h3>
         <div className="space-y-2 text-sm text-zinc-400">
-          <p><span className="text-zinc-200 font-medium">Check bank statements</span>  - search for recurring charges you may have forgotten about.</p>
-          <p><span className="text-zinc-200 font-medium">Audit quarterly</span>  - ask "Did I use this in the last 30 days?" for each subscription.</p>
-          <p><span className="text-zinc-200 font-medium">Negotiate or downgrade</span>  - many services offer cheaper tiers or retention discounts if you call to cancel.</p>
-          <p><span className="text-zinc-200 font-medium">Annual vs monthly</span>  - switching to annual billing often saves 15-20% on services you know you'll keep.</p>
+          <p><span className="text-zinc-200 font-medium">Check bank statements</span> - search for recurring charges you may have forgotten about.</p>
+          <p><span className="text-zinc-200 font-medium">Audit quarterly</span> - ask "Did I use this in the last 30 days?" for each subscription.</p>
+          <p><span className="text-zinc-200 font-medium">Negotiate or downgrade</span> - many services offer cheaper tiers or retention discounts if you call to cancel.</p>
+          <p><span className="text-zinc-200 font-medium">Annual vs monthly</span> - switching to annual billing often saves 15-20% on services you know you'll keep.</p>
         </div>
       </div>
     </PageTransition>
