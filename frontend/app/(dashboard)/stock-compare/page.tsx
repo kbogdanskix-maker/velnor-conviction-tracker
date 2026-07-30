@@ -425,7 +425,7 @@ export default function StockComparePage() {
                   <FloatingCard delay={0.3}>
                     <div className="p-5">
                       <h2 className="font-display font-semibold text-zinc-100 mb-1">Profile Comparison</h2>
-                      <p className="text-[11px] text-zinc-500 mb-4">Normalized scores 0–100</p>
+                      <p className="text-[11px] text-zinc-500 mb-4">Normalized scores 0-100</p>
                       <div className="space-y-3">
                         {radarData.map((row) => {
                           const meta = PROFILE_METRICS.find((m) => m.key === row.metric);

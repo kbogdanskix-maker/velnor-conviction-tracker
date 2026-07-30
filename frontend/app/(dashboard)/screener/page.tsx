@@ -442,8 +442,8 @@ export default function ScreenerPage() {
           isLoading
             ? "loading"
             : hasActiveFilters
-              ? `— ${filtered.length} of ${stocks.length}`
-              : `— ${filtered.length}`
+              ? `${filtered.length} of ${stocks.length}`
+              : `${filtered.length}`
         }
       >
         {isLoading ? (

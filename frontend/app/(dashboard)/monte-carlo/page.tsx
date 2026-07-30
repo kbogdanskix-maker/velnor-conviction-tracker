@@ -429,10 +429,10 @@ export default function MonteCarloPage() {
                   <span className="w-3 h-0.5 bg-teal-500 rounded" /> Median
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <span className="w-3 h-2 bg-vela-teal/20 rounded" /> 25th – 75th
+                  <span className="w-3 h-2 bg-vela-teal/20 rounded" /> 25th to 75th
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <span className="w-3 h-2 bg-vela-teal/10 rounded" /> 10th – 90th
+                  <span className="w-3 h-2 bg-vela-teal/10 rounded" /> 10th to 90th
                 </span>
               </div>
             </div>

@@ -86,7 +86,7 @@ const OBJECTIVE_OPTIONS = [
 
 const HORIZON_OPTIONS = [
   { value: "short" as const, label: "Short", desc: "< 3 yrs" },
-  { value: "medium" as const, label: "Medium", desc: "3–10 yrs" },
+  { value: "medium" as const, label: "Medium", desc: "3-10 yrs" },
   { value: "long" as const, label: "Long", desc: "10+ yrs" },
 ];
 

@@ -117,7 +117,7 @@ const METRICS: MetricDef[] = [
       if (v > 1.5) return gradeFromScore(25);
       return gradeFromScore(60);
     },
-    idealRange: "0.7 – 1.2",
+    idealRange: "0.7 to 1.2",
   },
 ];
 
