@@ -253,6 +253,26 @@ These are the bugs that keep biting Velnor. Every phase must verify them on the 
    silently renders unstyled (usually invisible). Always map to **literal** class strings. This has now
    bitten twice: the Reverse DCF benchmark marker and the health-score grade dot.
 
+### 11.7 Two of these are now ENFORCED by `npm test` — don't rely on memory
+
+Some invariants were re-fixed so many times that they became tests. Run `npm test`; a violation
+names the offending `file:line`.
+
+- **`lib/voice.test.ts`** scans every `.ts/.tsx` under `app/`, `components/`, `lib/` for the §8 dash
+  rules: **no em/en dash** except the standalone null placeholder `"—"`, and **no `"  - "`** (doubled
+  space before a hyphen, the residue of a bulk em-dash replace). It tracks block comments across
+  lines and ignores regex character classes, so JSDoc and the em-dash-stripping sanitisers are not
+  false positives. `app/(legal)/**` is excluded on purpose: GDPR prose is legal register.
+  Writing it immediately caught five **en**-dashes (`–`) in numeric ranges that every manual grep had
+  missed, because the greps looked for `—`.
+- **`lib/compliance.test.ts`** guards the no-advice guardrail on the deterministic generators
+  (`calculateBenchmarks`, `evaluateAlerts`, `analyzeBehavior`, `LEARNING_CARDS`,
+  `getAdvisorRecommendations`): the fields describing the user's OWN data must stay observational.
+  Behaviour-level Socratic coaching is *sanctioned* and deliberately not asserted.
+
+**If you add a new deterministic insight generator, add it to `compliance.test.ts`.** The voice test
+picks up new files automatically.
+
 ## 12. The instrument kit (`components/instrument/`) — compose, don't copy
 
 The editorial "instrument" pattern is implemented once, in `components/instrument/index.tsx`. Pages
