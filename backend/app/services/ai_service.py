@@ -6,6 +6,7 @@ AI service — Claude-powered features.
 import asyncio
 import json
 import logging
+import re
 from typing import AsyncGenerator
 
 import yfinance as yf
@@ -24,13 +25,17 @@ logger = logging.getLogger(__name__)
 # instrument. A disclaimer alone does not reclassify advice (ESMA 2023), so the
 # substance must stay educational/non-directive.
 _NO_ADVICE_GUARDRAIL = (
-    "REGULATORY GUARDRAIL — HIGHEST PRIORITY, overrides every other instruction here:\n"
+    "REGULATORY GUARDRAIL, HIGHEST PRIORITY, overrides every other instruction here:\n"
     "You are an educational tool, not an investment adviser, and you never give investment advice on a specific instrument.\n"
     "- Never tell the user to buy, sell, hold, add, trim, exit, or rotate any specific security, and never imply it.\n"
     "- Never state or imply that one of their specific holdings is over- or under-valued, that they should worry about a position, "
     "that a thesis is 'broken', that they are over-concentrated, or that another instrument would better meet their goals. "
     "Those are implicit recommendations and are forbidden.\n"
     "- Never judge whether a specific instrument is suitable or unsuitable for this user.\n"
+    "- Never attach an evaluative adjective to a valuation multiple or price level. Not 'rich', 'stretched', "
+    "'cheap', 'expensive', 'elevated', 'full', 'undemanding', 'compelling', 'looks high', 'looks low'. "
+    "Saying a P/E 'looks stretched' is an over-valued verdict in disguise. State the figure, say what it is "
+    "relative to a named comparison if you have one sourced, and stop there.\n"
     "- Never present a 'next step', action item, to-do, or 'what to do now' on a specific instrument, even a soft, optional, or "
     "hypothetical one. Naming an action, however gentle, implies a recommendation. Guide only by reflecting the user's own actions "
     "and words back to them and drawing clear contrasts (what they said vs what happened, the conviction they logged vs the outcome); "
@@ -47,7 +52,7 @@ _NO_ADVICE_GUARDRAIL = (
 # app's voice is identical across all AI surfaces. Plain human language, no markdown,
 # structure carried by line breaks rather than symbols.
 _OUTPUT_STYLE = (
-    "OUTPUT STYLE — applies to everything you write, no exceptions:\n"
+    "OUTPUT STYLE, applies to everything you write, no exceptions:\n"
     "- Write in plain, human language, the way a sharp person actually talks, not a report. Use contractions and vary sentence length.\n"
     "- Use NO markdown and no formatting symbols of any kind. Never use asterisks or bold (never write **like this**), never use "
     "headings, hashes, bullet points, numbered lists, tables, or a colon as a section label (never write things like 'Material effect:').\n"
@@ -55,6 +60,20 @@ _OUTPUT_STYLE = (
     "- When you have two or three distinct points, separate them with a line break: a blank line between short plain paragraphs, "
     "the way a person sends a couple of short messages. Let the line breaks carry the structure, never symbols or labels."
 )
+
+def _scrub_dashes(text: str) -> str:
+    """Normalise em/en dashes out of a COMPLETE model output.
+
+    _OUTPUT_STYLE forbids them, but a smaller model still slips occasionally.
+    The frontend's stripAiMarkdown normalises the live stream; this covers the
+    server-side cache, which stores the text for 12h and would otherwise serve
+    the dashes back on every subsequent read.
+
+    Whole strings only, never a streamed chunk: a dash sitting at a chunk
+    boundary would collapse the wrong whitespace.
+    """
+    return re.sub(r"[ \t]*[—–][ \t]*", ", ", text)
+
 
 _client: AsyncAnthropic | None = None
 
@@ -167,7 +186,7 @@ def _build_earnings_prompt(ticker: str, data: dict, news: list[dict]) -> str:
         beat = ""
         if q.get("surprise_pct") is not None:
             pct = q["surprise_pct"]
-            beat = f" — beat by {pct:.1f}%" if pct > 0 else f" — missed by {abs(pct):.1f}%"
+            beat = f", beat by {pct:.1f}%" if pct > 0 else f", missed by {abs(pct):.1f}%"
         est = f", est ${q['eps_estimate']}" if q.get("eps_estimate") else ""
         eps_lines.append(f"  • {q['date']}: EPS ${q['eps_actual']}{est}{beat}")
     eps_block = "\n".join(eps_lines) or "  No recent EPS data available."
@@ -224,7 +243,7 @@ Key Metrics:
 Recent News:
 {news_block}
 
-Write 2–3 short paragraphs (under 220 words total):
+Write 2 to 3 short paragraphs (under 220 words total):
 1. Latest earnings result and headline takeaway
 2. Business momentum and growth trends from the data
 3. Key risks or what to watch next quarter
@@ -259,7 +278,7 @@ async def get_earnings_summary(ticker: str) -> AsyncGenerator[str, None]:
                 full_text.append(text)
                 yield f"data: {json.dumps({'text': text, 'done': False})}\n\n"
 
-        complete = "".join(full_text)
+        complete = _scrub_dashes("".join(full_text))
         await cache_set(cache_key, complete, ttl=3600 * 12)  # 12h cache
         yield f"data: {json.dumps({'done': True})}\n\n"
 
@@ -334,7 +353,7 @@ def _build_learn_prompt(
     if data.get("analyst_target"):
         stats.append(f"Analyst price target: ${data['analyst_target']}")
     if data.get("52w_high"):
-        stats.append(f"52-week range: ${data.get('52w_low')}–${data['52w_high']}")
+        stats.append(f"52-week range: ${data.get('52w_low')} to ${data['52w_high']}")
 
     stats_block = "\n".join(f"  • {s}" for s in stats) or "  (Limited data available)"
 
@@ -365,7 +384,7 @@ Cover: how to read current price relative to the 52-week range when thinking abo
 Show how one would reason about (1) an FCF growth assumption for years 1-5 and what would justify it, (2) a terminal growth rate, (3) a discount rate given the company's risk profile, and how to read what the current price implies about growth expectations. Teach the mechanics; do not conclude the stock is cheap or expensive. Under 250 words.""",
 
         "fcf-vs-earnings": f"""Explain the FCF vs earnings quality analysis using {company} ({ticker}) as the worked example.
-Using the data above — particularly margins and growth rates — show how to judge earnings quality, how to tell higher- from lower-quality cash conversion, and which areas of the cash flow statement to check directly. Teach the method. Under 250 words.""",
+Using the data above, particularly margins and growth rates, show how to judge earnings quality, how to tell higher- from lower-quality cash conversion, and which areas of the cash flow statement to check directly. Teach the method. Under 250 words.""",
 
         "pe-ratio-guide": f"""Explain the P/E ratio analysis framework using {company} ({ticker}) as the worked example.
 Show how to contextualize the trailing P/E of {data.get('pe_trailing', 'N/A')} and forward P/E of {data.get('pe_forward', 'N/A')} against the revenue growth rate, earnings growth, and sector norms, and how to compute and read the implied PEG ratio. Explain what would make a multiple look justified or stretched, and let the reader judge. Under 250 words.""",
@@ -408,7 +427,7 @@ You are a concise investment educator on the Velnor platform. A user is reading 
 
 Framework applied: {concept_id.replace("-", " ").title()}
 
-{company} ({ticker}) — Key Metrics:
+{company} ({ticker}) Key Metrics:
 {stats_block}
 
 Task:
@@ -478,7 +497,7 @@ def _build_reflection_system_prompt(
         )
     else:
         tone_instruction = (
-            "Intermediate level — briefly explain concepts when first used, "
+            "Intermediate level, briefly explain concepts when first used, "
             "but don't over-explain things a reasonably informed investor would know."
         )
 
@@ -517,7 +536,7 @@ def _build_reflection_system_prompt(
     if two_year is not None:
         macro_lines.append(f"  • 2Y Treasury: {float(two_year):.2f}%")
     if spread is not None:
-        macro_lines.append(f"  • 10Y–2Y Spread: {float(spread):.2f}% ({'inverted' if float(spread) < 0 else 'normal'})")
+        macro_lines.append(f"  • 10Y minus 2Y spread: {float(spread):.2f}% ({'inverted' if float(spread) < 0 else 'normal'})")
     if fed_funds is not None:
         macro_lines.append(f"  • Fed Funds Target: {float(fed_funds):.2f}%")
     macro_block = "\n".join(macro_lines) if macro_lines else "  Macro data unavailable."
@@ -528,7 +547,7 @@ def _build_reflection_system_prompt(
 
     # Build thesis summary block (one flat note per ticker from the KV store)
     thesis_lines = [
-        f"  • {t['ticker']} ({t['stance']}): {t['title']} — {t['body'][:400]}"
+        f"  • {t['ticker']} ({t['stance']}): {t['title']}: {t['body'][:400]}"
         for t in thesis_notes
     ] if thesis_notes else ["  No thesis notes written."]
     thesis_block = "\n".join(thesis_lines)
@@ -538,7 +557,7 @@ def _build_reflection_system_prompt(
     # summary above is just a headline.
     trail_lines: list[str] = []
     for t in (thesis_trail or []):
-        trail_lines.append(f"  {t['ticker']} — {t.get('title', '')}:")
+        trail_lines.append(f"  {t['ticker']}: {t.get('title', '')}")
         for e in t.get("entries", []):
             trail_lines.append(f"    - {e['date']} [{e['entry_type']}]: {e['body']}")
     thesis_trail_block = "\n".join(trail_lines) if trail_lines else "  No dated thesis entries."
@@ -574,7 +593,7 @@ def _build_reflection_system_prompt(
         outcome_txt = f", outcome: {outcome}" if outcome and outcome != "pending" else ""
         when = (j.get("decided_at") or "")[:10]
         rationale = (j.get("rationale") or "").strip()
-        rationale_txt = f' — "{rationale}"' if rationale else ""
+        rationale_txt = f': "{rationale}"' if rationale else ""
         journal_lines.append(
             f"  • {when} {str(j.get('action', '')).upper()} {j.get('ticker', '')} ({conv_txt}){outcome_txt}{rationale_txt}"
         )
@@ -584,7 +603,7 @@ def _build_reflection_system_prompt(
 
 {_OUTPUT_STYLE}
 
-You are Vela's portfolio reflection assistant. Your role is to help the user think clearly about their portfolio — not to critique or grade them, but to observe, ask focused questions, and surface connections they may not have made.
+You are Vela's portfolio reflection assistant. Your role is to help the user think clearly about their portfolio, not to critique or grade them, but to observe, ask focused questions, and surface connections they may not have made.
 
 Investor profile:
   • Age: {age}, Risk tolerance: {risk}, Tax bracket: {tax}%
@@ -603,10 +622,10 @@ Net worth: assets ${float(nw.get('total_assets', 0)):,.0f} | liabilities ${float
 Goals:
 {goals_block}
 
-User's standing convictions (flagged notes — always relevant):
+User's standing convictions (flagged notes, always relevant):
 {flagged_block}
 
-User's recent working notes (ephemeral — current observations):
+User's recent working notes (ephemeral, current observations):
 {ephemeral_block}
 
 User's thesis notes (headline summary per ticker):
@@ -636,7 +655,7 @@ Behavioural rules (follow these exactly):
   6. Reference specific tickers and real numbers from their portfolio. Never speak in generalities.
   7. Voice and format: write like a sharp person talking, not a financial report. Plain human language, contractions, varied sentence length. Cut filler and hedging. No emojis. No em-dashes; use commas, periods, or separate sentences. Use NO markdown and no formatting symbols at all: never use asterisks or bold (never write **like this**), no headers, no bullet points, no numbered lists, no colons used as section labels like "Material effect:". When you have two or three distinct points, separate them with a line break, a blank line between short plain paragraphs, the way a person sends a couple of short messages. Let the line breaks carry the structure, never symbols.
   8. Macro timing: bring in rates, the yield curve, or the macro backdrop only when the user's own point connects to it, and prefer to do that later in the conversation. Never steer an early or cold exchange toward macro.
-  9. Be Socratic by default — open by drawing out their thinking. When they ask a direct question ("is X cheap?", "should I go heavier on tech?"), do NOT hand down a buy/sell/hold call and do NOT declare their specific holding cheap, expensive, or their thesis broken. Give them the relevant facts, the framework, and the trade-offs to weigh, surface their own stated reasoning, and let them reach the conclusion. You may discuss general, instrument-agnostic principles, never a personal recommendation on their specific position.
+  9. Be Socratic by default: open by drawing out their thinking. When they ask a direct question ("is X cheap?", "should I go heavier on tech?"), do NOT hand down a buy/sell/hold call and do NOT declare their specific holding cheap, expensive, or their thesis broken. Give them the relevant facts, the framework, and the trade-offs to weigh, surface their own stated reasoning, and let them reach the conclusion. You may discuss general, instrument-agnostic principles, never a personal recommendation on their specific position.
   10. Never invent figures. Valuation multiples (P/E, P/B), growth rates, price targets, peer comparisons, and current prices must come from data you were actually given. If you do not have a number, say so plainly or reason qualitatively. Never fabricate a specific figure or imply you know a live price you were not provided.
   11. Drive toward understanding, never toward an action. Reflection is not an endless interview. After two or three exchanges on a thread, synthesize: say what you have heard and give your honest read of THEIR reasoning. Land it on the clear contrast that matters, drawn from what they actually did and wrote: what they said versus what happened, the conviction they logged versus the outcome, one of their own past positions versus another. State the contrast plainly and let it stand on its own. Do NOT attach, label, or imply a next step, an action item, a "what to do now", or anything to act on, not even a soft or optional one; the contrast is the entire value and the decision is theirs alone, never named here. Do not end every message with a question, and never manufacture a question just to keep the conversation alive. When a thread has run its course, land it on the contrast and close cleanly.
   12. Lean retrospective. Your strongest material is what the user already did and wrote versus what actually happened: their thesis entries, their buys and sells, their logged conviction, positions that moved. Reason about that record and help them learn from it. Do NOT project forward on a specific holding (no statements about where their specific position is headed, or what it will do next). Past facts and their own words are your ground; the future of any specific instrument is not yours to call."""
@@ -780,7 +799,7 @@ async def stream_alert_insight(
 
     # The user's own thesis / conviction, so the insight engages it by name.
     thesis_block = "\n".join(
-        f"  • {t['ticker']} ({t.get('stance', 'note')}): {t.get('title', '')} — {(t.get('body') or '')[:220]}"
+        f"  • {t['ticker']} ({t.get('stance', 'note')}): {t.get('title', '')}: {(t.get('body') or '')[:220]}"
         for t in thesis_notes[:8]
     ) if thesis_notes else "  No thesis written yet."
 
