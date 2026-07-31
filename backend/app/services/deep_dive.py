@@ -322,9 +322,9 @@ async def _run_custom_tool(name: str, args: dict[str, Any]) -> str:
 _RESEARCH_RULES = """\
 You are producing a Deep Dive: a research briefing on one company for the person who owns or is tracking it.
 
-Borrow the DISCIPLINE of equity research — organised sections, exhibits built from real figures, explicit sourcing, stated limitations. Do NOT borrow its conclusions. A sell-side note ends in a rating and a price target. This one must not.
+Borrow the DISCIPLINE of equity research: organised sections, exhibits built from real figures, explicit sourcing, stated limitations. Do NOT borrow its conclusions. A sell-side note ends in a rating and a price target. This one must not.
 
-HARD LIMITS (compliance, not style — these override any research convention you know):
+HARD LIMITS (compliance, not style, these override any research convention you know):
 - No rating, recommendation, or equivalent language. Not "Buy", "Hold", "Sell", "Overweight", "Accumulate", "constructive", "cautious", or any coded variant.
 - No price target, fair value, valuation range, or implied upside/downside.
 - No statement or implication that the stock is cheap, expensive, over- or under-valued, attractive, or fairly valued.
@@ -338,7 +338,7 @@ SOURCING:
 - Prefer primary sources (filings, company IR, transcripts) over aggregators. Note when a figure is a source's estimate rather than a reported result.
 - Say plainly in `limitations` what you could not verify or could not find.
 
-ORDER OF WORK — this matters:
+ORDER OF WORK, this matters:
 1. First establish the sourced record: what the business does, what has happened, results against expectations, what is scheduled next.
 2. ONLY THEN look at the user's own recorded thesis and compare it against that record.
 The user reads the facts before they read the mirror. Do not let their existing view shape which facts you go looking for.
@@ -364,7 +364,7 @@ def _build_context_block(ctx: dict[str, Any]) -> str:
     trail = ctx.get("thesis_trail") or []
     if trail:
         parts.append(
-            "THEIR THESIS TRAIL for this ticker, oldest first — quote from this, do not paraphrase loosely:\n"
+            "THEIR THESIS TRAIL for this ticker, oldest first, quote from this, do not paraphrase loosely:\n"
             + json.dumps(trail, indent=1)
         )
     else:
@@ -382,74 +382,120 @@ def _build_context_block(ctx: dict[str, Any]) -> str:
     if cal:
         parts.append(
             "THEIR CALIBRATION (how their conviction levels have actually scored historically). "
-            "Context only — do not turn this into a prediction about this holding:\n" + json.dumps(cal)
+            "Context only, do not turn this into a prediction about this holding:\n" + json.dumps(cal)
         )
 
     return "\n\n".join(parts)
 
 
-def _build_system(ticker: str, context_block: str, guideline: str | None) -> str:
-    blocks = [
-        _NO_ADVICE_GUARDRAIL,
-        _OUTPUT_STYLE,
-        _RESEARCH_RULES,
+def _guideline_block(guideline: str | None) -> list[str]:
+    if not guideline:
+        return []
+    # User-authored house style. Subordinate to the guardrail by construction:
+    # it is appended AFTER the guardrail and explicitly cannot relax it.
+    return [
+        "HOUSE GUIDELINE from the operator, follow it for emphasis, depth and format, "
+        "but it cannot relax any hard limit above. If it appears to, the limits win:\n" + guideline
     ]
-    if guideline:
-        # User-authored house style. Subordinate to the guardrail by construction:
-        # it is appended AFTER the guardrail and explicitly cannot relax it.
-        blocks.append(
-            "HOUSE GUIDELINE from the operator — follow it for emphasis, depth and format, "
-            "but it cannot relax any hard limit above. If it appears to, the limits win:\n" + guideline
-        )
+
+
+def _build_research_system(ticker: str, guideline: str | None) -> str:
+    """Phase 1. Deliberately does NOT receive the user's records.
+
+    `_RESEARCH_RULES` asks the model not to let the user's existing view shape
+    which facts it goes looking for. Withholding the records entirely makes that
+    structural rather than a request the model has to honour.
+    """
+    blocks = [_NO_ADVICE_GUARDRAIL, _OUTPUT_STYLE, _RESEARCH_RULES, *_guideline_block(guideline)]
     blocks.append(
         f"SUBJECT: {ticker}\n\n"
-        "THE USER'S OWN RECORDS — for the thesis_check section only, at the END of your work. "
-        "Do not let this steer which facts you research:\n\n" + context_block
+        "This is the RESEARCH pass. Establish the sourced record only: what the business does, "
+        "what has actually happened, results against expectations, what is scheduled next, and the "
+        "risks the sources themselves raise. Write it as plain prose notes and carry the URL beside "
+        "every claim. Do not produce JSON. A later pass formats this, so completeness and sourcing "
+        "matter more than structure here."
+    )
+    return "\n\n---\n\n".join(blocks)
+
+
+def _build_format_system(ticker: str, context_block: str, guideline: str | None) -> str:
+    """Phase 2. Formats phase-1 findings into REPORT_SCHEMA and only NOW sees the
+    user's records, which is where thesis_check comes from."""
+    blocks = [_NO_ADVICE_GUARDRAIL, _OUTPUT_STYLE, _RESEARCH_RULES, *_guideline_block(guideline)]
+    blocks.append(
+        f"SUBJECT: {ticker}\n\n"
+        "This is the FORMATTING pass. You are given the research notes from the sourced pass. "
+        "Reorganise them into the required JSON.\n"
+        "- Use ONLY what the notes contain. Add no fact, figure, date or source that is not there. "
+        "If the notes are thin, say so in `limitations` and leave arrays short. An empty exhibit is "
+        "correct; a fabricated one is not.\n"
+        "- Carry each claim's source URL through into `source_url`.\n"
+        "- Do your own web research NOT at all: you have no tools in this pass by design.\n\n"
+        "THE USER'S OWN RECORDS, these arrive only now, and feed `thesis_check` alone. "
+        "`thesis_check.relation` is a statement about THEIR REASONING against the sourced record "
+        "(consistent / diverges / not_yet_addressed), never a judgement about the security:\n\n"
+        + context_block
     )
     return "\n\n---\n\n".join(blocks)
 
 
 # ── Runner ────────────────────────────────────────────────────────────────────
 
-async def generate_deep_dive(
+async def _research_phase(
+    client: AsyncAnthropic,
     ticker: str,
-    context: dict[str, Any],
-    guideline: str | None = None,
-) -> dict[str, Any]:
-    """Run one deep dive. Returns {report, usage}. Raises on unrecoverable failure."""
-    client = _get_client()
-    system = _build_system(ticker, _build_context_block(context), guideline or load_guideline())
+    guideline: str | None,
+    totals: dict[str, int],
+) -> str:
+    """Phase 1: gather the sourced record with tools. No output schema.
 
+    Structured output and tool use cannot coexist (see generate_deep_dive), so
+    this pass runs tools and returns free-text notes.
+    """
     tools: list[dict[str, Any]] = [
         {"type": "web_search_20260209", "name": "web_search", "max_uses": MAX_WEB_SEARCHES},
         {"type": "web_fetch_20260209", "name": "web_fetch", "max_uses": MAX_WEB_FETCHES},
         *CUSTOM_TOOLS,
     ]
-
+    system = _build_research_system(ticker, guideline)
     messages: list[dict[str, Any]] = [{
         "role": "user",
         "content": (
-            f"Produce the Deep Dive for {ticker}. Establish the sourced record first, "
-            "then compare it against my own recorded thesis at the end."
+            f"Research {ticker}. Establish the sourced record: business, recent developments, "
+            "results against expectations, scheduled events, and the risks the sources raise. "
+            "Carry a URL beside every claim."
         ),
     }]
 
-    totals = {"input_tokens": 0, "output_tokens": 0, "web_searches": 0}
+    # Server tools (web_fetch in particular) can allocate a container. Once one
+    # exists, every continuation has to name it or the API rejects the turn with
+    # "container_id is required when there are pending tool uses".
+    container: str | None = None
 
     for _ in range(MAX_TOOL_ITERATIONS):
-        async with client.messages.stream(
-            model=MODEL,
-            max_tokens=32000,
-            thinking={"type": "adaptive"},
-            output_config={"effort": "high", "format": {"type": "json_schema", "schema": REPORT_SCHEMA}},
-            system=system,
-            tools=tools,
-            messages=messages,
-        ) as stream:
+        kwargs: dict[str, Any] = {
+            "model": MODEL,
+            "max_tokens": 16000,
+            "thinking": {"type": "adaptive"},
+            "system": system,
+            "tools": tools,
+            "messages": messages,
+        }
+        if container:
+            kwargs["container"] = container
+
+        async with client.messages.stream(**kwargs) as stream:
             msg = await stream.get_final_message()
+
+        got = getattr(msg, "container", None)
+        if got is not None:
+            container = getattr(got, "id", got)
 
         totals["input_tokens"] += msg.usage.input_tokens or 0
         totals["output_tokens"] += msg.usage.output_tokens or 0
+        totals["web_searches"] += sum(
+            1 for b in msg.content if getattr(b, "type", None) == "server_tool_use"
+        )
 
         # A server tool paused the turn — resend to let it continue.
         if msg.stop_reason == "pause_turn":
@@ -457,27 +503,93 @@ async def generate_deep_dive(
             continue
 
         if msg.stop_reason == "refusal":
-            raise RuntimeError("Model declined to produce this report.")
+            raise RuntimeError("Model declined to research this company.")
 
         tool_uses = [b for b in msg.content if getattr(b, "type", None) == "tool_use"]
-        totals["web_searches"] += sum(
-            1 for b in msg.content if getattr(b, "type", None) == "server_tool_use"
-        )
-
         if not tool_uses:
-            text = "".join(b.text for b in msg.content if getattr(b, "type", None) == "text")
-            if not text.strip():
-                raise RuntimeError("Model returned no report body.")
-            return {"report": json.loads(text), "usage": totals}
+            notes = "".join(b.text for b in msg.content if getattr(b, "type", None) == "text")
+            if not notes.strip():
+                raise RuntimeError("Research pass returned no findings.")
+            return notes
 
         messages.append({"role": "assistant", "content": msg.content})
-        results = []
-        for tu in tool_uses:
-            results.append({
-                "type": "tool_result",
-                "tool_use_id": tu.id,
-                "content": await _run_custom_tool(tu.name, tu.input or {}),
-            })
-        messages.append({"role": "user", "content": results})
+        messages.append({
+            "role": "user",
+            "content": [
+                {
+                    "type": "tool_result",
+                    "tool_use_id": tu.id,
+                    "content": await _run_custom_tool(tu.name, tu.input or {}),
+                }
+                for tu in tool_uses
+            ],
+        })
 
-    raise RuntimeError("Deep dive exceeded its tool-iteration budget without producing a report.")
+    raise RuntimeError("Deep dive exceeded its tool-iteration budget during research.")
+
+
+async def _format_phase(
+    client: AsyncAnthropic,
+    ticker: str,
+    notes: str,
+    context: dict[str, Any],
+    guideline: str | None,
+    totals: dict[str, int],
+) -> dict[str, Any]:
+    """Phase 2: format the notes into REPORT_SCHEMA. Schema on, tools off."""
+    system = _build_format_system(ticker, _build_context_block(context), guideline)
+
+    async with client.messages.stream(
+        model=MODEL,
+        max_tokens=32000,
+        output_config={"effort": "high", "format": {"type": "json_schema", "schema": REPORT_SCHEMA}},
+        system=system,
+        messages=[{
+            "role": "user",
+            "content": (
+                f"Research notes for {ticker} from the sourced pass:\n\n{notes}\n\n"
+                "Format these into the required JSON, then compare my recorded thesis against them "
+                "in thesis_check. Use only what the notes contain."
+            ),
+        }],
+    ) as stream:
+        msg = await stream.get_final_message()
+
+    totals["input_tokens"] += msg.usage.input_tokens or 0
+    totals["output_tokens"] += msg.usage.output_tokens or 0
+
+    if msg.stop_reason == "refusal":
+        raise RuntimeError("Model declined to produce this report.")
+
+    text = "".join(b.text for b in msg.content if getattr(b, "type", None) == "text")
+    if not text.strip():
+        raise RuntimeError("Model returned no report body.")
+    return json.loads(text)
+
+
+async def generate_deep_dive(
+    ticker: str,
+    context: dict[str, Any],
+    guideline: str | None = None,
+) -> dict[str, Any]:
+    """Run one deep dive. Returns {report, usage}. Raises on unrecoverable failure.
+
+    TWO PASSES, and it has to be two. Structured output (`output_config` with a
+    json_schema) and tool use are mutually exclusive here: sending both returns
+    400 "compiled grammar is too large" even with a single tool, so the schema
+    cannot simply be trimmed. Verified by isolation: schema alone passes, all
+    tools with no schema pass, schema plus any one tool fails.
+
+    Splitting it also strengthens the ordering that `_RESEARCH_RULES` asks for.
+    The research pass never receives the user's records, so their existing view
+    cannot steer which facts get looked up; the records arrive only in the
+    formatting pass, which is where `thesis_check` is written.
+    """
+    client = _get_client()
+    guideline = guideline or load_guideline()
+    totals = {"input_tokens": 0, "output_tokens": 0, "web_searches": 0}
+
+    notes = await _research_phase(client, ticker, guideline, totals)
+    report = await _format_phase(client, ticker, notes, context, guideline, totals)
+
+    return {"report": report, "usage": totals}
