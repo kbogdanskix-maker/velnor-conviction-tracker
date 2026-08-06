@@ -202,7 +202,8 @@ function WaitlistForm({ id, large = false }: { id: string; large?: boolean }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 w-full max-w-md">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-3 w-full max-w-md">
+      <div className="flex flex-col sm:flex-row gap-3">
       <input
         id={id}
         type="email"
@@ -223,7 +224,14 @@ function WaitlistForm({ id, large = false }: { id: string; large?: boolean }) {
           <>Join the waitlist {icons.arrow}</>
         )}
       </button>
-      {state === "error" && <p className="text-loss text-xs sm:col-span-2">{errorMsg}</p>}
+      </div>
+      {state === "error" && <p className="text-loss text-xs">{errorMsg}</p>}
+      {/* GDPR: the waitlist runs on consent, so the privacy notice has to be
+          available AT the point of collection, not only in the page footer. */}
+      <p className="text-vela-muted text-[11px]">
+        By joining you agree we may email you about launch. See our{" "}
+        <a href="/privacy" className="text-vela-teal hover:underline">Privacy Policy</a>.
+      </p>
     </form>
   );
 }
