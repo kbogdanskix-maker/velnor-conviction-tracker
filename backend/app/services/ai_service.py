@@ -75,6 +75,31 @@ def _scrub_dashes(text: str) -> str:
     return re.sub(r"[ \t]*[—–][ \t]*", ", ", text)
 
 
+class _DashStreamScrubber:
+    """Applies _scrub_dashes to a token stream without buffering the whole reply.
+
+    A dash and the whitespace around it can straddle a chunk boundary, so naive
+    per-chunk substitution mangles the spacing. This holds back only the trailing
+    run of dashes/spaces, which is the sole part of a chunk whose replacement
+    could still change once the next chunk arrives, and releases it after.
+    """
+
+    _TAIL = re.compile(r"[ \t—–]*$")
+
+    def __init__(self) -> None:
+        self._pending = ""
+
+    def feed(self, chunk: str) -> str:
+        buf = self._pending + chunk
+        cut = self._TAIL.search(buf).start()
+        self._pending = buf[cut:]
+        return _scrub_dashes(buf[:cut])
+
+    def flush(self) -> str:
+        out, self._pending = _scrub_dashes(self._pending), ""
+        return out
+
+
 _client: AsyncAnthropic | None = None
 
 
@@ -851,8 +876,16 @@ Hard rules:
                 "content": f'Alert: "{alert["title"]}"\nContext: {alert["description"]}',
             }],
         ) as stream:
+            # Haiku still slips the odd em-dash past the style rule; scrub it in
+            # flight so the cached/rendered text is clean regardless of client.
+            scrubber = _DashStreamScrubber()
             async for text in stream.text_stream:
-                yield f"data: {json.dumps({'text': text, 'done': False})}\n\n"
+                out = scrubber.feed(text)
+                if out:
+                    yield f"data: {json.dumps({'text': out, 'done': False})}\n\n"
+            tail = scrubber.flush()
+            if tail:
+                yield f"data: {json.dumps({'text': tail, 'done': False})}\n\n"
 
         yield f"data: {json.dumps({'done': True})}\n\n"
 

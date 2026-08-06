@@ -229,6 +229,13 @@ REPORT_SCHEMA: dict[str, Any] = {
                 "required": ["title", "url", "publisher"],
                 "additionalProperties": False,
             },
+            "description": (
+                "The full bibliography: EVERY distinct source_url used anywhere else in this report, "
+                "deduplicated, one entry each. If a URL appears in key_takeaways, recent_developments, "
+                "results_vs_expectations, upcoming_events, exhibits or risks_flagged_by_sources, it "
+                "MUST also appear here. This is the reader's route back to the primary material, so a "
+                "short list when the report cites many URLs is an error."
+            ),
         },
         "limitations": {
             "type": "array",
@@ -430,6 +437,8 @@ def _build_format_system(ticker: str, context_block: str, guideline: str | None)
         "If the notes are thin, say so in `limitations` and leave arrays short. An empty exhibit is "
         "correct; a fabricated one is not.\n"
         "- Carry each claim's source URL through into `source_url`.\n"
+        "- Then collect every distinct URL you used into `sources`, deduplicated. Cross-check it "
+        "against the rest of the report before you finish: a URL cited anywhere must appear there.\n"
         "- Do your own web research NOT at all: you have no tools in this pass by design.\n\n"
         "THE USER'S OWN RECORDS, these arrive only now, and feed `thesis_check` alone. "
         "`thesis_check.relation` is a statement about THEIR REASONING against the sourced record "
