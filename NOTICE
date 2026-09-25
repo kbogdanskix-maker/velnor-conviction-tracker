@@ -1,0 +1,34 @@
+Velnor
+Copyright (C) 2026 Krzysztof Bogdanski
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU Affero General Public License as published by the Free
+Software Foundation, either version 3 of the License, or (at your option) any
+later version. See the LICENSE file for the full text.
+
+------------------------------------------------------------------------------
+NOT INVESTMENT ADVICE
+------------------------------------------------------------------------------
+
+Velnor is an educational and organisational tool. It is not an investment
+adviser, broker, or financial institution, and nothing it produces is a
+personal recommendation to buy, sell, or hold any security, or investment,
+tax, or legal advice. It does not assess whether any investment is suitable
+for any person.
+
+The project is deliberately built to stay outside the investment-advice
+perimeter (MiFID II / Polish KNF). If you deploy, modify, or distribute it,
+you are responsible for your own regulatory position in your own jurisdiction,
+and for ensuring any changes you make do not turn its output into advice.
+
+------------------------------------------------------------------------------
+WHY AGPL
+------------------------------------------------------------------------------
+
+The AGPL is used rather than a permissive licence specifically because of
+section 13: if you run a modified version of this software to provide a service
+over a network, you must offer the source of your modified version to the users
+of that service. That keeps improvements available to everyone who uses them.
+
+For a licence that permits closed-source or commercial redistribution, contact
+the copyright holder.

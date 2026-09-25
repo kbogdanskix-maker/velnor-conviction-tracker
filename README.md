@@ -191,4 +191,13 @@ npm test          # includes the compliance + design-system enforcement suites
 
 ## License
 
-[MIT](LICENSE) — with an explicit not-investment-advice notice.
+[**AGPL-3.0**](LICENSE) — see [NOTICE](NOTICE) for the project-specific terms.
+
+AGPL rather than a permissive licence because of section 13: if you run a
+modified version as a network service, you must offer your users the source of
+your modifications. For closed-source or commercial redistribution, contact the
+copyright holder.
+
+**Not investment advice.** Velnor is an educational tool, not an investment
+adviser. Deploying or modifying it makes you responsible for your own
+regulatory position. See [NOTICE](NOTICE).

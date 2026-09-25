@@ -62,3 +62,4 @@ backend/deep_dive_guideline.md
 !*.env.example
 !**/.env.local.example
 !frontend/.env.local.example
+docs/SECRET-ROTATION-REQUIRED.md
