@@ -48,3 +48,17 @@ htmlcov/
 # Force-ignore all local env files (belt and suspenders)
 **/.env.local
 frontend/.env.local
+
+# ── Private / operator-only (kept on disk, never published) ──
+HANDOFF.md
+docs/LEGAL-REVIEW-*.md
+docs/marketing/
+backend/deep_dive_guideline.md
+
+# Secrets: never commit. Use the .env.example templates instead.
+.env
+.env.*
+!.env.example
+!*.env.example
+!**/.env.local.example
+!frontend/.env.local.example
