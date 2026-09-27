@@ -11,6 +11,7 @@ from sqlalchemy import select
 
 from app.config import settings
 from app.core.security import decode_supabase_token
+from app.core.identity import resolve_identity
 from app.models.db import User
 
 logger = logging.getLogger(__name__)
@@ -58,7 +59,7 @@ async def get_current_user(
     payload = decode_supabase_token(token)
 
     supabase_uid = uuid.UUID(payload["sub"])
-    email = payload.get("email") or ""
+    email, is_demo = resolve_identity(payload)
 
     # Upsert: find existing user or create on first login
     result = await db.execute(
@@ -71,13 +72,15 @@ async def get_current_user(
             supabase_uid=supabase_uid,
             email=email,
             tier="horizon",
+            is_demo=is_demo,
         )
         db.add(user)
         await db.commit()
         await db.refresh(user)
         logger.info("New user created: %s", email)
-    elif user.email != email and email:
-        # Keep email in sync if it changed in Supabase
+    elif not user.is_demo and user.email != email and email:
+        # Keep email in sync if it changed in Supabase. Skipped for demo users,
+        # whose address is synthesized from `sub` and never changes.
         user.email = email
         await db.commit()
 
