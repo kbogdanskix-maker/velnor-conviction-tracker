@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.dependencies import get_current_user, get_db
 from app.models.db import User
+from app.core.tier import effective_tier_name
 from app.models.schemas import UserOut, UserUpdate
 
 router = APIRouter(prefix="/auth")
@@ -14,8 +15,16 @@ router = APIRouter(prefix="/auth")
 
 @router.get("/me", response_model=UserOut)
 async def get_me(user: User = Depends(get_current_user)):
-    """Return the current authenticated user's profile."""
-    return user
+    """Return the current authenticated user's profile.
+
+    `tier` is the EFFECTIVE tier, which is what the frontend's TierGate keys
+    off. Reporting the stored column here would leave the UI locked while the
+    backend happily served the data. Built as a copy so the ORM object is never
+    mutated and nothing can be flushed back to the database.
+    """
+    out = UserOut.model_validate(user)
+    out.tier = effective_tier_name(user)
+    return out
 
 
 @router.patch("/me", response_model=UserOut)

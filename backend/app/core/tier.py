@@ -16,6 +16,7 @@ A 403 is returned with enough info for the frontend to render an upgrade prompt.
 """
 from enum import IntEnum
 from fastapi import Depends, HTTPException, status
+from app.config import settings
 from app.dependencies import get_current_user
 from app.models.db import User
 
@@ -33,13 +34,30 @@ TIER_NAME_MAP = {
 }
 
 
+def effective_tier(user: User) -> Tier:
+    """The tier a user is treated as having.
+
+    Every gate in this module routes through here, so the pre-launch unlock is
+    one switch rather than six. Tiers are a FEATURE flag: this never widens
+    which rows a user can see, which stays scoped by user_id (and by RLS).
+    """
+    if settings.UNLOCK_ALL_TIERS:
+        return Tier.NAVIGATOR
+    return TIER_NAME_MAP.get(user.tier, Tier.HORIZON)
+
+
+def effective_tier_name(user: User) -> str:
+    """String form, for API responses and the per-tier quota tables."""
+    return effective_tier(user).name.lower()
+
+
 def require_tier(minimum: Tier):
     """
     FastAPI dependency factory.
     Raises 403 if the current user's tier is below `minimum`.
     """
     async def check(user: User = Depends(get_current_user)):
-        user_tier = TIER_NAME_MAP.get(user.tier, Tier.HORIZON)
+        user_tier = effective_tier(user)
         if user_tier < minimum:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -55,7 +73,7 @@ def require_tier(minimum: Tier):
 
 def check_thread_limit(user: User, current_count: int) -> None:
     """Raise 403 if Horizon user has hit 3 thesis thread limit."""
-    user_tier = TIER_NAME_MAP.get(user.tier, Tier.HORIZON)
+    user_tier = effective_tier(user)
     if user_tier == Tier.HORIZON and current_count >= 3:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -69,7 +87,7 @@ def check_thread_limit(user: User, current_count: int) -> None:
 
 def check_options_view_limit(user: User, views_this_week: int) -> None:
     """Raise 403 if Horizon user has hit 3 options chain views per week."""
-    user_tier = TIER_NAME_MAP.get(user.tier, Tier.HORIZON)
+    user_tier = effective_tier(user)
     if user_tier == Tier.HORIZON and views_this_week >= 3:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -84,7 +102,7 @@ def check_options_view_limit(user: User, views_this_week: int) -> None:
 
 def check_dcf_model_limit(user: User, saved_count: int) -> None:
     """Raise 403 if Voyager user has hit 5 saved DCF model limit."""
-    user_tier = TIER_NAME_MAP.get(user.tier, Tier.HORIZON)
+    user_tier = effective_tier(user)
     if user_tier == Tier.VOYAGER and saved_count >= 5:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -98,7 +116,7 @@ def check_dcf_model_limit(user: User, saved_count: int) -> None:
 
 def get_quote_ttl(user: User) -> int:
     """Returns Redis TTL in seconds for quote caching based on user tier."""
-    user_tier = TIER_NAME_MAP.get(user.tier, Tier.HORIZON)
+    user_tier = effective_tier(user)
     if user_tier >= Tier.NAVIGATOR:
         return 5
     if user_tier >= Tier.VOYAGER:
@@ -108,5 +126,5 @@ def get_quote_ttl(user: User) -> int:
 
 def get_chart_history_years(user: User) -> int:
     """Returns years of history available for the performance chart."""
-    user_tier = TIER_NAME_MAP.get(user.tier, Tier.HORIZON)
+    user_tier = effective_tier(user)
     return 5 if user_tier >= Tier.VOYAGER else 1

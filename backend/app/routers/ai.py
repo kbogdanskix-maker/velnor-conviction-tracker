@@ -17,7 +17,7 @@ from sqlalchemy import select
 from sqlalchemy import func as sqlfunc
 
 from app.dependencies import get_current_user, get_db
-from app.core.tier import require_tier, Tier
+from app.core.tier import require_tier, Tier, effective_tier_name
 from app.models.db import User, Portfolio, Holding, Goal, NetWorthAsset, Transaction, UserKVStore, ThesisThread, ThesisEntry, DecisionJournalEntry
 from app.services import ai_service, portfolio_calc, market_data
 from app.services.market_data import cache_get
@@ -467,7 +467,10 @@ async def _enforce_insight_quota(user: User) -> dict[str, str]:
     StreamingResponse. All AI insight endpoints share one daily counter so the
     "10 insights/day" limit spans plans, earnings briefings, and learn analyses.
     """
-    tier = user.tier or "horizon"
+    # Effective tier, so the pre-launch UNLOCK_ALL_TIERS switch reaches the AI
+    # quota too. Otherwise every account defaults to horizon, where the limit is
+    # 0 and AI is refused outright.
+    tier = effective_tier_name(user)
     daily_limit = _INSIGHT_LIMITS.get(tier, 0)
 
     # Block horizon tier entirely

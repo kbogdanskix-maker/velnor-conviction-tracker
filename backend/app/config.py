@@ -75,6 +75,13 @@ class Settings(BaseSettings):
     # Stripe (billing)
     STRIPE_SECRET_KEY: str = "your-stripe-secret-key"
     STRIPE_WEBHOOK_SECRET: str = "your-stripe-webhook-secret"
+    # Pre-launch: hand every account the top tier. Velnor is not being sold,
+    # so the paid tiers exist in code but are switched off rather than deleted.
+    # Feature-flagging only: this grants no extra DATA access. Every query is
+    # still scoped to the caller's own user_id and RLS is untouched.
+    # Set to False to re-enable Horizon/Voyager/Navigator.
+    UNLOCK_ALL_TIERS: bool = True
+
     STRIPE_VOYAGER_PRICE_ID: str = "price_voyager"
     STRIPE_NAVIGATOR_PRICE_ID: str = "price_navigator"
 
