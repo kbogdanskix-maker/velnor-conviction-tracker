@@ -12,6 +12,8 @@ from datetime import date
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from app.core.cache import rate_limit_increment, rate_limit_get
+from app.core.ai_budget import consume_global_ai_budget
+from app.config import settings
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy import func as sqlfunc
@@ -471,7 +473,14 @@ async def _enforce_insight_quota(user: User) -> dict[str, str]:
     # quota too. Otherwise every account defaults to horizon, where the limit is
     # 0 and AI is refused outright.
     tier = effective_tier_name(user)
-    daily_limit = _INSIGHT_LIMITS.get(tier, 0)
+
+    # Demo accounts resolve to Navigator (UNLOCK_ALL_TIERS), whose limit is -1
+    # for unlimited. Unlimited AI on freely-creatable accounts is unbounded
+    # spend, so demo accounts get a finite quota regardless of tier.
+    if user.is_demo:
+        daily_limit = settings.DEMO_USER_DAILY_AI_LIMIT
+    else:
+        daily_limit = _INSIGHT_LIMITS.get(tier, 0)
 
     # Block horizon tier entirely
     if daily_limit == 0:
@@ -485,7 +494,8 @@ async def _enforce_insight_quota(user: User) -> dict[str, str]:
         "X-Accel-Buffering": "no",
     }
 
-    # Rate-limit voyager tier via Redis daily counter
+    # Rate-limit voyager tier (and demo accounts, given a finite quota above)
+    # via a per-user Redis daily counter.
     if daily_limit > 0:
         today = date.today().isoformat()
         rate_key = f"insight_limit:{user.id}:{today}"
@@ -500,6 +510,19 @@ async def _enforce_insight_quota(user: User) -> dict[str, str]:
         remaining = daily_limit - count
         sse_headers["X-Insight-Remaining"] = str(remaining)
         sse_headers["X-Insight-Limit"] = str(daily_limit)
+
+    # Checked last, only once the request has cleared every per-user gate
+    # above (horizon block, exhausted voyager/demo quota). Consuming this
+    # shared ceiling any earlier would burn a unit of the global daily budget
+    # on a request that was going to be refused anyway and never reaches the
+    # paid API call — and since this counter is shared across every account,
+    # that waste is denial-of-service against every *other* user for the rest
+    # of the day. This is what bounds total spend however many accounts exist.
+    if not await consume_global_ai_budget(settings.AI_GLOBAL_DAILY_LIMIT):
+        raise HTTPException(
+            status_code=429,
+            detail="Today's AI capacity for the demo has been used. It resets at 00:00 UTC.",
+        )
 
     return sse_headers
 
