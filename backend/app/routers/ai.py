@@ -662,6 +662,12 @@ async def portfolio_reflect(
 ):
     """Stream an AI portfolio reflection response. Navigator-only (matches the
     Reflect page's frontend tier gate)."""
+    # Every other AI endpoint routes through this; reflect did not, which left
+    # the conversational surface — the one a visitor will use most — with no
+    # spend cap at all. require_tier() above is not a cap: under
+    # UNLOCK_ALL_TIERS it passes for everyone.
+    sse_headers = await _enforce_insight_quota(user)
+
     # ── Fetch holdings from DB ──────────────────────────────────────────────
     portfolio_result = await db.execute(
         select(Portfolio).where(
@@ -768,8 +774,5 @@ async def portfolio_reflect(
     return StreamingResponse(
         ai_service.stream_reflection(messages, system_prompt, body.is_opening),
         media_type="text/event-stream",
-        headers={
-            "Cache-Control": "no-cache",
-            "X-Accel-Buffering": "no",
-        },
+        headers=sse_headers,
     )
