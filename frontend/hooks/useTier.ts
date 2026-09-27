@@ -6,6 +6,7 @@ import { api } from "@/lib/api";
 interface UserProfile {
   tier: string;
   tier_expires_at?: string | null;
+  is_demo?: boolean;
 }
 
 const TIER_RANK: Record<string, number> = { horizon: 0, voyager: 1, navigator: 2 };
@@ -22,5 +23,8 @@ export function useTier() {
     error,
     isVoyager: TIER_RANK[data?.tier ?? "horizon"] >= 1,
     isNavigator: TIER_RANK[data?.tier ?? "horizon"] >= 2,
+    // Anonymous demo session (see backend UserOut.is_demo): the pre-seeded
+    // sample portfolio, not a real user's holdings.
+    isDemo: data?.is_demo ?? false,
   };
 }

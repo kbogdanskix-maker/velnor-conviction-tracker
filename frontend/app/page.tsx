@@ -582,8 +582,6 @@ export default function LandingPage() {
             <span>Velnor &copy; {new Date().getFullYear()}</span>
           </div>
           <div className="flex items-center gap-5">
-            <a href="/privacy" className="font-mono tracking-wide hover:text-vela-teal transition-colors">Privacy</a>
-            <a href="/terms" className="font-mono tracking-wide hover:text-vela-teal transition-colors">Terms</a>
             <p className="font-mono tracking-wide">Your wealth, in motion.</p>
           </div>
         </div>
