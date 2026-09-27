@@ -1385,8 +1385,10 @@ if __name__ == "__main__":
 
 - [ ] **Step 3: Confirm the quote function name**
 
-Run: `cd backend && grep -n "^async def get_quote\|^def get_quote" app/services/market_data.py`
-Expected: a match for `get_quote`. If the name differs, update the call in the script to the real one.
+> **Corrected during execution.** There is no singular `get_quote`. The real
+> helper is `async def get_quotes(tickers: list[str], ttl: int = 60) -> dict`,
+> and every call site in the app batches through it even for one ticker. The
+> script calls `await market_data.get_quotes([ticker])`. Landed as `4489bf8`.
 
 - [ ] **Step 4: Dry-run the warm-up locally**
 
@@ -1871,6 +1873,36 @@ git add HANDOFF.md && git commit -m "docs: record the demo release state"
 ```
 
 ---
+
+## Blockers found during execution
+
+**yfinance 0.2.50 could not fetch any market data at all.** `requirements.txt`
+pinned it, and against Yahoo's current API every request returns non-JSON, so
+yfinance reports every symbol as "possibly delisted" and `fast_info` raises
+`KeyError: 'currentTradingPeriod'`. Verified directly: MSFT history returned 0
+rows on 0.2.50 and 5 rows on 1.3.0. This would have shipped a portfolio tracker
+that renders no prices — the single worst outcome for this release. Found
+because the new warm-up script failed on all 11 seed tickers. Fixed by pinning
+`yfinance==1.3.0` (`0693dbf`).
+
+**`LVMH.PA` is not a Yahoo symbol.** LVMH on Euronext Paris is `MC.PA`. It was
+the one seed ticker still failing after the yfinance fix (`215758d`). All 11 now
+warm with zero failures.
+
+**Anonymous sign-ins were already enabled** on the Supabase project, so that
+operator step is already done. Verified against the live project: the token is
+ES256 with `sub` present, `email: ''`, and `is_anonymous: True` as a real
+boolean — exactly what `resolve_identity` keys off.
+
+**The demo marker had to move to the dashboard layout.** Task 14 put it in
+`TopBar`, but `TopBar` is opt-in per page and only 26 of 61 dashboard pages
+render it. A compliance control visible on 43% of pages is not a control, so it
+moved to `app/(dashboard)/layout.tsx`, which wraps every page and already hosts
+the `<Disclaimer />` component for exactly this purpose.
+
+**Two ordering bugs in the original plan**, both corrected in place above: the
+missing `db.commit()` after `recompute_holdings` (Task 6), and the global AI
+ceiling being claimed before the cheaper rejection paths (Task 8).
 
 ## Self-review notes
 
