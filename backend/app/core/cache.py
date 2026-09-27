@@ -2,6 +2,7 @@
 Redis cache helpers.
 All keys are namespaced under 'vela:' to avoid collisions.
 """
+import asyncio
 import json
 import logging
 from typing import Any
@@ -11,16 +12,29 @@ from app.config import settings
 logger = logging.getLogger(__name__)
 
 _redis: aioredis.Redis | None = None
+_redis_loop: asyncio.AbstractEventLoop | None = None
 
 
 async def get_redis() -> aioredis.Redis:
-    global _redis
-    if _redis is None:
+    """Return the cached Redis client, recreating it if the running event
+    loop has changed since it was created.
+
+    In production there is exactly one event loop (uvicorn's) for the life of
+    the process, so this never triggers a recreation there. It matters for
+    tests: pytest-asyncio gives each test function its own event loop, and a
+    client's connections are bound to the loop that opened them, so reusing
+    a client across loops raises RuntimeErrors ("attached to a different
+    loop" / "Event loop is closed") on the second test that touches Redis.
+    """
+    global _redis, _redis_loop
+    loop = asyncio.get_running_loop()
+    if _redis is None or _redis_loop is not loop:
         _redis = aioredis.from_url(
             settings.REDIS_URL,
             encoding="utf-8",
             decode_responses=True,
         )
+        _redis_loop = loop
     return _redis
 
 

@@ -82,6 +82,15 @@ class Settings(BaseSettings):
     # Set to False to re-enable Horizon/Voyager/Navigator.
     UNLOCK_ALL_TIERS: bool = True
 
+    # ── Demo release cost controls ────────────────────────────────────────
+    # Velnor's public demo hands every anonymous visitor a Navigator account,
+    # and Navigator's AI quota is unlimited. These caps are what stop an
+    # unbounded supply of fresh accounts becoming an unbounded bill. Settings
+    # rather than constants so they can be raised without a redeploy.
+    AI_GLOBAL_DAILY_LIMIT: int = 100
+    DEMO_USER_DAILY_AI_LIMIT: int = 5
+    DEEP_DIVE_GLOBAL_DAILY_LIMIT: int = 1
+
     STRIPE_VOYAGER_PRICE_ID: str = "price_voyager"
     STRIPE_NAVIGATOR_PRICE_ID: str = "price_navigator"
 
