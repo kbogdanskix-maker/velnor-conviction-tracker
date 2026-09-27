@@ -913,12 +913,23 @@ async def seed_demo_user(user: User, db: AsyncSession) -> uuid.UUID:
     await db.commit()
 
     # Holdings is a materialised table — transactions alone produce no
-    # positions, and the dashboard reads holdings.
+    # positions, and the dashboard reads holdings. recompute_holdings only
+    # stages the delete+insert on the session; it does not commit (matching
+    # every other call site in app/routers/portfolio.py), so we must commit
+    # again here or the recomputed rows are rolled back when the request's
+    # session closes and the demo dashboard comes up empty.
     await portfolio_calc.recompute_holdings(portfolio.id, db)
+    await db.commit()
 
     logger.info("Seeded demo portfolio for user %s", user.id)
     return portfolio.id
 ```
+
+> **Corrected during execution.** The original plan omitted the second
+> `await db.commit()`. `recompute_holdings` does not commit, and `get_db` does
+> not commit on clean exit, so the materialised holdings would have been rolled
+> back — the demo dashboard would have rendered with zero positions while the
+> transactions persisted fine. Landed as `9213114`.
 
 - [ ] **Step 2: Write the router**
 
@@ -1159,10 +1170,20 @@ with:
         daily_limit = _INSIGHT_LIMITS.get(tier, 0)
 ```
 
-- [ ] **Step 3: Check the global ceiling first**
+- [ ] **Step 3: Check the global ceiling LAST**
 
-Immediately after the `daily_limit` assignment above and **before** the
-`if daily_limit == 0:` horizon block, insert:
+> **Corrected during execution.** The original plan put this check first, right
+> after the `daily_limit` assignment. That is wrong: it consumes a unit of the
+> *shared* global counter on every request, including ones immediately refused
+> for being horizon-tier (403) or for having exhausted their own per-user quota
+> (429). Because the counter is shared, a client spamming requests its own quota
+> would reject could burn down the global ceiling and deny service to every
+> other visitor for the rest of the day, without ever reaching the paid API.
+> The check belongs **last**, immediately before `return sse_headers`, so a unit
+> is only spent once the request has cleared every gate that would refuse it for
+> free. Landed as `e9269e5`.
+
+Immediately before `return sse_headers`, after the per-user quota block, insert:
 
 ```python
     # Checked before the per-user quota so one visitor cannot drain the day for
@@ -1364,8 +1385,10 @@ if __name__ == "__main__":
 
 - [ ] **Step 3: Confirm the quote function name**
 
-Run: `cd backend && grep -n "^async def get_quote\|^def get_quote" app/services/market_data.py`
-Expected: a match for `get_quote`. If the name differs, update the call in the script to the real one.
+> **Corrected during execution.** There is no singular `get_quote`. The real
+> helper is `async def get_quotes(tickers: list[str], ttl: int = 60) -> dict`,
+> and every call site in the app batches through it even for one ticker. The
+> script calls `await market_data.get_quotes([ticker])`. Landed as `4489bf8`.
 
 - [ ] **Step 4: Dry-run the warm-up locally**
 
@@ -1850,6 +1873,36 @@ git add HANDOFF.md && git commit -m "docs: record the demo release state"
 ```
 
 ---
+
+## Blockers found during execution
+
+**yfinance 0.2.50 could not fetch any market data at all.** `requirements.txt`
+pinned it, and against Yahoo's current API every request returns non-JSON, so
+yfinance reports every symbol as "possibly delisted" and `fast_info` raises
+`KeyError: 'currentTradingPeriod'`. Verified directly: MSFT history returned 0
+rows on 0.2.50 and 5 rows on 1.3.0. This would have shipped a portfolio tracker
+that renders no prices — the single worst outcome for this release. Found
+because the new warm-up script failed on all 11 seed tickers. Fixed by pinning
+`yfinance==1.3.0` (`0693dbf`).
+
+**`LVMH.PA` is not a Yahoo symbol.** LVMH on Euronext Paris is `MC.PA`. It was
+the one seed ticker still failing after the yfinance fix (`215758d`). All 11 now
+warm with zero failures.
+
+**Anonymous sign-ins were already enabled** on the Supabase project, so that
+operator step is already done. Verified against the live project: the token is
+ES256 with `sub` present, `email: ''`, and `is_anonymous: True` as a real
+boolean — exactly what `resolve_identity` keys off.
+
+**The demo marker had to move to the dashboard layout.** Task 14 put it in
+`TopBar`, but `TopBar` is opt-in per page and only 26 of 61 dashboard pages
+render it. A compliance control visible on 43% of pages is not a control, so it
+moved to `app/(dashboard)/layout.tsx`, which wraps every page and already hosts
+the `<Disclaimer />` component for exactly this purpose.
+
+**Two ordering bugs in the original plan**, both corrected in place above: the
+missing `db.commit()` after `recompute_holdings` (Task 6), and the global AI
+ceiling being claimed before the cheaper rejection paths (Task 8).
 
 ## Self-review notes
 

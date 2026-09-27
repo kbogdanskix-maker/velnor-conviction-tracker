@@ -19,6 +19,10 @@ class Settings(BaseSettings):
     APP_ENV: str = "development"
     DEBUG: bool = True
     API_PREFIX: str = "/api/v1"
+    # pydantic-settings parses this from a JSON array in the env var, e.g.
+    # fly secrets set ALLOWED_ORIGINS='["https://velnor.vercel.app"]' —
+    # set once the Vercel URL is known. The localhost entry below is the
+    # local-dev default and is only used when the env var is unset.
     ALLOWED_ORIGINS: list[str] = ["http://localhost:3000", "https://vela.finance"]
 
     # Database (Supabase PostgreSQL)
@@ -81,6 +85,15 @@ class Settings(BaseSettings):
     # still scoped to the caller's own user_id and RLS is untouched.
     # Set to False to re-enable Horizon/Voyager/Navigator.
     UNLOCK_ALL_TIERS: bool = True
+
+    # ── Demo release cost controls ────────────────────────────────────────
+    # Velnor's public demo hands every anonymous visitor a Navigator account,
+    # and Navigator's AI quota is unlimited. These caps are what stop an
+    # unbounded supply of fresh accounts becoming an unbounded bill. Settings
+    # rather than constants so they can be raised without a redeploy.
+    AI_GLOBAL_DAILY_LIMIT: int = 100
+    DEMO_USER_DAILY_AI_LIMIT: int = 5
+    DEEP_DIVE_GLOBAL_DAILY_LIMIT: int = 1
 
     STRIPE_VOYAGER_PRICE_ID: str = "price_voyager"
     STRIPE_NAVIGATOR_PRICE_ID: str = "price_navigator"

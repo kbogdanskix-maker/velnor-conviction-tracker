@@ -1,0 +1,22 @@
+# Local virtualenv and caches — never ship these, the image installs its own deps
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Secrets — must come from Fly secrets/env at deploy time, never baked into a layer
+.env
+.env.*
+!.env.example
+
+# Frontend build artifacts that have no business in the backend image
+.next/
+
+# Editor/OS noise
+.DS_Store
+.git/
+.gitignore
+
+# Operator-authored Deep Dive guideline — gitignored locally; the app already
+# degrades gracefully (load_guideline() returns None) when it's absent
+deep_dive_guideline.md

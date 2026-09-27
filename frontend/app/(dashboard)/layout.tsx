@@ -6,6 +6,7 @@ import Starfield from "@/components/celestial/Starfield";
 import SplashScreen from "@/components/celestial/SplashScreen";
 import Providers from "@/components/shared/Providers";
 import Disclaimer from "@/components/shared/Disclaimer";
+import DemoMarker from "@/components/shared/DemoMarker";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createServerClient();
@@ -25,6 +26,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           <Sidebar />
           <main className="flex-1 min-w-0 overflow-auto pt-14 md:pt-0 relative z-10">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+              <DemoMarker />
               {children}
               <Disclaimer />
             </div>

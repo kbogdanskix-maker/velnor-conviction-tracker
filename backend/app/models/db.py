@@ -28,6 +28,7 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     display_name: Mapped[Optional[str]] = mapped_column(String(100))
     tier: Mapped[str] = mapped_column(String(20), nullable=False, default="horizon")
+    is_demo: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="false")
     tier_expires_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     stripe_customer_id: Mapped[Optional[str]] = mapped_column(String(100))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

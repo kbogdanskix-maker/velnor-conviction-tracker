@@ -107,10 +107,7 @@ export default function RegisterPage() {
         />
 
         <p className="text-xs text-vela-muted leading-relaxed">
-          By creating an account you agree to our{" "}
-          <Link href="/terms" className="text-vela-teal hover:underline">Terms</Link>{" "}
-          and{" "}
-          <Link href="/privacy" className="text-vela-teal hover:underline">Privacy Policy</Link>.
+          By creating an account you agree to Velnor's terms of use and privacy practices.
         </p>
       </form>
 

@@ -10,7 +10,7 @@ from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from app.config import settings
-from app.routers import auth, portfolio, watchlist, markets, macro, imports, quotes, goals, news, networth, cashflow, screener, journal, fx, kv, ai, sentiment, thesis, journey, closed, calibration, deep_dive
+from app.routers import auth, portfolio, watchlist, markets, macro, imports, quotes, goals, news, networth, cashflow, screener, journal, fx, kv, ai, sentiment, thesis, journey, closed, calibration, deep_dive, demo
 
 logging.basicConfig(
     level=logging.DEBUG if settings.DEBUG else logging.INFO,
@@ -36,6 +36,17 @@ except ImportError:
     limiter = None  # type: ignore
     _rate_limiter_available = False
     logger.warning("slowapi not installed — rate limiting disabled")
+except Exception as e:
+    # Limiter() parses REDIS_URL eagerly at import time, so a malformed or
+    # unreachable storage URI used to take the entire app down at boot — the
+    # process exited before uvicorn ever bound a port, and Fly restart-looped.
+    # Rate limiting is a protection, not a prerequisite: losing it should
+    # degrade the service, never stop it serving. The spend ceilings in
+    # core/ai_budget.py fail CLOSED independently of this, so a Redis problem
+    # still cannot turn into an uncapped bill.
+    limiter = None  # type: ignore
+    _rate_limiter_available = False
+    logger.error("Rate limiter disabled — could not initialise storage: %s", e)
 
 
 # ── Security headers middleware ──────────────────────────────────────────────
@@ -126,6 +137,7 @@ app.include_router(journey.router,   prefix=PREFIX, tags=["journey"])
 app.include_router(closed.router,    prefix=PREFIX, tags=["closed"])
 app.include_router(calibration.router, prefix=PREFIX, tags=["calibration"])
 app.include_router(deep_dive.router,   prefix=PREFIX, tags=["deep-dive"])
+app.include_router(demo.router,         prefix=PREFIX, tags=["demo"])
 
 
 # ── Health check ─────────────────────────────────────────────────────────────

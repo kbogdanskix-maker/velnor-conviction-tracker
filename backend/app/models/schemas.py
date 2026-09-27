@@ -20,6 +20,7 @@ class UserOut(BaseModel):
     tier: str
     tier_expires_at: Optional[datetime] = None
     created_at: datetime
+    is_demo: bool = False
 
 
 class UserUpdate(BaseModel):
