@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { createBrowserClient } from "@/lib/supabase-browser";
+import { enterDemo } from "@/lib/demo";
 import SailInstrument from "@/components/celestial/SailInstrument";
 import VelnorMark from "@/components/shared/VelnorMark";
 
@@ -295,6 +296,20 @@ function BearingDemo() {
 export default function LandingPage() {
   const router = useRouter();
   const [checked, setChecked] = useState(false);
+  const [entering, setEntering] = useState(false);
+  const [demoError, setDemoError] = useState<string | null>(null);
+
+  async function handleEnterDemo() {
+    setEntering(true);
+    setDemoError(null);
+    try {
+      await enterDemo();
+      router.push("/dashboard");
+    } catch (err) {
+      setDemoError(err instanceof Error ? err.message : "Could not start the demo.");
+      setEntering(false);
+    }
+  }
 
   useEffect(() => {
     // Allow previewing the landing even while signed in: visit /?preview
@@ -378,9 +393,27 @@ export default function LandingPage() {
                 right you&apos;ve actually been over time. Built for investors who make their own calls.
               </p>
             </Reveal>
-            <Reveal delay={260}><WaitlistForm id="hero-email" large /></Reveal>
+            <Reveal delay={260}>
+              <button
+                onClick={handleEnterDemo}
+                disabled={entering}
+                className="btn-primary whitespace-nowrap px-8 py-3.5 text-base rounded font-semibold tracking-wide disabled:opacity-50 flex items-center gap-2 justify-center"
+              >
+                {entering ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-zinc-900/30 border-t-zinc-900 rounded-full animate-spin" />
+                    Preparing your demo
+                  </>
+                ) : (
+                  <>Enter the demo {icons.arrow}</>
+                )}
+              </button>
+              {demoError && (
+                <p role="alert" className="text-loss text-xs mt-3">{demoError}</p>
+              )}
+            </Reveal>
             <Reveal delay={340}>
-              <p className="text-vela-muted text-xs mt-4 font-mono tracking-wide">Free to join. No spam. Unsubscribe anytime.</p>
+              <p className="text-vela-muted text-xs mt-4 font-mono tracking-wide">No signup. A sample portfolio, ready to explore.</p>
             </Reveal>
           </div>
 
