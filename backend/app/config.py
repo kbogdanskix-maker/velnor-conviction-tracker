@@ -19,6 +19,10 @@ class Settings(BaseSettings):
     APP_ENV: str = "development"
     DEBUG: bool = True
     API_PREFIX: str = "/api/v1"
+    # pydantic-settings parses this from a JSON array in the env var, e.g.
+    # fly secrets set ALLOWED_ORIGINS='["https://velnor.vercel.app"]' —
+    # set once the Vercel URL is known. The localhost entry below is the
+    # local-dev default and is only used when the env var is unset.
     ALLOWED_ORIGINS: list[str] = ["http://localhost:3000", "https://vela.finance"]
 
     # Database (Supabase PostgreSQL)
