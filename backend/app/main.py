@@ -10,7 +10,7 @@ from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from app.config import settings
-from app.routers import auth, portfolio, watchlist, markets, macro, imports, quotes, goals, news, networth, cashflow, screener, journal, fx, kv, ai, sentiment, thesis, journey, closed, calibration, deep_dive
+from app.routers import auth, portfolio, watchlist, markets, macro, imports, quotes, goals, news, networth, cashflow, screener, journal, fx, kv, ai, sentiment, thesis, journey, closed, calibration, deep_dive, demo
 
 logging.basicConfig(
     level=logging.DEBUG if settings.DEBUG else logging.INFO,
@@ -126,6 +126,7 @@ app.include_router(journey.router,   prefix=PREFIX, tags=["journey"])
 app.include_router(closed.router,    prefix=PREFIX, tags=["closed"])
 app.include_router(calibration.router, prefix=PREFIX, tags=["calibration"])
 app.include_router(deep_dive.router,   prefix=PREFIX, tags=["deep-dive"])
+app.include_router(demo.router,         prefix=PREFIX, tags=["demo"])
 
 
 # ── Health check ─────────────────────────────────────────────────────────────
