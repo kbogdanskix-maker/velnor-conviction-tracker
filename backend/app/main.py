@@ -36,6 +36,17 @@ except ImportError:
     limiter = None  # type: ignore
     _rate_limiter_available = False
     logger.warning("slowapi not installed — rate limiting disabled")
+except Exception as e:
+    # Limiter() parses REDIS_URL eagerly at import time, so a malformed or
+    # unreachable storage URI used to take the entire app down at boot — the
+    # process exited before uvicorn ever bound a port, and Fly restart-looped.
+    # Rate limiting is a protection, not a prerequisite: losing it should
+    # degrade the service, never stop it serving. The spend ceilings in
+    # core/ai_budget.py fail CLOSED independently of this, so a Redis problem
+    # still cannot turn into an uncapped bill.
+    limiter = None  # type: ignore
+    _rate_limiter_available = False
+    logger.error("Rate limiter disabled — could not initialise storage: %s", e)
 
 
 # ── Security headers middleware ──────────────────────────────────────────────
