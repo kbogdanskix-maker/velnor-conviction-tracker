@@ -12,7 +12,6 @@
 
 import React from "react";
 import Link from "next/link";
-import { useTier } from "@/hooks/useTier";
 
 // ── Micro-labels ──────────────────────────────────────────────────────────────
 
@@ -72,38 +71,25 @@ export type Crumb = { label: string; href?: string };
 
 /** The 52px hairline top rail: `SECTION / ITEM` on the left, a note on the right. */
 export function TopBar({ trail, note }: { trail: Crumb[]; note?: React.ReactNode }) {
-  // Anonymous demo sessions land in a pre-seeded sample portfolio. This is a
-  // compliance marker, not decoration: it is what lets the seed thesis notes
-  // (real tickers, first-person conviction language) stay outside the
-  // no-advice guardrail, so it must stay legible - never `vela-subtle`.
-  const { isDemo } = useTier();
-
   return (
-    <div className="mb-7">
-      <div className="flex items-center justify-between gap-4 border-b border-vela-border pb-3">
-        <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.12em] min-w-0">
-          {trail.map((c, i) => (
-            <React.Fragment key={`${c.label}-${i}`}>
-              {i > 0 && <span className="text-vela-subtle shrink-0">/</span>}
-              {c.href ? (
-                <Link href={c.href} className="text-vela-muted hover:text-vela-teal transition-colors shrink-0">
-                  {c.label}
-                </Link>
-              ) : (
-                <span className="text-zinc-100 truncate">{c.label}</span>
-              )}
-            </React.Fragment>
-          ))}
-        </div>
-        {note != null && (
-          <p className="hidden sm:block font-mono text-[11px] text-vela-muted text-right shrink-0">
-            {note}
-          </p>
-        )}
+    <div className="flex items-center justify-between gap-4 border-b border-vela-border pb-3 mb-7">
+      <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.12em] min-w-0">
+        {trail.map((c, i) => (
+          <React.Fragment key={`${c.label}-${i}`}>
+            {i > 0 && <span className="text-vela-subtle shrink-0">/</span>}
+            {c.href ? (
+              <Link href={c.href} className="text-vela-muted hover:text-vela-teal transition-colors shrink-0">
+                {c.label}
+              </Link>
+            ) : (
+              <span className="text-zinc-100 truncate">{c.label}</span>
+            )}
+          </React.Fragment>
+        ))}
       </div>
-      {isDemo && (
-        <p className="mt-2 inline-flex items-center gap-1.5 rounded border border-vela-teal/25 bg-vela-teal/10 px-2 py-1 font-mono text-[11px] text-vela-teal">
-          Sample portfolio · not investment advice
+      {note != null && (
+        <p className="hidden sm:block font-mono text-[11px] text-vela-muted text-right shrink-0">
+          {note}
         </p>
       )}
     </div>
