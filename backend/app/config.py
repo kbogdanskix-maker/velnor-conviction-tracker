@@ -25,11 +25,11 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "postgresql+asyncpg://postgres:password@localhost:5432/vela"
     DATABASE_URL_SYNC: str = "postgresql://postgres:password@localhost:5432/vela"
 
-    # Supabase Auth
+    # Supabase Auth. Only the URL is needed: tokens are verified against the
+    # project's public JWKS (ES256) in core/security.py, so the backend holds no
+    # Supabase secret. The anon key lives in the frontend, and service_role is
+    # deliberately absent -- nothing here should bypass RLS.
     SUPABASE_URL: str = "https://your-project.supabase.co"
-    SUPABASE_ANON_KEY: str = "your-anon-key"
-    SUPABASE_SERVICE_ROLE_KEY: str = "your-service-role-key"
-    SUPABASE_JWT_SECRET: str = "your-jwt-secret"
 
     # Redis
     REDIS_URL: str = "redis://localhost:6379/0"
