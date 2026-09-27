@@ -229,7 +229,7 @@ SEED_JOURNAL: list[SeedJournalEntry] = [
 ]
 
 SEED_WATCHLIST: list[SeedWatchlistItem] = [
-    SeedWatchlistItem("LVMH.PA", "Want to understand aspirational-spend cyclicality first."),
+    SeedWatchlistItem("MC.PA", "Want to understand aspirational-spend cyclicality first."),
     SeedWatchlistItem("V", "Waiting to see whether stablecoin rails dent the take rate."),
     SeedWatchlistItem("SHOP", "Interested, but I do not have an edge on GMV durability."),
     SeedWatchlistItem("NVO", "Watching supply constraints ease before forming a view."),
