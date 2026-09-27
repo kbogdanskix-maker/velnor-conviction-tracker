@@ -1,23 +1,22 @@
 /**
  * The public Supabase key used by the browser, server and proxy clients.
  *
- * Supabase replaced the legacy `anon` key with publishable keys
- * (`sb_publishable_...`). The legacy key is a JWT signed by the project's
- * legacy JWT secret, so that secret cannot be revoked while anything still
- * uses it. Preferring the publishable key here is what unblocks revoking it.
+ * This is a publishable key (`sb_publishable_...`). The legacy `anon` key it
+ * replaced was itself a JWT signed by the project's legacy JWT secret, which
+ * is why that secret could not be revoked while anything still presented it.
+ * Legacy API keys were disabled on 2026-09-27, so there is deliberately no
+ * fallback here: one key path, and a clear failure if it is unset.
  *
- * The fallback keeps a checkout with only the old variable set working, so the
- * migration does not have to be atomic across environments.
+ * Safe to expose. It identifies the project and carries no privileges of its
+ * own; access is decided by RLS and the user's JWT.
  */
 export function supabasePublicKey(): string {
-  const key =
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
   if (!key) {
     throw new Error(
-      "Missing Supabase public key: set NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY " +
-        "(or the legacy NEXT_PUBLIC_SUPABASE_ANON_KEY) in .env.local",
+      "Missing NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY. Copy .env.local.example " +
+        "to .env.local and set it from Supabase > Settings > API Keys.",
     );
   }
   return key;
