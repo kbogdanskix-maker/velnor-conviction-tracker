@@ -95,6 +95,6 @@ async def get_current_user_optional(
     if credentials is None:
         return None
     try:
-        return await get_current_user.__wrapped__(credentials, db)  # type: ignore
+        return await get_current_user(credentials, db)
     except HTTPException:
         return None
