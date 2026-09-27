@@ -1,9 +1,14 @@
 """
 Deep Dive API — request and read equity-research-style briefings on one ticker.
 
-The HTTP layer only enqueues; the Opus run happens in a Celery task because it
-takes minutes. Rate limited to one dive per user per COOLDOWN_DAYS, since each
-run is a paid model call with live web search.
+The HTTP layer only enqueues; the Opus run happens in a FastAPI background
+task because it takes minutes. Gated by two independent limits:
+
+- A per-user cooldown of one dive per COOLDOWN_DAYS (existing behavior).
+- A global cap of one dive per day across all users (demo release — see
+  app.core.ai_budget), first-come first-served. Everyone after the day's one
+  run gets a 429 with `show_sample: True` so the frontend can fall back to a
+  pre-generated example instead of dead-ending.
 
 Reports persist. That is deliberate: a stored dive can be cited by later AI
 surfaces instead of re-researching the same ground, and it becomes a dated
@@ -12,10 +17,12 @@ record of what was knowable at the time.
 import uuid
 from datetime import datetime, timedelta, timezone
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from sqlalchemy import select, desc
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import settings
+from app.core.ai_budget import consume_deep_dive_budget
 from app.dependencies import get_current_user, get_db
 from app.models.db import (
     User, Portfolio, Holding, ThesisThread, ThesisEntry,
@@ -23,7 +30,7 @@ from app.models.db import (
 )
 from app.routers.ai import _fetch_calibration_summary
 from app.services.deep_dive import COOLDOWN_DAYS
-from app.tasks.deep_dive_task import run_deep_dive
+from app.tasks.deep_dive_task import run_deep_dive_sync
 
 router = APIRouter(prefix="/deep-dive")
 
@@ -200,10 +207,11 @@ async def get_report(
 @router.post("/{ticker}")
 async def request_deep_dive(
     ticker: str,
+    background_tasks: BackgroundTasks,
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Queue a deep dive. One per user per COOLDOWN_DAYS."""
+    """Queue a deep dive. One per user per COOLDOWN_DAYS, and one globally per day."""
     tk = _norm(ticker)
     if not tk:
         raise HTTPException(status_code=400, detail="Ticker required")
@@ -223,6 +231,26 @@ async def request_deep_dive(
             headers={"X-Deep-Dive-Next-Available": nxt.isoformat()},
         )
 
+    # Global budget claimed only now: every guard above that can still reject
+    # the request (missing ticker, an in-progress dive, the per-user cooldown)
+    # has already passed. With a daily limit of exactly 1, claiming any
+    # earlier would let a request that was going to be rejected anyway spend
+    # the one run nobody else could then use until tomorrow. Claimed before
+    # the DeepDiveReport row is created, too: creating that row first and
+    # denying the budget afterward would leave a "queued" row behind that
+    # nothing ever advances — which would both trip the in-progress 409 guard
+    # above and extend this user's own cooldown, for a dive that never ran.
+    if not await consume_deep_dive_budget(settings.DEEP_DIVE_GLOBAL_DAILY_LIMIT):
+        raise HTTPException(
+            status_code=429,
+            detail={
+                "code": "DEEP_DIVE_BUDGET_SPENT",
+                "message": "Today's Deep Dive has already been generated. "
+                           "Showing a previously generated example instead.",
+                "show_sample": True,
+            },
+        )
+
     context = await _build_context(db, user, tk)
 
     row = DeepDiveReport(user_id=user.id, ticker=tk, status="queued")
@@ -230,6 +258,9 @@ async def request_deep_dive(
     await db.commit()
     await db.refresh(row)
 
-    run_deep_dive.delay(str(row.id), context, None)
+    # Celery was dropped for the demo release: one job per day does not justify
+    # a second always-on Fly machine. The frontend polls the report row every
+    # 10s and stops when it completes, which behaves identically either way.
+    background_tasks.add_task(run_deep_dive_sync, str(row.id), context, None)
 
     return _serialize(row)
