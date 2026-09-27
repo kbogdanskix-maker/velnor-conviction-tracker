@@ -63,3 +63,4 @@ backend/deep_dive_guideline.md
 !**/.env.local.example
 !frontend/.env.local.example
 docs/SECRET-ROTATION-REQUIRED.md
+docs/LINKEDIN-POST-DRAFT.md
