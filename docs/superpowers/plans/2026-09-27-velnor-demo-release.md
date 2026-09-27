@@ -913,12 +913,23 @@ async def seed_demo_user(user: User, db: AsyncSession) -> uuid.UUID:
     await db.commit()
 
     # Holdings is a materialised table — transactions alone produce no
-    # positions, and the dashboard reads holdings.
+    # positions, and the dashboard reads holdings. recompute_holdings only
+    # stages the delete+insert on the session; it does not commit (matching
+    # every other call site in app/routers/portfolio.py), so we must commit
+    # again here or the recomputed rows are rolled back when the request's
+    # session closes and the demo dashboard comes up empty.
     await portfolio_calc.recompute_holdings(portfolio.id, db)
+    await db.commit()
 
     logger.info("Seeded demo portfolio for user %s", user.id)
     return portfolio.id
 ```
+
+> **Corrected during execution.** The original plan omitted the second
+> `await db.commit()`. `recompute_holdings` does not commit, and `get_db` does
+> not commit on clean exit, so the materialised holdings would have been rolled
+> back — the demo dashboard would have rendered with zero positions while the
+> transactions persisted fine. Landed as `9213114`.
 
 - [ ] **Step 2: Write the router**
 
