@@ -51,3 +51,5 @@ anthropic>=0.40.0
 
 pytest==8.3.4
 pytest-asyncio==0.25.0
+PyJWT==2.12.1
+feedparser==6.0.14
