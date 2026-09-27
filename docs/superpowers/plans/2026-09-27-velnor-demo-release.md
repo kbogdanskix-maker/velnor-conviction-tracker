@@ -1170,10 +1170,20 @@ with:
         daily_limit = _INSIGHT_LIMITS.get(tier, 0)
 ```
 
-- [ ] **Step 3: Check the global ceiling first**
+- [ ] **Step 3: Check the global ceiling LAST**
 
-Immediately after the `daily_limit` assignment above and **before** the
-`if daily_limit == 0:` horizon block, insert:
+> **Corrected during execution.** The original plan put this check first, right
+> after the `daily_limit` assignment. That is wrong: it consumes a unit of the
+> *shared* global counter on every request, including ones immediately refused
+> for being horizon-tier (403) or for having exhausted their own per-user quota
+> (429). Because the counter is shared, a client spamming requests its own quota
+> would reject could burn down the global ceiling and deny service to every
+> other visitor for the rest of the day, without ever reaching the paid API.
+> The check belongs **last**, immediately before `return sse_headers`, so a unit
+> is only spent once the request has cleared every gate that would refuse it for
+> free. Landed as `e9269e5`.
+
+Immediately before `return sse_headers`, after the per-user quota block, insert:
 
 ```python
     # Checked before the per-user quota so one visitor cannot drain the day for
