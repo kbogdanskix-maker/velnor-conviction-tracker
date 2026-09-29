@@ -4,10 +4,18 @@ All external calls are Redis-cached. This is the single source of truth
 for price data throughout the application.
 """
 import logging
+from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Any
 import asyncio
+import urllib.parse
+import urllib.request
+
+import feedparser
 import yfinance as yf
+
+# Yahoo's RSS endpoint rejects the default urllib agent.
+_NEWS_USER_AGENT = "Mozilla/5.0 (compatible; Velnor/1.0)"
 
 from app.core.cache import cache_get, cache_set
 
@@ -783,24 +791,39 @@ async def get_ticker_news(ticker: str, ttl: int = 3600) -> list[dict]:
         return cached
 
     def _sync_fetch() -> list[dict]:
+        # Yahoo's JSON news endpoint that yfinance wraps returns nothing as of
+        # 2026-09 — `Ticker.news`, `get_news()` and every `tab=` variant all
+        # come back empty, so the feed silently rendered as an empty page.
+        # Their RSS endpoint still works and is a far more stable contract, so
+        # we read that directly. feedparser is already a dependency (macro_service).
+        url = (
+            "https://feeds.finance.yahoo.com/rss/2.0/headline"
+            f"?s={ticker}&region=US&lang=en-US"
+        )
         try:
-            t = yf.Ticker(ticker)
-            raw = t.news or []
+            req = urllib.request.Request(url, headers={"User-Agent": _NEWS_USER_AGENT})
+            with urllib.request.urlopen(req, timeout=15) as resp:
+                parsed = feedparser.parse(resp.read())
+
             items: list[dict] = []
-            for article in raw:
-                content = article.get("content", {})
-                if content.get("contentType") != "STORY":
-                    continue
-                canonical = content.get("canonicalUrl") or {}
-                provider = content.get("provider") or {}
-                thumb = content.get("thumbnail") or {}
+            for entry in parsed.entries:
+                published = entry.get("published")
+                if getattr(entry, "published_parsed", None):
+                    published = datetime(
+                        *entry.published_parsed[:6], tzinfo=timezone.utc
+                    ).isoformat()
+
                 items.append({
-                    "title": content.get("title", ""),
-                    "summary": content.get("summary", ""),
-                    "published_at": content.get("pubDate"),
-                    "source": provider.get("displayName", "Unknown"),
-                    "url": canonical.get("url", ""),
-                    "thumbnail": thumb.get("originalUrl"),
+                    "title": entry.get("title", ""),
+                    "summary": entry.get("summary", ""),
+                    "published_at": published,
+                    # RSS has no provider field; the article's own domain is the
+                    # honest answer and is what the reader recognises.
+                    "source": urllib.parse.urlparse(
+                        entry.get("link", "")
+                    ).netloc.removeprefix("www.") or "Yahoo Finance",
+                    "url": entry.get("link", ""),
+                    "thumbnail": None,
                     "ticker": ticker,
                 })
                 if len(items) >= 8:
