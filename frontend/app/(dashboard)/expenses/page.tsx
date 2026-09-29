@@ -19,31 +19,30 @@ import PageTransition from "@/components/celestial/PageTransition";
 import AnimatedNumber from "@/components/celestial/AnimatedNumber";
 import ErrorState from "@/components/shared/ErrorState";
 import CashFlowTabs from "@/components/cashflow/CashFlowTabs";
+import { CATEGORICAL_COLORS } from "@/lib/chart-colors";
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
 const CATEGORY_COLORS: Record<string, string> = {
-  rent: "#ef4444",
-  insurance: "#f97316",
-  utilities: "#eab308",
-  subscriptions: "#a78bfa",
-  loan_payment: "#f472b6",
-  phone: "#22d3ee",
-  other_fixed: "#71717a",
-  groceries: "#34d399",
-  dining: "#fb923c",
-  transport: "#3b82f6",
-  entertainment: "#a855f7",
-  shopping: "#ec4899",
-  health: "#1AA8BB",
-  travel: "#06b6d4",
-  other_variable: "#6b7280",
+  // Compliant teal/zinc ramp — see lib/chart-colors.ts. No second hue; gain/loss/amber stay semantic.
+  rent: "#1AA8BB",
+  insurance: "#D4D4D8",
+  utilities: "#157E8C",
+  subscriptions: "#A1A1AA",
+  loan_payment: "#5EBFCC",
+  phone: "#71717A",
+  other_fixed: "#0F5D68",
+  groceries: "#E4E4E7",
+  dining: "#3E9AA8",
+  transport: "#52525B",
+  entertainment: "#87C9D3",
+  shopping: "#8A8A93",
+  health: "#2A6F79",
+  travel: "#C7C7CC",
+  other_variable: "#468E99",
 };
 
-const FALLBACK_COLORS = [
-  "#ef4444", "#f97316", "#eab308", "#a78bfa", "#f472b6",
-  "#22d3ee", "#34d399", "#fb923c", "#3b82f6", "#a855f7",
-];
+const FALLBACK_COLORS = CATEGORICAL_COLORS;
 
 function getCatColor(cat: string, idx: number): string {
   return CATEGORY_COLORS[cat] ?? FALLBACK_COLORS[idx % FALLBACK_COLORS.length];

@@ -17,12 +17,13 @@ import CashFlowTabs from "@/components/cashflow/CashFlowTabs";
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 const STREAM_COLORS: Record<string, string> = {
-  salary: "#1AA8BB",       // teal
-  freelance: "#22d3ee",    // cyan
-  rental: "#a78bfa",       // purple
-  dividends: "#34d399",    // emerald
-  other_income: "#fbbf24", // amber
-  business: "#f472b6",     // pink
+  // Compliant teal/zinc ramp — see lib/chart-colors.ts. No second hue; gain/loss/amber stay semantic.
+  salary: "#1AA8BB",
+  freelance: "#D4D4D8",
+  rental: "#157E8C",
+  dividends: "#A1A1AA",
+  other_income: "#5EBFCC",
+  business: "#71717A",
 };
 
 const STREAM_ICONS: Record<string, typeof Briefcase> = {

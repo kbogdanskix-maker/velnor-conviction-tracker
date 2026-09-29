@@ -37,18 +37,19 @@ const CATEGORIES = [
 ];
 
 const CATEGORY_COLORS: Record<string, string> = {
-  Streaming: "#f43f5e",
-  Music: "#a855f7",
-  "Cloud Storage": "#3b82f6",
-  Software: "#1AA8BB",
-  Gaming: "#f59e0b",
-  "News & Media": "#6366f1",
-  Fitness: "#22c55e",
-  "Food & Delivery": "#f97316",
-  Finance: "#06b6d4",
-  Education: "#ec4899",
-  Productivity: "#84cc16",
-  Other: "#71717a",
+  // Compliant teal/zinc ramp — see lib/chart-colors.ts. No second hue; gain/loss/amber stay semantic.
+  Streaming: "#1AA8BB",
+  Music: "#D4D4D8",
+  "Cloud Storage": "#157E8C",
+  Software: "#A1A1AA",
+  Gaming: "#5EBFCC",
+  "News & Media": "#71717A",
+  Fitness: "#0F5D68",
+  "Food & Delivery": "#E4E4E7",
+  Finance: "#3E9AA8",
+  Education: "#52525B",
+  Productivity: "#87C9D3",
+  Other: "#8A8A93",
 };
 
 // localStorage helpers removed  - now uses useCloudStore

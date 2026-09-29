@@ -14,6 +14,7 @@ import { formatCurrency, formatPercent } from "@/lib/formatters";
 import { useDefaultPortfolio } from "@/hooks/usePortfolio";
 import useSWR from "swr";
 import { api } from "@/lib/api";
+import { CATEGORICAL_COLORS } from "@/lib/chart-colors";
 
 /* ── helpers ────────────────────────────────────────────────── */
 
@@ -25,7 +26,7 @@ const fmtB = (n: number) => {
   return formatCurrency(n);
 };
 
-const COLORS = ["#1AA8BB", "#f59e0b", "#a78bfa", "#f43f5e", "#38bdf8", "#84cc16"];
+const COLORS = CATEGORICAL_COLORS;
 
 interface StockData {
   ticker: string;

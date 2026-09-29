@@ -19,6 +19,7 @@ import PageTransition from "@/components/celestial/PageTransition";
 import FloatingCard from "@/components/celestial/FloatingCard";
 import RevealOnScroll from "@/components/celestial/RevealOnScroll";
 import TierGate from "@/components/shared/TierGate";
+import { CATEGORICAL_COLORS } from "@/lib/chart-colors";
 
 // ── Locale-tolerant number parsing ───────────────────────────────────────────
 // Accepts both "." and "," as the decimal separator (e.g. "33,1" → 33.1) and
@@ -156,7 +157,7 @@ export default function ComparePage() {
     });
   }, [userReturn, selected]);
 
-  const COLORS = ["#1AA8BB", "#f59e0b", "#a855f7", "#f43f5e", "#3b82f6"];
+  const COLORS = CATEGORICAL_COLORS;
 
   // Colours for return bars relative to user's own return
   function returnBarColor(returnVal: number, isUser: boolean): string {

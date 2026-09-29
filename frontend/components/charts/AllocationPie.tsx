@@ -5,25 +5,12 @@ import { motion } from "framer-motion";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 import { formatCurrency, formatPercent } from "@/lib/formatters";
 import type { Holding } from "@/hooks/usePortfolio";
+import { categoricalColor } from "@/lib/chart-colors";
 
 interface Props {
   holdings: Holding[];
 }
 
-const COLORS = [
-  "#1AA8BB", // teal-500
-  "#34d399", // emerald-400
-  "#60a5fa", // blue-400
-  "#a78bfa", // violet-400
-  "#fb923c", // orange-400
-  "#f472b6", // pink-400
-  "#fbbf24", // amber-400
-  "#38bdf8", // sky-400
-  "#4ade80", // green-400
-  "#c084fc", // purple-400
-  "#f87171", // red-400
-  "#2dd4bf", // teal-400
-];
 
 interface PieEntry {
   ticker: string;
@@ -87,7 +74,7 @@ export default function AllocationPie({ holdings }: Props) {
                 animationEasing="ease-out"
               >
                 {data.map((_, i) => (
-                  <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                  <Cell key={i} fill={categoricalColor(i)} />
                 ))}
               </Pie>
               <Tooltip content={<CustomTooltip />} />
@@ -105,7 +92,7 @@ export default function AllocationPie({ holdings }: Props) {
             >
               <span
                 className="w-2.5 h-2.5 rounded-sm shrink-0"
-                style={{ backgroundColor: COLORS[i % COLORS.length] }}
+                style={{ backgroundColor: categoricalColor(i) }}
               />
               <span className="text-zinc-300 truncate flex-1">{d.ticker}</span>
               <span className="text-zinc-500 tabular">{d.pct.toFixed(1)}%</span>

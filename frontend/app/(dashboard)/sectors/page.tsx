@@ -23,30 +23,29 @@ import {
   Eyebrow,
   Prose,
 } from "@/components/instrument";
+import { CATEGORICAL_COLORS } from "@/lib/chart-colors";
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
 const SECTOR_COLORS: Record<string, string> = {
+  // Stable identity per sector, drawn from the compliant teal/zinc ramp —
+  // see lib/chart-colors.ts. No second hue, nothing semantic.
   "Technology":            "#1AA8BB",
-  "Healthcare":            "#22d3ee",
-  "Financial Services":    "#a78bfa",
-  "Consumer Cyclical":     "#f472b6",
-  "Communication Services":"#fbbf24",
-  "Industrials":           "#34d399",
-  "Consumer Defensive":    "#fb923c",
-  "Energy":                "#ef4444",
-  "Real Estate":           "#818cf8",
-  "Utilities":             "#2dd4bf",
-  "Basic Materials":       "#a3e635",
-  "ETF / Fund":            "#71717a",
-  "Unknown":               "#52525b",
+  "Healthcare":            "#D4D4D8",
+  "Financial Services":    "#157E8C",
+  "Consumer Cyclical":     "#A1A1AA",
+  "Communication Services":"#5EBFCC",
+  "Industrials":           "#71717A",
+  "Consumer Defensive":    "#0F5D68",
+  "Energy":                "#E4E4E7",
+  "Real Estate":           "#3E9AA8",
+  "Utilities":             "#52525B",
+  "Basic Materials":       "#87C9D3",
+  "ETF / Fund":            "#8A8A93",
+  "Unknown":               "#3F3F46",
 };
 
-const FALLBACK_COLORS = [
-  "#1AA8BB", "#22d3ee", "#a78bfa", "#f472b6", "#fbbf24",
-  "#34d399", "#fb923c", "#ef4444", "#818cf8", "#2dd4bf",
-  "#a3e635", "#71717a",
-];
+const FALLBACK_COLORS = CATEGORICAL_COLORS;
 
 function getSectorColor(name: string, idx: number): string {
   return SECTOR_COLORS[name] ?? FALLBACK_COLORS[idx % FALLBACK_COLORS.length];
@@ -79,7 +78,7 @@ function TreemapContent(props: any) {
   if (width < 40 || height < 30) return null;
   return (
     <g>
-      {/* Sector fills span light pastels (#a78bfa, #f472b6) through dark greys, so
+      {/* Sector fills span light zincs through deep teals, so
           no single label colour reads on all of them at full strength. The cell is
           drawn as a tint of its sector colour over the page background, which keeps
           the hue identity used by the ring and the legend while giving every cell a
