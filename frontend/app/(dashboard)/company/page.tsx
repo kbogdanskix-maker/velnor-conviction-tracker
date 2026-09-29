@@ -273,9 +273,18 @@ type StmtTab = (typeof STMT_TABS)[number]["key"];
 
 function CompanyDeepDive() {
   const { summary } = useDefaultPortfolio();
-  const firstHolding = summary?.holdings?.[0]?.ticker ?? "AAPL";
+  const firstHolding = summary?.holdings?.[0]?.ticker;
 
-  const [ticker, setTicker] = useState<string>(firstHolding);
+  // The portfolio arrives from SWR a tick after first paint, so a plain
+  // useState(firstHolding) captures the fallback forever and the page opens on
+  // a company the user does not own. Seed with the fallback, then adopt the
+  // first holding when it lands — unless the user has already chosen a ticker.
+  const [ticker, setTicker] = useState<string>("AAPL");
+  const [userPicked, setUserPicked] = useState(false);
+  useEffect(() => {
+    if (!userPicked && firstHolding) setTicker(firstHolding);
+  }, [firstHolding, userPicked]);
+
   const [input, setInput] = useState("");
   const [stmtTab, setStmtTab] = useState<StmtTab>("income");
 
@@ -292,7 +301,7 @@ function CompanyDeepDive() {
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     const t = input.toUpperCase().trim();
-    if (t) { setTicker(t); setInput(""); }
+    if (t) { setUserPicked(true); setTicker(t); setInput(""); }
   };
 
   const activeStmt: StmtBlock | null = useMemo(() => {
@@ -409,7 +418,9 @@ function CompanyDeepDive() {
       {/* ── Financial statements ───────────────────────────────── */}
       <Section
         label="Financial statements"
-        prose="As filed, most recent periods first. Values in USD (T/B/M/K); EPS and share counts as reported."
+        // Not every filer reports in USD — ASML and MC.PA both file in EUR, and
+        // nothing here converts. State the unit honestly rather than asserting USD.
+        prose="As filed, most recent periods first. Values in the currency the company reports in (T/B/M/K); EPS and share counts as reported."
         controls={
           <PillGroup
             options={STMT_TABS.map((t) => ({ key: t.key, label: t.label }))}
