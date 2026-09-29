@@ -484,6 +484,25 @@ _INCOME_ROWS = [
     ("Diluted EPS", "Diluted EPS"),
     ("Diluted Average Shares", "Diluted Shares"),
 ]
+# Banks and insurers do not file a Cost of Revenue / Gross Profit / Operating
+# Income / EBITDA ladder at all — Yahoo genuinely publishes none of it for them
+# (verified against the raw frames for JPM and SOFI). Rendering the industrial
+# template against a bank produces five permanently blank rows while the lines
+# that actually describe the business — the interest spread — are discarded.
+# Every label below is present in both the JPM and SOFI statements.
+_INCOME_ROWS_BANK = [
+    ("Total Revenue", "Revenue"),
+    ("Net Interest Income", "Net Interest Income"),
+    ("Interest Income", "Interest Income"),
+    ("Interest Expense", "Interest Expense"),
+    ("Selling General And Administration", "SG&A"),
+    ("Other Non Interest Expense", "Other Non-Interest Expense"),
+    ("Pretax Income", "Pretax Income"),
+    ("Tax Provision", "Tax Provision"),
+    ("Net Income", "Net Income"),
+    ("Diluted EPS", "Diluted EPS"),
+    ("Diluted Average Shares", "Diluted Shares"),
+]
 _BALANCE_ROWS = [
     ("Cash And Cash Equivalents", "Cash & Equivalents"),
     ("Cash Cash Equivalents And Short Term Investments", "Cash & ST Investments"),
@@ -492,6 +511,19 @@ _BALANCE_ROWS = [
     ("Total Debt", "Total Debt"),
     ("Net Debt", "Net Debt"),
     ("Working Capital", "Working Capital"),
+    ("Stockholders Equity", "Shareholder Equity"),
+    ("Retained Earnings", "Retained Earnings"),
+    ("Ordinary Shares Number", "Shares Outstanding"),
+]
+# A bank holds no working capital and reports cash alongside fed funds sold.
+_BALANCE_ROWS_BANK = [
+    ("Cash And Cash Equivalents", "Cash & Equivalents"),
+    ("Cash Cash Equivalents And Federal Funds Sold", "Cash & Fed Funds Sold"),
+    ("Total Assets", "Total Assets"),
+    ("Total Liabilities Net Minority Interest", "Total Liabilities"),
+    ("Total Debt", "Total Debt"),
+    ("Net Debt", "Net Debt"),
+    ("Tangible Book Value", "Tangible Book Value"),
     ("Stockholders Equity", "Shareholder Equity"),
     ("Retained Earnings", "Retained Earnings"),
     ("Ordinary Shares Number", "Shares Outstanding"),
@@ -543,6 +575,17 @@ async def get_financials(ticker: str) -> dict[str, Any] | None:
                 # Row not in this filer's statement — keep it, fill with None.
                 values = [None] * n
             line_items.append({"label": display, "values": values})
+
+        # Drop any period with no data at all. yfinance routinely returns a
+        # trailing column (the oldest year) that is entirely NaN; rendering it
+        # gives every statement a wasted all-"-" column, which is pure noise and
+        # costs a column of width on mobile.
+        keep = [i for i in range(n) if any(r["values"][i] is not None for r in line_items)]
+        if len(keep) != n:
+            periods = [periods[i] for i in keep]
+            for r in line_items:
+                r["values"] = [r["values"][i] for i in keep]
+
         return {"periods": periods, "rows": line_items}
 
     def _sync_fetch() -> dict[str, Any] | None:
@@ -555,8 +598,17 @@ async def get_financials(ticker: str) -> dict[str, Any] | None:
                 quote_type = (t.info or {}).get("quoteType")
             except Exception:
                 quote_type = None
-            income = _extract(t.income_stmt, _INCOME_ROWS)
-            balance = _extract(t.balance_sheet, _BALANCE_ROWS)
+            income_df = t.income_stmt
+            balance_df = t.balance_sheet
+
+            # A lender reports an interest spread instead of a cost-of-revenue
+            # ladder. Pick the row template that matches what this filer files,
+            # rather than drawing the industrial one and leaving it blank.
+            idx = set(income_df.index) if income_df is not None and not income_df.empty else set()
+            is_lender = "Net Interest Income" in idx and "Cost Of Revenue" not in idx
+
+            income = _extract(income_df, _INCOME_ROWS_BANK if is_lender else _INCOME_ROWS)
+            balance = _extract(balance_df, _BALANCE_ROWS_BANK if is_lender else _BALANCE_ROWS)
             cashflow = _extract(t.cashflow, _CASHFLOW_ROWS)
             if income is None and balance is None and cashflow is None:
                 if quote_type and quote_type.upper() not in ("EQUITY", "NONE", ""):
