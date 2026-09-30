@@ -38,7 +38,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: "/journey", label: "Stock Journey", icon: Route },
       { href: "/thesis", label: "Thesis", icon: BookOpen },
       { href: "/reflect", label: "Reflect", icon: Brain },
-      { href: "/watchlist", label: "Lookout", icon: Eye },
+      { href: "/watchlist", label: "Watchlist", icon: Eye },
       { href: "/closed", label: "Closed & Lessons", icon: Archive },
       { href: "/calibration", label: "Calibration", icon: Target },
       { href: "/smart-alerts", label: "Smart Alerts", icon: Zap },

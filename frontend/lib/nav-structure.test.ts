@@ -15,7 +15,7 @@ describe("nav-structure", () => {
     const spine = NAV_GROUPS.filter((g) => !g.lab).flatMap((g) => g.items);
     const byHref = new Map(spine.map((i) => [i.href, i.label]));
     expect(byHref.get("/portfolio")).toBe("Positions");
-    expect(byHref.get("/watchlist")).toBe("Lookout");
+    expect(byHref.get("/watchlist")).toBe("Watchlist");
     expect(byHref.get("/thesis")).toBe("Thesis");
     expect(byHref.get("/reflect")).toBe("Reflect");
     expect(byHref.get("/journey")).toBe("Stock Journey");
