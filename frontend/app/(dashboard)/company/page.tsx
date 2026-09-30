@@ -107,7 +107,8 @@ async function streamValuation(
   try {
     const res = await apiStreamPost(`/ai/valuation/${ticker}`, {});
     if (res.status === 429) {
-      onError("Daily AI limit reached. Resets at midnight.");
+      const body = await res.json().catch(() => null);
+      onError(body?.detail || "Daily AI limit reached. Resets at 00:00 UTC.");
       return;
     }
     if (!res.ok || !res.body) {

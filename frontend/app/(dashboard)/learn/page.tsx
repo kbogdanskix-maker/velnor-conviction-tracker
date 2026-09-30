@@ -657,7 +657,8 @@ function ApplyToStock({ item }: { item: LearnItem }) {
         return;
       }
       if (res.status === 429) {
-        setError("Daily AI insight limit reached. Resets at midnight, or upgrade to Navigator for unlimited.");
+        const body = await res.json().catch(() => null);
+        setError(body?.detail || "Daily AI limit reached. Resets at 00:00 UTC.");
         setIsAnalyzing(false);
         return;
       }

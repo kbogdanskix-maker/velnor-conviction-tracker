@@ -39,7 +39,12 @@ async function streamEarnings(
       return;
     }
     if (res.status === 429) {
-      onError("Daily AI insight limit reached. Resets at midnight, or upgrade to Navigator for unlimited.");
+      // Surface the server's message: it names which allowance ran out
+      // (today's analyses vs the demo's shared daily ceiling) and when it
+      // resets. The old hardcoded line also offered a Navigator upgrade,
+      // which is meaningless in the demo where everyone is already Navigator.
+      const body = await res.json().catch(() => null);
+      onError(body?.detail || "Daily AI limit reached. Resets at 00:00 UTC.");
       return;
     }
     if (!res.ok || !res.body) {

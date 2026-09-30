@@ -36,7 +36,15 @@ async function streamReflect(
   try {
     const res = await apiStreamPost("/ai/reflect", payload);
     if (res.status === 403) { onError("Reflect is a Navigator feature. Upgrade to chat with your portfolio."); return; }
-    if (res.status === 429) { onError("Daily AI insight limit reached. Resets at midnight."); return; }
+    if (res.status === 429) {
+      // The server distinguishes which allowance ran out — today's one
+      // conversation vs today's five answers vs the demo's shared daily
+      // ceiling — and says when it resets. A hardcoded line here would throw
+      // that away and tell the user the wrong thing.
+      const body = await res.json().catch(() => null);
+      onError(body?.detail || "Daily AI limit reached. Resets at 00:00 UTC.");
+      return;
+    }
     if (!res.ok || !res.body) { onError("Failed to connect."); return; }
 
     const reader = res.body.getReader();
