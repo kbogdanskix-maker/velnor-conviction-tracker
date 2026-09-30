@@ -118,7 +118,7 @@ export default function FxPage() {
                 <Wifi className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Live rates</span>
               </span>
             ) : (
-              <span className="flex items-center gap-1.5 text-xs text-zinc-500">
+              <span className="flex items-center gap-1.5 text-xs text-vela-muted">
                 <WifiOff className="w-3.5 h-3.5" /> <span className="hidden sm:inline">{isLoading ? "Loading…" : "Static rates"}</span>
               </span>
             )}
@@ -142,7 +142,7 @@ export default function FxPage() {
         <div className="flex flex-col sm:flex-row items-center gap-4">
           {/* From */}
           <div className="flex-1 w-full">
-            <label className="text-xs text-zinc-500 mb-1.5 block">From</label>
+            <label className="text-xs text-vela-muted mb-1.5 block">From</label>
             <div className="flex gap-2">
               <select
                 value={fromCode}
@@ -172,7 +172,7 @@ export default function FxPage() {
 
           {/* To */}
           <div className="flex-1 w-full">
-            <label className="text-xs text-zinc-500 mb-1.5 block">To</label>
+            <label className="text-xs text-vela-muted mb-1.5 block">To</label>
             <div className="flex gap-2">
               <select
                 value={toCode}
@@ -224,9 +224,9 @@ export default function FxPage() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-zinc-800">
-              <th className="text-left text-xs text-zinc-500 font-medium py-2 pr-4"></th>
+              <th className="text-left text-xs text-vela-muted font-medium py-2 pr-4"></th>
               {majorCodes.map((c) => (
-                <th key={c} className="text-right text-xs text-zinc-500 font-medium py-2 px-2">{c}</th>
+                <th key={c} className="text-right text-xs text-vela-muted font-medium py-2 px-2">{c}</th>
               ))}
             </tr>
           </thead>
@@ -238,7 +238,7 @@ export default function FxPage() {
                   const val = row[col] as number;
                   const isSelf = row.code === col;
                   return (
-                    <td key={col} className={`text-right tabular-nums py-2 px-2 ${isSelf ? "text-zinc-600" : "text-zinc-300"}`}>
+                    <td key={col} className={`text-right tabular-nums py-2 px-2 ${isSelf ? "text-vela-muted" : "text-zinc-300"}`}>
                       {isSelf ? " -" : val < 1 ? val.toFixed(4) : val.toFixed(2)}
                     </td>
                   );
@@ -265,7 +265,7 @@ export default function FxPage() {
                   c.code === toCode ? "bg-vela-teal/10 border border-vela-teal/30" : "bg-zinc-800/30 hover:bg-zinc-800 border border-transparent"
                 }`}
               >
-                <span className="text-xs font-mono text-zinc-500 w-8 text-center">{c.code}</span>
+                <span className="text-xs font-mono text-vela-muted w-8 text-center">{c.code}</span>
                 <div className="flex-1 min-w-0">
                   <span className="text-xs text-zinc-400">{c.code}</span>
                   <p className="text-sm font-medium text-zinc-200 tabular-nums truncate">
@@ -280,8 +280,8 @@ export default function FxPage() {
 
       {/* Disclaimer */}
       <div className="flex items-start gap-2 px-4 py-3 rounded-lg bg-zinc-800/50 border border-zinc-700/50">
-        <Info className="w-4 h-4 text-zinc-500 mt-0.5 shrink-0" />
-        <p className="text-xs text-zinc-500">
+        <Info className="w-4 h-4 text-vela-subtle mt-0.5 shrink-0" />
+        <p className="text-xs text-vela-muted">
           {isLive
             ? "Live exchange rates from market data. Rates refresh every 5 minutes and may differ from your broker's rates."
             : "Showing approximate reference rates. Connect to the backend for live market data."

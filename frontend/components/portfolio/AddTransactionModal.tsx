@@ -189,7 +189,7 @@ export default function AddTransactionModal({
             <Dialog.Title className="text-base font-semibold text-zinc-100">
               {isEdit ? "Edit Transaction" : "Add Transaction"}
             </Dialog.Title>
-            <Dialog.Close className="text-zinc-500 hover:text-zinc-100 transition-colors">
+            <Dialog.Close className="text-vela-muted hover:text-zinc-100 transition-colors">
               <X className="w-4 h-4" />
             </Dialog.Close>
           </div>
@@ -209,7 +209,7 @@ export default function AddTransactionModal({
                         : t === "sell"
                         ? "bg-loss/15 text-loss"
                         : "bg-vela-teal/15 text-vela-teal"
-                      : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800"
+                      : "text-vela-muted hover:text-zinc-300 hover:bg-zinc-800"
                   }`}
                 >
                   {t.charAt(0).toUpperCase() + t.slice(1)}
@@ -228,7 +228,7 @@ export default function AddTransactionModal({
                   update("ticker", e.target.value);
                   setUserEditedPrice(false);
                 }}
-                className="w-full bg-zinc-800 border border-vela-border rounded-md px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-vela-teal"
+                className="w-full bg-zinc-800 border border-vela-border rounded-md px-3 py-2 text-sm text-zinc-100 placeholder:text-vela-muted focus:outline-none focus:ring-1 focus:ring-vela-teal"
               />
             </div>
 
@@ -242,7 +242,7 @@ export default function AddTransactionModal({
                   min="0"
                   value={form.quantity || ""}
                   onChange={(e) => update("quantity", parseFloat(e.target.value) || 0)}
-                  className="w-full bg-zinc-800 border border-vela-border rounded-md px-3 py-2 text-sm text-zinc-100 tabular placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-vela-teal"
+                  className="w-full bg-zinc-800 border border-vela-border rounded-md px-3 py-2 text-sm text-zinc-100 tabular placeholder:text-vela-muted focus:outline-none focus:ring-1 focus:ring-vela-teal"
                 />
               </div>
               <div>
@@ -256,7 +256,7 @@ export default function AddTransactionModal({
                   min="0"
                   value={form.price || ""}
                   onChange={(e) => handlePriceChange(e.target.value)}
-                  className="w-full bg-zinc-800 border border-vela-border rounded-md px-3 py-2 text-sm text-zinc-100 tabular placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-vela-teal"
+                  className="w-full bg-zinc-800 border border-vela-border rounded-md px-3 py-2 text-sm text-zinc-100 tabular placeholder:text-vela-muted focus:outline-none focus:ring-1 focus:ring-vela-teal"
                 />
                 {priceHint && (
                   <button
@@ -280,7 +280,7 @@ export default function AddTransactionModal({
                   min="0"
                   value={form.fees || ""}
                   onChange={(e) => update("fees", parseFloat(e.target.value) || 0)}
-                  className="w-full bg-zinc-800 border border-vela-border rounded-md px-3 py-2 text-sm text-zinc-100 tabular placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-vela-teal"
+                  className="w-full bg-zinc-800 border border-vela-border rounded-md px-3 py-2 text-sm text-zinc-100 tabular placeholder:text-vela-muted focus:outline-none focus:ring-1 focus:ring-vela-teal"
                 />
               </div>
               <div>
@@ -309,7 +309,7 @@ export default function AddTransactionModal({
                     className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                       (form.asset_type || "stock") === t.value
                         ? "bg-vela-teal/15 text-vela-teal border border-vela-teal/30"
-                        : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 border border-transparent"
+                        : "text-vela-muted hover:text-zinc-300 hover:bg-zinc-800 border border-transparent"
                     }`}
                   >
                     {t.label}
@@ -326,13 +326,13 @@ export default function AddTransactionModal({
                 placeholder="e.g. Earnings play"
                 value={form.notes || ""}
                 onChange={(e) => update("notes", e.target.value)}
-                className="w-full bg-zinc-800 border border-vela-border rounded-md px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-vela-teal"
+                className="w-full bg-zinc-800 border border-vela-border rounded-md px-3 py-2 text-sm text-zinc-100 placeholder:text-vela-muted focus:outline-none focus:ring-1 focus:ring-vela-teal"
               />
             </div>
 
             {/* Total preview */}
             <div className="flex items-center justify-between px-3 py-2 bg-zinc-800/50 rounded-md">
-              <span className="text-xs text-zinc-500">Total</span>
+              <span className="text-xs text-vela-muted">Total</span>
               <span className="text-sm font-medium text-zinc-100 tabular">
                 ${((form.quantity || 0) * (form.price || 0) + (form.fees || 0)).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>

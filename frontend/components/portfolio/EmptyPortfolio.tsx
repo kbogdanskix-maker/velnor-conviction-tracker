@@ -17,7 +17,7 @@ export default function EmptyPortfolio({ onAddTrade }: Props) {
       </div>
       <div>
         <h2 className="text-lg font-semibold text-zinc-100">Set sail</h2>
-        <p className="text-zinc-500 text-sm mt-1 max-w-sm">
+        <p className="text-vela-muted text-sm mt-1 max-w-sm">
           Add your first trade manually or import your transaction history from any broker.
         </p>
       </div>

@@ -562,7 +562,7 @@ function CompanyDeepDive() {
                           className="h-full"
                           style={{
                             width: `${(score / 10) * 100}%`,
-                            background: score <= 3 ? "#34d399" : score <= 6 ? "#fbbf24" : "#f43f5e",
+                            background: score <= 3 ? "#34d399" : score <= 6 ? "#fbbf24" : "#fb7185",
                           }}
                         />
                       </div>

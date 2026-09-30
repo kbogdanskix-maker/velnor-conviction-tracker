@@ -73,7 +73,7 @@ export default function GoalsPage() {
           <h2 className="text-base font-medium text-zinc-100 mb-1">
             No goals yet
           </h2>
-          <p className="text-sm text-zinc-500 max-w-xs mb-4">
+          <p className="text-sm text-vela-muted max-w-xs mb-4">
             Set a financial goal and track your progress with projections.
           </p>
           <button
@@ -101,7 +101,7 @@ export default function GoalsPage() {
 
       {/* Disclaimer */}
       {!isEmpty && (
-        <p className="text-[11px] text-zinc-600 text-center">
+        <p className="text-[11px] text-vela-muted text-center">
           Projections are hypothetical and do not constitute financial advice.
         </p>
       )}

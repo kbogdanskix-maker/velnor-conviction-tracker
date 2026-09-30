@@ -21,7 +21,7 @@ export default function MarketsPage() {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-display font-bold text-zinc-100">Markets</h1>
-        <p className="text-zinc-500 text-sm mt-0.5 flex items-center gap-2">
+        <p className="text-vela-muted text-sm mt-0.5 flex items-center gap-2">
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
@@ -149,7 +149,7 @@ function IndexCardInner({ index }: { index: MarketIndex }) {
       <p className={`text-xl font-bold tabular relative ${isUp ? "text-gain" : "text-loss"}`}>
         {formatPercent(changePct)}
       </p>
-      <p className="text-xs text-zinc-500 tabular mt-0.5 relative">
+      <p className="text-xs text-vela-muted tabular mt-0.5 relative">
         {index.price != null ? formatCurrency(index.price, "USD", true) : "---"}
       </p>
     </div>
@@ -181,7 +181,7 @@ function MoverCard({ mover, onClick }: { mover: Mover; onClick: () => void }) {
       <span className={changePillClass(changePct)}>
         {formatPercent(changePct)}
       </span>
-      <p className="text-xs text-zinc-500 tabular mt-1">
+      <p className="text-xs text-vela-muted tabular mt-1">
         {mover.price != null ? formatCurrency(mover.price) : " -"}
       </p>
     </motion.div>

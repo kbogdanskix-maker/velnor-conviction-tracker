@@ -47,7 +47,7 @@ export function SectionLabel({
       {children}
       {/* The leading space is load-bearing: ml-2 is visual only, so without it
           the label and its aside run together for screen readers ("SETUP4/5"). */}
-      {aside != null && <span className="ml-2 text-vela-muted/70">{" "}{aside}</span>}
+      {aside != null && <span className="ml-2 text-vela-muted">{" "}{aside}</span>}
     </h2>
   );
 }
@@ -227,7 +227,7 @@ export function Pips({
         <span
           key={i}
           aria-hidden="true"
-          className={`${size} leading-none ${i <= n ? "text-vela-teal" : "text-vela-muted/45"}`}
+          className={`${size} leading-none ${i <= n ? "text-vela-teal" : "text-vela-muted"}`}
         >
           {i <= n ? "◆" : "◇"}
         </span>

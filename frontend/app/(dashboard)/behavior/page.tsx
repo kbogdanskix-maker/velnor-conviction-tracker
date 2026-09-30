@@ -76,17 +76,17 @@ export default function BehaviorPage() {
           <p className={`text-sm font-medium mt-1 ${scoreColor(result.biasScore)}`}>
             {scoreLabel(result.biasScore)}
           </p>
-          <p className="text-[10px] text-zinc-500 mt-0.5">Behavior Score</p>
+          <p className="text-[10px] text-vela-muted mt-0.5">Behavior Score</p>
         </div>
         <div className="vela-card text-center py-6">
           <p className="text-3xl font-bold tabular text-amber-400">{result.detectedCount}</p>
-          <p className="text-xs text-zinc-500 mt-1">Biases Detected</p>
+          <p className="text-xs text-vela-muted mt-1">Biases Detected</p>
         </div>
         <div className="vela-card text-center py-6">
           <p className="text-3xl font-bold tabular text-emerald-400">
             {result.totalChecked - result.detectedCount}
           </p>
-          <p className="text-xs text-zinc-500 mt-1">All Clear</p>
+          <p className="text-xs text-vela-muted mt-1">All Clear</p>
         </div>
       </div>
 
@@ -100,7 +100,7 @@ export default function BehaviorPage() {
                 Top concern: {result.topBias.name}
               </p>
               <p className="text-xs text-zinc-400 mt-0.5">{result.topBias.evidence}</p>
-              <p className="text-xs text-zinc-500 mt-1 italic">{result.topBias.tip}</p>
+              <p className="text-xs text-vela-muted mt-1 italic">{result.topBias.tip}</p>
             </div>
           </div>
         </div>
@@ -135,15 +135,15 @@ export default function BehaviorPage() {
       {/* How it works */}
       <div className="vela-card border-zinc-700">
         <div className="flex items-start gap-3">
-          <Info className="w-5 h-5 text-zinc-500 mt-0.5 shrink-0" />
+          <Info className="w-5 h-5 text-vela-subtle mt-0.5 shrink-0" />
           <div className="space-y-2">
             <h3 className="text-sm font-medium text-zinc-300">How this works</h3>
-            <p className="text-xs text-zinc-500 leading-relaxed">
+            <p className="text-xs text-vela-muted leading-relaxed">
               We analyze your portfolio positions and journal entries to detect common cognitive
               biases that affect investment decisions. The behavior score reflects how many biases
               are currently present. A higher score means fewer biases detected.
             </p>
-            <p className="text-xs text-zinc-500 leading-relaxed">
+            <p className="text-xs text-vela-muted leading-relaxed">
               Log more decisions in the Journal to get better insights over time. The more
               data we have, the more accurate the analysis becomes.
             </p>
@@ -153,7 +153,7 @@ export default function BehaviorPage() {
 
       {/* Disclaimer */}
       <div className="text-center pt-4 pb-8 border-t border-zinc-800">
-        <p className="text-xs text-zinc-600">
+        <p className="text-xs text-vela-muted">
           This analysis is educational and based on common behavioral finance patterns.
           It is not financial advice. Consult a professional for personalized guidance.
         </p>
@@ -172,7 +172,7 @@ function Header() {
         <Brain className="w-7 h-7 text-vela-teal" />
         Behavioral Finance
       </h1>
-      <p className="text-zinc-500 text-sm mt-1">
+      <p className="text-vela-muted text-sm mt-1">
         Identify cognitive biases in your investment behavior and learn to overcome them.
       </p>
     </div>
@@ -210,10 +210,10 @@ function BiasCard({ bias }: { bias: BiasDetection }) {
               <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
             )}
           </div>
-          <p className="text-xs text-zinc-500 mt-0.5">{bias.description}</p>
+          <p className="text-xs text-vela-muted mt-0.5">{bias.description}</p>
           <p className="text-xs text-zinc-400 mt-1.5">{bias.evidence}</p>
           {bias.detected && (
-            <p className="text-xs text-zinc-500 mt-1 italic flex items-start gap-1">
+            <p className="text-xs text-vela-muted mt-1 italic flex items-start gap-1">
               <Shield className="w-3 h-3 mt-0.5 shrink-0 text-vela-teal" />
               {bias.tip}
             </p>

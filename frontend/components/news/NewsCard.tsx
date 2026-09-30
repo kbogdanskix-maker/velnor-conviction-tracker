@@ -15,7 +15,7 @@ export default function NewsCard({ article, compact }: Props) {
       href={article.url}
       target="_blank"
       rel="noopener noreferrer"
-      className="vela-card block hover:border-zinc-600 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/20 transition-all duration-200 group"
+      className="vela-card block hover:border-zinc-600 transition-colors duration-200 group"
     >
       <div className="flex gap-4">
         {/* Content */}
@@ -32,17 +32,17 @@ export default function NewsCard({ article, compact }: Props) {
 
           {/* Footer: source + time + tickers */}
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs text-zinc-500">
+            <span className="text-xs text-vela-muted">
               {article.source}
             </span>
-            <span className="text-xs text-zinc-600">&middot;</span>
-            <span className="text-xs text-zinc-500 tabular">
+            <span className="text-xs text-vela-muted">&middot;</span>
+            <span className="text-xs text-vela-muted tabular">
               {formatTimeAgo(article.published_at)}
             </span>
 
             {article.tickers.length > 0 && (
               <>
-                <span className="text-xs text-zinc-600">&middot;</span>
+                <span className="text-xs text-vela-muted">&middot;</span>
                 {article.tickers.slice(0, 3).map((t) => (
                   <span
                     key={t}
@@ -52,14 +52,14 @@ export default function NewsCard({ article, compact }: Props) {
                   </span>
                 ))}
                 {article.tickers.length > 3 && (
-                  <span className="text-[11px] text-zinc-500">
+                  <span className="text-[11px] text-vela-muted">
                     +{article.tickers.length - 3}
                   </span>
                 )}
               </>
             )}
 
-            <ExternalLink className="w-3 h-3 text-zinc-600 group-hover:text-vela-teal transition-colors ml-auto shrink-0" />
+            <ExternalLink className="w-3 h-3 text-vela-subtle group-hover:text-vela-teal transition-colors ml-auto shrink-0" />
           </div>
         </div>
 

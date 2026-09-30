@@ -145,10 +145,10 @@ export default function DividendCalendarPage() {
 
       {isEmpty ? (
         <div className="vela-card text-center py-16 space-y-3">
-          <Calendar className="w-10 h-10 text-zinc-600 mx-auto" />
+          <Calendar className="w-10 h-10 text-vela-subtle mx-auto" />
           <div>
             <p className="text-zinc-300 font-medium">No dividend income to display</p>
-            <p className="text-zinc-500 text-sm mt-1">
+            <p className="text-vela-muted text-sm mt-1">
               Add dividend-paying stocks to your portfolio to see your income calendar.
             </p>
           </div>
@@ -159,21 +159,21 @@ export default function DividendCalendarPage() {
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
             <div className="vela-card text-center py-4">
               <p className="text-3xl font-bold tabular text-emerald-400">{formatCompact(totalAnnual)}</p>
-              <p className="text-xs text-zinc-500 mt-1">Annual Income</p>
+              <p className="text-xs text-vela-muted mt-1">Annual Income</p>
             </div>
             <div className="vela-card text-center py-4">
               <p className="text-3xl font-bold tabular text-zinc-100">{formatCompact(monthlyAvg)}</p>
-              <p className="text-xs text-zinc-500 mt-1">Monthly Avg</p>
+              <p className="text-xs text-vela-muted mt-1">Monthly Avg</p>
             </div>
             <div className="vela-card text-center py-4">
               <p className="text-3xl font-bold tabular text-vela-teal">
                 {dividends?.holdings.filter((h) => h.annual_income > 0).length ?? 0}
               </p>
-              <p className="text-xs text-zinc-500 mt-1">Payers</p>
+              <p className="text-xs text-vela-muted mt-1">Payers</p>
             </div>
             <div className="vela-card text-center py-4">
               <p className="text-3xl font-bold tabular text-zinc-100">{payingMonths}</p>
-              <p className="text-xs text-zinc-500 mt-1">Active Months</p>
+              <p className="text-xs text-vela-muted mt-1">Active Months</p>
             </div>
           </div>
 
@@ -228,7 +228,7 @@ export default function DividendCalendarPage() {
                 </BarChart>
               </ResponsiveContainer>
             </div>
-            <p className="text-[10px] text-zinc-600 mt-2">
+            <p className="text-[10px] text-vela-muted mt-2">
               Click a month to see details. Current month is highlighted in emerald.
             </p>
           </div>
@@ -259,13 +259,13 @@ export default function DividendCalendarPage() {
               </div>
 
               {selectedData.holdings.length === 0 ? (
-                <p className="text-sm text-zinc-500 py-4 text-center">
+                <p className="text-sm text-vela-muted py-4 text-center">
                   No dividend payments expected this month.
                 </p>
               ) : (
                 <>
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs text-zinc-500">
+                    <span className="text-xs text-vela-muted">
                       {selectedData.holdings.length} payer{selectedData.holdings.length !== 1 ? "s" : ""}
                     </span>
                     <span className="text-sm font-semibold tabular text-emerald-400">
@@ -326,11 +326,11 @@ export default function DividendCalendarPage() {
                         style={{ height: `${Math.max(barH, m.total > 0 ? 10 : 2)}%` }}
                       />
                     </div>
-                    <p className={`text-[10px] tabular mt-1 ${m.total > 0 ? "text-zinc-300" : "text-zinc-600"}`}>
+                    <p className={`text-[10px] tabular mt-1 ${m.total > 0 ? "text-zinc-300" : "text-vela-muted"}`}>
                       {m.total > 0 ? formatCurrency(m.total) : " -"}
                     </p>
                     {m.holdings.length > 0 && (
-                      <p className="text-[9px] text-zinc-600 mt-0.5">
+                      <p className="text-[9px] text-vela-muted mt-0.5">
                         {m.holdings.length} payer{m.holdings.length !== 1 ? "s" : ""}
                       </p>
                     )}
@@ -368,7 +368,7 @@ export default function DividendCalendarPage() {
 
           {/* Disclaimer */}
           <div className="text-center pt-4 pb-8 border-t border-zinc-800">
-            <p className="text-xs text-zinc-600">
+            <p className="text-xs text-vela-muted">
               Payment months are estimated based on ex-dividend dates and quarterly schedules.
               Actual payment dates and amounts may vary. Not financial advice.
             </p>
@@ -389,7 +389,7 @@ function Header() {
         <Calendar className="w-7 h-7 text-vela-teal" />
         Dividend Calendar
       </h1>
-      <p className="text-zinc-500 text-sm mt-1">
+      <p className="text-vela-muted text-sm mt-1">
         See when your dividend income arrives throughout the year.
       </p>
     </div>

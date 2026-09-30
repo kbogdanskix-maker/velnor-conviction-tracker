@@ -26,7 +26,7 @@ export default function CashFlowTabs() {
               px-4 py-2.5 font-mono text-[11px] uppercase tracking-widest whitespace-nowrap transition-colors relative shrink-0
               ${active
                 ? "text-vela-teal after:absolute after:bottom-0 after:left-0 after:right-0 after:h-px after:bg-vela-teal"
-                : "text-zinc-500 hover:text-zinc-200"
+                : "text-vela-muted hover:text-zinc-200"
               }
             `}
           >

@@ -255,7 +255,7 @@ export default function StockComparePage() {
                     value={inputTicker}
                     onChange={(e) => setInputTicker(e.target.value.toUpperCase())}
                     placeholder="Add ticker..."
-                    className="px-3 py-1.5 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-100 text-sm w-28 focus:outline-none focus:ring-1 focus:ring-vela-teal placeholder:text-zinc-600"
+                    className="px-3 py-1.5 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-100 text-sm w-28 focus:outline-none focus:ring-1 focus:ring-vela-teal placeholder:text-vela-muted"
                   />
                   <button type="submit" className="p-1.5 rounded-lg bg-vela-teal/10 text-vela-teal hover:bg-vela-teal/20 transition-colors">
                     <Plus className="w-4 h-4" />
@@ -267,7 +267,7 @@ export default function StockComparePage() {
             {/* Quick add from portfolio */}
             {uniqueTickers.length > 0 && (
               <div>
-                <p className="text-xs text-zinc-500 mb-2">Quick add from portfolio:</p>
+                <p className="text-xs text-vela-muted mb-2">Quick add from portfolio:</p>
                 <div className="flex flex-wrap gap-1.5">
                   {uniqueTickers.filter((t) => !selected.includes(t)).slice(0, 12).map((t) => (
                     <button key={t} onClick={() => addTicker(t)}
@@ -283,7 +283,7 @@ export default function StockComparePage() {
 
         {stocks.length === 0 ? (
           <FloatingCard delay={0.1}>
-            <div className="p-12 text-center text-zinc-500">
+            <div className="p-12 text-center text-vela-muted">
               <GitCompare className="w-10 h-10 mx-auto mb-3 opacity-30" />
               <p>Add 2+ tickers above to compare</p>
             </div>
@@ -315,7 +315,7 @@ export default function StockComparePage() {
                   <div className="flex items-center justify-between mb-4">
                     <h2 className="font-display font-semibold text-zinc-100">Fundamentals</h2>
                     {stocks.length > 1 && (
-                      <span className="text-[11px] text-zinc-500 flex items-center gap-1.5">
+                      <span className="text-[11px] text-vela-muted flex items-center gap-1.5">
                         <span className="w-2 h-2 rounded-full bg-emerald-400/70 inline-block" /> best in row
                       </span>
                     )}
@@ -330,7 +330,7 @@ export default function StockComparePage() {
                           </th>
                         ))}
                         {stocks.length > 1 && (
-                          <th className="text-right pb-3 font-medium text-zinc-500">Median</th>
+                          <th className="text-right pb-3 font-medium text-vela-muted">Median</th>
                         )}
                       </tr>
                     </thead>
@@ -378,7 +378,7 @@ export default function StockComparePage() {
                               );
                             })}
                             {stocks.length > 1 && (
-                              <td className="py-2.5 text-right text-zinc-500 tabular-nums">
+                              <td className="py-2.5 text-right text-vela-muted tabular-nums">
                                 {med != null ? row.fmt(med) : " -"}
                               </td>
                             )}
@@ -426,7 +426,7 @@ export default function StockComparePage() {
                   <FloatingCard delay={0.3}>
                     <div className="p-5">
                       <h2 className="font-display font-semibold text-zinc-100 mb-1">Profile Comparison</h2>
-                      <p className="text-[11px] text-zinc-500 mb-4">Normalized scores 0-100</p>
+                      <p className="text-[11px] text-vela-muted mb-4">Normalized scores 0-100</p>
                       <div className="space-y-3">
                         {radarData.map((row) => {
                           const meta = PROFILE_METRICS.find((m) => m.key === row.metric);
@@ -434,7 +434,7 @@ export default function StockComparePage() {
                           <div key={row.metric as string}>
                             <div className="flex items-center gap-1 mb-1 group/metric relative">
                               <p className="text-[11px] text-zinc-400">{row.metric as string}</p>
-                              <span className="text-[10px] text-zinc-600 cursor-help select-none">ⓘ</span>
+                              <span className="text-[10px] text-vela-muted cursor-help select-none">ⓘ</span>
                               {meta && (
                                 <div className="absolute left-0 top-5 z-20 hidden group-hover/metric:block w-56 bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-[10px] text-zinc-300 shadow-xl leading-relaxed">
                                   {meta.desc}
@@ -453,7 +453,7 @@ export default function StockComparePage() {
                                         style={{ width: `${score}%`, background: COLORS[i % COLORS.length], opacity: 0.75 }}
                                       />
                                     </div>
-                                    <span className="text-[10px] text-zinc-500 w-6 text-right tabular-nums">{score}</span>
+                                    <span className="text-[10px] text-vela-muted w-6 text-right tabular-nums">{score}</span>
                                   </div>
                                 );
                               })}

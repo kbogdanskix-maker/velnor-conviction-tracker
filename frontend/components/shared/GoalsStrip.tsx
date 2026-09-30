@@ -41,12 +41,12 @@ export default function GoalsStrip({ monthlySavings }: { monthlySavings?: number
             >
               <div className="flex items-center justify-between mb-1.5">
                 <span className="text-sm text-zinc-200 font-medium truncate">{g.name}</span>
-                <span className="text-xs text-zinc-500 tabular-nums shrink-0 ml-2">{pct.toFixed(0)}%</span>
+                <span className="text-xs text-vela-muted tabular-nums shrink-0 ml-2">{pct.toFixed(0)}%</span>
               </div>
               <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
                 <div className="h-full bg-gradient-to-r from-teal-600 to-teal-400 rounded-full" style={{ width: `${pct}%` }} />
               </div>
-              <div className="flex items-center justify-between mt-1.5 text-[11px] text-zinc-500 tabular-nums">
+              <div className="flex items-center justify-between mt-1.5 text-[11px] text-vela-muted tabular-nums">
                 <span>{formatCurrency(g.current_amount)} / {formatCurrency(g.target_amount)}</span>
                 {g.monthly_contribution > 0 && <span>{formatCurrency(g.monthly_contribution)}/mo</span>}
               </div>
@@ -57,7 +57,7 @@ export default function GoalsStrip({ monthlySavings }: { monthlySavings?: number
 
       {monthlySavings != null && totalContrib > 0 && (
         <div className="mt-3 pt-3 border-t border-zinc-800 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
-          <span className="text-zinc-500">
+          <span className="text-vela-muted">
             Goal funding:{" "}
             <span className="text-zinc-200 tabular-nums">{formatCurrency(totalContrib)}/mo</span>
             {" "}of your{" "}

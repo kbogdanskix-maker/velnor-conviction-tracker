@@ -25,7 +25,13 @@ const config: Config = {
         },
         // P&L — semantic only, never decoration
         gain: "#34d399",   // emerald-400
-        loss: "#f43f5e",   // rose-500
+        // rose-400, not rose-500. The design system's own rule 1 requires body
+        // text at >=4.5:1, and #f43f5e measured 4.42:1 as `text-loss` on the
+        // `bg-loss/15` pill — the badge pattern used across the app — because a
+        // 15% loss tint lightens the surface toward the text. It also left loss
+        // far dimmer than gain (5.39 vs 10.29 on vela-bg). One step lighter
+        // fixes every tinted usage at once and balances the pair.
+        loss: "#fb7185",   // rose-400
       },
       fontFamily: {
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],

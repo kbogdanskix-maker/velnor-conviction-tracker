@@ -116,7 +116,7 @@ function PriorityBadge({ priority }: { priority: "high" | "medium" | "low" }) {
   const styles = {
     high: "bg-loss/15 text-loss border-loss/20",
     medium: "bg-amber-400/15 text-amber-400 border-amber-400/20",
-    low: "bg-zinc-700/50 text-zinc-500 border-zinc-700",
+    low: "bg-zinc-700/50 text-vela-muted border-zinc-700",
   };
   return (
     <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded border ${styles[priority]}`}>
@@ -130,10 +130,10 @@ function PriorityBadge({ priority }: { priority: "high" | "medium" | "low" }) {
 function EmptyHarvest() {
   return (
     <div className="vela-card text-center py-16 space-y-4">
-      <Scissors className="w-12 h-12 text-zinc-700 mx-auto" />
+      <Scissors className="w-12 h-12 text-vela-subtle mx-auto" />
       <div>
         <h2 className="text-lg font-medium text-zinc-300">No holdings to analyze</h2>
-        <p className="text-sm text-zinc-500 mt-1 max-w-md mx-auto">
+        <p className="text-sm text-vela-muted mt-1 max-w-md mx-auto">
           Add trades to your portfolio to identify tax-loss harvesting opportunities.
         </p>
       </div>
@@ -170,7 +170,7 @@ export default function TaxHarvestPage() {
             <Scissors className="w-6 h-6 text-emerald-400" />
             Tax-Loss Harvesting
           </h1>
-          <p className="text-sm text-zinc-500 mt-0.5">
+          <p className="text-sm text-vela-muted mt-0.5">
             Positions with unrealized losses, and the tax that harvesting them could offset
           </p>
         </div>
@@ -205,7 +205,7 @@ export default function TaxHarvestPage() {
         <div className="vela-card text-center py-12 space-y-3">
           <CheckCircle2 className="w-10 h-10 text-gain mx-auto" />
           <h2 className="text-lg font-medium text-zinc-200">No losses to harvest</h2>
-          <p className="text-sm text-zinc-500 max-w-sm mx-auto">
+          <p className="text-sm text-vela-muted max-w-sm mx-auto">
             All your positions are in the green. Check back when markets pull back.
           </p>
         </div>
@@ -215,32 +215,32 @@ export default function TaxHarvestPage() {
           <FloatingCard glowColor="rgba(52, 211, 153, 0.10)" tilt={false}>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
               <div>
-                <p className="text-xs text-zinc-500">Harvestable Losses</p>
+                <p className="text-xs text-vela-muted">Harvestable Losses</p>
                 <p className="text-xl font-display font-bold text-loss tabular-nums">
                   {formatCurrency(harvest.totalHarvestable)}
                 </p>
-                <p className="text-xs text-zinc-600">{harvest.candidates.length} position{harvest.candidates.length !== 1 ? "s" : ""}</p>
+                <p className="text-xs text-vela-muted">{harvest.candidates.length} position{harvest.candidates.length !== 1 ? "s" : ""}</p>
               </div>
               <div>
-                <p className="text-xs text-zinc-500">Potential Tax Savings</p>
+                <p className="text-xs text-vela-muted">Potential Tax Savings</p>
                 <p className="text-xl font-display font-bold text-gain tabular-nums">
                   {formatCurrency(harvest.estimatedTaxSavingsUser)}
                 </p>
-                <p className="text-xs text-zinc-600">at {rateLabel} bracket (your rate)</p>
+                <p className="text-xs text-vela-muted">at {rateLabel} bracket (your rate)</p>
               </div>
               <div>
-                <p className="text-xs text-zinc-500">Offset Capacity</p>
+                <p className="text-xs text-vela-muted">Offset Capacity</p>
                 <p className="text-xl font-display font-bold text-zinc-200 tabular-nums">
                   {formatCurrency(harvest.offsetCapacity)}
                 </p>
-                <p className="text-xs text-zinc-600">against realized gains</p>
+                <p className="text-xs text-vela-muted">against realized gains</p>
               </div>
               <div>
-                <p className="text-xs text-zinc-500">Loss Carryforward</p>
+                <p className="text-xs text-vela-muted">Loss Carryforward</p>
                 <p className="text-xl font-display font-bold text-zinc-200 tabular-nums">
                   {formatCurrency(harvest.carryforward)}
                 </p>
-                <p className="text-xs text-zinc-600">to future tax years</p>
+                <p className="text-xs text-vela-muted">to future tax years</p>
               </div>
             </div>
           </FloatingCard>
@@ -254,7 +254,7 @@ export default function TaxHarvestPage() {
               <div className="hidden sm:block overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-zinc-800 text-xs text-zinc-500">
+                    <tr className="border-b border-zinc-800 text-xs text-vela-muted">
                       <th className="text-left py-2 pr-4 font-medium">Ticker</th>
                       <th className="text-right py-2 px-3 font-medium">Loss</th>
                       <th className="text-right py-2 px-3 font-medium">Loss %</th>
@@ -291,10 +291,10 @@ export default function TaxHarvestPage() {
                       <PriorityBadge priority={c.priority} />
                     </div>
                     <div className="grid grid-cols-2 gap-2 text-xs">
-                      <div><span className="text-zinc-500">Loss:</span> <span className="text-loss tabular-nums">{formatCurrency(c.unrealizedLoss)}</span></div>
-                      <div><span className="text-zinc-500">Loss %:</span> <span className="text-loss tabular-nums">{formatPercent(c.lossPct)}</span></div>
-                      <div><span className="text-zinc-500">Tax saved:</span> <span className="text-gain tabular-nums">{formatCurrency(c.taxSavingsUser)}</span></div>
-                      <div><span className="text-zinc-500">Value:</span> <span className="text-zinc-400 tabular-nums">{formatCurrency(c.marketValue)}</span></div>
+                      <div><span className="text-vela-muted">Loss:</span> <span className="text-loss tabular-nums">{formatCurrency(c.unrealizedLoss)}</span></div>
+                      <div><span className="text-vela-muted">Loss %:</span> <span className="text-loss tabular-nums">{formatPercent(c.lossPct)}</span></div>
+                      <div><span className="text-vela-muted">Tax saved:</span> <span className="text-gain tabular-nums">{formatCurrency(c.taxSavingsUser)}</span></div>
+                      <div><span className="text-vela-muted">Value:</span> <span className="text-zinc-400 tabular-nums">{formatCurrency(c.marketValue)}</span></div>
                     </div>
                   </div>
                 ))}
@@ -312,7 +312,7 @@ export default function TaxHarvestPage() {
                     <div key={w.ticker} className="bg-gain/5 rounded-lg border border-gain/15 p-3 text-center">
                       <p className="text-xs font-mono font-medium text-zinc-200">{w.ticker}</p>
                       <p className="text-sm font-bold text-gain tabular-nums mt-0.5">{formatCurrency(w.gain)}</p>
-                      <p className="text-[10px] text-gain/60 tabular-nums">{formatPercent(w.gainPct)}</p>
+                      <p className="text-[10px] text-gain tabular-nums">{formatPercent(w.gainPct)}</p>
                     </div>
                   ))}
                 </div>

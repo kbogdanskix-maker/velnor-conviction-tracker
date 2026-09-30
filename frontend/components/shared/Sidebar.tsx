@@ -192,7 +192,7 @@ export default function Sidebar() {
             {showLabels && (
               <>
                 <span className="flex-1 text-left">Search</span>
-                <kbd className="text-[9px] text-zinc-600 bg-white/5 border border-white/[0.06] px-1.5 py-0.5 rounded">⌘K</kbd>
+                <kbd className="text-[9px] text-vela-muted bg-white/5 border border-white/[0.06] px-1.5 py-0.5 rounded">⌘K</kbd>
               </>
             )}
           </button>
@@ -274,7 +274,7 @@ export default function Sidebar() {
           {showLabels && (
             <button
               onClick={toggleLab}
-              className="w-full flex items-center gap-2 px-3 py-2 mt-3 rounded-md text-[11px] font-medium text-zinc-500 hover:text-vela-teal transition-colors border-t border-vela-border pt-3"
+              className="w-full flex items-center gap-2 px-3 py-2 mt-3 rounded-md text-[11px] font-medium text-vela-muted hover:text-vela-teal transition-colors border-t border-vela-border pt-3"
             >
               <LayoutGrid className="w-3.5 h-3.5" />
               {showLab ? "Hide Lab tools" : "Show Lab tools"}

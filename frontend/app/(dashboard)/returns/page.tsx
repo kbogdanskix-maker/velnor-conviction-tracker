@@ -313,8 +313,8 @@ export default function ReturnsPage() {
               <AreaChart data={series}>
                 <defs>
                   <linearGradient id="retGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={isPositive ? "#34d399" : "#f43f5e"} stopOpacity={0.2} />
-                    <stop offset="100%" stopColor={isPositive ? "#34d399" : "#f43f5e"} stopOpacity={0} />
+                    <stop offset="0%" stopColor={isPositive ? "#34d399" : "#fb7185"} stopOpacity={0.2} />
+                    <stop offset="100%" stopColor={isPositive ? "#34d399" : "#fb7185"} stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#1B2638" vertical={false} />
@@ -328,7 +328,7 @@ export default function ReturnsPage() {
                   formatter={(v: number) => [formatCurrency(v), "Value"]}
                 />
                 <ReferenceLine y={totalCost} stroke="#5A6678" strokeDasharray="4 4" label={{ value: "Cost basis", position: "right", fill: "#8A97AC", fontSize: 10 }} />
-                <Area type="monotone" dataKey="value" stroke={isPositive ? "#34d399" : "#f43f5e"} strokeWidth={2} fill="url(#retGrad)" dot={false} animationDuration={800} />
+                <Area type="monotone" dataKey="value" stroke={isPositive ? "#34d399" : "#fb7185"} strokeWidth={2} fill="url(#retGrad)" dot={false} animationDuration={800} />
               </AreaChart>
             </ResponsiveContainer>
           )}
@@ -353,7 +353,7 @@ export default function ReturnsPage() {
                   <ReferenceLine y={0} stroke="#1B2638" />
                   <Bar dataKey="return_pct">
                     {monthlyData.map((d, i) => (
-                      <Cell key={i} fill={d.return_pct >= 0 ? "#34d399" : "#f43f5e"} fillOpacity={0.85} />
+                      <Cell key={i} fill={d.return_pct >= 0 ? "#34d399" : "#fb7185"} fillOpacity={0.85} />
                     ))}
                   </Bar>
                 </BarChart>

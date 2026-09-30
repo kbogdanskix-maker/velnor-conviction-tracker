@@ -62,9 +62,9 @@ export default function TaxPage() {
       <PageTransition className="space-y-6">
         <Header />
         <div className="vela-card text-center py-16">
-          <Receipt className="w-10 h-10 text-zinc-600 mx-auto mb-3" />
+          <Receipt className="w-10 h-10 text-vela-subtle mx-auto mb-3" />
           <p className="text-sm text-zinc-400 font-medium">No holdings yet</p>
-          <p className="text-xs text-zinc-600 mt-1 mb-4">
+          <p className="text-xs text-vela-muted mt-1 mb-4">
             Add holdings to see tax impact estimates.
           </p>
           <Link href="/portfolio" className="btn-primary text-sm">
@@ -108,7 +108,7 @@ export default function TaxPage() {
           label="Harvestable Losses"
           value={hasHarvesting ? formatCurrency(totalHarvestable) : "None"}
           sub={hasHarvesting ? `${tax.harvesting_opportunities.length} position${tax.harvesting_opportunities.length !== 1 ? "s" : ""}` : "All positions in profit"}
-          color={hasHarvesting ? "text-amber-400" : "text-zinc-500"}
+          color={hasHarvesting ? "text-amber-400" : "text-vela-muted"}
         />
       </div>
 
@@ -119,7 +119,7 @@ export default function TaxPage() {
             <Scissors className="w-4 h-4 text-amber-400 mt-0.5 shrink-0" />
             <div>
               <p className="text-xs font-medium text-zinc-200">Tax-loss harvesting opportunities</p>
-              <p className="text-xs text-zinc-500 mt-1 leading-relaxed">
+              <p className="text-xs text-vela-muted mt-1 leading-relaxed">
                 You have {formatCurrency(totalHarvestable)} in unrealized losses that could offset gains.
                 Selling these positions would reduce your taxable gains for this year.
               </p>
@@ -128,7 +128,7 @@ export default function TaxPage() {
                   <div key={opp.ticker} className="flex items-center justify-between text-xs">
                     <div className="flex items-center gap-2">
                       <span className="font-medium text-zinc-200">{opp.ticker}</span>
-                      <span className="text-zinc-600">{opp.is_long_term ? "Long-term" : "Short-term"}</span>
+                      <span className="text-vela-muted">{opp.is_long_term ? "Long-term" : "Short-term"}</span>
                     </div>
                     <div className="flex items-center gap-3">
                       <span className="text-loss tabular">{formatPercent(opp.loss_pct)}</span>
@@ -153,7 +153,7 @@ export default function TaxPage() {
         <div className="hidden sm:block overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
-              <tr className="text-zinc-500 border-b border-vela-border">
+              <tr className="text-vela-muted border-b border-vela-border">
                 <th className="text-left py-2 font-medium cursor-pointer hover:text-zinc-300" onClick={() => toggleSort("ticker")}>
                   Ticker <SortIcon k="ticker" />
                 </th>
@@ -192,7 +192,7 @@ export default function TaxPage() {
           <Shield className="w-4 h-4 text-vela-teal" />
           How this works
         </h3>
-        <div className="space-y-2 text-xs text-zinc-500 leading-relaxed">
+        <div className="space-y-2 text-xs text-vela-muted leading-relaxed">
           <p>
             <span className="text-zinc-300 font-medium">Long-term</span> = held over 1 year. Taxed at 0%, 15%, or 20% depending on income.
             <span className="text-zinc-300 font-medium ml-2">Short-term</span> = held under 1 year. Taxed as ordinary income (up to 37%).
@@ -202,7 +202,7 @@ export default function TaxPage() {
             Up to $3,000 in net losses can offset ordinary income per year. Watch out for wash sale rules (can&apos;t rebuy within 30 days).
           </p>
         </div>
-        <div className="flex items-start gap-2 pt-2 border-t border-vela-border text-[10px] text-zinc-600">
+        <div className="flex items-start gap-2 pt-2 border-t border-vela-border text-[10px] text-vela-muted">
           <Info className="w-3 h-3 mt-0.5 shrink-0" />
           <span>
             Estimates only - uses FIFO (first-in, first-out) by earliest buy date. Consult a tax professional for actual tax obligations. Not financial or tax advice.
@@ -222,7 +222,7 @@ function Header() {
         <Receipt className="w-6 h-6 text-vela-teal" />
         Tax Awareness
       </h1>
-      <p className="text-zinc-500 text-sm mt-0.5">
+      <p className="text-vela-muted text-sm mt-0.5">
         Holding periods, capital gains estimates, and tax-loss harvesting opportunities
       </p>
     </div>
@@ -233,9 +233,9 @@ function Header() {
 function SummaryCard({ label, value, sub, color }: { label: string; value: string; sub?: string; color: string }) {
   return (
     <div className="vela-card">
-      <p className="text-xs text-zinc-500 mb-1">{label}</p>
+      <p className="text-xs text-vela-muted mb-1">{label}</p>
       <p className={`text-lg font-bold tabular ${color}`}>{value}</p>
-      {sub && <p className="text-[10px] text-zinc-600 mt-0.5">{sub}</p>}
+      {sub && <p className="text-[10px] text-vela-muted mt-0.5">{sub}</p>}
     </div>
   );
 }
@@ -265,7 +265,7 @@ function TaxRow({ holding: h }: { holding: TaxHolding }) {
           {h.is_long_term ? "LTCG" : "STCG"}
         </span>
       </td>
-      <td className="py-2 tabular text-right text-zinc-500">
+      <td className="py-2 tabular text-right text-vela-muted">
         {h.is_long_term ? " -" : h.days_until_long_term != null ? `${h.days_until_long_term}d` : " -"}
       </td>
     </tr>
@@ -289,7 +289,7 @@ function MobileTaxCard({ holding: h }: { holding: TaxHolding }) {
           {h.unrealized_gain >= 0 ? "+" : ""}{formatCurrency(h.unrealized_gain)}
         </span>
       </div>
-      <div className="flex items-center gap-4 text-[10px] text-zinc-500">
+      <div className="flex items-center gap-4 text-[10px] text-vela-muted">
         <span>Cost: {formatCurrency(h.total_cost)}</span>
         <span>Now: {formatCurrency(h.market_value)}</span>
         {h.days_held != null && <span>{h.days_held}d held</span>}

@@ -245,7 +245,7 @@ function BearingDemo() {
     <div className="vela-card overflow-hidden">
       {/* preview tag */}
       <div className="flex items-center gap-2 mb-3">
-        <span className="text-[10px] font-mono uppercase tracking-widest text-vela-teal/90 bg-vela-teal/10 border border-vela-teal/25 px-2 py-0.5 rounded">
+        <span className="text-[10px] font-mono uppercase tracking-widest text-vela-teal bg-vela-teal/10 border border-vela-teal/25 px-2 py-0.5 rounded">
           Preview · Reflect
         </span>
         <span className="text-[10px] text-vela-muted">a glimpse of Velnor&apos;s portfolio AI</span>
@@ -268,7 +268,7 @@ function BearingDemo() {
             className={`text-xs px-3 py-1.5 rounded border transition-all ${
               i === active
                 ? "border-vela-teal/50 bg-vela-teal/10 text-vela-teal"
-                : "border-zinc-800 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300"
+                : "border-zinc-800 text-vela-muted hover:border-zinc-700 hover:text-zinc-300"
             }`}
           >
             {opt.label}
@@ -383,7 +383,7 @@ export default function LandingPage() {
                 Hold your{" "}
                 <span className="text-vela-teal italic">winners</span>.
                 <br />
-                <span className="text-zinc-500">Know if you were right.</span>
+                <span className="text-vela-muted">Know if you were right.</span>
               </h1>
             </Reveal>
             <Reveal delay={180}>
@@ -433,7 +433,7 @@ export default function LandingPage() {
           <h2 className="font-display text-3xl md:text-[2.5rem] font-bold text-center mb-4 tracking-tight leading-tight">
             Two waters most people row separately.
           </h2>
-          <p className="text-zinc-500 text-center max-w-xl mx-auto mb-12">
+          <p className="text-vela-muted text-center max-w-xl mx-auto mb-12">
             Your brokerage knows your stocks. Your budgeting app knows your spending. Neither knows
             both, so nothing can tell you what a trade actually means for your goals. Velnor connects them.
           </p>
@@ -441,12 +441,12 @@ export default function LandingPage() {
         <div className="grid md:grid-cols-[1fr_auto_1fr] gap-4 md:gap-6 items-stretch">
           <Reveal delay={80}>
             <div className="h-full rounded-lg p-5 border border-zinc-800/60 bg-zinc-900/30">
-              <p className="text-[11px] font-mono uppercase tracking-wider text-zinc-500 mb-4">Markets &amp; research</p>
+              <p className="text-[11px] font-mono uppercase tracking-wider text-vela-muted mb-4">Markets &amp; research</p>
               <div className="space-y-2.5">
                 {["Brokerage apps", "Stock screeners", "Valuation spreadsheets", "Research subscriptions"].map((x) => (
                   <div key={x} className="flex items-center justify-between py-2 px-3 rounded bg-zinc-800/30 border border-zinc-800/50">
                     <span className="text-sm text-zinc-300">{x}</span>
-                    <span className="text-[10px] text-loss/80 bg-loss/10 px-2 py-0.5 rounded">no life context</span>
+                    <span className="text-[10px] text-loss bg-loss/10 px-2 py-0.5 rounded">no life context</span>
                   </div>
                 ))}
               </div>
@@ -464,12 +464,12 @@ export default function LandingPage() {
 
           <Reveal delay={240}>
             <div className="h-full rounded-lg p-5 border border-zinc-800/60 bg-zinc-900/30">
-              <p className="text-[11px] font-mono uppercase tracking-wider text-zinc-500 mb-4">Life &amp; planning</p>
+              <p className="text-[11px] font-mono uppercase tracking-wider text-vela-muted mb-4">Life &amp; planning</p>
               <div className="space-y-2.5">
                 {["Budgeting apps", "Net-worth trackers", "Retirement calculators", "Goal planners"].map((x) => (
                   <div key={x} className="flex items-center justify-between py-2 px-3 rounded bg-zinc-800/30 border border-zinc-800/50">
                     <span className="text-sm text-zinc-300">{x}</span>
-                    <span className="text-[10px] text-loss/80 bg-loss/10 px-2 py-0.5 rounded">no markets</span>
+                    <span className="text-[10px] text-loss bg-loss/10 px-2 py-0.5 rounded">no markets</span>
                   </div>
                 ))}
               </div>
@@ -516,9 +516,9 @@ export default function LandingPage() {
                     </div>
                   </div>
                   <div className="vela-card flex-1 md:max-w-[440px]">
-                    <p className="font-mono text-[10px] tracking-widest uppercase text-vela-teal/70 mb-1.5">{w.tag}</p>
+                    <p className="font-mono text-[10px] tracking-widest uppercase text-vela-teal mb-1.5">{w.tag}</p>
                     <h3 className="font-display font-semibold text-lg text-zinc-100 mb-1.5">{w.title}</h3>
-                    <p className="text-zinc-500 text-sm leading-relaxed">{w.body}</p>
+                    <p className="text-vela-muted text-sm leading-relaxed">{w.body}</p>
                   </div>
                 </div>
               </Reveal>
@@ -534,7 +534,7 @@ export default function LandingPage() {
             <h2 className="font-display text-3xl md:text-[2.4rem] font-bold tracking-tight leading-tight mb-5">
               Most tools give everyone the same answer. Velnor asks where <span className="text-vela-teal italic">you&apos;re headed</span> first.
             </h2>
-            <p className="text-zinc-500 leading-relaxed mb-4">
+            <p className="text-vela-muted leading-relaxed mb-4">
               Pick what you&apos;re investing for, and the same portfolio reads completely differently.
               That&apos;s the point: it engages your objective and your own reasoning, not a
               one-size-fits-all risk score. Try it on the right.
@@ -554,7 +554,7 @@ export default function LandingPage() {
               <span className="text-vela-teal italic">navigate</span>{" "}
               than drift.
             </h2>
-            <p className="text-zinc-500 text-lg leading-relaxed max-w-2xl mx-auto">
+            <p className="text-vela-muted text-lg leading-relaxed max-w-2xl mx-auto">
               Velnor is for serious self-directed investors. People who want to see their whole financial
               picture, make their own calls, and use tools that respect how much they care about getting it right.
             </p>
@@ -568,7 +568,7 @@ export default function LandingPage() {
           <div className="max-w-xl mx-auto text-center relative">
             <span className="inline-block w-1.5 h-1.5 rounded-full bg-vela-teal mb-6 animate-[ambient-pulse_3s_ease-in-out_infinite]" />
             <h3 className="font-display text-2xl md:text-3xl font-bold tracking-tight mb-3 relative">Come aboard before we sail.</h3>
-            <p className="text-zinc-500 mb-8">Join the waitlist for early access when Velnor launches.</p>
+            <p className="text-vela-muted mb-8">Join the waitlist for early access when Velnor launches.</p>
             <div className="flex justify-center"><WaitlistForm id="bottom-email" /></div>
           </div>
         </Reveal>

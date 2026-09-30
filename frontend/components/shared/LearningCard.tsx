@@ -30,7 +30,7 @@ export default function LearningCard({ card, onDismiss, compact }: LearningCardP
             e.stopPropagation();
             onDismiss(card.id);
           }}
-          className="absolute top-2 right-2 p-1 rounded-md text-zinc-600 hover:text-zinc-400 hover:bg-zinc-800 transition-colors opacity-0 group-hover:opacity-100"
+          className="absolute top-2 right-2 p-1 rounded-md text-vela-muted hover:text-zinc-400 hover:bg-zinc-800 transition-colors opacity-0 group-hover:opacity-100"
           aria-label="Dismiss"
         >
           <X className="w-3.5 h-3.5" />
@@ -43,7 +43,7 @@ export default function LearningCard({ card, onDismiss, compact }: LearningCardP
           {CATEGORY_LABELS[card.category]}
         </span>
         {card.link && !compact && (
-          <ExternalLink className="w-3 h-3 text-zinc-600 group-hover:text-zinc-400 transition-colors ml-auto" />
+          <ExternalLink className="w-3 h-3 text-vela-subtle group-hover:text-zinc-400 transition-colors ml-auto" />
         )}
       </div>
 

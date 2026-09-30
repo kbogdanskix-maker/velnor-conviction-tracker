@@ -154,7 +154,11 @@ export default function CommandPalette() {
           {/* Palette */}
           <div className="fixed inset-x-0 top-[15%] z-[61] mx-auto w-full max-w-lg px-4">
             <motion.div
-              className="bg-vela-card/95 backdrop-blur-md border border-vela-border rounded-lg shadow-[0_24px_60px_-12px_rgba(0,0,0,0.7)] overflow-hidden"
+              // Solid surface, not glass: the design system allows backdrop-filter
+              // on the scrim behind a modal but not as decoration on the panel
+              // itself. The single drop shadow stays — it is the elevation cue for
+              // a floating layer, not one of the banned multi-layer stacks.
+              className="bg-vela-card border border-vela-border rounded-lg shadow-[0_24px_60px_-12px_rgba(0,0,0,0.7)] overflow-hidden"
               initial={{ opacity: 0, scale: 0.95, y: -10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.97, y: -8 }}
@@ -162,7 +166,7 @@ export default function CommandPalette() {
             >
               {/* Input */}
               <div className="flex items-center gap-3 px-4 py-3.5 border-b border-white/[0.06]">
-                <Search className="w-5 h-5 text-vela-teal/60 shrink-0" />
+                <Search className="w-5 h-5 text-vela-teal shrink-0" />
                 <input
                   ref={inputRef}
                   value={query}
@@ -171,7 +175,7 @@ export default function CommandPalette() {
                   placeholder="Search pages, tools, features..."
                   className="flex-1 bg-transparent text-sm text-zinc-100 placeholder-zinc-500 outline-none caret-vela-teal"
                 />
-                <kbd className="hidden sm:block text-[10px] text-zinc-600 bg-zinc-800/80 border border-zinc-700/60 px-1.5 py-0.5 rounded">
+                <kbd className="hidden sm:block text-[10px] text-vela-muted bg-zinc-800/80 border border-zinc-700/60 px-1.5 py-0.5 rounded">
                   ESC
                 </kbd>
               </div>
@@ -179,7 +183,7 @@ export default function CommandPalette() {
               {/* Results */}
               <div ref={listRef} className="max-h-80 overflow-y-auto py-1.5">
                 {filtered.length === 0 ? (
-                  <p className="px-4 py-6 text-center text-sm text-zinc-500">
+                  <p className="px-4 py-6 text-center text-sm text-vela-muted">
                     No results for &ldquo;{query}&rdquo;
                   </p>
                 ) : (
@@ -200,9 +204,9 @@ export default function CommandPalette() {
                             : "text-zinc-300 hover:bg-white/[0.03]"
                         }`}
                       >
-                        <Icon className={`w-4 h-4 shrink-0 transition-colors ${isSelected ? "text-vela-teal" : "text-zinc-500"}`} />
+                        <Icon className={`w-4 h-4 shrink-0 transition-colors ${isSelected ? "text-vela-teal" : "text-vela-muted"}`} />
                         <span className="flex-1 text-left">{item.label}</span>
-                        <span className={`text-[10px] transition-colors ${isSelected ? "text-vela-teal/50" : "text-zinc-600"}`}>{item.group}</span>
+                        <span className={`text-[10px] transition-colors ${isSelected ? "text-vela-teal" : "text-vela-muted"}`}>{item.group}</span>
                         {isSelected && (
                           <motion.div
                             initial={{ opacity: 0, x: -4 }}
@@ -219,7 +223,7 @@ export default function CommandPalette() {
               </div>
 
               {/* Footer hint */}
-              <div className="px-4 py-2.5 border-t border-white/[0.06] flex items-center gap-4 text-[10px] text-zinc-600">
+              <div className="px-4 py-2.5 border-t border-white/[0.06] flex items-center gap-4 text-[10px] text-vela-muted">
                 <span>
                   <kbd className="bg-zinc-800/80 border border-zinc-700/60 px-1 py-0.5 rounded">↑↓</kbd> Navigate
                 </span>

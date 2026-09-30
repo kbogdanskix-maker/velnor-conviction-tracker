@@ -83,7 +83,7 @@ function NoteCard({
             className="w-full bg-[#080808] border border-teal-500/30 rounded-[7px] px-3 py-2 text-[12.5px] text-zinc-200 resize-none outline-none leading-relaxed"
           />
           <div className="flex gap-1.5 justify-end">
-            <button onClick={cancelEdit} className="flex items-center gap-1 text-[11px] text-zinc-600 hover:text-zinc-400 px-2 py-1 rounded border border-zinc-800 hover:border-zinc-700 transition-colors">
+            <button onClick={cancelEdit} className="flex items-center gap-1 text-[11px] text-vela-muted hover:text-zinc-400 px-2 py-1 rounded border border-zinc-800 hover:border-zinc-700 transition-colors">
               <X className="w-3 h-3" /> Cancel
             </button>
             <button onClick={saveEdit} disabled={!draft.trim()} className="flex items-center gap-1 text-[11px] text-teal-500 hover:text-teal-400 px-2 py-1 rounded border border-teal-500/30 hover:border-teal-500/50 transition-colors disabled:opacity-40">
@@ -97,12 +97,12 @@ function NoteCard({
             {note.content}
           </p>
           <div className="flex items-center justify-between mt-2.5">
-            <span className="text-[10px] text-zinc-700 flex items-center gap-1">
+            <span className="text-[10px] text-vela-muted flex items-center gap-1">
               <Clock className="w-2.5 h-2.5" />
               {timeAgo(note.updated_at)}
             </span>
             <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button onClick={startEdit} className="p-1 text-zinc-600 hover:text-zinc-300 rounded transition-colors">
+              <button onClick={startEdit} className="p-1 text-vela-muted hover:text-zinc-300 rounded transition-colors">
                 <Pencil className="w-3.5 h-3.5" />
               </button>
               {isFlagged ? (
@@ -110,11 +110,11 @@ function NoteCard({
                   <PinOff className="w-3.5 h-3.5" />
                 </button>
               ) : (
-                <button onClick={onFlag} title="Pin as standing conviction" className="p-1 text-zinc-600 hover:text-vela-teal rounded transition-colors">
+                <button onClick={onFlag} title="Pin as standing conviction" className="p-1 text-vela-muted hover:text-vela-teal rounded transition-colors">
                   <Pin className="w-3.5 h-3.5" />
                 </button>
               )}
-              <button onClick={onDelete} className="p-1 text-zinc-600 hover:text-rose-500 rounded transition-colors">
+              <button onClick={onDelete} className="p-1 text-vela-muted hover:text-rose-500 rounded transition-colors">
                 <Trash2 className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -144,7 +144,7 @@ function AddNoteForm({ onAdd }: { onAdd: (content: string, pin: boolean) => void
     return (
       <button
         onClick={() => setOpen(true)}
-        className="flex items-center gap-2 text-[12px] text-zinc-500 hover:text-zinc-300 border border-dashed border-zinc-800 hover:border-zinc-600 rounded-[9px] px-3.5 py-2.5 w-full transition-colors"
+        className="flex items-center gap-2 text-[12px] text-vela-muted hover:text-zinc-300 border border-dashed border-zinc-800 hover:border-zinc-600 rounded-[9px] px-3.5 py-2.5 w-full transition-colors"
       >
         <Plus className="w-3.5 h-3.5" />
         New note
@@ -172,14 +172,14 @@ function AddNoteForm({ onAdd }: { onAdd: (content: string, pin: boolean) => void
           className={`flex items-center gap-1.5 text-[11px] px-2 py-1 rounded border transition-colors ${
             pin
               ? "border-teal-500/40 text-teal-500 bg-teal-500/5"
-              : "border-zinc-800 text-zinc-600 hover:border-zinc-600 hover:text-zinc-400"
+              : "border-zinc-800 text-vela-muted hover:border-zinc-600 hover:text-zinc-400"
           }`}
         >
           <Pin className="w-3 h-3" />
           {pin ? "Pinned conviction" : "Pin as conviction"}
         </button>
         <div className="flex gap-1.5">
-          <button onClick={() => { setOpen(false); setContent(""); }} className="text-[11px] text-zinc-600 hover:text-zinc-400 px-2 py-1 rounded border border-zinc-800 hover:border-zinc-700 transition-colors">
+          <button onClick={() => { setOpen(false); setContent(""); }} className="text-[11px] text-vela-muted hover:text-zinc-400 px-2 py-1 rounded border border-zinc-800 hover:border-zinc-700 transition-colors">
             Cancel
           </button>
           <button onClick={submit} disabled={!content.trim()} className="text-[11px] text-teal-500 hover:text-teal-400 px-2 py-1 rounded border border-teal-500/30 hover:border-teal-500/50 transition-colors disabled:opacity-40">
@@ -218,12 +218,12 @@ export default function NotesPage() {
                 <StickyNote className="w-5 h-5 text-teal-500" />
                 <h1 className="text-xl font-semibold text-zinc-100 tracking-tight">Notes</h1>
               </div>
-              <p className="text-sm text-zinc-500">
+              <p className="text-sm text-vela-muted">
                 Your knowledge library. Feeds the Reflect AI as background context.
               </p>
             </div>
             {totalCount > 0 && (
-              <div className="flex items-center gap-3 text-[11px] text-zinc-600">
+              <div className="flex items-center gap-3 text-[11px] text-vela-muted">
                 {notes.flagged.length > 0 && (
                   <span className="flex items-center gap-1">
                     <Pin className="w-3 h-3 text-teal-600" />
@@ -249,8 +249,8 @@ export default function NotesPage() {
             <section>
               <div className="flex items-center gap-2 mb-3">
                 <Pin className="w-3.5 h-3.5 text-teal-500" />
-                <h2 className="text-[11px] font-semibold text-zinc-500 uppercase tracking-widest">Pinned convictions</h2>
-                <span className="text-[10px] text-zinc-700 ml-auto">Always in AI context</span>
+                <h2 className="text-[11px] font-semibold text-vela-muted uppercase tracking-widest">Pinned convictions</h2>
+                <span className="text-[10px] text-vela-muted ml-auto">Always in AI context</span>
               </div>
               <div className="flex flex-col gap-2">
                 {notes.flagged.map((note) => (
@@ -274,9 +274,9 @@ export default function NotesPage() {
           <RevealOnScroll delay={0.1}>
             <section>
               <div className="flex items-center gap-2 mb-3">
-                <Clock className="w-3.5 h-3.5 text-zinc-600" />
-                <h2 className="text-[11px] font-semibold text-zinc-500 uppercase tracking-widest">Working notes</h2>
-                <span className="text-[10px] text-zinc-700 ml-auto">Auto-pruned after 60 days or 30 notes</span>
+                <Clock className="w-3.5 h-3.5 text-vela-subtle" />
+                <h2 className="text-[11px] font-semibold text-vela-muted uppercase tracking-widest">Working notes</h2>
+                <span className="text-[10px] text-vela-muted ml-auto">Auto-pruned after 60 days or 30 notes</span>
               </div>
               <div className="flex flex-col gap-2">
                 {[...notes.ephemeral].reverse().map((note) => (
@@ -300,10 +300,10 @@ export default function NotesPage() {
           <RevealOnScroll delay={0.1}>
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <div className="w-12 h-12 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center mb-4">
-                <StickyNote className="w-5 h-5 text-zinc-700" />
+                <StickyNote className="w-5 h-5 text-vela-subtle" />
               </div>
-              <p className="text-[13px] text-zinc-500 mb-1">No notes yet</p>
-              <p className="text-[11.5px] text-zinc-700 max-w-xs leading-relaxed">
+              <p className="text-[13px] text-vela-muted mb-1">No notes yet</p>
+              <p className="text-[11.5px] text-vela-muted max-w-xs leading-relaxed">
                 Jot observations, market thoughts, or standing convictions. They feed the Reflect AI so it can connect your thinking to your portfolio.
               </p>
             </div>

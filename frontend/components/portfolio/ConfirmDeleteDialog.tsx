@@ -59,7 +59,7 @@ export default function ConfirmDeleteDialog({
             <Dialog.Title className="text-base font-semibold text-zinc-100">
               Delete Transaction
             </Dialog.Title>
-            <Dialog.Close className="text-zinc-500 hover:text-zinc-100 transition-colors">
+            <Dialog.Close className="text-vela-muted hover:text-zinc-100 transition-colors">
               <X className="w-4 h-4" />
             </Dialog.Close>
           </div>

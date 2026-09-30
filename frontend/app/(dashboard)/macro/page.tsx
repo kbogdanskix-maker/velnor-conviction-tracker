@@ -34,7 +34,7 @@ export default function MacroPage() {
           <TrendingUp className="w-6 h-6 text-vela-teal" />
           Macro
         </h1>
-        <p className="text-zinc-500 text-sm mt-0.5">
+        <p className="text-vela-muted text-sm mt-0.5">
           Bond yields, inflation, and Fed policy - how they affect your portfolio
         </p>
       </div>
@@ -75,7 +75,7 @@ export default function MacroPage() {
             {[...Array(3)].map((_, i) => <div key={i} className="skeleton h-12 rounded-lg" />)}
           </div>
         ) : fedItems.length === 0 ? (
-          <p className="text-sm text-zinc-500">No recent FOMC releases found</p>
+          <p className="text-sm text-vela-muted">No recent FOMC releases found</p>
         ) : (
           <div className="space-y-2">
             {fedItems.map((item, i) => (
@@ -88,9 +88,9 @@ export default function MacroPage() {
               >
                 <p className="text-sm text-zinc-200 font-medium flex items-center gap-1.5">
                   {item.title}
-                  <ExternalLink className="w-3 h-3 text-zinc-500 shrink-0" />
+                  <ExternalLink className="w-3 h-3 text-vela-subtle shrink-0" />
                 </p>
-                <p className="text-xs text-zinc-500 mt-0.5">
+                <p className="text-xs text-vela-muted mt-0.5">
                   {item.published ? formatDate(item.published) : ""}
                 </p>
               </a>
@@ -100,7 +100,7 @@ export default function MacroPage() {
       </div>
 
       {data?.updated_at && (
-        <p className="text-xs text-zinc-600 text-center">
+        <p className="text-xs text-vela-muted text-center">
           Data from FRED (Federal Reserve Economic Data) · Updated {formatDate(data.updated_at)}
         </p>
       )}
@@ -150,12 +150,12 @@ function RateImpactSection({
         <DollarSign className="w-4 h-4 text-vela-teal" />
         What rates mean for you
       </h2>
-      <p className="text-xs text-zinc-500 mb-4">
+      <p className="text-xs text-vela-muted mb-4">
         Current Fed Funds: {fedRate}%{tbillRate != null ? ` · 3-Mo T-Bill: ${tbillRate}%` : ""}
       </p>
 
       {!hasData ? (
-        <p className="text-xs text-zinc-500">
+        <p className="text-xs text-vela-muted">
           Add savings accounts or debt with interest rates in Net Worth to see personalized impact.
         </p>
       ) : (
@@ -168,32 +168,32 @@ function RateImpactSection({
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {totalSavings > 0 && (
                 <div>
-                  <p className="text-[10px] text-zinc-500 uppercase tracking-wider">Savings yield</p>
+                  <p className="text-[10px] text-vela-muted uppercase tracking-wider">Savings yield</p>
                   <p className="text-sm font-bold tabular text-gain">
                     +{formatCurrency(savingsImpact)}/yr
                   </p>
-                  <p className="text-[10px] text-zinc-600">
+                  <p className="text-[10px] text-vela-muted">
                     on {formatCurrency(totalSavings)} in savings
                   </p>
                 </div>
               )}
               {totalDebtWithRates > 0 && (
                 <div>
-                  <p className="text-[10px] text-zinc-500 uppercase tracking-wider">Debt cost</p>
+                  <p className="text-[10px] text-vela-muted uppercase tracking-wider">Debt cost</p>
                   <p className="text-sm font-bold tabular text-loss">
                     +{formatCurrency(debtImpact)}/yr
                   </p>
-                  <p className="text-[10px] text-zinc-600">
+                  <p className="text-[10px] text-vela-muted">
                     on {formatCurrency(totalDebtWithRates)} variable debt
                   </p>
                 </div>
               )}
               <div>
-                <p className="text-[10px] text-zinc-500 uppercase tracking-wider">Net effect</p>
+                <p className="text-[10px] text-vela-muted uppercase tracking-wider">Net effect</p>
                 <p className={`text-sm font-bold tabular ${netImpact >= 0 ? "text-gain" : "text-loss"}`}>
                   {netImpact >= 0 ? "+" : ""}{formatCurrency(netImpact)}/yr
                 </p>
-                <p className="text-[10px] text-zinc-600">
+                <p className="text-[10px] text-vela-muted">
                   {netImpact >= 0 ? "Rate hikes help you" : "Rate hikes cost you"}
                 </p>
               </div>
@@ -208,7 +208,7 @@ function RateImpactSection({
                 <div key={d.id} className="flex items-center justify-between py-1.5 text-xs">
                   <span className="text-zinc-300">{d.name}</span>
                   <div className="flex items-center gap-3">
-                    <span className="text-zinc-500 tabular">{formatCurrency(d.value)}</span>
+                    <span className="text-vela-muted tabular">{formatCurrency(d.value)}</span>
                     <span className="text-loss tabular">{d.interest_rate}% APR</span>
                   </div>
                 </div>
@@ -239,14 +239,14 @@ function MacroGroup({ title, series }: { title: string; series: MacroSeries[] })
             >
               <div className="flex items-center gap-2">
                 <p className="text-sm text-zinc-200">{s.name}</p>
-                <Info className="w-3 h-3 text-zinc-600" />
+                <Info className="w-3 h-3 text-vela-subtle" />
               </div>
               <div className="text-right">
                 <p className="text-sm font-bold tabular text-zinc-100">
                   {s.value !== null ? `${s.value}${s.unit === "%" ? "%" : ""}` : " -"}
                 </p>
                 {s.date && (
-                  <p className="text-[10px] text-zinc-600">
+                  <p className="text-[10px] text-vela-muted">
                     {new Date(s.date + "T12:00:00").toLocaleDateString("en-US", { month: "short", year: "numeric" })}
                   </p>
                 )}

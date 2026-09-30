@@ -55,7 +55,7 @@ export default function TierGate({ requiredTier, children, fallback }: TierGateP
         <h3 className="text-base font-semibold text-zinc-100">
           {TIER_LABELS[requiredTier]} feature
         </h3>
-        <p className="text-zinc-500 text-sm mt-1 max-w-xs mx-auto">
+        <p className="text-vela-muted text-sm mt-1 max-w-xs mx-auto">
           Upgrade to {TIER_LABELS[requiredTier]} to unlock this.
         </p>
       </div>

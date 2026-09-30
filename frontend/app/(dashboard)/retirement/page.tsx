@@ -45,7 +45,7 @@ function simulate(
 function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number; dataKey: string }>; label?: number }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-xs shadow-xl">
+    <div className="bg-vela-card border border-vela-border rounded-md px-3 py-2 text-xs shadow-xl">
       <p className="text-zinc-400 mb-1.5">Age {label}</p>
       {payload.map((p) => (
         <p key={p.dataKey} className={p.dataKey === "balance" ? "text-vela-teal" : "text-vela-muted"}>
@@ -114,14 +114,14 @@ export default function RetirementPage() {
           <Umbrella className="w-6 h-6 text-vela-teal" />
           Retirement Projection
         </h1>
-        <p className="text-sm text-zinc-500 mt-0.5">
+        <p className="text-sm text-vela-muted mt-0.5">
           How long does your money last if you retire at {retireAge}?
         </p>
       </div>
 
       {!hasData ? (
         <div className="vela-card text-center py-16 space-y-4">
-          <Umbrella className="w-12 h-12 text-zinc-700 mx-auto" />
+          <Umbrella className="w-12 h-12 text-vela-subtle mx-auto" />
           <p className="text-zinc-400">Add your net worth and cash flow data first.</p>
           <div className="flex items-center justify-center gap-3">
             <Link href="/net-worth" className="btn-primary text-sm inline-flex items-center gap-2">Net Worth <ArrowRight className="w-4 h-4" /></Link>
@@ -141,21 +141,21 @@ export default function RetirementPage() {
               </div>
               <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-4 w-full text-center sm:text-left">
                 <div>
-                  <p className="text-xs text-zinc-500">Portfolio at {retireAge}</p>
+                  <p className="text-xs text-vela-muted">Portfolio at {retireAge}</p>
                   <p className="text-lg font-display font-bold text-vela-teal tabular-nums">{formatCompact(balanceAtRetirement)}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-zinc-500">Lasts until</p>
+                  <p className="text-xs text-vela-muted">Lasts until</p>
                   <p className={`text-lg font-display font-bold tabular-nums ${canRetire ? "text-emerald-400" : "text-rose-400"}`}>
                     {depletionAge ? `Age ${depletionAge}` : `Age ${retireAge + 40}+`}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-zinc-500">Sustainable/mo (4%)</p>
+                  <p className="text-xs text-vela-muted">Sustainable/mo (4%)</p>
                   <p className="text-lg font-display font-bold text-zinc-100 tabular-nums">{formatCurrency(sustainableMonthly)}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-zinc-500">Current expenses/mo</p>
+                  <p className="text-xs text-vela-muted">Current expenses/mo</p>
                   <p className="text-lg font-display font-bold text-zinc-300 tabular-nums">{formatCurrency(monthlyExpenses)}</p>
                 </div>
               </div>
@@ -198,7 +198,7 @@ export default function RetirementPage() {
           <RevealOnScroll delay={0.05}>
             <div className="vela-card">
               <div className="flex items-center gap-2 mb-5">
-                <Info className="w-4 h-4 text-zinc-500" />
+                <Info className="w-4 h-4 text-vela-subtle" />
                 <h2 className="section-heading !mb-0">Assumptions</h2>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -221,7 +221,7 @@ export default function RetirementPage() {
                     <input type="range" min={s.min} max={s.max} step={s.step} value={s.value}
                       onChange={(e) => s.set(Number(e.target.value))}
                       className="w-full accent-vela-teal h-1.5" />
-                    <p className="text-[10px] text-zinc-600 mt-1">{s.desc}</p>
+                    <p className="text-[10px] text-vela-muted mt-1">{s.desc}</p>
                   </div>
                 ))}
               </div>
@@ -274,13 +274,13 @@ export default function RetirementPage() {
               ].map((link) => (
                 <Link key={link.href} href={link.href} className="vela-card group hover:border-zinc-600 transition-colors flex items-center gap-3">
                   <div className={`p-2 rounded-lg bg-zinc-800 ${link.hoverColor} transition-colors`}>
-                    <link.icon className={`w-4 h-4 text-zinc-500 ${link.iconColor} transition-colors`} />
+                    <link.icon className={`w-4 h-4 text-vela-subtle ${link.iconColor} transition-colors`} />
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-medium text-zinc-200">{link.label}</p>
-                    <p className="text-xs text-zinc-500">{link.desc}</p>
+                    <p className="text-xs text-vela-muted">{link.desc}</p>
                   </div>
-                  <ArrowRight className="w-4 h-4 text-zinc-700 group-hover:text-zinc-400 transition-colors" />
+                  <ArrowRight className="w-4 h-4 text-vela-subtle group-hover:text-zinc-400 transition-colors" />
                 </Link>
               ))}
             </div>

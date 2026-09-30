@@ -95,7 +95,7 @@ export default function AllocationPie({ holdings }: Props) {
                 style={{ backgroundColor: categoricalColor(i) }}
               />
               <span className="text-zinc-300 truncate flex-1">{d.ticker}</span>
-              <span className="text-zinc-500 tabular">{d.pct.toFixed(1)}%</span>
+              <span className="text-vela-muted tabular">{d.pct.toFixed(1)}%</span>
             </motion.div>
           ))}
         </div>

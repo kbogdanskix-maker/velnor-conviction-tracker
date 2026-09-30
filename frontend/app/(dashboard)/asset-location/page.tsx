@@ -203,17 +203,17 @@ export default function AssetLocationPage() {
           <MapPin className="w-6 h-6 text-vela-teal" />
           Asset Location
         </h1>
-        <p className="text-sm text-zinc-500 mt-0.5">
+        <p className="text-sm text-vela-muted mt-0.5">
           How different asset types are commonly located across tax-advantaged and taxable accounts
         </p>
       </div>
 
       {!hasHoldings ? (
         <div className="vela-card text-center py-16 space-y-4">
-          <MapPin className="w-12 h-12 text-zinc-700 mx-auto" />
+          <MapPin className="w-12 h-12 text-vela-subtle mx-auto" />
           <div>
             <h2 className="text-lg font-medium text-zinc-300">No holdings to analyze</h2>
-            <p className="text-sm text-zinc-500 mt-1 max-w-md mx-auto">
+            <p className="text-sm text-vela-muted mt-1 max-w-md mx-auto">
               Add trades to your portfolio to see how each asset type is commonly located across account types.
             </p>
           </div>
@@ -237,13 +237,13 @@ export default function AssetLocationPage() {
                   <div key={g.label} className="text-center sm:text-left">
                     <div className="flex items-center gap-2 justify-center sm:justify-start mb-1">
                       <g.icon className={`w-4 h-4 ${g.color}`} />
-                      <p className="text-xs text-zinc-500 uppercase tracking-wider">{g.label}</p>
+                      <p className="text-xs text-vela-muted uppercase tracking-wider">{g.label}</p>
                     </div>
                     <p className={`text-xl font-display font-bold tabular-nums ${g.color}`}>
                       {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(value)}
                     </p>
-                    <p className="text-xs text-zinc-600">{g.items.length} holdings · {pct.toFixed(0)}%</p>
-                    <p className="text-[10px] text-zinc-600 mt-0.5">{g.desc}</p>
+                    <p className="text-xs text-vela-muted">{g.items.length} holdings · {pct.toFixed(0)}%</p>
+                    <p className="text-[10px] text-vela-muted mt-0.5">{g.desc}</p>
                   </div>
                 );
               })}
@@ -274,7 +274,7 @@ export default function AssetLocationPage() {
                   />
                 )}
               </div>
-              <div className="flex items-center gap-6 mt-2 text-xs text-zinc-500 justify-center">
+              <div className="flex items-center gap-6 mt-2 text-xs text-vela-muted justify-center">
                 <span className="flex items-center gap-1.5"><span className="w-3 h-2 bg-vela-teal rounded" /> Income-heavy</span>
                 <span className="flex items-center gap-1.5"><span className="w-3 h-2 bg-amber-500 rounded" /> Either</span>
                 <span className="flex items-center gap-1.5"><span className="w-3 h-2 bg-gain rounded" /> Taxable</span>
@@ -294,7 +294,7 @@ export default function AssetLocationPage() {
                   <div className="flex items-center gap-2 mb-4">
                     <section.icon className={`w-4 h-4 ${section.iconColor}`} />
                     <h2 className="text-sm font-medium text-zinc-200">{section.label}</h2>
-                    <span className="text-xs text-zinc-600 ml-auto">{section.items.length} holdings</span>
+                    <span className="text-xs text-vela-muted ml-auto">{section.items.length} holdings</span>
                   </div>
                   <div className="space-y-3">
                     {section.items.map((c) => {
@@ -311,7 +311,7 @@ export default function AssetLocationPage() {
                                 {c.category}
                               </span>
                             </div>
-                            <p className="text-[11px] text-zinc-600 mt-0.5 leading-relaxed">{c.description}</p>
+                            <p className="text-[11px] text-vela-muted mt-0.5 leading-relaxed">{c.description}</p>
                             {c.taxEfficiency === "tax-inefficient" && c.estimatedYield && (
                               <p className="text-[10px] text-amber-500/80 mt-1">
                                 est. ~${Math.round(taxDragEstimate(c.marketValue, c.estimatedYield, profile.marginalTaxRate / 100)).toLocaleString()}/yr tax drag if held in taxable

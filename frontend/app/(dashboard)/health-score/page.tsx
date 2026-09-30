@@ -338,7 +338,7 @@ function ScoreRing({ score, grade, size = 180 }: { score: number; grade: string;
           r={r}
           fill="none"
           stroke="currentColor"
-          className="text-zinc-800"
+          className="text-vela-border"
           strokeWidth={8}
         />
         {/* Progress ring */}
@@ -358,7 +358,7 @@ function ScoreRing({ score, grade, size = 180 }: { score: number; grade: string;
         <span className={`text-5xl font-display font-black tabular-nums ${GRADE_COLORS[grade]}`}>
           {score}
         </span>
-        <span className="text-xs text-zinc-500 mt-0.5">out of 100</span>
+        <span className="text-xs text-vela-muted mt-0.5">out of 100</span>
       </div>
     </div>
   );
@@ -488,7 +488,7 @@ export default function HealthScorePage() {
           <HeartPulse className="w-6 h-6 text-rose-400" />
           Financial Health Score
         </h1>
-        <p className="text-sm text-zinc-500 mt-0.5">
+        <p className="text-sm text-vela-muted mt-0.5">
           A holistic assessment of your financial well-being across 5 dimensions
           {goalContext && goals && goals.length > 0 && (
             <span className="text-[11px] text-teal-500/80 font-medium">
@@ -517,7 +517,7 @@ export default function HealthScorePage() {
                     ? "Several dimensions score lower than others. Each is broken out below."
                     : "Several dimensions score low. Each is broken out below."}
             </p>
-            <div className="flex gap-4 text-xs text-zinc-500 justify-center sm:justify-start pt-1">
+            <div className="flex gap-4 text-xs text-vela-muted justify-center sm:justify-start pt-1">
               {dimensions.map((d) => (
                 <span key={d.key} className="flex items-center gap-1">
                   <span className={`w-2 h-2 rounded-full ${GRADE_DOT[d.grade]}`} />
@@ -561,7 +561,7 @@ export default function HealthScorePage() {
 
                 <Link
                   href={d.link}
-                  className="inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
+                  className="inline-flex items-center gap-1 text-xs text-vela-muted hover:text-zinc-300 transition-colors"
                 >
                   {d.linkLabel} <ArrowRight className="w-3 h-3" />
                 </Link>
@@ -585,7 +585,7 @@ export default function HealthScorePage() {
                 >
                   <span className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${PRIORITY_DOT[item.priority]}`} />
                   <span className="text-xs text-zinc-300 leading-relaxed flex-1">{item.text}</span>
-                  <ArrowRight className="w-3.5 h-3.5 text-zinc-600 shrink-0 mt-0.5" />
+                  <ArrowRight className="w-3.5 h-3.5 text-vela-subtle shrink-0 mt-0.5" />
                 </Link>
               ))}
             </div>

@@ -131,10 +131,10 @@ export default function ExpensesPage() {
 
       {isEmpty ? (
         <div className="vela-card text-center py-16 space-y-3">
-          <Receipt className="w-10 h-10 text-zinc-600 mx-auto" />
+          <Receipt className="w-10 h-10 text-vela-subtle mx-auto" />
           <div>
             <p className="text-zinc-300 font-medium">No expenses tracked yet</p>
-            <p className="text-zinc-500 text-sm mt-1">
+            <p className="text-vela-muted text-sm mt-1">
               Add your monthly expenses in Cash Flow to see a detailed breakdown here.
             </p>
           </div>
@@ -152,7 +152,7 @@ export default function ExpensesPage() {
                 format={formatCompact}
                 className="text-2xl font-bold tabular text-rose-400"
               />
-              <p className="text-xs text-zinc-500 mt-1">Total Expenses</p>
+              <p className="text-xs text-vela-muted mt-1">Total Expenses</p>
             </div>
             <div className="vela-card text-center py-4">
               <AnimatedNumber
@@ -160,7 +160,7 @@ export default function ExpensesPage() {
                 format={formatCompact}
                 className="text-2xl font-bold tabular text-rose-500"
               />
-              <p className="text-xs text-zinc-500 mt-1">Fixed</p>
+              <p className="text-xs text-vela-muted mt-1">Fixed</p>
             </div>
             <div className="vela-card text-center py-4">
               <AnimatedNumber
@@ -168,7 +168,7 @@ export default function ExpensesPage() {
                 format={formatCompact}
                 className="text-2xl font-bold tabular text-amber-400"
               />
-              <p className="text-xs text-zinc-500 mt-1">Variable</p>
+              <p className="text-xs text-vela-muted mt-1">Variable</p>
             </div>
             <div className="vela-card text-center py-4">
               {totalIncome > 0 ? (
@@ -180,7 +180,7 @@ export default function ExpensesPage() {
               ) : (
                 <p className="text-2xl font-bold tabular text-emerald-400"> -</p>
               )}
-              <p className="text-xs text-zinc-500 mt-1">of Income</p>
+              <p className="text-xs text-vela-muted mt-1">of Income</p>
             </div>
           </div>
 
@@ -296,7 +296,7 @@ export default function ExpensesPage() {
               {/* 50/30/20 Rule comparison */}
               {totalIncome > 0 && (
                 <div className="mt-4 space-y-2">
-                  <p className="text-[10px] text-zinc-500 uppercase tracking-wider">50/30/20 Rule</p>
+                  <p className="text-[10px] text-vela-muted uppercase tracking-wider">50/30/20 Rule</p>
                   <RuleBar label="Needs (Fixed)" actual={fixedPctOfIncome} target={50} color="bg-rose-500" />
                   <RuleBar label="Wants (Variable)" actual={variablePctOfIncome} target={30} color="bg-amber-500" />
                   <RuleBar
@@ -329,15 +329,15 @@ export default function ExpensesPage() {
                           <h3 className="text-sm font-medium text-zinc-100">
                             {cfCategoryLabel(cat.category)}
                           </h3>
-                          <p className="text-[10px] text-zinc-500 mt-0.5">
+                          <p className="text-[10px] text-vela-muted mt-0.5">
                             {isFixed ? "Fixed" : "Variable"} · {cat.entries.length} item{cat.entries.length !== 1 ? "s" : ""}
                           </p>
                         </div>
                         <div className="text-right">
                           <p className="text-sm font-semibold tabular text-zinc-100">
-                            {formatCurrency(cat.total)}<span className="text-zinc-500 text-xs">/mo</span>
+                            {formatCurrency(cat.total)}<span className="text-vela-muted text-xs">/mo</span>
                           </p>
-                          <p className="text-[10px] text-zinc-500 tabular">
+                          <p className="text-[10px] text-vela-muted tabular">
                             {formatCompact(cat.total * 12)}/yr
                           </p>
                         </div>
@@ -351,7 +351,7 @@ export default function ExpensesPage() {
                             style={{ width: `${pct}%`, backgroundColor: color }}
                           />
                         </div>
-                        <span className="text-[10px] text-zinc-500 tabular w-10 text-right">
+                        <span className="text-[10px] text-vela-muted tabular w-10 text-right">
                           {pct.toFixed(0)}%
                         </span>
                       </div>
@@ -360,7 +360,7 @@ export default function ExpensesPage() {
                       {cat.entries.length > 1 && (
                         <div className="mt-2 flex flex-wrap gap-x-4 gap-y-0.5">
                           {cat.entries.map((entry) => (
-                            <span key={entry.id} className="text-[10px] text-zinc-500">
+                            <span key={entry.id} className="text-[10px] text-vela-muted">
                               {entry.name}: <span className="text-zinc-400 tabular">{formatCurrency(entry.amount)}/mo</span>
                             </span>
                           ))}
@@ -368,7 +368,7 @@ export default function ExpensesPage() {
                       )}
 
                       {totalIncome > 0 && (
-                        <p className="text-[10px] text-zinc-600 mt-1">
+                        <p className="text-[10px] text-vela-muted mt-1">
                           {incomePct.toFixed(1)}% of monthly income
                         </p>
                       )}
@@ -421,7 +421,7 @@ export default function ExpensesPage() {
 
           {/* Disclaimer */}
           <div className="text-center pt-4 pb-8 border-t border-zinc-800">
-            <p className="text-xs text-zinc-600">
+            <p className="text-xs text-vela-muted">
               Based on your monthly Cash Flow entries. Add or update entries to keep this breakdown current.
             </p>
           </div>
@@ -440,7 +440,7 @@ function Header() {
         <Receipt className="w-7 h-7 text-vela-teal" />
         Expense Breakdown
       </h1>
-      <p className="text-zinc-500 text-sm mt-1">
+      <p className="text-vela-muted text-sm mt-1">
         Visualize where your money goes each month and compare against the 50/30/20 rule.
       </p>
     </div>

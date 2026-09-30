@@ -63,7 +63,7 @@ export default function PerformanceChart({ portfolioId }: Props) {
   const isPositive = periodReturn >= 0;
 
   // Chart color
-  const lineColor = isPositive ? "#34d399" : "#f43f5e";
+  const lineColor = isPositive ? "#34d399" : "#fb7185";
   const gradientId = "perf-gradient";
 
   return (
@@ -81,7 +81,7 @@ export default function PerformanceChart({ portfolioId }: Props) {
                 className={`px-1.5 sm:px-2 py-1 rounded text-[11px] sm:text-xs font-medium transition-colors ${
                   period === p.value
                     ? "bg-vela-teal/15 text-vela-teal"
-                    : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800"
+                    : "text-vela-muted hover:text-zinc-300 hover:bg-zinc-800"
                 }`}
               >
                 {p.label}
@@ -97,7 +97,7 @@ export default function PerformanceChart({ portfolioId }: Props) {
             <span className={`flex items-center gap-0.5 text-xs font-medium tabular ${isPositive ? "text-gain" : "text-loss"}`}>
               {isPositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
               {isPositive ? "+" : ""}{periodPct.toFixed(2)}%
-              <span className="text-zinc-500 ml-1">
+              <span className="text-vela-muted ml-1">
                 ({isPositive ? "+" : ""}{formatCurrency(periodReturn)})
               </span>
             </span>
@@ -111,7 +111,7 @@ export default function PerformanceChart({ portfolioId }: Props) {
           <div className="w-5 h-5 border-2 border-vela-teal/30 border-t-vela-teal rounded-full animate-spin" />
         </div>
       ) : !hasData ? (
-        <div className="h-[220px] flex items-center justify-center text-sm text-zinc-500">
+        <div className="h-[220px] flex items-center justify-center text-sm text-vela-muted">
           No performance data available yet
         </div>
       ) : (
@@ -180,7 +180,7 @@ export default function PerformanceChart({ portfolioId }: Props) {
       {/* Total return footer */}
       {hasData && (
         <div className="mt-3 pt-3 border-t border-zinc-800/80 flex items-center justify-between text-xs">
-          <span className="text-zinc-500">Total return vs cost basis</span>
+          <span className="text-vela-muted">Total return vs cost basis</span>
           <span className={`tabular font-medium ${totalReturn >= 0 ? "text-gain" : "text-loss"}`}>
             {totalReturn >= 0 ? "+" : ""}{formatCurrency(totalReturn)} ({totalReturnPct >= 0 ? "+" : ""}{totalReturnPct.toFixed(2)}%)
           </span>

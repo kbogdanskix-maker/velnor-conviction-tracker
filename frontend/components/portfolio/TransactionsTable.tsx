@@ -111,7 +111,7 @@ export default function TransactionsTable({ portfolioId, onMutate }: Props) {
         {groups.map((group) => (
           <div key={group.date}>
             {/* Date heading */}
-            <p className="text-xs text-zinc-500 font-medium mb-2">
+            <p className="text-xs text-vela-muted font-medium mb-2">
               {formatDate(group.date)}
             </p>
 
@@ -186,11 +186,11 @@ function TimelineRow({
           <span className="font-medium">{verb}</span>{" "}
           <span className="tabular">{formatQuantity(tx.quantity)}</span>{" "}
           <span className="font-semibold">{tx.ticker}</span>{" "}
-          <span className="text-zinc-500">@</span>{" "}
+          <span className="text-vela-muted">@</span>{" "}
           <span className="tabular">{formatCurrency(tx.price)}</span>
         </p>
         {tx.notes && (
-          <p className="text-xs text-zinc-500 truncate mt-0.5">{tx.notes}</p>
+          <p className="text-xs text-vela-muted truncate mt-0.5">{tx.notes}</p>
         )}
       </div>
 
@@ -203,7 +203,7 @@ function TimelineRow({
         {/* ⋯ dropdown  - visible on hover */}
         <DropdownMenu.Root>
           <DropdownMenu.Trigger asChild>
-            <button className="p-1 rounded-md text-zinc-600 opacity-0 group-hover:opacity-100 hover:text-zinc-100 hover:bg-zinc-800 transition-all focus:outline-none focus:opacity-100">
+            <button className="p-1 rounded-md text-vela-muted opacity-0 group-hover:opacity-100 hover:text-zinc-100 hover:bg-zinc-800 transition-all focus:outline-none focus:opacity-100">
               <MoreHorizontal className="w-4 h-4" />
             </button>
           </DropdownMenu.Trigger>

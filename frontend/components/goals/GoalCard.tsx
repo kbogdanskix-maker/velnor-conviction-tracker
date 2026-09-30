@@ -60,7 +60,7 @@ export default function GoalCard({ goal, onClick, onEdit, onDelete }: Props) {
           <DropdownMenu.Trigger asChild>
             <button
               onClick={(e) => e.stopPropagation()}
-              className="p-1 rounded hover:bg-zinc-700 text-zinc-500 hover:text-zinc-300 transition-colors"
+              className="p-1 rounded hover:bg-zinc-700 text-vela-muted hover:text-zinc-300 transition-colors"
             >
               <MoreHorizontal className="w-4 h-4" />
             </button>
@@ -95,7 +95,7 @@ export default function GoalCard({ goal, onClick, onEdit, onDelete }: Props) {
         </div>
         <div className="min-w-0 flex-1">
           <h3 className="text-sm font-medium text-zinc-100 truncate">{goal.name}</h3>
-          <p className="text-xs text-zinc-500">{timeLabel}</p>
+          <p className="text-xs text-vela-muted">{timeLabel}</p>
         </div>
       </div>
 
@@ -116,13 +116,13 @@ export default function GoalCard({ goal, onClick, onEdit, onDelete }: Props) {
         <span className="text-sm tabular font-medium text-zinc-100">
           {formatCurrency(goal.current_amount)}
         </span>
-        <span className="text-xs tabular text-zinc-500">
+        <span className="text-xs tabular text-vela-muted">
           of {formatCurrency(goal.target_amount)}
         </span>
       </div>
 
       {/* Progress percentage */}
-      <p className="text-xs text-zinc-500 mt-1">
+      <p className="text-xs text-vela-muted mt-1">
         {progress.toFixed(0)}% complete
       </p>
     </div>

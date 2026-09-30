@@ -54,7 +54,7 @@ export default function AddTickerDialog({ open, onOpenChange, onSuccess }: Props
             <Dialog.Title className="text-base font-semibold text-zinc-100">
               Add to Watchlist
             </Dialog.Title>
-            <Dialog.Close className="text-zinc-500 hover:text-zinc-100 transition-colors">
+            <Dialog.Close className="text-vela-muted hover:text-zinc-100 transition-colors">
               <X className="w-4 h-4" />
             </Dialog.Close>
           </div>
@@ -71,7 +71,7 @@ export default function AddTickerDialog({ open, onOpenChange, onSuccess }: Props
                 autoFocus
                 value={ticker}
                 onChange={(e) => setTicker(e.target.value)}
-                className="w-full bg-zinc-800 border border-vela-border rounded-md px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-vela-teal"
+                className="w-full bg-zinc-800 border border-vela-border rounded-md px-3 py-2 text-sm text-zinc-100 placeholder:text-vela-muted focus:outline-none focus:ring-1 focus:ring-vela-teal"
               />
             </div>
 
@@ -85,7 +85,7 @@ export default function AddTickerDialog({ open, onOpenChange, onSuccess }: Props
                 placeholder="e.g. Watching for earnings dip"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                className="w-full bg-zinc-800 border border-vela-border rounded-md px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-vela-teal"
+                className="w-full bg-zinc-800 border border-vela-border rounded-md px-3 py-2 text-sm text-zinc-100 placeholder:text-vela-muted focus:outline-none focus:ring-1 focus:ring-vela-teal"
               />
             </div>
 

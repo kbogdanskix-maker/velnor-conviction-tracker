@@ -127,7 +127,7 @@ function estimateMonthly(holdings: { ticker: string; annual_income: number; ex_d
 function ForecastTooltip({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number; dataKey: string }>; label?: number }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-xs shadow-xl">
+    <div className="bg-vela-card border border-vela-border rounded-md px-3 py-2 text-xs shadow-xl">
       <p className="text-zinc-400 mb-1">{label}</p>
       {payload.map((p) => (
         <p key={p.dataKey} className={p.dataKey === "annualIncome" ? "text-amber-400" : "text-teal-400"}>
@@ -142,11 +142,11 @@ function MonthlyTooltip({ active, payload, label }: { active?: boolean; payload?
   if (!active || !payload?.length) return null;
   const d = payload[0].payload;
   return (
-    <div className="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-xs shadow-xl">
+    <div className="bg-vela-card border border-vela-border rounded-md px-3 py-2 text-xs shadow-xl">
       <p className="text-zinc-400 mb-1">{label}</p>
       <p className="text-amber-400">{formatCurrency(d.amount)}</p>
       {d.tickers.length > 0 && (
-        <p className="text-zinc-600 mt-0.5">{d.tickers.join(", ")}</p>
+        <p className="text-vela-muted mt-0.5">{d.tickers.join(", ")}</p>
       )}
     </div>
   );
@@ -196,7 +196,7 @@ export default function DividendForecastPage() {
             <Coins className="w-6 h-6 text-amber-400" />
             Dividend Forecast
           </h1>
-          <p className="text-sm text-zinc-500 mt-0.5">
+          <p className="text-sm text-vela-muted mt-0.5">
             Project your future dividend income growth
           </p>
         </div>
@@ -218,10 +218,10 @@ export default function DividendForecastPage() {
 
       {!hasDividends ? (
         <div className="vela-card text-center py-16 space-y-4">
-          <Coins className="w-12 h-12 text-zinc-700 mx-auto" />
+          <Coins className="w-12 h-12 text-vela-subtle mx-auto" />
           <div>
             <h2 className="text-lg font-medium text-zinc-300">No dividend income yet</h2>
-            <p className="text-sm text-zinc-500 mt-1 max-w-md mx-auto">
+            <p className="text-sm text-vela-muted mt-1 max-w-md mx-auto">
               Add dividend-paying stocks to your portfolio to see income projections.
             </p>
           </div>
@@ -235,33 +235,33 @@ export default function DividendForecastPage() {
           <FloatingCard glowColor="rgba(245, 158, 11, 0.10)" tilt={false}>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
               <div>
-                <p className="text-xs text-zinc-500">Current Annual Income</p>
+                <p className="text-xs text-vela-muted">Current Annual Income</p>
                 <p className="text-xl font-display font-bold text-amber-400 tabular-nums">
                   {formatCurrency(dividends!.total_annual_income)}
                 </p>
-                <p className="text-xs text-zinc-600">{formatCurrency(dividends!.total_annual_income / 12)}/mo</p>
+                <p className="text-xs text-vela-muted">{formatCurrency(dividends!.total_annual_income / 12)}/mo</p>
               </div>
               <div>
-                <p className="text-xs text-zinc-500">Projected Year {years}</p>
+                <p className="text-xs text-vela-muted">Projected Year {years}</p>
                 <p className="text-xl font-display font-bold text-gain tabular-nums">
                   {formatCurrency(forecast[forecast.length - 1].annualIncome)}
                 </p>
-                <p className="text-xs text-gain/60">
+                <p className="text-xs text-gain">
                   {dividends!.total_annual_income > 0 ? ((forecast[forecast.length - 1].annualIncome / dividends!.total_annual_income - 1) * 100).toFixed(0) : 0}% growth
                 </p>
               </div>
               <div>
-                <p className="text-xs text-zinc-500">Total Income ({years}yr)</p>
+                <p className="text-xs text-vela-muted">Total Income ({years}yr)</p>
                 <p className="text-xl font-display font-bold text-zinc-200 tabular-nums">
                   {formatCompact(forecast[forecast.length - 1].cumulativeIncome)}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-zinc-500">Portfolio Yield</p>
+                <p className="text-xs text-vela-muted">Portfolio Yield</p>
                 <p className="text-xl font-display font-bold text-zinc-200 tabular-nums">
                   {((dividends!.portfolio_yield ?? 0) * 100).toFixed(2)}%
                 </p>
-                <p className="text-xs text-zinc-600">{dividends!.holdings.filter((h) => h.annual_income > 0).length} payers</p>
+                <p className="text-xs text-vela-muted">{dividends!.holdings.filter((h) => h.annual_income > 0).length} payers</p>
               </div>
             </div>
           </FloatingCard>
@@ -288,7 +288,7 @@ export default function DividendForecastPage() {
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
-              <div className="flex items-center gap-6 mt-2 text-xs text-zinc-500 justify-center">
+              <div className="flex items-center gap-6 mt-2 text-xs text-vela-muted justify-center">
                 <span className="flex items-center gap-1.5"><span className="w-3 h-0.5 bg-amber-500 rounded" /> Annual Income</span>
                 <span className="flex items-center gap-1.5"><span className="w-3 h-0.5 bg-teal-500 rounded opacity-60" /> Cumulative</span>
               </div>

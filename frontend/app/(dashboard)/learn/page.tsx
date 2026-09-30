@@ -92,7 +92,7 @@ function PlaybookCard({ item, onClick }: { item: Playbook; onClick: () => void }
   return (
     <button
       onClick={onClick}
-      className="group text-left w-full vela-card p-0 overflow-hidden hover:border-zinc-600 transition-all duration-200 hover:shadow-lg hover:shadow-black/30 hover:-translate-y-0.5"
+      className="group text-left w-full vela-card p-0 overflow-hidden hover:border-zinc-600 transition-colors duration-200"
     >
       {/* Accent bar */}
       <div className={`h-0.5 w-full bg-gradient-to-r from-teal-500/80 to-teal-500/0`} />
@@ -105,7 +105,7 @@ function PlaybookCard({ item, onClick }: { item: Playbook; onClick: () => void }
             <CatBadge cat={item.category} />
             {item.category === "advanced" && <AdvancedBadge />}
           </div>
-          <span className="flex items-center gap-1 text-[10px] text-zinc-600 whitespace-nowrap shrink-0">
+          <span className="flex items-center gap-1 text-[10px] text-vela-muted whitespace-nowrap shrink-0">
             <Clock className="w-3 h-3" /> {item.readMin}m
           </span>
         </div>
@@ -114,21 +114,21 @@ function PlaybookCard({ item, onClick }: { item: Playbook; onClick: () => void }
         <h3 className={`text-sm font-semibold text-zinc-100 mb-1.5 leading-snug transition-colors ${item.category === "advanced" ? "group-hover:text-orange-300" : "group-hover:text-vela-teal"}`}>
           {item.title}
         </h3>
-        <p className="text-xs text-zinc-500 leading-relaxed mb-4 line-clamp-2">{item.tagline}</p>
+        <p className="text-xs text-vela-muted leading-relaxed mb-4 line-clamp-2">{item.tagline}</p>
 
         {/* Step preview */}
         <div className="space-y-1.5 mb-4">
           {item.steps.slice(0, 3).map((step, i) => (
             <div key={i} className="flex items-start gap-2">
-              <span className="shrink-0 w-4 h-4 rounded-full bg-zinc-800 border border-zinc-700 text-[9px] font-bold text-zinc-500 flex items-center justify-center mt-px">
+              <span className="shrink-0 w-4 h-4 rounded-full bg-zinc-800 border border-zinc-700 text-[9px] font-bold text-vela-subtle flex items-center justify-center mt-px">
                 {i + 1}
               </span>
-              <span className="text-[11px] text-zinc-500 leading-relaxed line-clamp-1">{step.title}</span>
+              <span className="text-[11px] text-vela-muted leading-relaxed line-clamp-1">{step.title}</span>
             </div>
           ))}
           {item.steps.length > 3 && (
             <div className="flex items-center gap-2 pl-6">
-              <span className="text-[11px] text-zinc-600">+{item.steps.length - 3} more steps</span>
+              <span className="text-[11px] text-vela-muted">+{item.steps.length - 3} more steps</span>
             </div>
           )}
         </div>
@@ -146,7 +146,7 @@ function DeepDiveCard({ item, onClick }: { item: DeepDive; onClick: () => void }
   return (
     <button
       onClick={onClick}
-      className="group text-left w-full vela-card p-0 overflow-hidden hover:border-zinc-600 transition-all duration-200 hover:shadow-lg hover:shadow-black/30 hover:-translate-y-0.5"
+      className="group text-left w-full vela-card p-0 overflow-hidden hover:border-zinc-600 transition-colors duration-200"
     >
       {/* Subtle gradient mesh bg */}
       <div className="relative p-5">
@@ -160,7 +160,7 @@ function DeepDiveCard({ item, onClick }: { item: DeepDive; onClick: () => void }
             <CatBadge cat={item.category} />
             {item.category === "advanced" && <AdvancedBadge />}
           </div>
-          <span className="flex items-center gap-1 text-[10px] text-zinc-600 whitespace-nowrap shrink-0">
+          <span className="flex items-center gap-1 text-[10px] text-vela-muted whitespace-nowrap shrink-0">
             <Clock className="w-3 h-3" /> {item.readMin}m
           </span>
         </div>
@@ -169,21 +169,21 @@ function DeepDiveCard({ item, onClick }: { item: DeepDive; onClick: () => void }
         <h3 className="text-sm font-semibold text-zinc-100 mb-1.5 leading-snug group-hover:text-zinc-200 transition-colors">
           {item.title}
         </h3>
-        <p className="text-xs text-zinc-500 leading-relaxed mb-4 line-clamp-2 italic">{item.tagline}</p>
+        <p className="text-xs text-vela-muted leading-relaxed mb-4 line-clamp-2 italic">{item.tagline}</p>
 
         {/* Opening excerpt */}
-        <p className="text-[11px] text-zinc-500 leading-relaxed line-clamp-3 mb-4 border-l-2 border-zinc-700 pl-3">
+        <p className="text-[11px] text-vela-muted leading-relaxed line-clamp-3 mb-4 border-l-2 border-zinc-700 pl-3">
           {item.opening}
         </p>
 
         {/* Takeaway count */}
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 text-xs text-zinc-500">
-            <CheckCircle2 className="w-3 h-3 text-zinc-600" />
+          <div className="flex items-center gap-1 text-xs text-vela-muted">
+            <CheckCircle2 className="w-3 h-3 text-vela-subtle" />
             {item.takeaways.length} key takeaways
           </div>
-          <span className="text-zinc-700">·</span>
-          <span className="text-[11px] text-zinc-600">{item.sections.length} sections</span>
+          <span className="text-vela-muted">·</span>
+          <span className="text-[11px] text-vela-muted">{item.sections.length} sections</span>
         </div>
       </div>
     </button>
@@ -198,7 +198,7 @@ function PlaybookDetail({ item }: { item: Playbook }) {
       {/* Intro */}
       <div>
         <p className="text-zinc-400 text-sm leading-relaxed">{item.tagline}</p>
-        <div className="mt-3 flex items-center gap-3 text-xs text-zinc-600">
+        <div className="mt-3 flex items-center gap-3 text-xs text-vela-muted">
           <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {item.readMin} min read</span>
           <span>·</span>
           <span>{item.steps.length} steps</span>
@@ -259,7 +259,7 @@ function DeepDiveDetail({ item }: { item: DeepDive }) {
       {/* Intro */}
       <div>
         <p className="text-zinc-400 text-sm leading-relaxed italic mb-3">{item.tagline}</p>
-        <div className="flex items-center gap-3 text-xs text-zinc-600">
+        <div className="flex items-center gap-3 text-xs text-vela-muted">
           <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {item.readMin} min read</span>
           <span>·</span>
           <span>{item.sections.length} sections</span>
@@ -361,9 +361,9 @@ function ToolInput({
 }) {
   return (
     <div>
-      <label className="text-[10px] text-zinc-500 uppercase tracking-wider block mb-1">{label}</label>
+      <label className="text-[10px] text-vela-muted uppercase tracking-wider block mb-1">{label}</label>
       <div className="flex items-center gap-1">
-        {prefix && <span className="text-xs text-zinc-500">{prefix}</span>}
+        {prefix && <span className="text-xs text-vela-muted">{prefix}</span>}
         <input
           type="number"
           value={value}
@@ -371,7 +371,7 @@ function ToolInput({
           placeholder={placeholder}
           className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-2.5 py-1.5 text-sm text-zinc-100 tabular-nums outline-none focus:border-teal-500/50 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
         />
-        {suffix && <span className="text-xs text-zinc-500 shrink-0">{suffix}</span>}
+        {suffix && <span className="text-xs text-vela-muted shrink-0">{suffix}</span>}
       </div>
     </div>
   );
@@ -383,7 +383,7 @@ function ToolResult({ label, value, highlight = false, sub }: { label: string; v
     <div className="flex items-start justify-between gap-4 py-2 border-b border-zinc-800 last:border-0">
       <div>
         <p className="text-xs text-zinc-400">{label}</p>
-        {sub && <p className="text-[10px] text-zinc-600 mt-0.5">{sub}</p>}
+        {sub && <p className="text-[10px] text-vela-muted mt-0.5">{sub}</p>}
       </div>
       <p className={`text-sm font-bold tabular shrink-0 ${highlight ? "text-vela-teal" : "text-zinc-200"}`}>{value}</p>
     </div>
@@ -452,7 +452,7 @@ function TaxHarvestTool() {
     <MiniToolShell label="Calculate your tax saving">
       <ToolInput label="Unrealized loss" value={loss} onChange={setLoss} prefix="$" placeholder="10000" />
       <div>
-        <label className="text-[10px] text-zinc-500 uppercase tracking-wider block mb-1.5">Tax rate</label>
+        <label className="text-[10px] text-vela-muted uppercase tracking-wider block mb-1.5">Tax rate</label>
         <div className="flex flex-wrap gap-1.5">
           {TAX_RATES.map((t) => (
             <button
@@ -474,7 +474,7 @@ function TaxHarvestTool() {
         <div className="pt-1 border-t border-zinc-800">
           <ToolResult label="Immediate tax saving" value={fmt(saving)} highlight sub={`${rate}% of ${fmt(lv)} loss`} />
           <ToolResult label="Deferral value at 8% growth" value={`+${fmt(deferralGrowth)}`} sub={`over ${yv} years before the deferred tax is due`} />
-          <p className="text-[11px] text-zinc-600 mt-2">
+          <p className="text-[11px] text-vela-muted mt-2">
             The tax is deferred, not eliminated. When you sell the replacement security, the lower cost basis triggers this gain.
           </p>
         </div>
@@ -521,7 +521,7 @@ function ExpectedValueTool() {
       <div className="grid grid-cols-2 gap-3">
         <ToolInput label="Base target ($)" value={baseTarget} onChange={setBaseTarget} prefix="$" placeholder="70" />
         <div className="flex items-end pb-1">
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-vela-muted">
             Base prob: <span className="text-zinc-300 tabular">{(basep * 100).toFixed(0)}%</span>
             {probWarning && <span className="text-rose-400 ml-1">(probabilities exceed 100%)</span>}
           </p>
@@ -547,14 +547,14 @@ function ExpectedValueTool() {
               { label: "Bear", p: brp, t: brt },
             ].map((s) => (
               <div key={s.label} className="flex items-center gap-2">
-                <span className="text-[10px] text-zinc-600 w-8">{s.label}</span>
+                <span className="text-[10px] text-vela-muted w-8">{s.label}</span>
                 <div className="flex-1 h-1 bg-zinc-800 rounded-full overflow-hidden">
                   <div
                     className={`h-full rounded-full ${s.label === "Bull" ? "bg-emerald-500/60" : s.label === "Bear" ? "bg-rose-500/60" : "bg-zinc-500/60"}`}
                     style={{ width: `${s.p * 100}%` }}
                   />
                 </div>
-                <span className="text-[10px] text-zinc-500 tabular w-8 text-right">{(s.p * 100).toFixed(0)}%</span>
+                <span className="text-[10px] text-vela-muted tabular w-8 text-right">{(s.p * 100).toFixed(0)}%</span>
                 <span className="text-[10px] text-zinc-400 tabular w-14 text-right">{fmt$(s.t)}</span>
               </div>
             ))}
@@ -589,12 +589,12 @@ function DrawdownRecoveryTool() {
         <div className="pt-1 border-t border-zinc-800">
           <ToolResult label="Required gain to recover" value={`${requiredGain.toFixed(1)}%`} highlight />
           <ToolResult label="Severity" value={severity.label} />
-          <p className="text-[10px] text-zinc-500 uppercase tracking-wider mt-3 mb-2">Years to recover at annual return of:</p>
+          <p className="text-[10px] text-vela-muted uppercase tracking-wider mt-3 mb-2">Years to recover at annual return of:</p>
           <div className="grid grid-cols-4 gap-2">
             {[8, 12, 15, 20].map((r) => (
               <div key={r} className="bg-zinc-800/60 rounded-lg p-2 text-center">
-                <p className="text-[10px] text-zinc-500 mb-1">{r}%/yr</p>
-                <p className="text-sm font-bold tabular text-zinc-200">{yearsAt(r)}<span className="text-[10px] text-zinc-600 ml-0.5">yr</span></p>
+                <p className="text-[10px] text-vela-muted mb-1">{r}%/yr</p>
+                <p className="text-sm font-bold tabular text-zinc-200">{yearsAt(r)}<span className="text-[10px] text-vela-muted ml-0.5">yr</span></p>
               </div>
             ))}
           </div>
@@ -706,17 +706,17 @@ function ApplyToStock({ item }: { item: LearnItem }) {
       <div className="flex items-center gap-2 mb-4">
         <Sparkles className="w-4 h-4 text-vela-teal shrink-0" />
         <h3 className="text-sm font-semibold text-zinc-200">Apply to a stock</h3>
-        <span className="text-[10px] text-zinc-600 font-medium px-1.5 py-0.5 bg-zinc-800 rounded border border-zinc-700">
+        <span className="text-[10px] text-vela-muted font-medium px-1.5 py-0.5 bg-zinc-800 rounded border border-zinc-700">
           Claude AI
         </span>
       </div>
 
-      <p className="text-xs text-zinc-500 mb-4 leading-relaxed">{angleText}</p>
+      <p className="text-xs text-vela-muted mb-4 leading-relaxed">{angleText}</p>
 
       {/* Portfolio holdings pills */}
       {holdings.length > 0 && (
         <div className="mb-3">
-          <p className="text-[10px] text-zinc-600 uppercase tracking-wider mb-2">Your holdings</p>
+          <p className="text-[10px] text-vela-muted uppercase tracking-wider mb-2">Your holdings</p>
           <div className="flex flex-wrap gap-1.5">
             {holdings.slice(0, 10).map((h) => (
               <button
@@ -740,7 +740,7 @@ function ApplyToStock({ item }: { item: LearnItem }) {
         {!showCustom ? (
           <button
             onClick={() => { setShowCustom(true); setSelectedTicker(""); }}
-            className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 border border-zinc-700 hover:border-zinc-600 rounded px-2.5 py-1 transition-colors"
+            className="flex items-center gap-1.5 text-xs text-vela-muted hover:text-zinc-300 border border-zinc-700 hover:border-zinc-600 rounded px-2.5 py-1 transition-colors"
           >
             <Search className="w-3 h-3" />
             Any ticker
@@ -761,7 +761,7 @@ function ApplyToStock({ item }: { item: LearnItem }) {
             </div>
             <button
               onClick={() => { setShowCustom(false); setCustomInput(""); if (holdings.length > 0) setSelectedTicker(holdings[0].ticker); }}
-              className="text-zinc-600 hover:text-zinc-400 transition-colors"
+              className="text-vela-muted hover:text-zinc-400 transition-colors"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -803,7 +803,7 @@ function ApplyToStock({ item }: { item: LearnItem }) {
                 )}
               </p>
             )}
-            <p className="text-[10px] text-zinc-700 mt-3">
+            <p className="text-[10px] text-vela-muted mt-3">
               AI analysis by Claude. Not financial advice.
             </p>
           </div>
@@ -860,7 +860,7 @@ function DetailDrawer({
           </div>
           <button
             onClick={onClose}
-            className="shrink-0 p-2 rounded-lg text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 transition-colors mt-0.5"
+            className="shrink-0 p-2 rounded-lg text-vela-muted hover:text-zinc-300 hover:bg-zinc-800 transition-colors mt-0.5"
           >
             <X className="w-4 h-4" />
           </button>
@@ -879,7 +879,7 @@ function DetailDrawer({
 
         {/* Disclaimer */}
         <div className="px-6 py-3 border-t border-zinc-800 shrink-0">
-          <p className="text-[10px] text-zinc-700 text-center">
+          <p className="text-[10px] text-vela-muted text-center">
             Educational content only - not personalized financial, tax, or investment advice.
           </p>
         </div>
@@ -919,18 +919,18 @@ export default function LearnPage() {
               <BookOpen className="w-6 h-6 text-vela-teal" />
               Learn
             </h1>
-            <p className="text-zinc-500 text-sm mt-1">
+            <p className="text-vela-muted text-sm mt-1">
               Frameworks and deep dives for investors who want to understand, not just follow.
             </p>
           </div>
-          <div className="flex items-center gap-3 text-xs text-zinc-600">
+          <div className="flex items-center gap-3 text-xs text-vela-muted">
             <span className="flex items-center gap-1.5">
               <Zap className="w-3 h-3 text-teal-500/60" />
               {playbookCount} playbooks
             </span>
-            <span className="text-zinc-800">·</span>
+            <span className="text-vela-subtle">·</span>
             <span className="flex items-center gap-1.5">
-              <BookOpen className="w-3 h-3 text-zinc-600" />
+              <BookOpen className="w-3 h-3 text-vela-subtle" />
               {deepdiveCount} deep dives
             </span>
           </div>
@@ -955,11 +955,11 @@ export default function LearnPage() {
                 className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
                   tab === t
                     ? "bg-zinc-800 text-zinc-100"
-                    : "text-zinc-500 hover:text-zinc-300"
+                    : "text-vela-muted hover:text-zinc-300"
                 }`}
               >
                 {labels[t]}
-                <span className={`ml-1.5 ${tab === t ? "text-zinc-400" : "text-zinc-700"}`}>
+                <span className={`ml-1.5 ${tab === t ? "text-zinc-400" : "text-vela-muted"}`}>
                   {counts[t]}
                 </span>
               </button>
@@ -974,7 +974,7 @@ export default function LearnPage() {
             className={`px-2.5 py-1 rounded text-xs border transition-colors ${
               !catFilter
                 ? "bg-zinc-200 text-zinc-900 border-zinc-200"
-                : "border-zinc-800 text-zinc-500 hover:border-zinc-600 hover:text-zinc-300"
+                : "border-zinc-800 text-vela-muted hover:border-zinc-600 hover:text-zinc-300"
             }`}
           >
             All topics
@@ -990,7 +990,7 @@ export default function LearnPage() {
                 className={`px-2.5 py-1 rounded text-xs border transition-colors ${
                   active
                     ? `${c.bg} ${c.text} ${c.border}`
-                    : "border-zinc-800 text-zinc-500 hover:border-zinc-600 hover:text-zinc-300"
+                    : "border-zinc-800 text-vela-muted hover:border-zinc-600 hover:text-zinc-300"
                 }`}
               >
                 {CATEGORY_LABELS[cat]} ({count})
@@ -1003,8 +1003,8 @@ export default function LearnPage() {
       {/* ── Content Grid ── */}
       {filtered.length === 0 ? (
         <div className="vela-card text-center py-16">
-          <BookOpen className="w-8 h-8 text-zinc-700 mx-auto mb-3" />
-          <p className="text-zinc-500 text-sm">No content matches this filter.</p>
+          <BookOpen className="w-8 h-8 text-vela-subtle mx-auto mb-3" />
+          <p className="text-vela-muted text-sm">No content matches this filter.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">

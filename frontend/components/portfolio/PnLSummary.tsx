@@ -25,7 +25,7 @@ export default function PnLSummary({ summary }: Props) {
         <span className={`text-sm tabular ${pnlClass(summary.unrealized_pnl)}`}>
           {formatPnl(summary.unrealized_pnl)} ({formatPercent(summary.unrealized_pnl_pct)})
         </span>
-        <span className="text-zinc-700">·</span>
+        <span className="text-vela-muted">·</span>
         <motion.span
           className={changePillClass(summary.day_change)}
           initial={{ scale: 0.9, opacity: 0 }}

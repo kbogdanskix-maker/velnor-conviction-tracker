@@ -72,7 +72,7 @@ export default function CashFlowPage() {
             <DollarSign className="w-6 h-6 text-vela-teal" />
             Cash Flow
           </h1>
-          <p className="text-zinc-500 text-sm mt-0.5">Monthly income, expenses & savings rate</p>
+          <p className="text-vela-muted text-sm mt-0.5">Monthly income, expenses & savings rate</p>
         </div>
         <div className="flex items-center gap-2">
           {entries.length > 0 && (
@@ -113,7 +113,7 @@ export default function CashFlowPage() {
             <div className="w-7 h-7 rounded-lg bg-zinc-800 flex items-center justify-center text-zinc-400">
               <PiggyBank className="w-4 h-4" />
             </div>
-            <p className="text-xs text-zinc-500">Monthly Savings</p>
+            <p className="text-xs text-vela-muted">Monthly Savings</p>
           </div>
           <AnimatedNumber
             value={summary?.savings ?? 0}
@@ -141,7 +141,7 @@ export default function CashFlowPage() {
         <div className="vela-card">
           <div className="flex items-center justify-between mb-2">
             <p className="text-sm font-medium text-zinc-300">Budget Breakdown</p>
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-vela-muted">
               {formatCurrency(summary?.total_expenses ?? 0)} of {formatCurrency(summary?.total_income ?? 0)}
             </p>
           </div>
@@ -182,9 +182,9 @@ export default function CashFlowPage() {
 
       {entries.length === 0 && (
         <div className="vela-card text-center py-16">
-          <DollarSign className="w-8 h-8 text-zinc-600 mx-auto mb-3" />
+          <DollarSign className="w-8 h-8 text-vela-subtle mx-auto mb-3" />
           <h2 className="text-lg font-semibold text-zinc-200 mb-1">No cash flow entries yet</h2>
-          <p className="text-sm text-zinc-500 mb-4">
+          <p className="text-sm text-vela-muted mb-4">
             Add your monthly income and expenses to track your savings rate
           </p>
           <button onClick={openAdd} className="btn-primary text-sm inline-flex items-center gap-1.5">
@@ -229,7 +229,7 @@ function SummaryCard({ label, value, icon, color, negative }: {
         <div className="w-7 h-7 rounded-lg bg-zinc-800 flex items-center justify-center text-zinc-400">
           {icon}
         </div>
-        <p className="text-xs text-zinc-500">{label}</p>
+        <p className="text-xs text-vela-muted">{label}</p>
       </div>
       <AnimatedNumber
         value={value}
@@ -272,13 +272,13 @@ function EntrySection({ title, icon, entries, onEdit, onDelete, color }: {
           <div key={e.id} className="flex items-center justify-between py-2 border-b border-vela-border last:border-0">
             <div>
               <p className="text-sm font-medium text-zinc-200">{e.name}</p>
-              <p className="text-xs text-zinc-500">{cfCategoryLabel(e.category)}</p>
+              <p className="text-xs text-vela-muted">{cfCategoryLabel(e.category)}</p>
             </div>
             <div className="flex items-center gap-2">
               <p className={`text-sm font-bold tabular ${colorClass}`}>{formatCurrency(e.amount)}</p>
               <DropdownMenu.Root>
                 <DropdownMenu.Trigger asChild>
-                  <button className="p-1 rounded hover:bg-zinc-800 text-zinc-500 hover:text-zinc-300 transition-colors">
+                  <button className="p-1 rounded hover:bg-zinc-800 text-vela-muted hover:text-zinc-300 transition-colors">
                     <MoreHorizontal className="w-4 h-4" />
                   </button>
                 </DropdownMenu.Trigger>
@@ -384,7 +384,7 @@ function AddEntryModal({ open, onClose, editing, onSaved }: {
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Type */}
             <div>
-              <label className="text-xs text-zinc-500 mb-1 block">Type</label>
+              <label className="text-xs text-vela-muted mb-1 block">Type</label>
               <select
                 value={entryType}
                 onChange={(e) => {
@@ -402,7 +402,7 @@ function AddEntryModal({ open, onClose, editing, onSaved }: {
 
             {/* Name */}
             <div>
-              <label className="text-xs text-zinc-500 mb-1 block">Name</label>
+              <label className="text-xs text-vela-muted mb-1 block">Name</label>
               <input
                 type="text"
                 value={name}
@@ -415,7 +415,7 @@ function AddEntryModal({ open, onClose, editing, onSaved }: {
 
             {/* Category */}
             <div>
-              <label className="text-xs text-zinc-500 mb-1 block">Category</label>
+              <label className="text-xs text-vela-muted mb-1 block">Category</label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
@@ -429,7 +429,7 @@ function AddEntryModal({ open, onClose, editing, onSaved }: {
 
             {/* Amount */}
             <div>
-              <label className="text-xs text-zinc-500 mb-1 block">Monthly Amount</label>
+              <label className="text-xs text-vela-muted mb-1 block">Monthly Amount</label>
               <input
                 type="number"
                 value={amount}
@@ -444,7 +444,7 @@ function AddEntryModal({ open, onClose, editing, onSaved }: {
 
             {/* Notes */}
             <div>
-              <label className="text-xs text-zinc-500 mb-1 block">Notes (optional)</label>
+              <label className="text-xs text-vela-muted mb-1 block">Notes (optional)</label>
               <input
                 type="text"
                 value={notes}

@@ -145,7 +145,7 @@ export default function BenchmarkPage() {
           <Users className="w-7 h-7 text-vela-teal" />
           Benchmarking
         </h1>
-        <p className="text-zinc-500 text-sm mt-1">
+        <p className="text-vela-muted text-sm mt-1">
           See how your finances compare to a typical profile for your age and risk tolerance.
         </p>
       </div>
@@ -163,7 +163,7 @@ export default function BenchmarkPage() {
               Personalized
             </span>
           </div>
-          <span className={`text-xs text-zinc-500 transition-transform ${showProfile ? "rotate-180" : ""}`}>
+          <span className={`text-xs text-vela-muted transition-transform ${showProfile ? "rotate-180" : ""}`}>
             ▾
           </span>
         </button>
@@ -173,7 +173,7 @@ export default function BenchmarkPage() {
             {/* Age */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs text-zinc-500">Age</label>
+                <label className="text-xs text-vela-muted">Age</label>
                 <span className="text-xs font-medium tabular text-zinc-200">{age} ({result.ageGroup})</span>
               </div>
               <input
@@ -192,7 +192,7 @@ export default function BenchmarkPage() {
 
             {/* Risk Tolerance */}
             <div>
-              <label className="text-xs text-zinc-500 block mb-1.5">Risk Tolerance</label>
+              <label className="text-xs text-vela-muted block mb-1.5">Risk Tolerance</label>
               <div className="flex gap-2">
                 {RISK_OPTIONS.map((opt) => (
                   <button
@@ -201,7 +201,7 @@ export default function BenchmarkPage() {
                     className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium border transition-colors ${
                       profile.riskTolerance === opt.value
                         ? `${opt.color} border-current bg-zinc-800`
-                        : "border-zinc-700 text-zinc-500 hover:text-zinc-300"
+                        : "border-zinc-700 text-vela-muted hover:text-zinc-300"
                     }`}
                   >
                     {opt.label}
@@ -212,7 +212,7 @@ export default function BenchmarkPage() {
 
             {/* Career Stage */}
             <div>
-              <label className="text-xs text-zinc-500 block mb-1.5">Career Stage</label>
+              <label className="text-xs text-vela-muted block mb-1.5">Career Stage</label>
               <div className="flex flex-wrap gap-1.5">
                 {CAREER_OPTIONS.map((opt) => (
                   <button
@@ -221,7 +221,7 @@ export default function BenchmarkPage() {
                     className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
                       profile.careerStage === opt.value
                         ? "text-vela-teal border-vela-teal/40 bg-vela-teal/10"
-                        : "border-zinc-700 text-zinc-500 hover:text-zinc-300"
+                        : "border-zinc-700 text-vela-muted hover:text-zinc-300"
                     }`}
                   >
                     {opt.label}
@@ -232,7 +232,7 @@ export default function BenchmarkPage() {
 
             {/* Income Level */}
             <div>
-              <label className="text-xs text-zinc-500 block mb-1.5">Income Level</label>
+              <label className="text-xs text-vela-muted block mb-1.5">Income Level</label>
               <div className="flex gap-2">
                 {INCOME_OPTIONS.map((opt) => (
                   <button
@@ -241,11 +241,11 @@ export default function BenchmarkPage() {
                     className={`flex-1 px-2 py-2 rounded-lg text-center border transition-colors ${
                       profile.incomeLevel === opt.value
                         ? "text-vela-teal border-vela-teal/40 bg-vela-teal/10"
-                        : "border-zinc-700 text-zinc-500 hover:text-zinc-300"
+                        : "border-zinc-700 text-vela-muted hover:text-zinc-300"
                     }`}
                   >
                     <span className="text-xs font-medium block">{opt.label}</span>
-                    <span className="text-[9px] text-zinc-600">{opt.range}</span>
+                    <span className="text-[9px] text-vela-muted">{opt.range}</span>
                   </button>
                 ))}
               </div>
@@ -282,7 +282,7 @@ export default function BenchmarkPage() {
           <p className={`text-sm font-medium mt-0.5 ${percentileColor(result.overallPercentile)}`}>
             {percentileLabel(result.overallPercentile)}
           </p>
-          <p className="text-[10px] text-zinc-500 mt-0.5">Overall Percentile</p>
+          <p className="text-[10px] text-vela-muted mt-0.5">Overall Percentile</p>
         </div>
         <div className="vela-card py-5 sm:col-span-2">
           <div className="flex items-start gap-2">
@@ -291,7 +291,7 @@ export default function BenchmarkPage() {
               <p className="text-xs text-zinc-400">
                 Benchmarks adjusted for: <span className="text-zinc-200">{result.profileSummary}</span>
               </p>
-              <p className="text-[10px] text-zinc-600 mt-1">
+              <p className="text-[10px] text-vela-muted mt-1">
                 {result.metrics.length} metrics compared. Thresholds are personalized to your risk tolerance, career stage, and income level.
               </p>
             </div>
@@ -325,10 +325,10 @@ export default function BenchmarkPage() {
       {/* Sources */}
       <div className="vela-card border-zinc-700">
         <div className="flex items-start gap-3">
-          <Shield className="w-5 h-5 text-zinc-500 mt-0.5 shrink-0" />
+          <Shield className="w-5 h-5 text-vela-subtle mt-0.5 shrink-0" />
           <div className="space-y-2">
             <h3 className="text-sm font-medium text-zinc-300">Privacy & Sources</h3>
-            <p className="text-xs text-zinc-500 leading-relaxed">
+            <p className="text-xs text-vela-muted leading-relaxed">
               Your data never leaves your browser. All comparisons are calculated locally against
               statistical benchmarks from the Federal Reserve Survey of Consumer Finances and BLS data,
               then adjusted based on your profile settings.
@@ -339,7 +339,7 @@ export default function BenchmarkPage() {
 
       {/* Disclaimer */}
       <div className="text-center pt-4 pb-8 border-t border-zinc-800">
-        <p className="text-xs text-zinc-600">
+        <p className="text-xs text-vela-muted">
           Benchmarks are approximate. Individual circumstances vary. This is not financial advice.
         </p>
       </div>
@@ -357,7 +357,7 @@ function TogglePill({ label, active, onToggle }: { label: string; active: boolea
       className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium border transition-colors ${
         active
           ? "bg-vela-teal/10 text-vela-teal border-vela-teal/30"
-          : "border-zinc-700 text-zinc-500 hover:text-zinc-300"
+          : "border-zinc-700 text-vela-muted hover:text-zinc-300"
       }`}
     >
       <div className={`w-2 h-2 rounded-full ${active ? "bg-vela-teal" : "bg-zinc-600"}`} />
@@ -395,14 +395,14 @@ function MetricCard({ metric }: { metric: BenchmarkMetric }) {
           {/* Comparison */}
           <div className="flex items-baseline gap-4 mt-2">
             <div>
-              <p className="text-xs text-zinc-500">You</p>
+              <p className="text-xs text-vela-muted">You</p>
               <p className={`text-lg font-bold tabular ${percentileColor(pct)}`}>
                 {metric.userValue !== null ? fmtMetric(metric.userValue, metric.unit) : "--"}
               </p>
             </div>
-            <div className="text-zinc-600 text-xs">vs</div>
+            <div className="text-vela-muted text-xs">vs</div>
             <div>
-              <p className="text-xs text-zinc-500">{metric.benchmarkLabel}</p>
+              <p className="text-xs text-vela-muted">{metric.benchmarkLabel}</p>
               <p className="text-lg font-bold tabular text-zinc-400">
                 {fmtMetric(metric.benchmarkValue, metric.unit)}
               </p>
@@ -424,7 +424,7 @@ function MetricCard({ metric }: { metric: BenchmarkMetric }) {
           </div>
 
           {/* Insight */}
-          <p className="text-xs text-zinc-500 mt-2">{metric.insight}</p>
+          <p className="text-xs text-vela-muted mt-2">{metric.insight}</p>
         </div>
       </div>
     </div>

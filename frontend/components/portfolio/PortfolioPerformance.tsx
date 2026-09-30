@@ -57,13 +57,13 @@ export default function PortfolioPerformance() {
             return (
               <div key={m.label} className="rounded-lg bg-zinc-800/50 p-3 space-y-1">
                 <div className="flex items-center gap-1.5">
-                  <Icon className="w-3.5 h-3.5 text-zinc-500" />
-                  <span className="text-xs text-zinc-500">{m.label}</span>
+                  <Icon className="w-3.5 h-3.5 text-vela-subtle" />
+                  <span className="text-xs text-vela-muted">{m.label}</span>
                 </div>
                 <p className="text-lg font-bold tabular text-zinc-100">
                   {m.value ?? " -"}
                 </p>
-                <p className="text-[10px] text-zinc-500 leading-relaxed">
+                <p className="text-[10px] text-vela-muted leading-relaxed">
                   {m.hint}
                 </p>
               </div>
@@ -74,7 +74,7 @@ export default function PortfolioPerformance() {
 
       {risk?.annualized_return != null && (
         <div className="mt-3 flex items-center justify-between text-xs">
-          <span className="text-zinc-500">Annualized return</span>
+          <span className="text-vela-muted">Annualized return</span>
           <span className={`tabular font-medium ${risk.annualized_return >= 0 ? "text-gain" : "text-loss"}`}>
             {risk.annualized_return >= 0 ? "+" : ""}{risk.annualized_return}%
           </span>

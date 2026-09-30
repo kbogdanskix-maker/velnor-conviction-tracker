@@ -141,7 +141,7 @@ export default function SplashScreen({ children }: { children: React.ReactNode }
 
             {/* Tagline */}
             <motion.p
-              className="relative z-10 mt-2 text-sm text-zinc-500 tracking-wider"
+              className="relative z-10 mt-2 text-sm text-vela-muted tracking-wider"
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1.0, duration: 0.6 }}

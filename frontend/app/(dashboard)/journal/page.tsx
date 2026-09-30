@@ -77,7 +77,7 @@ export default function JournalPage() {
             <BookOpen className="w-7 h-7 text-vela-teal" />
             Decision Journal
           </h1>
-          <p className="text-zinc-500 text-sm mt-1">
+          <p className="text-vela-muted text-sm mt-1">
             Log your investment decisions, track your rationale, and review outcomes.
           </p>
         </div>
@@ -95,23 +95,23 @@ export default function JournalPage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <div className="vela-card text-center py-3">
             <p className="text-2xl font-bold tabular text-zinc-100">{stats.total}</p>
-            <p className="text-xs text-zinc-500">Decisions</p>
+            <p className="text-xs text-vela-muted">Decisions</p>
           </div>
           <div className="vela-card text-center py-3">
             <p className="text-2xl font-bold tabular text-emerald-400">
               {stats.win_rate !== null ? `${(stats.win_rate * 100).toFixed(0)}%` : "--"}
             </p>
-            <p className="text-xs text-zinc-500">Win Rate</p>
+            <p className="text-xs text-vela-muted">Win Rate</p>
           </div>
           <div className="vela-card text-center py-3">
             <p className="text-2xl font-bold tabular text-zinc-100">
               {stats.avg_conviction != null && stats.avg_conviction > 0 ? stats.avg_conviction.toFixed(1) : "--"}
             </p>
-            <p className="text-xs text-zinc-500">Avg Conviction</p>
+            <p className="text-xs text-vela-muted">Avg Conviction</p>
           </div>
           <div className="vela-card text-center py-3">
             <p className="text-2xl font-bold tabular text-amber-400">{stats.pending}</p>
-            <p className="text-xs text-zinc-500">Pending Review</p>
+            <p className="text-xs text-vela-muted">Pending Review</p>
           </div>
         </div>
       )}
@@ -190,10 +190,10 @@ export default function JournalPage() {
         </div>
       ) : isEmpty ? (
         <div className="vela-card text-center py-16 space-y-3">
-          <BookOpen className="w-10 h-10 text-zinc-600 mx-auto" />
+          <BookOpen className="w-10 h-10 text-vela-subtle mx-auto" />
           <div>
             <p className="text-zinc-300 font-medium">No decisions logged yet</p>
-            <p className="text-zinc-500 text-sm mt-1">
+            <p className="text-vela-muted text-sm mt-1">
               Start logging your investment decisions to track your thinking and improve over time.
             </p>
           </div>
@@ -215,7 +215,7 @@ export default function JournalPage() {
             />
           ))}
           {filtered.length === 0 && entries.length > 0 && (
-            <p className="text-center text-zinc-500 text-sm py-8">No entries match this filter.</p>
+            <p className="text-center text-vela-muted text-sm py-8">No entries match this filter.</p>
           )}
         </div>
       )}
@@ -235,7 +235,7 @@ export default function JournalPage() {
       {/* Disclaimer */}
       {entries.length > 0 && (
         <div className="text-center pt-4 pb-8 border-t border-zinc-800">
-          <p className="text-xs text-zinc-600">
+          <p className="text-xs text-vela-muted">
             The journal is for personal reflection. Past outcomes do not predict future results.
           </p>
         </div>
@@ -274,11 +274,11 @@ function EntryCard({
             <span className={`text-xs font-medium ${actionConf.color}`}>{actionConf.label}</span>
             <ConvictionDots level={entry.conviction} />
             {entry.time_horizon && (
-              <span className="text-[10px] text-zinc-600 bg-zinc-800 px-1.5 py-0.5 rounded">
+              <span className="text-[10px] text-vela-muted bg-zinc-800 px-1.5 py-0.5 rounded">
                 {entry.time_horizon}
               </span>
             )}
-            <span className="text-[10px] text-zinc-600 ml-auto">
+            <span className="text-[10px] text-vela-muted ml-auto">
               {formatTimeAgo(entry.decided_at)}
             </span>
           </div>
@@ -288,7 +288,7 @@ function EntryCard({
           </p>
 
           {/* Price info */}
-          <div className="flex items-center gap-4 mt-2 text-[11px] text-zinc-500">
+          <div className="flex items-center gap-4 mt-2 text-[11px] text-vela-muted">
             {entry.price_at_decision && (
               <span>Entry: <span className="text-zinc-300 tabular">${Number(entry.price_at_decision).toFixed(2)}</span></span>
             )}
@@ -305,7 +305,7 @@ function EntryCard({
             <div className="mt-2 flex items-center gap-2">
               <OutcomeBadge outcome={entry.outcome!} />
               {entry.outcome_notes && (
-                <span className="text-[10px] text-zinc-500 truncate">{entry.outcome_notes}</span>
+                <span className="text-[10px] text-vela-muted truncate">{entry.outcome_notes}</span>
               )}
             </div>
           )}
@@ -314,7 +314,7 @@ function EntryCard({
           {entry.tags && (
             <div className="flex gap-1 mt-2">
               {entry.tags.split(",").map((tag) => (
-                <span key={tag} className="text-[10px] text-zinc-500 bg-zinc-800 px-1.5 py-0.5 rounded">
+                <span key={tag} className="text-[10px] text-vela-muted bg-zinc-800 px-1.5 py-0.5 rounded">
                   {tag.trim()}
                 </span>
               ))}
@@ -325,7 +325,7 @@ function EntryCard({
         {/* Actions menu */}
         <DropdownMenu.Root>
           <DropdownMenu.Trigger asChild>
-            <button className="p-1 rounded hover:bg-zinc-800 text-zinc-500 hover:text-zinc-300 transition-colors">
+            <button className="p-1 rounded hover:bg-zinc-800 text-vela-muted hover:text-zinc-300 transition-colors">
               <MoreHorizontal className="w-4 h-4" />
             </button>
           </DropdownMenu.Trigger>
@@ -465,7 +465,7 @@ function AddEntryModal({
             {/* Ticker + Action */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs text-zinc-500 block mb-1">Ticker</label>
+                <label className="text-xs text-vela-muted block mb-1">Ticker</label>
                 <input
                   value={ticker}
                   onChange={(e) => setTicker(e.target.value.toUpperCase())}
@@ -475,7 +475,7 @@ function AddEntryModal({
                 />
               </div>
               <div>
-                <label className="text-xs text-zinc-500 block mb-1">Action</label>
+                <label className="text-xs text-vela-muted block mb-1">Action</label>
                 <div className="flex flex-wrap gap-1">
                   {ACTIONS.map((a) => (
                     <button
@@ -485,7 +485,7 @@ function AddEntryModal({
                       className={`px-2 py-1 rounded text-[11px] font-medium border transition-colors ${
                         action === a.value
                           ? `${a.color} border-current bg-zinc-800`
-                          : "border-zinc-700 text-zinc-500 hover:text-zinc-300"
+                          : "border-zinc-700 text-vela-muted hover:text-zinc-300"
                       }`}
                     >
                       {a.label}
@@ -497,7 +497,7 @@ function AddEntryModal({
 
             {/* Conviction */}
             <div>
-              <label className="text-xs text-zinc-500 block mb-1">Conviction (1-5)</label>
+              <label className="text-xs text-vela-muted block mb-1">Conviction (1-5)</label>
               <div className="flex items-center gap-3">
                 <input
                   type="range"
@@ -517,7 +517,7 @@ function AddEntryModal({
 
             {/* Rationale */}
             <div>
-              <label className="text-xs text-zinc-500 block mb-1">Rationale</label>
+              <label className="text-xs text-vela-muted block mb-1">Rationale</label>
               <textarea
                 value={rationale}
                 onChange={(e) => setRationale(e.target.value)}
@@ -531,7 +531,7 @@ function AddEntryModal({
             {/* Prices */}
             <div className="grid grid-cols-3 gap-3">
               <div>
-                <label className="text-xs text-zinc-500 block mb-1">Entry Price</label>
+                <label className="text-xs text-vela-muted block mb-1">Entry Price</label>
                 <input
                   type="number"
                   step="0.01"
@@ -542,7 +542,7 @@ function AddEntryModal({
                 />
               </div>
               <div>
-                <label className="text-xs text-zinc-500 block mb-1">Target Price</label>
+                <label className="text-xs text-vela-muted block mb-1">Target Price</label>
                 <input
                   type="number"
                   step="0.01"
@@ -553,7 +553,7 @@ function AddEntryModal({
                 />
               </div>
               <div>
-                <label className="text-xs text-zinc-500 block mb-1">Stop Loss</label>
+                <label className="text-xs text-vela-muted block mb-1">Stop Loss</label>
                 <input
                   type="number"
                   step="0.01"
@@ -568,7 +568,7 @@ function AddEntryModal({
             {/* Time horizon + Tags */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs text-zinc-500 block mb-1">Time Horizon</label>
+                <label className="text-xs text-vela-muted block mb-1">Time Horizon</label>
                 <select
                   value={timeHorizon}
                   onChange={(e) => setTimeHorizon(e.target.value)}
@@ -581,7 +581,7 @@ function AddEntryModal({
                 </select>
               </div>
               <div>
-                <label className="text-xs text-zinc-500 block mb-1">Tags</label>
+                <label className="text-xs text-vela-muted block mb-1">Tags</label>
                 <input
                   value={tags}
                   onChange={(e) => setTags(e.target.value)}
@@ -670,14 +670,14 @@ function ReviewModal({
 
           {/* Original rationale */}
           <div className="mt-3 p-3 bg-zinc-800 rounded-lg">
-            <p className="text-[10px] text-zinc-500 uppercase tracking-wider mb-1">Original Rationale</p>
+            <p className="text-[10px] text-vela-muted uppercase tracking-wider mb-1">Original Rationale</p>
             <p className="text-xs text-zinc-300 leading-relaxed">{entry.rationale}</p>
           </div>
 
           <form onSubmit={handleSubmit} className="mt-4 space-y-4">
             {/* Outcome */}
             <div>
-              <label className="text-xs text-zinc-500 block mb-2">Outcome</label>
+              <label className="text-xs text-vela-muted block mb-2">Outcome</label>
               <div className="flex gap-2">
                 {OUTCOMES.filter((o) => o.value !== "pending").map((o) => {
                   const Icon = o.icon;
@@ -689,7 +689,7 @@ function ReviewModal({
                       className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${
                         outcome === o.value
                           ? `${o.color} border-current bg-zinc-800`
-                          : "border-zinc-700 text-zinc-500 hover:text-zinc-300"
+                          : "border-zinc-700 text-vela-muted hover:text-zinc-300"
                       }`}
                     >
                       <Icon className="w-3.5 h-3.5" />
@@ -702,7 +702,7 @@ function ReviewModal({
 
             {/* Price at review */}
             <div>
-              <label className="text-xs text-zinc-500 block mb-1">Current/Exit Price</label>
+              <label className="text-xs text-vela-muted block mb-1">Current/Exit Price</label>
               <input
                 type="number"
                 step="0.01"
@@ -720,7 +720,7 @@ function ReviewModal({
 
             {/* Notes */}
             <div>
-              <label className="text-xs text-zinc-500 block mb-1">What did you learn?</label>
+              <label className="text-xs text-vela-muted block mb-1">What did you learn?</label>
               <textarea
                 value={outcomeNotes}
                 onChange={(e) => setOutcomeNotes(e.target.value)}

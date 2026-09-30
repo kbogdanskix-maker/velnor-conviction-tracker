@@ -162,7 +162,7 @@ export default function ComparePage() {
   // Colours for return bars relative to user's own return
   function returnBarColor(returnVal: number, isUser: boolean): string {
     if (isUser) return "#1AA8BB";          // teal - your portfolio
-    if (returnVal > userReturn) return "#f43f5e";  // rose - benchmark beats you
+    if (returnVal > userReturn) return "#fb7185";  // rose - benchmark beats you
     if (returnVal < userReturn) return "#34d399";  // emerald - you beat benchmark
     return "#71717a";
   }
@@ -188,7 +188,7 @@ export default function ComparePage() {
     if (isUser) return "#1AA8BB";
     if (sharpe >= 0.8) return "#34d399";
     if (sharpe >= 0.5) return "#f59e0b";
-    return "#f43f5e";
+    return "#fb7185";
   }
 
   function sharpeLabel(s: number): string {
@@ -234,15 +234,15 @@ export default function ComparePage() {
             </button>
           );
         })}
-        <span className="text-[10px] text-zinc-600 self-center ml-1">Select up to 4</span>
+        <span className="text-[10px] text-vela-muted self-center ml-1">Select up to 4</span>
       </div>
 
       {/* Config row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="vela-card p-4">
-          <label className="text-xs text-zinc-500 block mb-1">Investment Amount</label>
+          <label className="text-xs text-vela-muted block mb-1">Investment Amount</label>
           <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-zinc-500">$</span>
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-vela-muted">$</span>
             <input
               type="text"
               inputMode="decimal"
@@ -253,7 +253,7 @@ export default function ComparePage() {
           </div>
         </div>
         <div className="vela-card p-4">
-          <label className="text-xs text-zinc-500 block mb-1">
+          <label className="text-xs text-vela-muted block mb-1">
             Your Annual Return {seededReturn && <span className="text-vela-teal">(live)</span>}
           </label>
           <div className="relative">
@@ -264,11 +264,11 @@ export default function ComparePage() {
               onChange={(e) => setUserReturn(parseNum(e.target.value))}
               className="w-full bg-zinc-800 border border-zinc-700 rounded-lg pl-3 pr-8 py-2 text-sm text-zinc-100 tabular-nums focus:outline-none focus:ring-1 focus:ring-vela-teal"
             />
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-zinc-500">%</span>
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-vela-muted">%</span>
           </div>
         </div>
         <div className="vela-card p-4">
-          <label className="text-xs text-zinc-500 block mb-1">Time Horizon</label>
+          <label className="text-xs text-vela-muted block mb-1">Time Horizon</label>
           <select
             value={years}
             onChange={(e) => setYears(parseInt(e.target.value))}
@@ -281,7 +281,7 @@ export default function ComparePage() {
         </div>
         <FloatingCard glowColor="rgba(26, 168, 187, 0.12)" delay={0.2}>
           <div className="p-4">
-            <label className="text-xs text-zinc-500 block mb-1">Final Value (You)</label>
+            <label className="text-xs text-vela-muted block mb-1">Final Value (You)</label>
             <AnimatedNumber
               value={investmentAmount * Math.pow(1 + userReturn / 100, years)}
               format={formatCurrency}
@@ -384,10 +384,10 @@ export default function ComparePage() {
         <div className="flex items-start justify-between gap-4 mb-4">
           <div>
             <h3 className="text-sm font-semibold text-zinc-300">Sharpe Ratio Comparison</h3>
-            <p className="text-xs text-zinc-500 mt-0.5">
+            <p className="text-xs text-vela-muted mt-0.5">
               Return per unit of risk (risk-free rate: {RISK_FREE}%). Higher is better.
               {!liveSharpe && estimatedSharpe != null && (
-                <span className="text-zinc-600"> · Your value estimated from volatility.</span>
+                <span className="text-vela-muted"> · Your value estimated from volatility.</span>
               )}
             </p>
           </div>
@@ -447,7 +447,7 @@ export default function ComparePage() {
                 </div>
               </div>
             ))}
-            <p className="text-[10px] text-zinc-600 mt-2">
+            <p className="text-[10px] text-vela-muted mt-2">
               Above 0.7 is generally considered good. Above 1.0 is excellent.
             </p>
           </div>
@@ -463,14 +463,14 @@ export default function ComparePage() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-zinc-800">
-              <th className="text-left text-xs text-zinc-500 font-medium py-2 pr-4">Benchmark</th>
-              <th className="text-right text-xs text-zinc-500 font-medium py-2 px-3">Annual Return</th>
-              <th className="text-right text-xs text-zinc-500 font-medium py-2 px-3">Volatility</th>
-              <th className="text-right text-xs text-zinc-500 font-medium py-2 px-3">Max Drawdown</th>
-              <th className="text-right text-xs text-zinc-500 font-medium py-2 px-3">Sharpe</th>
-              <th className="text-right text-xs text-zinc-500 font-medium py-2 px-3">Div Yield</th>
-              <th className="text-right text-xs text-zinc-500 font-medium py-2 px-3">Expense</th>
-              <th className="text-right text-xs text-zinc-500 font-medium py-2 px-3">{years}Y Value</th>
+              <th className="text-left text-xs text-vela-muted font-medium py-2 pr-4">Benchmark</th>
+              <th className="text-right text-xs text-vela-muted font-medium py-2 px-3">Annual Return</th>
+              <th className="text-right text-xs text-vela-muted font-medium py-2 px-3">Volatility</th>
+              <th className="text-right text-xs text-vela-muted font-medium py-2 px-3">Max Drawdown</th>
+              <th className="text-right text-xs text-vela-muted font-medium py-2 px-3">Sharpe</th>
+              <th className="text-right text-xs text-vela-muted font-medium py-2 px-3">Div Yield</th>
+              <th className="text-right text-xs text-vela-muted font-medium py-2 px-3">Expense</th>
+              <th className="text-right text-xs text-vela-muted font-medium py-2 px-3">{years}Y Value</th>
             </tr>
           </thead>
           <tbody>
@@ -480,8 +480,8 @@ export default function ComparePage() {
               <td className="text-right tabular-nums py-2.5 px-3 text-zinc-400">{risk?.annualized_volatility != null ? `${Number(risk.annualized_volatility).toFixed(1)}%` : " -"}</td>
               <td className="text-right tabular-nums py-2.5 px-3 text-loss">{risk?.max_drawdown != null ? `${Number(risk.max_drawdown).toFixed(1)}%` : " -"}</td>
               <td className="text-right tabular-nums py-2.5 px-3 text-zinc-400">{risk?.sharpe_ratio != null ? Number(risk.sharpe_ratio).toFixed(2) : " -"}</td>
-              <td className="text-right tabular-nums py-2.5 px-3 text-zinc-500"> -</td>
-              <td className="text-right tabular-nums py-2.5 px-3 text-zinc-500"> -</td>
+              <td className="text-right tabular-nums py-2.5 px-3 text-vela-muted"> -</td>
+              <td className="text-right tabular-nums py-2.5 px-3 text-vela-muted"> -</td>
               <td className="text-right tabular-nums py-2.5 px-3 text-zinc-200 font-medium">
                 {formatCurrency(investmentAmount * Math.pow(1 + userReturn / 100, years))}
               </td>
@@ -516,12 +516,12 @@ export default function ComparePage() {
       <div className="vela-card p-5">
         <h3 className="text-sm font-semibold text-zinc-300 mb-3">Understanding the Metrics</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
-          <div><span className="font-medium text-zinc-300">Annual Return</span><span className="text-zinc-500"> - Average yearly return (historical, not guaranteed).</span></div>
-          <div><span className="font-medium text-zinc-300">Volatility</span><span className="text-zinc-500"> - Standard deviation of returns. Higher = more price swings.</span></div>
-          <div><span className="font-medium text-zinc-300">Max Drawdown</span><span className="text-zinc-500"> - Worst peak-to-trough decline. How bad can it get?</span></div>
-          <div><span className="font-medium text-zinc-300">Sharpe Ratio</span><span className="text-zinc-500"> - Return per unit of risk. Higher is better (above 0.7 is good).</span></div>
-          <div><span className="font-medium text-zinc-300">Dividend Yield</span><span className="text-zinc-500"> - Annual dividends as % of price. Income component.</span></div>
-          <div><span className="font-medium text-zinc-300">Expense Ratio</span><span className="text-zinc-500"> - Annual fund management cost. Lower is better.</span></div>
+          <div><span className="font-medium text-zinc-300">Annual Return</span><span className="text-vela-muted"> - Average yearly return (historical, not guaranteed).</span></div>
+          <div><span className="font-medium text-zinc-300">Volatility</span><span className="text-vela-muted"> - Standard deviation of returns. Higher = more price swings.</span></div>
+          <div><span className="font-medium text-zinc-300">Max Drawdown</span><span className="text-vela-muted"> - Worst peak-to-trough decline. How bad can it get?</span></div>
+          <div><span className="font-medium text-zinc-300">Sharpe Ratio</span><span className="text-vela-muted"> - Return per unit of risk. Higher is better (above 0.7 is good).</span></div>
+          <div><span className="font-medium text-zinc-300">Dividend Yield</span><span className="text-vela-muted"> - Annual dividends as % of price. Income component.</span></div>
+          <div><span className="font-medium text-zinc-300">Expense Ratio</span><span className="text-vela-muted"> - Annual fund management cost. Lower is better.</span></div>
         </div>
       </div>
     </PageTransition>

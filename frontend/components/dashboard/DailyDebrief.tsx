@@ -207,7 +207,7 @@ export default function DailyDebrief() {
         </div>
 
         {/* Greeting */}
-        <p className="text-xs text-zinc-500 mb-4">{greeting}</p>
+        <p className="text-xs text-vela-muted mb-4">{greeting}</p>
 
         {/* Items */}
         {debriefItems.length > 0 && (
@@ -229,12 +229,12 @@ export default function DailyDebrief() {
                     {item.headline}
                   </p>
                   {prefs.debriefLength !== "brief" && (
-                    <p className="text-xs text-zinc-500 mt-0.5 leading-relaxed">
+                    <p className="text-xs text-vela-muted mt-0.5 leading-relaxed">
                       {item.detail}
                     </p>
                   )}
                   <div className="flex items-center gap-2 mt-1">
-                    <span className="text-[10px] text-zinc-600">{item.source}</span>
+                    <span className="text-[10px] text-vela-muted">{item.source}</span>
                     {item.tickers.length > 0 && (
                       <div className="flex gap-1">
                         {item.tickers.slice(0, 3).map((t) => (
@@ -243,7 +243,7 @@ export default function DailyDebrief() {
                             className={`text-[9px] font-medium px-1.5 py-0.5 rounded ${
                               holdingTickers.includes(t.toUpperCase())
                                 ? "bg-vela-teal/10 text-vela-teal"
-                                : "bg-zinc-800 text-zinc-500"
+                                : "bg-zinc-800 text-vela-muted"
                             }`}
                           >
                             {t}

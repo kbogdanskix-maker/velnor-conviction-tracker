@@ -122,7 +122,7 @@ export default function AddGoalModal({ open, onOpenChange, onSuccess, editGoal }
             <Dialog.Title className="text-base font-semibold text-zinc-100">
               {isEdit ? "Edit Goal" : step === "preset" ? "New Goal" : name || "New Goal"}
             </Dialog.Title>
-            <Dialog.Close className="text-zinc-500 hover:text-zinc-100 transition-colors">
+            <Dialog.Close className="text-vela-muted hover:text-zinc-100 transition-colors">
               <X className="w-4 h-4" />
             </Dialog.Close>
           </div>
@@ -144,7 +144,7 @@ export default function AddGoalModal({ open, onOpenChange, onSuccess, editGoal }
                     </div>
                     <div>
                       <p className="text-sm font-medium text-zinc-100">{preset.label}</p>
-                      <p className="text-xs text-zinc-500">{preset.description}</p>
+                      <p className="text-xs text-vela-muted">{preset.description}</p>
                     </div>
                   </button>
                 );
@@ -157,7 +157,7 @@ export default function AddGoalModal({ open, onOpenChange, onSuccess, editGoal }
                 <button
                   type="button"
                   onClick={() => setStep("preset")}
-                  className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
+                  className="text-xs text-vela-muted hover:text-zinc-300 transition-colors"
                 >
                   &larr; Back to presets
                 </button>
@@ -172,7 +172,7 @@ export default function AddGoalModal({ open, onOpenChange, onSuccess, editGoal }
                   onChange={(e) => setName(e.target.value)}
                   required
                   placeholder="e.g. House Down Payment"
-                  className="mt-1 w-full bg-zinc-800 border border-vela-border rounded-md px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-vela-teal transition-colors"
+                  className="mt-1 w-full bg-zinc-800 border border-vela-border rounded-md px-3 py-2 text-sm text-zinc-100 placeholder:text-vela-muted focus:outline-none focus:border-vela-teal transition-colors"
                 />
               </div>
 
@@ -187,7 +187,7 @@ export default function AddGoalModal({ open, onOpenChange, onSuccess, editGoal }
                   min="1"
                   step="any"
                   placeholder="50000"
-                  className="mt-1 w-full bg-zinc-800 border border-vela-border rounded-md px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-vela-teal transition-colors tabular"
+                  className="mt-1 w-full bg-zinc-800 border border-vela-border rounded-md px-3 py-2 text-sm text-zinc-100 placeholder:text-vela-muted focus:outline-none focus:border-vela-teal transition-colors tabular"
                 />
               </div>
 
@@ -202,7 +202,7 @@ export default function AddGoalModal({ open, onOpenChange, onSuccess, editGoal }
                     min="0"
                     step="any"
                     placeholder="0"
-                    className="mt-1 w-full bg-zinc-800 border border-vela-border rounded-md px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-vela-teal transition-colors tabular"
+                    className="mt-1 w-full bg-zinc-800 border border-vela-border rounded-md px-3 py-2 text-sm text-zinc-100 placeholder:text-vela-muted focus:outline-none focus:border-vela-teal transition-colors tabular"
                   />
                 </div>
                 <div>
@@ -214,7 +214,7 @@ export default function AddGoalModal({ open, onOpenChange, onSuccess, editGoal }
                     min="0"
                     step="any"
                     placeholder="500"
-                    className="mt-1 w-full bg-zinc-800 border border-vela-border rounded-md px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-vela-teal transition-colors tabular"
+                    className="mt-1 w-full bg-zinc-800 border border-vela-border rounded-md px-3 py-2 text-sm text-zinc-100 placeholder:text-vela-muted focus:outline-none focus:border-vela-teal transition-colors tabular"
                   />
                 </div>
               </div>
@@ -224,7 +224,7 @@ export default function AddGoalModal({ open, onOpenChange, onSuccess, editGoal }
                 <div>
                   <label className="text-sm text-zinc-400 font-medium">
                     Expected Return
-                    <span className="text-zinc-600 ml-1">%/yr</span>
+                    <span className="text-vela-muted ml-1">%/yr</span>
                   </label>
                   <input
                     type="number"
@@ -233,7 +233,7 @@ export default function AddGoalModal({ open, onOpenChange, onSuccess, editGoal }
                     min="0"
                     max="30"
                     step="0.5"
-                    className="mt-1 w-full bg-zinc-800 border border-vela-border rounded-md px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-vela-teal transition-colors tabular"
+                    className="mt-1 w-full bg-zinc-800 border border-vela-border rounded-md px-3 py-2 text-sm text-zinc-100 placeholder:text-vela-muted focus:outline-none focus:border-vela-teal transition-colors tabular"
                   />
                 </div>
                 <div>
@@ -256,7 +256,7 @@ export default function AddGoalModal({ open, onOpenChange, onSuccess, editGoal }
                   onChange={(e) => setNotes(e.target.value)}
                   rows={2}
                   placeholder="Optional notes..."
-                  className="mt-1 w-full bg-zinc-800 border border-vela-border rounded-md px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-vela-teal transition-colors resize-none"
+                  className="mt-1 w-full bg-zinc-800 border border-vela-border rounded-md px-3 py-2 text-sm text-zinc-100 placeholder:text-vela-muted focus:outline-none focus:border-vela-teal transition-colors resize-none"
                 />
               </div>
 
@@ -273,7 +273,7 @@ export default function AddGoalModal({ open, onOpenChange, onSuccess, editGoal }
               </button>
 
               {/* Disclaimer */}
-              <p className="text-[11px] text-zinc-600 text-center leading-relaxed">
+              <p className="text-[11px] text-vela-muted text-center leading-relaxed">
                 This is not financial advice. Projections are hypothetical and do not guarantee future results.
               </p>
             </form>

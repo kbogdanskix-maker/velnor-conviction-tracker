@@ -106,7 +106,7 @@ export default function NetWorthPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-display font-bold text-zinc-100">Net Worth</h1>
-          <p className="text-zinc-500 text-sm mt-0.5">
+          <p className="text-vela-muted text-sm mt-0.5">
             Your complete financial picture
           </p>
         </div>
@@ -152,7 +152,7 @@ export default function NetWorthPage() {
               px-4 py-2.5 text-xs font-mono uppercase tracking-widest transition-colors relative
               ${activeTab === tab
                 ? "text-vela-teal after:absolute after:bottom-0 after:left-0 after:right-0 after:h-px after:bg-vela-teal"
-                : "text-zinc-500 hover:text-zinc-300"
+                : "text-vela-muted hover:text-zinc-300"
               }
             `}
           >
@@ -198,8 +198,8 @@ export default function NetWorthPage() {
             <h2 className="section-heading">Assets</h2>
             {userAssets.length === 0 ? (
               <div className="vela-card text-center py-8">
-                <PiggyBank className="w-6 h-6 text-zinc-600 mx-auto mb-2" />
-                <p className="text-sm text-zinc-500">No assets added yet</p>
+                <PiggyBank className="w-6 h-6 text-vela-subtle mx-auto mb-2" />
+                <p className="text-sm text-vela-muted">No assets added yet</p>
                 <button
                   onClick={() => { setEditItem(null); setModalOpen(true); }}
                   className="text-xs text-vela-teal mt-2 hover:text-vela-teal-dim transition-colors"
@@ -226,8 +226,8 @@ export default function NetWorthPage() {
             <h2 className="section-heading">Liabilities</h2>
             {userLiabilities.length === 0 ? (
               <div className="vela-card text-center py-8">
-                <CreditCard className="w-6 h-6 text-zinc-600 mx-auto mb-2" />
-                <p className="text-sm text-zinc-500">No liabilities - nice!</p>
+                <CreditCard className="w-6 h-6 text-vela-subtle mx-auto mb-2" />
+                <p className="text-sm text-vela-muted">No liabilities - nice!</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -295,7 +295,7 @@ function SummaryCard({
 }) {
   return (
     <div className="vela-card">
-      <p className="text-xs text-zinc-500 mb-1">{label}</p>
+      <p className="text-xs text-vela-muted mb-1">{label}</p>
       <AnimatedNumber
         value={value}
         format={(n) => formatCurrency(n)}
@@ -305,7 +305,7 @@ function SummaryCard({
             : negative ? "text-loss" : "text-zinc-100"
         }`}
       />
-      {sub && <p className="text-xs text-zinc-500 mt-0.5">{sub}</p>}
+      {sub && <p className="text-xs text-vela-muted mt-0.5">{sub}</p>}
     </div>
   );
 }
@@ -341,7 +341,7 @@ function AccountCard({
           </div>
           <div>
             <p className="text-sm font-medium text-zinc-100 truncate max-w-[160px] sm:max-w-none">{item.name}</p>
-            <p className="text-xs text-zinc-500">{categoryLabel(item.category)}</p>
+            <p className="text-xs text-vela-muted">{categoryLabel(item.category)}</p>
           </div>
         </div>
 
@@ -349,7 +349,7 @@ function AccountCard({
         <DropdownMenu.Root>
           <DropdownMenu.Trigger asChild>
             <button className="p-1 rounded hover:bg-zinc-800 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-              <MoreHorizontal className="w-4 h-4 text-zinc-500" />
+              <MoreHorizontal className="w-4 h-4 text-vela-subtle" />
             </button>
           </DropdownMenu.Trigger>
           <DropdownMenu.Portal>
@@ -385,10 +385,10 @@ function AccountCard({
       </p>
 
       {/* Meta row */}
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-xs text-zinc-500">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-xs text-vela-muted">
         {item.institution && <span className="truncate max-w-[140px]">{item.institution}</span>}
         {item.interest_rate != null && (
-          <span className={item.is_liability ? "text-loss/80" : "text-gain/80"}>
+          <span className={item.is_liability ? "text-loss" : "text-gain"}>
             {Number(item.interest_rate).toFixed(2)}% {item.is_liability ? "APR" : "APY"}
           </span>
         )}
@@ -495,7 +495,7 @@ function AddAccountModal({
             <Dialog.Title className="text-lg font-semibold text-zinc-100">
               {isEdit ? "Edit account" : "Add account"}
             </Dialog.Title>
-            <Dialog.Close className="text-zinc-500 hover:text-zinc-300">
+            <Dialog.Close className="text-vela-muted hover:text-zinc-300">
               <X className="w-5 h-5" />
             </Dialog.Close>
           </div>
@@ -697,7 +697,7 @@ function ConfirmDeleteDialog({
             <span className="font-medium text-zinc-200">{item?.name}</span>{" "}
             - {formatCurrency(item?.value)}
           </p>
-          <p className="text-xs text-zinc-500 mb-5">
+          <p className="text-xs text-vela-muted mb-5">
             This cannot be undone.
           </p>
           <div className="flex gap-3">

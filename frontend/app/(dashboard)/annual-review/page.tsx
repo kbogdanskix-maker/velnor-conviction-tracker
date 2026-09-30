@@ -138,7 +138,7 @@ export default function AnnualReviewPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <FloatingCard delay={0}>
             <div className="p-5 text-center">
-              <Calendar className="w-5 h-5 mx-auto text-zinc-500 mb-2" />
+              <Calendar className="w-5 h-5 mx-auto text-vela-subtle mb-2" />
               <p className="text-xs text-zinc-400 font-medium mb-1">NET WORTH</p>
               <p className="text-xl font-display font-bold text-zinc-100 tabular-nums">{formatCurrency(netWorth)}</p>
             </div>
@@ -207,7 +207,7 @@ export default function AnnualReviewPage() {
               <FloatingCard delay={0.5}>
                 <div className="p-5">
                   <h2 className="font-display font-semibold text-zinc-100 mb-1">Return Distribution</h2>
-                  <p className="text-xs text-zinc-500 mb-4">
+                  <p className="text-xs text-vela-muted mb-4">
                     {review.positionCount} positions · {review.winRate.toFixed(0)}% win rate
                   </p>
                   <div className="h-48">
@@ -245,19 +245,19 @@ export default function AnnualReviewPage() {
                     <div className="space-y-3">
                       {review.winners.map((h, i) => (
                         <div key={h.ticker} className="flex items-center gap-3">
-                          <span className="text-xs text-zinc-600 w-5 font-mono">{i + 1}.</span>
+                          <span className="text-xs text-vela-muted w-5 font-mono">{i + 1}.</span>
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-zinc-100">{h.ticker}</p>
-                            <p className="text-xs text-zinc-500 truncate">{h.name}</p>
+                            <p className="text-xs text-vela-muted truncate">{h.name}</p>
                           </div>
                           <div className="text-right shrink-0">
                             <p className="text-sm font-bold text-emerald-400 tabular-nums">{formatPercent((h.unrealized_pnl_pct ?? 0))}</p>
-                            <p className="text-xs text-zinc-500 tabular-nums">{formatCurrency((h.unrealized_pnl ?? 0))}</p>
+                            <p className="text-xs text-vela-muted tabular-nums">{formatCurrency((h.unrealized_pnl ?? 0))}</p>
                           </div>
                         </div>
                       ))}
                       {review.winners.length === 0 && (
-                        <p className="text-sm text-zinc-500 text-center py-4">No winning positions yet</p>
+                        <p className="text-sm text-vela-muted text-center py-4">No winning positions yet</p>
                       )}
                     </div>
                   </div>
@@ -273,19 +273,19 @@ export default function AnnualReviewPage() {
                     <div className="space-y-3">
                       {review.losers.map((h, i) => (
                         <div key={h.ticker} className="flex items-center gap-3">
-                          <span className="text-xs text-zinc-600 w-5 font-mono">{i + 1}.</span>
+                          <span className="text-xs text-vela-muted w-5 font-mono">{i + 1}.</span>
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-zinc-100">{h.ticker}</p>
-                            <p className="text-xs text-zinc-500 truncate">{h.name}</p>
+                            <p className="text-xs text-vela-muted truncate">{h.name}</p>
                           </div>
                           <div className="text-right shrink-0">
                             <p className="text-sm font-bold text-rose-400 tabular-nums">{formatPercent((h.unrealized_pnl_pct ?? 0))}</p>
-                            <p className="text-xs text-zinc-500 tabular-nums">{formatCurrency((h.unrealized_pnl ?? 0))}</p>
+                            <p className="text-xs text-vela-muted tabular-nums">{formatCurrency((h.unrealized_pnl ?? 0))}</p>
                           </div>
                         </div>
                       ))}
                       {review.losers.length === 0 && (
-                        <p className="text-sm text-zinc-500 text-center py-4">No losing positions - nice!</p>
+                        <p className="text-sm text-vela-muted text-center py-4">No losing positions - nice!</p>
                       )}
                     </div>
                   </div>
@@ -310,7 +310,7 @@ export default function AnnualReviewPage() {
                             />
                           </div>
                           <span className="text-xs text-zinc-400 tabular-nums w-12 text-right">{s.pct.toFixed(1)}%</span>
-                          <span className="text-xs text-zinc-500 tabular-nums w-20 text-right">{formatCurrency(s.value)}</span>
+                          <span className="text-xs text-vela-muted tabular-nums w-20 text-right">{formatCurrency(s.value)}</span>
                         </div>
                       ))}
                     </div>
@@ -326,21 +326,21 @@ export default function AnnualReviewPage() {
                   <h2 className="font-display font-semibold text-zinc-100 mb-4">Financial Summary</h2>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="p-3 rounded-lg bg-zinc-800/30">
-                      <p className="text-xs text-zinc-500 mb-1">Portfolio Value</p>
+                      <p className="text-xs text-vela-muted mb-1">Portfolio Value</p>
                       <p className="text-lg font-bold text-zinc-100 tabular-nums">{formatCurrency(review.totalValue)}</p>
                     </div>
                     <div className="p-3 rounded-lg bg-zinc-800/30">
-                      <p className="text-xs text-zinc-500 mb-1">Total P&L</p>
+                      <p className="text-xs text-vela-muted mb-1">Total P&L</p>
                       <p className={`text-lg font-bold tabular-nums ${review.totalPnl >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
                         {formatCurrency(review.totalPnl)}
                       </p>
                     </div>
                     <div className="p-3 rounded-lg bg-zinc-800/30">
-                      <p className="text-xs text-zinc-500 mb-1">Annual Income</p>
+                      <p className="text-xs text-vela-muted mb-1">Annual Income</p>
                       <p className="text-lg font-bold text-emerald-400 tabular-nums">{formatCurrency(totalIncome)}</p>
                     </div>
                     <div className="p-3 rounded-lg bg-zinc-800/30">
-                      <p className="text-xs text-zinc-500 mb-1">Annual Expenses</p>
+                      <p className="text-xs text-vela-muted mb-1">Annual Expenses</p>
                       <p className="text-lg font-bold text-rose-400 tabular-nums">{formatCurrency(totalExpenses)}</p>
                     </div>
                   </div>

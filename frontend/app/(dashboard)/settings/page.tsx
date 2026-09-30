@@ -46,7 +46,7 @@ export default function SettingsPage() {
           <SettingsIcon className="w-6 h-6 text-vela-teal" />
           Settings
         </h1>
-        <p className="text-zinc-500 text-sm mt-0.5">Manage your account and preferences</p>
+        <p className="text-vela-muted text-sm mt-0.5">Manage your account and preferences</p>
       </div>
 
       {/* Profile */}
@@ -58,7 +58,7 @@ export default function SettingsPage() {
 
         <form onSubmit={handleSaveName} className="space-y-4">
           <div>
-            <label className="text-xs text-zinc-500 mb-1 block">Email</label>
+            <label className="text-xs text-vela-muted mb-1 block">Email</label>
             <input
               type="email"
               value={user?.email ?? ""}
@@ -67,7 +67,7 @@ export default function SettingsPage() {
             />
           </div>
           <div>
-            <label className="text-xs text-zinc-500 mb-1 block">Display Name</label>
+            <label className="text-xs text-vela-muted mb-1 block">Display Name</label>
             <input
               type="text"
               value={displayName}
@@ -90,7 +90,7 @@ export default function SettingsPage() {
         </div>
         <div className="space-y-4">
           <div>
-            <label className="text-xs text-zinc-500 mb-1 block">Base Currency</label>
+            <label className="text-xs text-vela-muted mb-1 block">Base Currency</label>
             <select className="input-field w-full" defaultValue="USD">
               <option value="USD">USD - US Dollar</option>
               <option value="EUR">EUR - Euro</option>
@@ -107,7 +107,7 @@ export default function SettingsPage() {
           <Sparkles className="w-4 h-4 text-zinc-400" />
           <h2 className="text-sm font-medium text-zinc-300">Animation &amp; Effects</h2>
         </div>
-        <p className="text-xs text-zinc-500 mb-4">
+        <p className="text-xs text-vela-muted mb-4">
           Tone down or disable visual effects. Changes apply instantly.
         </p>
         <div className="space-y-3">
@@ -126,7 +126,7 @@ export default function SettingsPage() {
               />
               <div>
                 <p className="text-sm text-zinc-200 group-hover:text-zinc-100 transition-colors">{item.label}</p>
-                <p className="text-xs text-zinc-500">{item.desc}</p>
+                <p className="text-xs text-vela-muted">{item.desc}</p>
               </div>
             </label>
           ))}
@@ -139,13 +139,13 @@ export default function SettingsPage() {
           <MessageSquare className="w-4 h-4 text-zinc-400" />
           <h2 className="text-sm font-medium text-zinc-300">AI Style &amp; Debrief</h2>
         </div>
-        <p className="text-xs text-zinc-500 mb-4">
+        <p className="text-xs text-vela-muted mb-4">
           Customize how Velnor communicates with you and what appears in your daily debrief.
         </p>
 
         {/* Tone selector */}
         <div className="mb-5">
-          <label className="text-xs text-zinc-500 mb-2 block">Communication Tone</label>
+          <label className="text-xs text-vela-muted mb-2 block">Communication Tone</label>
           <div className="grid grid-cols-2 gap-2">
             {TONE_OPTIONS.map((opt) => (
               <div
@@ -166,8 +166,8 @@ export default function SettingsPage() {
                 <p className={`text-sm font-medium ${aiPrefs.tone === opt.value ? "text-vela-teal" : "text-zinc-300"}`}>
                   {opt.label}
                 </p>
-                <p className="text-[11px] text-zinc-500 mt-0.5">{opt.desc}</p>
-                <p className="text-[10px] text-zinc-600 mt-1.5 italic leading-relaxed">&ldquo;{opt.example}&rdquo;</p>
+                <p className="text-[11px] text-vela-muted mt-0.5">{opt.desc}</p>
+                <p className="text-[10px] text-vela-muted mt-1.5 italic leading-relaxed">&ldquo;{opt.example}&rdquo;</p>
               </div>
             ))}
           </div>
@@ -184,14 +184,14 @@ export default function SettingsPage() {
             />
             <div>
               <p className="text-sm text-zinc-200 group-hover:text-zinc-100 transition-colors">Show daily debrief on dashboard</p>
-              <p className="text-xs text-zinc-500">A curated summary of market news and portfolio activity</p>
+              <p className="text-xs text-vela-muted">A curated summary of market news and portfolio activity</p>
             </div>
           </label>
 
           {aiPrefs.showDebrief && (
             <>
               <div className="pl-7">
-                <label className="text-xs text-zinc-500 mb-1.5 block">Debrief Length</label>
+                <label className="text-xs text-vela-muted mb-1.5 block">Debrief Length</label>
                 <div className="flex gap-2">
                   {(["brief", "standard", "detailed"] as DebriefLength[]).map((len) => (
                     <div
@@ -221,7 +221,7 @@ export default function SettingsPage() {
                 />
                 <div>
                   <p className="text-sm text-zinc-200 group-hover:text-zinc-100 transition-colors">Include macro &amp; political news</p>
-                  <p className="text-xs text-zinc-500">Fed decisions, geopolitical events, economic data</p>
+                  <p className="text-xs text-vela-muted">Fed decisions, geopolitical events, economic data</p>
                 </div>
               </label>
 
@@ -234,7 +234,7 @@ export default function SettingsPage() {
                 />
                 <div>
                   <p className="text-sm text-zinc-200 group-hover:text-zinc-100 transition-colors">Include portfolio-specific news</p>
-                  <p className="text-xs text-zinc-500">Earnings, analyst upgrades, SEC filings for your holdings</p>
+                  <p className="text-xs text-vela-muted">Earnings, analyst upgrades, SEC filings for your holdings</p>
                 </div>
               </label>
             </>
@@ -249,7 +249,7 @@ export default function SettingsPage() {
           <h2 className="text-sm font-medium text-zinc-300">Admin Mode</h2>
           {adminMode && <span className="text-[10px] font-medium bg-amber-500/15 text-amber-400 px-2 py-0.5 rounded">ACTIVE</span>}
         </div>
-        <p className="text-xs text-zinc-500 mb-4">
+        <p className="text-xs text-vela-muted mb-4">
           Enable admin mode to unlock all tiered features for testing and preview.
           Tier badges will be hidden and all V+ / N+ features become accessible.
         </p>
@@ -264,7 +264,7 @@ export default function SettingsPage() {
             <p className="text-sm text-zinc-200 group-hover:text-zinc-100 transition-colors">
               Enable admin mode
             </p>
-            <p className="text-xs text-zinc-500">Access all features regardless of tier</p>
+            <p className="text-xs text-vela-muted">Access all features regardless of tier</p>
           </div>
         </label>
       </div>
@@ -279,14 +279,14 @@ export default function SettingsPage() {
           <div className="flex items-center justify-between py-2 border-b border-vela-border">
             <div>
               <p className="text-sm text-zinc-200">Plan</p>
-              <p className="text-xs text-zinc-500">Free tier - all features included during beta</p>
+              <p className="text-xs text-vela-muted">Free tier - all features included during beta</p>
             </div>
             <span className="text-[10px] font-medium bg-vela-teal/15 text-vela-teal px-2 py-0.5 rounded">Beta</span>
           </div>
           <div className="flex items-center justify-between py-2">
             <div>
               <p className="text-sm text-zinc-200">Member since</p>
-              <p className="text-xs text-zinc-500">{user?.created_at ? new Date(user.created_at).toLocaleDateString("en-US", { month: "long", year: "numeric" }) : " -"}</p>
+              <p className="text-xs text-vela-muted">{user?.created_at ? new Date(user.created_at).toLocaleDateString("en-US", { month: "long", year: "numeric" }) : " -"}</p>
             </div>
           </div>
         </div>

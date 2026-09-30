@@ -170,12 +170,12 @@ function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: 
     p10: "10th percentile (pessimistic)",
   };
   return (
-    <div className="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-xs shadow-xl">
+    <div className="bg-vela-card border border-vela-border rounded-md px-3 py-2 text-xs shadow-xl">
       <p className="text-zinc-400 mb-1.5">Year {label}</p>
       {payload
         .filter((p) => ["p10", "p25", "p50", "p75", "p90"].includes(p.dataKey))
         .map((p) => (
-          <p key={p.dataKey} className={p.dataKey === "p50" ? "text-teal-400 font-medium" : "text-zinc-500"}>
+          <p key={p.dataKey} className={p.dataKey === "p50" ? "text-teal-400 font-medium" : "text-vela-muted"}>
             {names[p.dataKey] ?? p.dataKey}: {fmt(p.value, true)}
           </p>
         ))}
@@ -188,10 +188,10 @@ function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: 
 function EmptyMonteCarlo() {
   return (
     <div className="vela-card text-center py-16 space-y-4">
-      <Dice5 className="w-12 h-12 text-zinc-700 mx-auto" />
+      <Dice5 className="w-12 h-12 text-vela-subtle mx-auto" />
       <div>
         <h2 className="text-lg font-medium text-zinc-300">Set up your financial data first</h2>
-        <p className="text-sm text-zinc-500 mt-1 max-w-md mx-auto">
+        <p className="text-sm text-vela-muted mt-1 max-w-md mx-auto">
           The Monte Carlo simulator uses your net worth and cash flow to model thousands of possible futures.
         </p>
       </div>
@@ -296,7 +296,7 @@ export default function MonteCarloPage() {
             <Dice5 className="w-6 h-6 text-vela-teal" />
             Monte Carlo Simulator
           </h1>
-          <p className="text-sm text-zinc-500 mt-0.5">
+          <p className="text-sm text-vela-muted mt-0.5">
             {simCount.toLocaleString()} simulated futures for your portfolio
           </p>
         </div>
@@ -327,7 +327,7 @@ export default function MonteCarloPage() {
                     className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                       phase === p
                         ? "bg-zinc-700 text-zinc-100"
-                        : "text-zinc-500 hover:text-zinc-300"
+                        : "text-vela-muted hover:text-zinc-300"
                     }`}
                   >
                     {p === "accumulation" ? "Growing Wealth" : "Spending Down"}
@@ -342,25 +342,25 @@ export default function MonteCarloPage() {
                 )}
                 <div className="flex items-center gap-6 text-center sm:text-left">
                   <div>
-                    <p className="text-xs text-zinc-500">Median Outcome</p>
+                    <p className="text-xs text-vela-muted">Median Outcome</p>
                     <p className="text-lg font-display font-bold text-vela-teal tabular-nums">
                       {fmt(result.medianFinal, true)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-zinc-500">Pessimistic (10th)</p>
+                    <p className="text-xs text-vela-muted">Pessimistic (10th)</p>
                     <p className="text-lg font-display font-bold text-zinc-400 tabular-nums">
                       {fmt(result.p10Final, true)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-zinc-500">Optimistic (90th)</p>
+                    <p className="text-xs text-vela-muted">Optimistic (90th)</p>
                     <p className="text-lg font-display font-bold text-zinc-200 tabular-nums">
                       {fmt(result.p90Final, true)}
                     </p>
                   </div>
                 </div>
-                <p className="text-[10px] text-zinc-600 sm:ml-auto">in today&apos;s dollars</p>
+                <p className="text-[10px] text-vela-muted sm:ml-auto">in today&apos;s dollars</p>
               </div>
             </div>
           </FloatingCard>
@@ -370,7 +370,7 @@ export default function MonteCarloPage() {
             <div className="vela-card">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="section-heading !mb-0">Probability Fan</h2>
-                <span className="text-[10px] text-zinc-600">in today&apos;s purchasing power</span>
+                <span className="text-[10px] text-vela-muted">in today&apos;s purchasing power</span>
               </div>
               <div className="h-[320px] sm:h-[400px]">
                 <ResponsiveContainer width="100%" height="100%">
@@ -424,7 +424,7 @@ export default function MonteCarloPage() {
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
-              <div className="flex flex-wrap items-center gap-4 mt-3 text-xs text-zinc-500 justify-center">
+              <div className="flex flex-wrap items-center gap-4 mt-3 text-xs text-vela-muted justify-center">
                 <span className="flex items-center gap-1.5">
                   <span className="w-3 h-0.5 bg-teal-500 rounded" /> Median
                 </span>
@@ -442,7 +442,7 @@ export default function MonteCarloPage() {
           <RevealOnScroll delay={0.05}>
             <div className="vela-card">
               <div className="flex items-center gap-2 mb-4">
-                <Info className="w-4 h-4 text-zinc-500" />
+                <Info className="w-4 h-4 text-vela-subtle" />
                 <h2 className="section-heading !mb-0">Simulation Parameters</h2>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -469,8 +469,8 @@ export default function MonteCarloPage() {
                           <span className={`text-xs font-semibold ${isActive ? meta.color : "text-zinc-300"}`}>
                             {meta.label}
                           </span>
-                          <span className="text-[10px] text-zinc-500 mt-0.5">{meta.desc}</span>
-                          <span className="text-[10px] text-zinc-600 mt-1">{vol}% vol.</span>
+                          <span className="text-[10px] text-vela-muted mt-0.5">{meta.desc}</span>
+                          <span className="text-[10px] text-vela-muted mt-1">{vol}% vol.</span>
                         </button>
                       );
                     })}
@@ -494,7 +494,7 @@ export default function MonteCarloPage() {
                         {annualContribOverride !== null && (
                           <button
                             onClick={() => setAnnualContribOverride(null)}
-                            className="text-[10px] text-zinc-500 hover:text-zinc-300 underline"
+                            className="text-[10px] text-vela-muted hover:text-zinc-300 underline"
                           >
                             reset
                           </button>
@@ -510,7 +510,7 @@ export default function MonteCarloPage() {
                       onChange={(e) => setAnnualContribOverride(Number(e.target.value))}
                       className="w-full accent-vela-teal h-1.5"
                     />
-                    <p className="text-[10px] text-zinc-600 mt-1">
+                    <p className="text-[10px] text-vela-muted mt-1">
                       {fmt(effectiveAnnualContrib / 12)}/mo &mdash; adjust if your actual investment contributions differ from net savings
                     </p>
                   </div>
@@ -542,7 +542,7 @@ export default function MonteCarloPage() {
                       onChange={(e) => s.set(Number(e.target.value))}
                       className="w-full accent-vela-teal h-1.5"
                     />
-                    <p className="text-[10px] text-zinc-600 mt-1">{s.desc}</p>
+                    <p className="text-[10px] text-vela-muted mt-1">{s.desc}</p>
                   </div>
                 ))}
               </div>
@@ -618,13 +618,13 @@ export default function MonteCarloPage() {
               ].map((link) => (
                 <Link key={link.href} href={link.href} className="vela-card group hover:border-zinc-600 transition-colors flex items-center gap-3">
                   <div className="p-2 rounded-lg bg-zinc-800 group-hover:bg-vela-teal/10 transition-colors">
-                    <link.icon className="w-4 h-4 text-zinc-500 group-hover:text-vela-teal transition-colors" />
+                    <link.icon className="w-4 h-4 text-vela-subtle group-hover:text-vela-teal transition-colors" />
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-medium text-zinc-200">{link.label}</p>
-                    <p className="text-xs text-zinc-500">{link.desc}</p>
+                    <p className="text-xs text-vela-muted">{link.desc}</p>
                   </div>
-                  <ArrowRight className="w-4 h-4 text-zinc-700 group-hover:text-zinc-400 transition-colors" />
+                  <ArrowRight className="w-4 h-4 text-vela-subtle group-hover:text-zinc-400 transition-colors" />
                 </Link>
               ))}
             </div>

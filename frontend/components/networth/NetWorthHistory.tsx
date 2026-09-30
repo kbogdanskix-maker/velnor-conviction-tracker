@@ -73,7 +73,7 @@ const INTERVAL_DAYS: Record<AutoInterval, number> = {
 function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number; dataKey: string }>; label?: string }) {
   if (!active || !payload?.length || !label) return null;
   return (
-    <div className="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-xs shadow-xl">
+    <div className="bg-vela-card border border-vela-border rounded-md px-3 py-2 text-xs shadow-xl">
       <p className="text-zinc-400 mb-1">{fullDate(label)}</p>
       {payload.map((p) => {
         const names: Record<string, string> = { netWorth: "Net Worth", assets: "Assets", liabilities: "Liabilities" };
@@ -129,14 +129,14 @@ function AddPastEntryModal({ open, onClose, onAdd, existingDates }: {
         <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-sm bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-xl">
           <div className="flex items-center justify-between mb-4">
             <Dialog.Title className="text-base font-semibold text-zinc-100">Add Past Snapshot</Dialog.Title>
-            <button onClick={onClose} className="text-zinc-500 hover:text-zinc-300 transition-colors">
+            <button onClick={onClose} className="text-vela-muted hover:text-zinc-300 transition-colors">
               <X className="w-4 h-4" />
             </button>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="text-xs text-zinc-500 mb-1 block">Date</label>
+              <label className="text-xs text-vela-muted mb-1 block">Date</label>
               <input
                 type="date"
                 value={date}
@@ -151,7 +151,7 @@ function AddPastEntryModal({ open, onClose, onAdd, existingDates }: {
             </div>
 
             <div>
-              <label className="text-xs text-zinc-500 mb-1 block">Total Assets</label>
+              <label className="text-xs text-vela-muted mb-1 block">Total Assets</label>
               <input
                 type="number"
                 value={assets}
@@ -165,7 +165,7 @@ function AddPastEntryModal({ open, onClose, onAdd, existingDates }: {
             </div>
 
             <div>
-              <label className="text-xs text-zinc-500 mb-1 block">Total Liabilities</label>
+              <label className="text-xs text-vela-muted mb-1 block">Total Liabilities</label>
               <input
                 type="number"
                 value={liabilities}
@@ -179,7 +179,7 @@ function AddPastEntryModal({ open, onClose, onAdd, existingDates }: {
 
             {(Number(assets) > 0) && (
               <div className="flex items-center justify-between px-3 py-2 bg-zinc-800/60 rounded-lg">
-                <span className="text-xs text-zinc-500">Net Worth</span>
+                <span className="text-xs text-vela-muted">Net Worth</span>
                 <span className={`text-sm font-bold tabular-nums ${netWorth >= 0 ? "text-vela-teal" : "text-rose-400"}`}>
                   {formatCurrency(netWorth)}
                 </span>
@@ -187,7 +187,7 @@ function AddPastEntryModal({ open, onClose, onAdd, existingDates }: {
             )}
 
             <div>
-              <label className="text-xs text-zinc-500 mb-1 block">Note (optional)</label>
+              <label className="text-xs text-vela-muted mb-1 block">Note (optional)</label>
               <input
                 type="text"
                 value={note}
@@ -220,8 +220,8 @@ function IntervalPicker({ value, onChange }: { value: AutoInterval; onChange: (v
   ];
   return (
     <div className="flex items-center gap-2">
-      <Settings2 className="w-3.5 h-3.5 text-zinc-500" />
-      <span className="text-xs text-zinc-500">Auto-snapshot:</span>
+      <Settings2 className="w-3.5 h-3.5 text-vela-subtle" />
+      <span className="text-xs text-vela-muted">Auto-snapshot:</span>
       <div className="flex rounded-md overflow-hidden border border-zinc-700">
         {options.map((o) => (
           <button
@@ -230,7 +230,7 @@ function IntervalPicker({ value, onChange }: { value: AutoInterval; onChange: (v
             className={`px-2.5 py-1 text-xs transition-colors ${
               value === o.value
                 ? "bg-vela-teal/20 text-vela-teal"
-                : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800"
+                : "text-vela-muted hover:text-zinc-300 hover:bg-zinc-800"
             }`}
           >
             {o.label}
@@ -435,10 +435,10 @@ export default function NetWorthHistory() {
       {/* Empty state */}
       {sorted.length === 0 ? (
         <div className="vela-card text-center py-16 space-y-4">
-          <Camera className="w-12 h-12 text-zinc-700 mx-auto" />
+          <Camera className="w-12 h-12 text-vela-subtle mx-auto" />
           <div>
             <h2 className="text-lg font-medium text-zinc-300">No snapshots yet</h2>
-            <p className="text-sm text-zinc-500 mt-1 max-w-md mx-auto">
+            <p className="text-sm text-vela-muted mt-1 max-w-md mx-auto">
               Take periodic snapshots of your net worth to see how it changes over time. Or add past entries to bootstrap your history.
               {!summary && " Set up your net worth first."}
             </p>
@@ -465,34 +465,34 @@ export default function NetWorthHistory() {
             <FloatingCard glowColor="rgba(26, 168, 187, 0.10)" tilt={false}>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
                 <div>
-                  <p className="text-xs text-zinc-500">Total Change</p>
+                  <p className="text-xs text-vela-muted">Total Change</p>
                   <p className={`text-xl font-display font-bold tabular-nums ${stats.change >= 0 ? "text-gain" : "text-loss"}`}>
                     {formatCompact(stats.change)}
                   </p>
-                  <p className={`text-xs tabular-nums ${stats.changePct >= 0 ? "text-gain/70" : "text-loss/70"}`}>
+                  <p className={`text-xs tabular-nums ${stats.changePct >= 0 ? "text-gain" : "text-loss"}`}>
                     {stats.changePct >= 0 ? "+" : ""}{stats.changePct.toFixed(1)}%
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-zinc-500">Avg Monthly Growth</p>
+                  <p className="text-xs text-vela-muted">Avg Monthly Growth</p>
                   <p className={`text-xl font-display font-bold tabular-nums ${stats.monthlyGrowth >= 0 ? "text-gain" : "text-loss"}`}>
                     {formatCompact(stats.monthlyGrowth)}
                   </p>
-                  <p className="text-xs text-zinc-600">per month</p>
+                  <p className="text-xs text-vela-muted">per month</p>
                 </div>
                 <div>
-                  <p className="text-xs text-zinc-500">Peak Net Worth</p>
+                  <p className="text-xs text-vela-muted">Peak Net Worth</p>
                   <p className="text-xl font-display font-bold tabular-nums text-zinc-200">
                     {formatCompact(stats.max)}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-zinc-500">Snapshots</p>
+                  <p className="text-xs text-vela-muted">Snapshots</p>
                   <p className="text-xl font-display font-bold tabular-nums text-zinc-200">
                     {stats.totalSnapshots}
                   </p>
                   {stats.recentChange != null && (
-                    <p className={`text-xs tabular-nums ${stats.recentChange >= 0 ? "text-gain/70" : "text-loss/70"}`}>
+                    <p className={`text-xs tabular-nums ${stats.recentChange >= 0 ? "text-gain" : "text-loss"}`}>
                       Last 3mo: {stats.recentChange >= 0 ? "+" : ""}{formatCompact(stats.recentChange)}
                     </p>
                   )}
@@ -538,7 +538,7 @@ export default function NetWorthHistory() {
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
-                <div className="flex items-center gap-6 mt-3 text-xs text-zinc-500 justify-center">
+                <div className="flex items-center gap-6 mt-3 text-xs text-vela-muted justify-center">
                   <span className="flex items-center gap-1.5"><span className="w-3 h-0.5 bg-teal-500 rounded" /> Net Worth</span>
                   <span className="flex items-center gap-1.5"><span className="w-3 h-0.5 bg-gain rounded opacity-60" /> Assets</span>
                   <span className="flex items-center gap-1.5"><span className="w-3 h-0.5 bg-loss rounded opacity-60" /> Liabilities</span>
@@ -583,7 +583,7 @@ export default function NetWorthHistory() {
                             <div className="flex items-center gap-2">
                               <p className="text-sm font-medium text-zinc-200">{fullDate(snap.date)}</p>
                               {snap.note && snap.note !== "Auto-snapshot" && (
-                                <span className="text-[10px] text-zinc-600 italic">{snap.note}</span>
+                                <span className="text-[10px] text-vela-muted italic">{snap.note}</span>
                               )}
                               {snap.note === "Auto-snapshot" && (
                                 <span className="text-[10px] text-teal-500/60">auto</span>
@@ -600,14 +600,14 @@ export default function NetWorthHistory() {
                                 </span>
                               )}
                             </div>
-                            <div className="flex gap-4 mt-1 text-xs text-zinc-500">
+                            <div className="flex gap-4 mt-1 text-xs text-vela-muted">
                               <span>Assets: {formatCompact(snap.assets)}</span>
                               <span>Liab: {formatCompact(snap.liabilities)}</span>
                             </div>
                           </div>
                           <button
                             onClick={() => handleDelete(snap.id)}
-                            className="p-1.5 rounded text-zinc-600 hover:text-loss hover:bg-loss/10 transition-colors opacity-0 group-hover:opacity-100"
+                            className="p-1.5 rounded text-vela-muted hover:text-loss hover:bg-loss/10 transition-colors opacity-0 group-hover:opacity-100"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>

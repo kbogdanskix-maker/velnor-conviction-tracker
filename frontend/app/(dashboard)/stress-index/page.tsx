@@ -77,7 +77,7 @@ function DimensionCard({ dim, link }: { dim: StressDimension; link?: string }) {
           <span className={`text-xs px-2 py-0.5 rounded border ${STATUS_BG[dim.status]}`}>
             {dim.score}/100
           </span>
-          {link && <ArrowRight className="w-3 h-3 text-zinc-600 group-hover:text-zinc-400 transition-colors" />}
+          {link && <ArrowRight className="w-3 h-3 text-vela-subtle group-hover:text-zinc-400 transition-colors" />}
         </div>
       </div>
 
@@ -169,7 +169,7 @@ export default function StressIndexPage() {
           <Activity className="w-7 h-7 text-vela-teal" />
           Financial Stress Index
         </h1>
-        <p className="text-zinc-500 text-sm mt-1">
+        <p className="text-vela-muted text-sm mt-1">
           A composite score based on your debt, savings, portfolio, and goals.
         </p>
       </div>
@@ -193,7 +193,7 @@ export default function StressIndexPage() {
             <div className={`text-lg font-bold tabular ${dim.score >= 60 ? "text-emerald-400" : dim.score >= 35 ? "text-amber-400" : "text-rose-400"}`}>
               {dim.score}
             </div>
-            <p className="text-[10px] text-zinc-500 mt-0.5 uppercase tracking-wider">{dim.label}</p>
+            <p className="text-[10px] text-vela-muted mt-0.5 uppercase tracking-wider">{dim.label}</p>
           </div>
         ))}
       </div>

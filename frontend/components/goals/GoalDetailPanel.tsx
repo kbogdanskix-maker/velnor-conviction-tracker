@@ -85,7 +85,7 @@ export default function GoalDetailPanel({ goal, open, onOpenChange }: Props) {
                 {goal.name}
               </Dialog.Title>
             </div>
-            <Dialog.Close className="text-zinc-500 hover:text-zinc-100 transition-colors">
+            <Dialog.Close className="text-vela-muted hover:text-zinc-100 transition-colors">
               <X className="w-4 h-4" />
             </Dialog.Close>
           </div>
@@ -97,7 +97,7 @@ export default function GoalDetailPanel({ goal, open, onOpenChange }: Props) {
                 <span className="text-2xl tabular font-semibold text-zinc-100">
                   {formatCurrency(goal.current_amount)}
                 </span>
-                <span className="text-sm tabular text-zinc-500">
+                <span className="text-sm tabular text-vela-muted">
                   of {formatCurrency(goal.target_amount)}
                 </span>
               </div>
@@ -107,25 +107,25 @@ export default function GoalDetailPanel({ goal, open, onOpenChange }: Props) {
                   style={{ width: `${progress}%` }}
                 />
               </div>
-              <p className="text-xs text-zinc-500 mt-1">{progress.toFixed(0)}% saved</p>
+              <p className="text-xs text-vela-muted mt-1">{progress.toFixed(0)}% saved</p>
             </div>
 
             {/* Key stats */}
             <div className="grid grid-cols-3 gap-3">
               <div className="bg-zinc-800/50 rounded-lg px-3 py-2.5 text-center">
-                <p className="text-xs text-zinc-500">Monthly</p>
+                <p className="text-xs text-vela-muted">Monthly</p>
                 <p className="text-sm tabular font-medium text-zinc-100">
                   {formatCurrency(goal.monthly_contribution)}
                 </p>
               </div>
               <div className="bg-zinc-800/50 rounded-lg px-3 py-2.5 text-center">
-                <p className="text-xs text-zinc-500">Return</p>
+                <p className="text-xs text-vela-muted">Return</p>
                 <p className="text-sm tabular font-medium text-zinc-100">
                   {effectiveCagr.toFixed(1)}%
                 </p>
               </div>
               <div className="bg-zinc-800/50 rounded-lg px-3 py-2.5 text-center">
-                <p className="text-xs text-zinc-500">Projected</p>
+                <p className="text-xs text-vela-muted">Projected</p>
                 <p className={`text-sm tabular font-medium ${hitsTarget ? "text-gain" : "text-loss"}`}>
                   {formatCurrency(projectedFinal)}
                 </p>
@@ -138,7 +138,7 @@ export default function GoalDetailPanel({ goal, open, onOpenChange }: Props) {
                 Expected annual return
               </h3>
               <div className="flex items-center gap-3">
-                <span className="text-xs tabular text-zinc-500 w-8">1%</span>
+                <span className="text-xs tabular text-vela-muted w-8">1%</span>
                 <input
                   type="range"
                   min="1"
@@ -148,7 +148,7 @@ export default function GoalDetailPanel({ goal, open, onOpenChange }: Props) {
                   onChange={(e) => setCagrOverride(Number(e.target.value))}
                   className="flex-1 accent-vela-teal h-1.5 bg-zinc-800 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-vela-teal [&::-webkit-slider-thumb]:cursor-pointer"
                 />
-                <span className="text-xs tabular text-zinc-500 w-8">15%</span>
+                <span className="text-xs tabular text-vela-muted w-8">15%</span>
               </div>
               <p className="text-center text-sm tabular font-medium text-vela-teal mt-1">
                 {effectiveCagr.toFixed(1)}% per year
@@ -204,7 +204,7 @@ export default function GoalDetailPanel({ goal, open, onOpenChange }: Props) {
                     />
                     <ReferenceLine
                       y={targetAmount}
-                      stroke="#f43f5e"
+                      stroke="#fb7185"
                       strokeDasharray="4 4"
                       strokeWidth={1}
                     />
@@ -227,7 +227,7 @@ export default function GoalDetailPanel({ goal, open, onOpenChange }: Props) {
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
-              <div className="flex items-center justify-center gap-4 mt-2 text-xs text-zinc-500">
+              <div className="flex items-center justify-center gap-4 mt-2 text-xs text-vela-muted">
                 <span className="flex items-center gap-1.5">
                   <span className="w-3 h-0.5 bg-vela-teal rounded" /> Projected
                 </span>
@@ -260,7 +260,7 @@ export default function GoalDetailPanel({ goal, open, onOpenChange }: Props) {
             )}
 
             {/* Disclaimer */}
-            <p className="text-[11px] text-zinc-600 text-center leading-relaxed">
+            <p className="text-[11px] text-vela-muted text-center leading-relaxed">
               This is not financial advice. Projections are hypothetical and do not guarantee future results.
             </p>
           </div>

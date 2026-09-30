@@ -61,7 +61,7 @@ function HoldingCard({
           href={`/journey/${holding.ticker}`}
           title="View journey"
           onClick={(e) => e.stopPropagation()}
-          className="p-1 rounded text-zinc-600 hover:text-vela-teal transition-colors"
+          className="p-1 rounded text-vela-muted hover:text-vela-teal transition-colors"
         >
           <Route className="w-3.5 h-3.5" />
         </Link>

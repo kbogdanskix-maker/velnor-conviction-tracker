@@ -29,7 +29,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             <p className="font-display text-4xl xl:text-[2.75rem] font-bold tracking-tight leading-[1.1] text-zinc-100">
               Hold your <span className="text-vela-teal italic">winners</span>.
               <br />
-              <span className="text-zinc-500">Know if you were right.</span>
+              <span className="text-vela-muted">Know if you were right.</span>
             </p>
             <div className="mt-8 h-px w-24 bg-vela-border" />
             <p className="mt-8 text-vela-body leading-relaxed">

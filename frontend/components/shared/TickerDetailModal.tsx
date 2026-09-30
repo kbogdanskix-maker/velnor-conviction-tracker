@@ -60,7 +60,7 @@ export default function TickerDetailModal({ ticker, open, onOpenChange }: Props)
                     </div>
                   )}
                 </div>
-                <Dialog.Close className="ml-3 text-zinc-500 hover:text-zinc-100 transition-colors shrink-0">
+                <Dialog.Close className="ml-3 text-vela-muted hover:text-zinc-100 transition-colors shrink-0">
                   <X className="w-4 h-4" />
                 </Dialog.Close>
               </div>
@@ -74,7 +74,7 @@ export default function TickerDetailModal({ ticker, open, onOpenChange }: Props)
                     className={`px-3 py-2 text-xs font-medium transition-colors border-b-2 -mb-px ${
                       tab === t
                         ? "text-vela-teal border-vela-teal"
-                        : "text-zinc-500 border-transparent hover:text-zinc-300"
+                        : "text-vela-muted border-transparent hover:text-zinc-300"
                     }`}
                   >
                     {t === "overview" ? "Overview" : "Options"}
@@ -168,7 +168,7 @@ export default function TickerDetailModal({ ticker, open, onOpenChange }: Props)
                 {/* Volume */}
                 {info.average_volume != null && (
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-zinc-500">Avg. Daily Volume</span>
+                    <span className="text-vela-muted">Avg. Daily Volume</span>
                     <span className="text-zinc-300 tabular">{formatNumber(info.average_volume, 0)}</span>
                   </div>
                 )}
@@ -229,7 +229,7 @@ function OptionsTab({ ticker }: { ticker: string }) {
     return (
       <div className="p-5 text-center py-12">
         <p className="text-sm text-zinc-400">Could not load options data.</p>
-        <p className="text-xs text-zinc-600 mt-1">Check that the backend server is running on port 8000.</p>
+        <p className="text-xs text-vela-muted mt-1">Check that the backend server is running on port 8000.</p>
       </div>
     );
   }
@@ -238,7 +238,7 @@ function OptionsTab({ ticker }: { ticker: string }) {
     return (
       <div className="p-5 text-center py-12">
         <p className="text-sm text-zinc-400">No options data available for {ticker}.</p>
-        <p className="text-xs text-zinc-600 mt-1">This security may not have listed options, or data is temporarily unavailable.</p>
+        <p className="text-xs text-vela-muted mt-1">This security may not have listed options, or data is temporarily unavailable.</p>
       </div>
     );
   }
@@ -249,7 +249,7 @@ function OptionsTab({ ticker }: { ticker: string }) {
     <div className="p-5 space-y-5">
       {/* Expiry selector  - scrollable with DTE labels */}
       <div>
-        <p className="text-xs text-zinc-500 mb-2">Expiration date</p>
+        <p className="text-xs text-vela-muted mb-2">Expiration date</p>
         <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
           {chain.expiries.map((exp) => {
             const dte = daysToExpiry(exp);
@@ -265,7 +265,7 @@ function OptionsTab({ ticker }: { ticker: string }) {
                 }`}
               >
                 <span className="font-medium">{formatExpiry(exp)}</span>
-                <span className={`text-[10px] mt-0.5 ${active ? "text-vela-teal/70" : "text-zinc-600"}`}>
+                <span className={`text-[10px] mt-0.5 ${active ? "text-vela-teal" : "text-vela-muted"}`}>
                   {dte}d
                 </span>
               </button>
@@ -287,11 +287,11 @@ function OptionsTab({ ticker }: { ticker: string }) {
       <div className="border-t border-vela-border pt-4">
         <button
           onClick={() => setShowPro(!showPro)}
-          className="flex items-center gap-2 text-xs text-zinc-500 hover:text-zinc-300 transition-colors w-full"
+          className="flex items-center gap-2 text-xs text-vela-muted hover:text-zinc-300 transition-colors w-full"
         >
           {showPro ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
           <span className="font-medium">Detailed view</span>
-          <span className="text-zinc-600"> - IV skew, full chain</span>
+          <span className="text-vela-muted"> - IV skew, full chain</span>
         </button>
 
         {showPro && (
@@ -337,7 +337,7 @@ function ImpliedRangeBar({ chain, expiry }: { chain: OptionsChain; expiry: strin
     <div className="bg-zinc-800/50 rounded-xl p-4">
       <div className="flex items-center justify-between mb-1">
         <p className="text-xs text-zinc-400 font-medium">Implied price range</p>
-        <p className="text-xs text-zinc-500">
+        <p className="text-xs text-vela-muted">
           by expiry ({daysToExpiry(expiry)}d)
         </p>
       </div>
@@ -362,11 +362,11 @@ function ImpliedRangeBar({ chain, expiry }: { chain: OptionsChain; expiry: strin
 
       {/* Labels below */}
       <div className="flex items-center justify-between mt-2">
-        <span className="text-[10px] text-loss/80">−{stats.impliedPct.toFixed(1)}%</span>
-        <span className="text-[10px] text-zinc-500">
+        <span className="text-[10px] text-loss">−{stats.impliedPct.toFixed(1)}%</span>
+        <span className="text-[10px] text-vela-muted">
           ATM straddle: ${stats.straddle.toFixed(2)} (±{stats.impliedPct.toFixed(1)}%)
         </span>
-        <span className="text-[10px] text-gain/80">+{stats.impliedPct.toFixed(1)}%</span>
+        <span className="text-[10px] text-gain">+{stats.impliedPct.toFixed(1)}%</span>
       </div>
     </div>
   );
@@ -412,7 +412,7 @@ function OptionsMetrics({ chain, expiry }: { chain: OptionsChain; expiry: string
   if (!stats) return null;
 
   const sentimentLabel = stats.pcRatio == null ? "No OI data" : stats.pcRatio > 1.2 ? "Bearish" : stats.pcRatio > 0.8 ? "Neutral" : "Bullish";
-  const sentimentColor = stats.pcRatio == null ? "text-zinc-600" : stats.pcRatio > 1.2 ? "text-loss" : stats.pcRatio > 0.8 ? "text-zinc-400" : "text-gain";
+  const sentimentColor = stats.pcRatio == null ? "text-vela-muted" : stats.pcRatio > 1.2 ? "text-loss" : stats.pcRatio > 0.8 ? "text-zinc-400" : "text-gain";
 
   return (
     <div className="grid grid-cols-3 gap-2">
@@ -443,9 +443,9 @@ function OptionsMetrics({ chain, expiry }: { chain: OptionsChain; expiry: string
 function MetricBox({ label, value, sub, subColor }: { label: string; value: string; sub: string; subColor?: string }) {
   return (
     <div className="bg-zinc-800/50 rounded-lg px-3 py-2">
-      <p className="text-[10px] text-zinc-500 uppercase tracking-wider">{label}</p>
+      <p className="text-[10px] text-vela-muted uppercase tracking-wider">{label}</p>
       <p className="text-sm font-bold tabular text-zinc-100">{value}</p>
-      <p className={`text-[10px] mt-0.5 ${subColor || "text-zinc-600"}`}>{sub}</p>
+      <p className={`text-[10px] mt-0.5 ${subColor || "text-vela-muted"}`}>{sub}</p>
     </div>
   );
 }
@@ -561,13 +561,13 @@ function OptionsOIChart({ chain, expiry }: { chain: OptionsChain; expiry: string
         </ResponsiveContainer>
       </div>
       <div className="flex items-center justify-center gap-4 mt-1.5">
-        <span className="flex items-center gap-1.5 text-[10px] text-zinc-500">
+        <span className="flex items-center gap-1.5 text-[10px] text-vela-muted">
           <span className="w-2.5 h-2.5 rounded-sm bg-gain/60" /> Calls
         </span>
-        <span className="flex items-center gap-1.5 text-[10px] text-zinc-500">
+        <span className="flex items-center gap-1.5 text-[10px] text-vela-muted">
           <span className="w-2.5 h-2.5 rounded-sm bg-loss/60" /> Puts
         </span>
-        <span className="flex items-center gap-1.5 text-[10px] text-zinc-500">
+        <span className="flex items-center gap-1.5 text-[10px] text-vela-muted">
           <span className="w-1.5 h-1.5 rounded-full bg-vela-teal" /> Spot price
         </span>
       </div>
@@ -624,7 +624,7 @@ function IVByStrike({ chain, expiry }: { chain: OptionsChain; expiry: string }) 
           </BarChart>
         </ResponsiveContainer>
       </div>
-      <p className="text-[10px] text-zinc-600 mt-1">
+      <p className="text-[10px] text-vela-muted mt-1">
         Higher IV at lower strikes = put skew (downside protection is expensive). Typical for equities.
       </p>
     </div>
@@ -648,7 +648,7 @@ function RawChainSection({ chain, expiry }: { chain: OptionsChain; expiry: strin
               className={`text-xs px-3 py-1 rounded-md font-medium transition-colors ${
                 tableSide === s
                   ? s === "calls" ? "bg-gain/15 text-gain" : "bg-loss/15 text-loss"
-                  : "text-zinc-500 hover:text-zinc-300"
+                  : "text-vela-muted hover:text-zinc-300"
               }`}
             >
               {s === "calls" ? "Calls" : "Puts"}
@@ -663,14 +663,14 @@ function RawChainSection({ chain, expiry }: { chain: OptionsChain; expiry: strin
 
 function RawChainTable({ contracts, side }: { contracts: OptionContract[]; side: "calls" | "puts" }) {
   if (contracts.length === 0) {
-    return <p className="text-xs text-zinc-500">No {side} for this expiry.</p>;
+    return <p className="text-xs text-vela-muted">No {side} for this expiry.</p>;
   }
 
   return (
     <div className="overflow-x-auto -mx-5 px-5">
       <table className="w-full text-xs">
         <thead>
-          <tr className="text-zinc-500 border-b border-vela-border">
+          <tr className="text-vela-muted border-b border-vela-border">
             <th className="text-left py-2 font-medium">Strike</th>
             <th className="text-right py-2 font-medium">Last</th>
             <th className="text-right py-2 font-medium">Bid</th>
@@ -701,7 +701,7 @@ function RawChainTable({ contracts, side }: { contracts: OptionContract[]; side:
         </tbody>
       </table>
       {contracts.length > 30 && (
-        <p className="text-[10px] text-zinc-600 mt-2">
+        <p className="text-[10px] text-vela-muted mt-2">
           Showing 30 of {contracts.length} contracts
         </p>
       )}
@@ -722,9 +722,9 @@ function StatCard({
 }) {
   return (
     <div className="bg-zinc-800/50 rounded-lg px-3 py-2.5">
-      <p className="text-xs text-zinc-500 mb-0.5">{label}</p>
+      <p className="text-xs text-vela-muted mb-0.5">{label}</p>
       <p className="text-sm font-medium text-zinc-100 tabular">{value ?? " -"}</p>
-      <p className="text-[11px] text-zinc-600 mt-0.5">{hint}</p>
+      <p className="text-[11px] text-vela-muted mt-0.5">{hint}</p>
     </div>
   );
 }
@@ -757,7 +757,7 @@ function MarginBar({ label, value }: { label: string; value: number }) {
 
   return (
     <div className="flex items-center gap-3">
-      <span className="text-xs text-zinc-500 w-28 shrink-0">{label}</span>
+      <span className="text-xs text-vela-muted w-28 shrink-0">{label}</span>
       <div className="flex-1 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
         <div
           className={`h-full rounded-full ${isPositive ? "bg-gain" : "bg-loss"}`}
@@ -811,7 +811,7 @@ function ErrorState({ ticker, onClose }: { ticker: string | null; onClose: () =>
         <Dialog.Title className="text-lg font-semibold text-zinc-100">
           {ticker || "Unknown"}
         </Dialog.Title>
-        <Dialog.Close className="text-zinc-500 hover:text-zinc-100 transition-colors">
+        <Dialog.Close className="text-vela-muted hover:text-zinc-100 transition-colors">
           <X className="w-4 h-4" />
         </Dialog.Close>
       </div>
@@ -819,7 +819,7 @@ function ErrorState({ ticker, onClose }: { ticker: string | null; onClose: () =>
         <p className="text-sm text-zinc-400 mb-1">
           Detailed info isn&apos;t available for this ticker.
         </p>
-        <p className="text-xs text-zinc-600">
+        <p className="text-xs text-vela-muted">
           This may be an index, fund, or newly listed security.
         </p>
       </div>

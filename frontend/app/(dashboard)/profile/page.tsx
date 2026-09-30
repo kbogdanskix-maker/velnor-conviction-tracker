@@ -332,7 +332,7 @@ export default function ProfilePage() {
                     </p>
                     <p
                       className={`mt-1 font-mono text-[10px] tabular-nums leading-tight ${
-                        active ? "text-vela-teal/80" : "text-vela-muted"
+                        active ? "text-vela-teal" : "text-vela-muted"
                       }`}
                     >
                       {b.label.split("—")[1]?.trim()}
@@ -385,7 +385,7 @@ export default function ProfilePage() {
                 </div>
                 <p
                   className={`text-[12px] leading-[1.45] ${
-                    active ? "text-vela-teal/80" : "text-vela-muted"
+                    active ? "text-vela-teal" : "text-vela-muted"
                   }`}
                 >
                   {opt.desc}
@@ -412,7 +412,7 @@ export default function ProfilePage() {
                 </div>
                 <p
                   className={`text-[12px] leading-[1.45] ${
-                    active ? "text-vela-teal/80" : "text-vela-muted"
+                    active ? "text-vela-teal" : "text-vela-muted"
                   }`}
                 >
                   {opt.desc}
@@ -448,7 +448,7 @@ export default function ProfilePage() {
                 </div>
                 <p
                   className={`text-[12px] leading-[1.45] ${
-                    active ? "text-vela-teal/80" : "text-vela-muted"
+                    active ? "text-vela-teal" : "text-vela-muted"
                   }`}
                 >
                   {opt.desc}
@@ -473,7 +473,7 @@ export default function ProfilePage() {
                 <p className="text-[13.5px] font-semibold">{opt.label}</p>
                 <p
                   className={`mt-0.5 font-mono text-[11px] tabular-nums ${
-                    active ? "text-vela-teal/80" : "text-vela-muted"
+                    active ? "text-vela-teal" : "text-vela-muted"
                   }`}
                 >
                   {opt.desc}

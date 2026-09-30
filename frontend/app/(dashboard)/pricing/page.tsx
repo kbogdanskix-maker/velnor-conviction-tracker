@@ -184,23 +184,23 @@ export default function PricingPage() {
                         <Icon className={`w-5 h-5 ${plan.accent}`} />
                       </div>
                       <h2 className={`text-xl font-bold ${plan.accent}`}>{plan.name}</h2>
-                      <p className="text-zinc-500 text-sm mt-0.5">{plan.tagline}</p>
+                      <p className="text-vela-muted text-sm mt-0.5">{plan.tagline}</p>
 
                       <div className="mt-5 flex items-baseline gap-1">
                         {plan.price === 0 ? (
                           <span className="text-4xl font-bold text-zinc-100">Free</span>
                         ) : (
                           <>
-                            <span className="text-zinc-500 text-lg">$</span>
+                            <span className="text-vela-muted text-lg">$</span>
                             <span className="text-4xl font-bold tabular text-zinc-100">{plan.price}</span>
-                            <span className="text-zinc-500 text-sm">/{plan.interval}</span>
+                            <span className="text-vela-muted text-sm">/{plan.interval}</span>
                           </>
                         )}
                       </div>
                       {plan.yearlyPrice && (
-                        <p className="text-zinc-500 text-xs mt-1.5">
+                        <p className="text-vela-muted text-xs mt-1.5">
                           or <span className="text-zinc-300 tabular">${plan.yearlyPrice}</span>/yr
-                          <span className="text-zinc-600"> (save {Math.round((1 - plan.yearlyPrice / (plan.price * 12)) * 100)}%)</span>
+                          <span className="text-vela-muted"> (save {Math.round((1 - plan.yearlyPrice / (plan.price * 12)) * 100)}%)</span>
                         </p>
                       )}
                     </div>
@@ -221,9 +221,9 @@ export default function PricingPage() {
                             ) : (
                               <>
                                 <Check className={`w-4 h-4 mt-0.5 shrink-0 ${
-                                  plan.id === "horizon" ? "text-zinc-500" :
-                                  plan.id === "voyager" ? "text-vela-teal/70" :
-                                  "text-vela-teal/70"
+                                  plan.id === "horizon" ? "text-vela-muted" :
+                                  plan.id === "voyager" ? "text-vela-teal" :
+                                  "text-vela-teal"
                                 }`} />
                                 <span className="text-sm text-zinc-300">{f}</span>
                               </>
@@ -237,7 +237,7 @@ export default function PricingPage() {
                   {/* CTA */}
                   <div className="px-6 pb-6">
                     {isCurrent ? (
-                      <div className="w-full py-2.5 rounded-xl text-center text-sm font-medium text-zinc-500 bg-zinc-800/50 border border-zinc-700/50">
+                      <div className="w-full py-2.5 rounded-xl text-center text-sm font-medium text-vela-muted bg-zinc-800/50 border border-zinc-700/50">
                         Current plan
                       </div>
                     ) : (
@@ -268,10 +268,10 @@ export default function PricingPage() {
 
       {/* Bottom note */}
       <MotionSection className="text-center mt-12">
-        <p className="text-zinc-500 text-sm">
+        <p className="text-vela-muted text-sm">
           All plans include unlimited data retention. Cancel anytime.
         </p>
-        <p className="text-zinc-600 text-xs mt-2">
+        <p className="text-vela-muted text-xs mt-2">
           Prices in USD. Billed monthly or annually. No hidden fees.
         </p>
       </MotionSection>

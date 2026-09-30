@@ -347,7 +347,7 @@ export default function AttributionPage() {
                   {attr.all.map((entry) => (
                     <Cell
                       key={entry.ticker}
-                      fill={entry.contributionAbs >= 0 ? "#34d399" : "#f43f5e"}
+                      fill={entry.contributionAbs >= 0 ? "#34d399" : "#fb7185"}
                       fillOpacity={0.85}
                     />
                   ))}

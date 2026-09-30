@@ -20,7 +20,7 @@ export default function ErrorState({
       </div>
       <div>
         <h3 className="text-base font-semibold text-zinc-100">{title}</h3>
-        <p className="text-zinc-500 text-sm mt-1 max-w-xs mx-auto">{message}</p>
+        <p className="text-vela-muted text-sm mt-1 max-w-xs mx-auto">{message}</p>
       </div>
       {onRetry && (
         <button onClick={onRetry} className="btn-primary text-sm flex items-center gap-2">

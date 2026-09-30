@@ -229,19 +229,19 @@ export default function SubscriptionsPage() {
       {/* Summary cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="vela-card p-4 text-center">
-          <p className="text-xs text-zinc-500 uppercase tracking-wider">Monthly Total</p>
+          <p className="text-xs text-vela-muted uppercase tracking-wider">Monthly Total</p>
           <p className="text-2xl font-bold text-zinc-100 tabular-nums mt-1">{formatCurrency(totalMonthly)}</p>
         </div>
         <div className="vela-card p-4 text-center">
-          <p className="text-xs text-zinc-500 uppercase tracking-wider">Annual Total</p>
+          <p className="text-xs text-vela-muted uppercase tracking-wider">Annual Total</p>
           <p className="text-2xl font-bold text-vela-teal tabular-nums mt-1">{formatCurrency(totalAnnual)}</p>
         </div>
         <div className="vela-card p-4 text-center">
-          <p className="text-xs text-zinc-500 uppercase tracking-wider">Subscriptions</p>
+          <p className="text-xs text-vela-muted uppercase tracking-wider">Subscriptions</p>
           <p className="text-2xl font-bold text-zinc-100 tabular-nums mt-1">{subs.length}</p>
         </div>
         <div className="vela-card p-4 text-center">
-          <p className="text-xs text-zinc-500 uppercase tracking-wider">% of Income</p>
+          <p className="text-xs text-vela-muted uppercase tracking-wider">% of Income</p>
           <p className={`text-2xl font-bold tabular-nums mt-1 ${incomePercent > 15 ? "text-loss" : incomePercent > 10 ? "text-yellow-400" : "text-gain"}`}>
             {monthlyIncome > 0 ? `${incomePercent.toFixed(1)}%` : " -"}
           </p>
@@ -284,7 +284,7 @@ export default function SubscriptionsPage() {
                 <div key={c.name} className="flex items-center gap-1.5 text-xs text-zinc-400">
                   <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: CATEGORY_COLORS[c.name] || "#71717a" }} />
                   <span>{c.name}</span>
-                  <span className="text-zinc-500 tabular-nums">{formatCurrency(c.value)}</span>
+                  <span className="text-vela-muted tabular-nums">{formatCurrency(c.value)}</span>
                 </div>
               ))}
             </div>
@@ -318,19 +318,19 @@ export default function SubscriptionsPage() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {mostExpensive && (
             <div className="vela-card p-4">
-              <p className="text-xs text-zinc-500 uppercase tracking-wider mb-1">Biggest Subscription</p>
+              <p className="text-xs text-vela-muted uppercase tracking-wider mb-1">Biggest Subscription</p>
               <p className="text-sm font-semibold text-zinc-200">{mostExpensive.name}</p>
               <p className="text-xs text-zinc-400">{formatCurrency(toMonthly(mostExpensive.cost, mostExpensive.frequency))}/mo · {formatCurrency(toAnnual(mostExpensive.cost, mostExpensive.frequency))}/yr</p>
             </div>
           )}
           <div className="vela-card p-4">
-            <p className="text-xs text-zinc-500 uppercase tracking-wider mb-1">Daily Cost</p>
-            <p className="text-lg font-bold text-zinc-200 tabular-nums">{formatCurrency(totalAnnual / 365)}<span className="text-xs text-zinc-500 font-normal">/day</span></p>
+            <p className="text-xs text-vela-muted uppercase tracking-wider mb-1">Daily Cost</p>
+            <p className="text-lg font-bold text-zinc-200 tabular-nums">{formatCurrency(totalAnnual / 365)}<span className="text-xs text-vela-muted font-normal">/day</span></p>
             <p className="text-xs text-zinc-400">Your subscriptions cost you this much every single day</p>
           </div>
           {oldestSub && (
             <div className="vela-card p-4">
-              <p className="text-xs text-zinc-500 uppercase tracking-wider mb-1">Longest Running</p>
+              <p className="text-xs text-vela-muted uppercase tracking-wider mb-1">Longest Running</p>
               <p className="text-sm font-semibold text-zinc-200">{oldestSub.name}</p>
               <p className="text-xs text-zinc-400">
                 {daysSince(oldestSub.startDate)} days · {formatCurrency(toAnnual(oldestSub.cost, oldestSub.frequency) * (daysSince(oldestSub.startDate) / 365))} total spent
@@ -350,7 +350,7 @@ export default function SubscriptionsPage() {
                 <button
                   key={s}
                   onClick={() => setSortBy(s)}
-                  className={`px-2 py-0.5 rounded text-[10px] font-medium transition-colors ${sortBy === s ? "bg-vela-teal/15 text-vela-teal" : "bg-zinc-800 text-zinc-500 hover:text-zinc-300"}`}
+                  className={`px-2 py-0.5 rounded text-[10px] font-medium transition-colors ${sortBy === s ? "bg-vela-teal/15 text-vela-teal" : "bg-zinc-800 text-vela-muted hover:text-zinc-300"}`}
                 >
                   {s.charAt(0).toUpperCase() + s.slice(1)}
                 </button>
@@ -371,7 +371,7 @@ export default function SubscriptionsPage() {
           <div className="mb-4 p-4 rounded-lg bg-zinc-800/50 border border-zinc-700 space-y-3">
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               <div>
-                <label className="text-xs text-zinc-500 mb-1 block">Name</label>
+                <label className="text-xs text-vela-muted mb-1 block">Name</label>
                 <input
                   value={fName}
                   onChange={(e) => setFName(e.target.value)}
@@ -380,7 +380,7 @@ export default function SubscriptionsPage() {
                 />
               </div>
               <div>
-                <label className="text-xs text-zinc-500 mb-1 block">Cost</label>
+                <label className="text-xs text-vela-muted mb-1 block">Cost</label>
                 <input
                   type="number"
                   value={fCost}
@@ -392,7 +392,7 @@ export default function SubscriptionsPage() {
                 />
               </div>
               <div>
-                <label className="text-xs text-zinc-500 mb-1 block">Frequency</label>
+                <label className="text-xs text-vela-muted mb-1 block">Frequency</label>
                 <select
                   value={fFreq}
                   onChange={(e) => setFFreq(e.target.value as Frequency)}
@@ -405,7 +405,7 @@ export default function SubscriptionsPage() {
                 </select>
               </div>
               <div>
-                <label className="text-xs text-zinc-500 mb-1 block">Category</label>
+                <label className="text-xs text-vela-muted mb-1 block">Category</label>
                 <select
                   value={fCat}
                   onChange={(e) => setFCat(e.target.value)}
@@ -415,7 +415,7 @@ export default function SubscriptionsPage() {
                 </select>
               </div>
               <div>
-                <label className="text-xs text-zinc-500 mb-1 block">Start Date</label>
+                <label className="text-xs text-vela-muted mb-1 block">Start Date</label>
                 <input
                   type="date"
                   value={fDate}
@@ -424,7 +424,7 @@ export default function SubscriptionsPage() {
                 />
               </div>
               <div>
-                <label className="text-xs text-zinc-500 mb-1 block">Notes</label>
+                <label className="text-xs text-vela-muted mb-1 block">Notes</label>
                 <input
                   value={fNotes}
                   onChange={(e) => setFNotes(e.target.value)}
@@ -448,7 +448,7 @@ export default function SubscriptionsPage() {
 
         {/* List */}
         {sortedSubs.length === 0 ? (
-          <p className="text-sm text-zinc-500 text-center py-8">
+          <p className="text-sm text-vela-muted text-center py-8">
             No subscriptions tracked yet. Add your recurring services to see the full picture.
           </p>
         ) : (
@@ -464,17 +464,17 @@ export default function SubscriptionsPage() {
                       <span className="text-sm font-medium text-zinc-200 truncate">{s.name}</span>
                       <span className="text-[10px] bg-zinc-700 text-zinc-400 px-1.5 py-0.5 rounded">{s.category}</span>
                     </div>
-                    <div className="flex gap-3 text-xs text-zinc-500 mt-0.5">
+                    <div className="flex gap-3 text-xs text-vela-muted mt-0.5">
                       <span className="tabular-nums">{formatCurrency(s.cost)}{freqLabel(s.frequency)}</span>
                       <span className="tabular-nums">≈ {formatCurrency(monthly)}/mo</span>
                       <span className="tabular-nums">{formatCurrency(annual)}/yr</span>
                     </div>
                   </div>
                   <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button onClick={() => handleEdit(s)} className="p-1.5 rounded text-zinc-500 hover:text-zinc-200 hover:bg-zinc-700 transition-colors">
+                    <button onClick={() => handleEdit(s)} className="p-1.5 rounded text-vela-muted hover:text-zinc-200 hover:bg-zinc-700 transition-colors">
                       <Edit2 className="w-3.5 h-3.5" />
                     </button>
-                    <button onClick={() => handleDelete(s.id)} className="p-1.5 rounded text-zinc-500 hover:text-loss hover:bg-zinc-700 transition-colors">
+                    <button onClick={() => handleDelete(s.id)} className="p-1.5 rounded text-vela-muted hover:text-loss hover:bg-zinc-700 transition-colors">
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>

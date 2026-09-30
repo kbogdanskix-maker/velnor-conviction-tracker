@@ -19,7 +19,7 @@ function ScoreGauge({ score }: { score: number }) {
   const deg = ((clamp + 100) / 200) * 180;
   const color =
     clamp >= 20 ? "#34d399"   // emerald-400
-    : clamp <= -20 ? "#f43f5e" // rose-500
+    : clamp <= -20 ? "#fb7185" // rose-500
     : "#a1a1aa";               // zinc-400
 
   return (
@@ -103,9 +103,9 @@ function HeadlineRow({ h }: { h: TickerSentiment["headlines"][0] }) {
         <p className="text-xs text-zinc-300 group-hover:text-zinc-100 leading-snug transition-colors line-clamp-2">
           {h.title}
         </p>
-        <p className="text-[10px] text-zinc-600 mt-0.5">{h.source}</p>
+        <p className="text-[10px] text-vela-muted mt-0.5">{h.source}</p>
       </div>
-      <ExternalLink className="w-3 h-3 text-zinc-700 group-hover:text-zinc-400 shrink-0 mt-0.5 transition-colors" />
+      <ExternalLink className="w-3 h-3 text-vela-subtle group-hover:text-zinc-400 shrink-0 mt-0.5 transition-colors" />
     </a>
   );
 }
@@ -136,7 +136,7 @@ function TickerCard({ s }: { s: TickerSentiment }) {
           <div className={`text-2xl font-display font-bold tabular-nums ${scoreColor}`}>
             {s.overall_score > 0 ? "+" : ""}{s.overall_score}
           </div>
-          <p className="text-[10px] text-zinc-600 mt-0.5">
+          <p className="text-[10px] text-vela-muted mt-0.5">
             {s.article_count} article{s.article_count !== 1 ? "s" : ""} scored
           </p>
         </div>
@@ -144,7 +144,7 @@ function TickerCard({ s }: { s: TickerSentiment }) {
         <div className="text-right shrink-0 hidden sm:block">
           <div className="flex items-center gap-3 text-[10px] mb-1.5">
             <span className="text-emerald-400">{s.bullish_pct}% bull</span>
-            <span className="text-zinc-500">{s.neutral_pct}% neut</span>
+            <span className="text-vela-muted">{s.neutral_pct}% neut</span>
             <span className="text-rose-500">{s.bearish_pct}% bear</span>
           </div>
           <SentimentBar bullish={s.bullish_pct} bearish={s.bearish_pct} neutral={s.neutral_pct} />
@@ -155,7 +155,7 @@ function TickerCard({ s }: { s: TickerSentiment }) {
       <div className="sm:hidden mt-2">
         <div className="flex items-center gap-3 text-[10px] mb-1">
           <span className="text-emerald-400">{s.bullish_pct}% bull</span>
-          <span className="text-zinc-500">{s.neutral_pct}% neut</span>
+          <span className="text-vela-muted">{s.neutral_pct}% neut</span>
           <span className="text-rose-500">{s.bearish_pct}% bear</span>
         </div>
         <SentimentBar bullish={s.bullish_pct} bearish={s.bearish_pct} neutral={s.neutral_pct} />
@@ -166,7 +166,7 @@ function TickerCard({ s }: { s: TickerSentiment }) {
         <div className="mt-3">
           <button
             onClick={() => setExpanded(!expanded)}
-            className="flex items-center gap-1.5 text-[10px] text-zinc-500 hover:text-zinc-300 transition-colors"
+            className="flex items-center gap-1.5 text-[10px] text-vela-muted hover:text-zinc-300 transition-colors"
           >
             <Newspaper className="w-3 h-3" />
             {expanded ? "Hide" : "Show"} headlines
@@ -202,9 +202,9 @@ function TickerLookup() {
       <h2 className="section-heading">Look Up Any Ticker</h2>
       <div className="flex gap-2">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-500" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-vela-subtle" />
           <input
-            className="w-full bg-zinc-800/60 border border-zinc-700/50 rounded-lg pl-8 pr-3 py-2 text-sm text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:border-teal-500/50 transition-colors"
+            className="w-full bg-zinc-800/60 border border-zinc-700/50 rounded-lg pl-8 pr-3 py-2 text-sm text-zinc-200 placeholder:text-vela-muted focus:outline-none focus:border-teal-500/50 transition-colors"
             placeholder="e.g. TSLA, NVDA, META"
             value={input}
             onChange={(e) => setInput(e.target.value.toUpperCase())}
@@ -221,7 +221,7 @@ function TickerLookup() {
       </div>
 
       {isLoading && queried && (
-        <div className="text-center py-6 text-sm text-zinc-500">
+        <div className="text-center py-6 text-sm text-vela-muted">
           <RefreshCw className="w-4 h-4 animate-spin mx-auto mb-2" />
           Fetching & scoring news for {queried}…
         </div>
@@ -258,7 +258,7 @@ export default function SentimentPage() {
             <MessageCircle className="w-6 h-6 text-vela-teal" />
             News Sentiment
           </h1>
-          <p className="text-sm text-zinc-500 mt-0.5">
+          <p className="text-sm text-vela-muted mt-0.5">
             Real news headlines scored with VADER NLP, refreshed every 4 hours
           </p>
         </div>
@@ -276,7 +276,7 @@ export default function SentimentPage() {
         <RevealOnScroll>
           <div className="grid grid-cols-3 gap-4">
             <div className="vela-card text-center">
-              <p className="text-xs text-zinc-500 mb-1">Portfolio Avg</p>
+              <p className="text-xs text-vela-muted mb-1">Portfolio Avg</p>
               <p className={`text-2xl font-display font-bold tabular-nums ${avgScore >= 20 ? "text-emerald-400" : avgScore <= -20 ? "text-rose-500" : "text-zinc-300"}`}>
                 {avgScore > 0 ? "+" : ""}{avgScore}
               </p>
@@ -284,7 +284,7 @@ export default function SentimentPage() {
             </div>
             {mostBullish && (
               <div className="vela-card text-center border border-emerald-400/15">
-                <p className="text-xs text-zinc-500 mb-1 flex items-center justify-center gap-1">
+                <p className="text-xs text-vela-muted mb-1 flex items-center justify-center gap-1">
                   <TrendingUp className="w-3 h-3 text-emerald-400" /> Most Bullish
                 </p>
                 <p className="font-mono font-bold text-zinc-100">{mostBullish.ticker}</p>
@@ -293,7 +293,7 @@ export default function SentimentPage() {
             )}
             {mostBearish && mostBearish.ticker !== mostBullish?.ticker && (
               <div className="vela-card text-center border border-rose-500/15">
-                <p className="text-xs text-zinc-500 mb-1 flex items-center justify-center gap-1">
+                <p className="text-xs text-vela-muted mb-1 flex items-center justify-center gap-1">
                   <TrendingDown className="w-3 h-3 text-rose-500" /> Most Bearish
                 </p>
                 <p className="font-mono font-bold text-zinc-100">{mostBearish.ticker}</p>
@@ -308,14 +308,14 @@ export default function SentimentPage() {
       {isLoading ? (
         <DashboardSkeleton />
       ) : error ? (
-        <div className="vela-card text-center py-10 text-zinc-500 text-sm">
+        <div className="vela-card text-center py-10 text-vela-muted text-sm">
           Failed to load sentiment data. Make sure your portfolio has holdings.
         </div>
       ) : tickers.length === 0 ? (
         <div className="vela-card text-center py-12 space-y-2">
-          <MessageCircle className="w-10 h-10 text-zinc-700 mx-auto" />
+          <MessageCircle className="w-10 h-10 text-vela-subtle mx-auto" />
           <p className="text-zinc-400 font-medium">No holdings or watchlist items yet</p>
-          <p className="text-zinc-600 text-sm">Add positions to your portfolio or watchlist to see sentiment scores.</p>
+          <p className="text-vela-muted text-sm">Add positions to your portfolio or watchlist to see sentiment scores.</p>
         </div>
       ) : (
         <RevealOnScroll delay={0.05}>
@@ -338,8 +338,8 @@ export default function SentimentPage() {
       {/* Methodology note */}
       <RevealOnScroll delay={0.15}>
         <div className="flex gap-3 p-3 rounded-lg border border-zinc-800 bg-zinc-800/30">
-          <Minus className="w-4 h-4 text-zinc-500 shrink-0 mt-0.5" />
-          <p className="text-xs text-zinc-500 leading-relaxed">
+          <Minus className="w-4 h-4 text-vela-subtle shrink-0 mt-0.5" />
+          <p className="text-xs text-vela-muted leading-relaxed">
             Scores are computed with <strong className="text-zinc-400">VADER NLP</strong> on recent headlines from Yahoo Finance.
             VADER measures text polarity, not price direction. A headline can sound positive while the stock falls.
             Use as one signal among many, not a trading signal.

@@ -54,7 +54,7 @@ function statusColor(s: CategoryBudget["status"]): string {
     case "under": return "text-emerald-400";
     case "near": return "text-amber-400";
     case "over": return "text-rose-400";
-    case "no-budget": return "text-zinc-500";
+    case "no-budget": return "text-vela-muted";
   }
 }
 
@@ -228,10 +228,10 @@ export default function BudgetPage() {
 
       {!hasAnyExpenses ? (
         <div className="vela-card text-center py-16 space-y-3">
-          <Target className="w-10 h-10 text-zinc-600 mx-auto" />
+          <Target className="w-10 h-10 text-vela-subtle mx-auto" />
           <div>
             <p className="text-zinc-300 font-medium">No expenses to budget</p>
-            <p className="text-zinc-500 text-sm mt-1">
+            <p className="text-vela-muted text-sm mt-1">
               Add expense entries in Cash Flow first, then set monthly targets here.
             </p>
           </div>
@@ -253,7 +253,7 @@ export default function BudgetPage() {
               ) : (
                 <p className="text-2xl font-bold tabular text-zinc-400"> -</p>
               )}
-              <p className="text-xs text-zinc-500 mt-1">Budget Used</p>
+              <p className="text-xs text-vela-muted mt-1">Budget Used</p>
             </div>
             <div className="vela-card text-center py-4">
               <AnimatedNumber
@@ -261,7 +261,7 @@ export default function BudgetPage() {
                 format={formatCompact}
                 className="text-2xl font-bold tabular text-zinc-100"
               />
-              <p className="text-xs text-zinc-500 mt-1">Actual Spending</p>
+              <p className="text-xs text-vela-muted mt-1">Actual Spending</p>
             </div>
             <div className="vela-card text-center py-4">
               {hasBudgets ? (
@@ -273,7 +273,7 @@ export default function BudgetPage() {
               ) : (
                 <p className="text-2xl font-bold tabular text-vela-teal"> -</p>
               )}
-              <p className="text-xs text-zinc-500 mt-1">Total Budget</p>
+              <p className="text-xs text-vela-muted mt-1">Total Budget</p>
             </div>
             <div className="vela-card text-center py-4">
               {hasBudgets ? (
@@ -287,7 +287,7 @@ export default function BudgetPage() {
               ) : (
                 <p className="text-2xl font-bold tabular text-emerald-400"> -</p>
               )}
-              <p className="text-xs text-zinc-500 mt-1">
+              <p className="text-xs text-vela-muted mt-1">
                 {remainingBudget >= 0 ? "Remaining" : "Over Budget"}
               </p>
             </div>
@@ -369,7 +369,7 @@ export default function BudgetPage() {
               <Target className="w-8 h-8 text-vela-teal mx-auto" />
               <div>
                 <p className="text-zinc-200 font-medium">Set your first budget targets</p>
-                <p className="text-zinc-500 text-sm mt-1">
+                <p className="text-vela-muted text-sm mt-1">
                   Click the pencil icon next to any category below to set a monthly spending limit.
                 </p>
               </div>
@@ -467,7 +467,7 @@ export default function BudgetPage() {
           </div>
 
           <div className="text-center pt-4 pb-8 border-t border-zinc-800">
-            <p className="text-xs text-zinc-600">
+            <p className="text-xs text-vela-muted">
               Budget targets are synced to your account. Add or update expense entries in Cash Flow to track against your budgets.
             </p>
           </div>
@@ -487,7 +487,7 @@ function Header() {
         <Target className="w-7 h-7 text-vela-teal" />
         Monthly Budget
       </h1>
-      <p className="text-zinc-500 text-sm mt-1">
+      <p className="text-vela-muted text-sm mt-1">
         Set spending limits per category and track actual vs budget.
       </p>
     </div>
@@ -517,7 +517,7 @@ function CategoryRow({ data, editing, editValue, onStartEdit, onSetEditValue, on
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-sm font-medium text-zinc-100">{data.label}</h3>
-              <p className="text-[10px] text-zinc-500 mt-0.5">
+              <p className="text-[10px] text-vela-muted mt-0.5">
                 {data.type === "fixed" ? "Fixed" : "Variable"}
                 {data.entries > 0 && <> · {data.entries} item{data.entries !== 1 ? "s" : ""}</>}
               </p>
@@ -529,7 +529,7 @@ function CategoryRow({ data, editing, editValue, onStartEdit, onSetEditValue, on
                   {formatCurrency(data.actual)}
                 </p>
                 {data.target > 0 && (
-                  <p className="text-[10px] text-zinc-500 tabular">
+                  <p className="text-[10px] text-vela-muted tabular">
                     of {formatCurrency(data.target)}
                   </p>
                 )}
@@ -555,14 +555,14 @@ function CategoryRow({ data, editing, editValue, onStartEdit, onSetEditValue, on
                   <button onClick={onConfirm} className="p-1 rounded hover:bg-zinc-800 text-emerald-400">
                     <Check className="w-3.5 h-3.5" />
                   </button>
-                  <button onClick={onCancel} className="p-1 rounded hover:bg-zinc-800 text-zinc-500">
+                  <button onClick={onCancel} className="p-1 rounded hover:bg-zinc-800 text-vela-muted">
                     <X className="w-3.5 h-3.5" />
                   </button>
                 </div>
               ) : (
                 <button
                   onClick={onStartEdit}
-                  className="p-1.5 rounded hover:bg-zinc-800 text-zinc-500 hover:text-zinc-300 transition-colors"
+                  className="p-1.5 rounded hover:bg-zinc-800 text-vela-muted hover:text-zinc-300 transition-colors"
                   title="Set budget"
                 >
                   <Pencil className="w-3.5 h-3.5" />

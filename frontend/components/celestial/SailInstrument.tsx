@@ -506,14 +506,14 @@ export default function SailInstrument() {
       <span
         ref={headingRef}
         aria-hidden
-        className="absolute left-2 top-6 font-mono text-[10px] text-zinc-500 tabular-nums z-10 pointer-events-none select-none"
+        className="absolute left-2 top-6 font-mono text-[10px] text-vela-muted tabular-nums z-10 pointer-events-none select-none"
       >
         HEADING 041°
       </span>
       <span
         ref={statusRef}
         aria-hidden
-        className="absolute left-0 bottom-8 font-mono text-[10px] text-zinc-600 tabular-nums z-10 pointer-events-none select-none tracking-widest"
+        className="absolute left-0 bottom-8 font-mono text-[10px] text-vela-muted tabular-nums z-10 pointer-events-none select-none tracking-widest"
       >
         ON THE WIND
       </span>

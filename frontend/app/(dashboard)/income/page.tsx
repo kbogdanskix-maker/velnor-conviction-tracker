@@ -138,7 +138,7 @@ export default function IncomePage() {
           <DollarSign className="w-7 h-7 text-vela-teal" />
           Income Streams
         </h1>
-        <p className="text-zinc-500 text-sm mt-1">
+        <p className="text-vela-muted text-sm mt-1">
           A unified view of all your income sources, from salary to dividends.
         </p>
       </div>
@@ -147,10 +147,10 @@ export default function IncomePage() {
 
       {isEmpty ? (
         <div className="vela-card text-center py-16 space-y-3">
-          <DollarSign className="w-10 h-10 text-zinc-600 mx-auto" />
+          <DollarSign className="w-10 h-10 text-vela-subtle mx-auto" />
           <div>
             <p className="text-zinc-300 font-medium">No income sources found</p>
-            <p className="text-zinc-500 text-sm mt-1">
+            <p className="text-vela-muted text-sm mt-1">
               Add income entries in Cash Flow or portfolio holdings with dividends to see your streams.
             </p>
           </div>
@@ -161,15 +161,15 @@ export default function IncomePage() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="vela-card text-center py-4">
               <p className="text-3xl font-bold tabular text-emerald-400">{formatCurrency(totalMonthly)}</p>
-              <p className="text-xs text-zinc-500 mt-1">Monthly Income</p>
+              <p className="text-xs text-vela-muted mt-1">Monthly Income</p>
             </div>
             <div className="vela-card text-center py-4">
               <p className="text-3xl font-bold tabular text-zinc-100">{formatCompact(totalAnnual)}</p>
-              <p className="text-xs text-zinc-500 mt-1">Annual Income</p>
+              <p className="text-xs text-vela-muted mt-1">Annual Income</p>
             </div>
             <div className="vela-card text-center py-4">
               <p className="text-3xl font-bold tabular text-vela-teal">{streams.length}</p>
-              <p className="text-xs text-zinc-500 mt-1">Income Streams</p>
+              <p className="text-xs text-vela-muted mt-1">Income Streams</p>
             </div>
           </div>
 
@@ -285,9 +285,9 @@ export default function IncomePage() {
                         <h3 className="text-sm font-medium text-zinc-100">{stream.label}</h3>
                         <div className="text-right">
                           <p className="text-sm font-semibold tabular text-zinc-100">
-                            {formatCurrency(stream.monthly)}<span className="text-zinc-500 text-xs">/mo</span>
+                            {formatCurrency(stream.monthly)}<span className="text-vela-muted text-xs">/mo</span>
                           </p>
-                          <p className="text-[10px] text-zinc-500 tabular">{formatCompact(stream.annual)}/yr</p>
+                          <p className="text-[10px] text-vela-muted tabular">{formatCompact(stream.annual)}/yr</p>
                         </div>
                       </div>
 
@@ -299,7 +299,7 @@ export default function IncomePage() {
                             style={{ width: `${pct}%`, backgroundColor: stream.color }}
                           />
                         </div>
-                        <span className="text-[10px] text-zinc-500 tabular w-10 text-right">
+                        <span className="text-[10px] text-vela-muted tabular w-10 text-right">
                           {pct.toFixed(0)}%
                         </span>
                       </div>
@@ -308,12 +308,12 @@ export default function IncomePage() {
                       {stream.items.length > 1 && (
                         <div className="mt-2 flex flex-wrap gap-x-4 gap-y-0.5">
                           {stream.items.slice(0, 6).map((item) => (
-                            <span key={item.name} className="text-[10px] text-zinc-500">
+                            <span key={item.name} className="text-[10px] text-vela-muted">
                               {item.name}: <span className="text-zinc-400 tabular">{formatCurrency(item.amount)}/mo</span>
                             </span>
                           ))}
                           {stream.items.length > 6 && (
-                            <span className="text-[10px] text-zinc-600">+{stream.items.length - 6} more</span>
+                            <span className="text-[10px] text-vela-muted">+{stream.items.length - 6} more</span>
                           )}
                         </div>
                       )}
@@ -345,7 +345,7 @@ export default function IncomePage() {
 
       {/* Disclaimer */}
       <div className="text-center pt-4 pb-8 border-t border-zinc-800">
-        <p className="text-xs text-zinc-600">
+        <p className="text-xs text-vela-muted">
           Income figures are based on your Cash Flow entries and current dividend rates. Actual income may vary.
         </p>
       </div>
