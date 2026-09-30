@@ -105,14 +105,6 @@
   .stagger-7 { animation-delay: 0.35s; }
   .stagger-8 { animation-delay: 0.4s; }
 
-  /* Recharts paints the legend LABEL with its series colour, so a dark entry
-     in the categorical ramp (e.g. vela-teal-dim) renders as 3.89:1 text. The
-     design system requires an explicit colour on every chart label rather than
-     a charting-lib default — the swatch still carries the series identity. */
-  .recharts-legend-item-text {
-    color: theme('colors.vela.muted') !important;
-  }
-
   /* ── Colored change pills — reusable across all pages ────────── */
   .change-pill {
     @apply inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded tabular;
@@ -268,4 +260,19 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .atmospheric-bg::before { animation: none; }
+}
+
+/* ── Chart library overrides ──────────────────────────────────────────────
+   Plain CSS, deliberately OUTSIDE @layer components: Tailwind purges layer
+   rules whose selector never appears in the source, and recharts only creates
+   these class names at runtime — so a copy of this inside the layer is
+   silently dropped from the build. (Same failure as runtime-assembled class
+   names: the scanner cannot see it, so no CSS is emitted.)
+
+   Recharts paints the legend label with its series colour, which put
+   vela-teal-dim into 12px text at 3.89:1 on /compare. design-system §2
+   requires an explicit colour on every chart label rather than a lib default;
+   the swatch still carries the series identity. */
+.recharts-legend-item-text {
+  color: #8A97AC !important; /* vela-muted — 6.6:1 on vela-bg */
 }
