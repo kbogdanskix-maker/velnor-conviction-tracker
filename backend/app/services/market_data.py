@@ -972,11 +972,15 @@ async def get_correlation_data(tickers: list[str], period: str = "1y") -> dict:
     return result
 
 
+OPTIONS_TTL = 900        # a real chain — 15 minutes
+OPTIONS_EMPTY_TTL = 60   # an empty one, which may be a silent refusal
+
+
 async def get_options_chain(ticker: str) -> dict:
     """
     Options chain from yfinance.
     Returns calls and puts for the nearest expiry dates.
-    Cached 15 minutes.
+    Cached 15 minutes, or 1 minute when the chain comes back empty.
     """
     cache_key = f"options:{ticker}"
     cached = await cache_get(cache_key)
@@ -1015,8 +1019,26 @@ async def get_options_chain(ticker: str) -> dict:
             return {"ticker": ticker, "expiries": expiries, "chains": chain_data, "currentPrice": price}
         except Exception as e:
             logger.error("Options chain fetch failed for %s: %s", ticker, e)
-            return {"ticker": ticker, "expiries": [], "chains": {}, "currentPrice": 0}
+            # Served so the tab can say "no options data", but flagged so it is
+            # not cached — see the caching decision below.
+            return {"ticker": ticker, "expiries": [], "chains": {}, "currentPrice": 0, "_failed": True}
 
     result = await asyncio.to_thread(_sync_options, ticker)
-    await cache_set(cache_key, result, ttl=900)
+
+    # Never cache a raised failure: the empty chain we answer with is
+    # indistinguishable from a security that has no listed options, so holding
+    # it would keep "not loading" in front of the user long after it cleared.
+    if result.pop("_failed", False):
+        logger.warning("Not caching the empty options chain for %s; next request retries.", ticker)
+        return result
+
+    # An empty chain that did NOT raise is the ambiguous case. `t.options`
+    # returns () both for a nonsense symbol and for a refused crumb handshake —
+    # empty rather than erroring, the failure mode `bd78e61` was about. Since we
+    # cannot tell them apart, hold it briefly: a security genuinely without
+    # options costs one fetch a minute, and a refused real one recovers in a
+    # minute rather than a quarter of an hour.
+    ttl = OPTIONS_TTL if result["expiries"] else OPTIONS_EMPTY_TTL
+    await cache_set(cache_key, result, ttl=ttl)
+
     return result
