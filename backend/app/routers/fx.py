@@ -9,6 +9,7 @@ from app.models.db import User
 from app.core.cache import cache_get, cache_set
 import asyncio
 import yfinance as yf
+from app.services import yf_session as _yfs
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/fx")
@@ -33,7 +34,7 @@ def _fetch_rates_sync() -> dict[str, float]:
     rates: dict[str, float] = {"USD": 1.0}
 
     try:
-        tickers = yf.Tickers(" ".join(pairs))
+        tickers = _yfs.tickers(" ".join(pairs))
         for pair in pairs:
             code = pair.replace("USD=X", "")
             try:

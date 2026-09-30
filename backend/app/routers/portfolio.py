@@ -58,14 +58,14 @@ async def get_expense_ratios(
     Returns a dict of {ticker: ratio} where ratio is 0-1 (e.g. 0.0075 = 0.75%).
     Returns null for individual stocks or unknown tickers.
     """
-    import yfinance as yf
+    from app.services import yf_session as _yfs
     import asyncio
 
     ticker_list = [t.strip().upper() for t in tickers.split(",") if t.strip()][:20]
 
     def _fetch_one(ticker: str) -> tuple[str, float | None]:
         try:
-            info = yf.Ticker(ticker).info
+            info = _yfs.ticker(ticker).info
             raw = info.get("netExpenseRatio")
             if raw is not None:
                 # yfinance returns as percentage (e.g. 0.75 means 0.75%), convert to 0-1

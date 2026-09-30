@@ -18,6 +18,7 @@ import yfinance as yf
 _NEWS_USER_AGENT = "Mozilla/5.0 (compatible; Velnor/1.0)"
 
 from app.core.cache import cache_get, cache_set
+from app.services import yf_session as _yfs
 
 logger = logging.getLogger(__name__)
 
@@ -77,7 +78,7 @@ async def _fetch_quotes_yfinance(tickers: list[str]) -> dict[str, dict]:
             # yfinance batch download — official closing prices are more accurate
             # than fast_info for change calculations
             single = len(tickers) == 1
-            data = yf.download(
+            data = _yfs.download(
                 tickers,
                 period="5d",
                 interval="1d",
@@ -109,7 +110,7 @@ async def _fetch_quotes_yfinance(tickers: list[str]) -> dict[str, dict]:
                             price = round(float(closes.iloc[-1]), 4)
 
                     # Fallback to fast_info if download didn't give us data
-                    info = yf.Ticker(ticker).fast_info
+                    info = _yfs.ticker(ticker).fast_info
                     if price is None:
                         price = round(float(info.last_price or 0), 4)
                     if prev_close is None:
@@ -155,7 +156,7 @@ async def get_historical_prices(
 
     def _sync_fetch():
         try:
-            t = yf.Ticker(ticker)
+            t = _yfs.ticker(ticker)
             hist = t.history(period=period, interval=interval, auto_adjust=True)
             rows = []
             for dt, row in hist.iterrows():
@@ -194,7 +195,7 @@ async def get_price_on_date(ticker: str, target_date: "date") -> float | None:
 
     def _sync_fetch():
         try:
-            t = yf.Ticker(ticker)
+            t = _yfs.ticker(ticker)
             # Fetch a small window around the target date to handle weekends/holidays
             start = target_date - timedelta(days=5)
             end = target_date + timedelta(days=1)
@@ -278,7 +279,7 @@ async def get_ticker_info(ticker: str) -> dict[str, Any] | None:
 
     def _sync_fetch() -> dict[str, Any] | None:
         try:
-            t = yf.Ticker(ticker)
+            t = _yfs.ticker(ticker)
             raw = t.info
             if not raw or not raw.get("longName"):
                 return None
@@ -380,7 +381,7 @@ async def get_dcf_fundamentals(ticker: str) -> dict[str, Any] | None:
 
     def _sync_fetch() -> dict[str, Any] | None:
         try:
-            t = yf.Ticker(ticker)
+            t = _yfs.ticker(ticker)
             raw = t.info
             if not raw or not raw.get("longName"):
                 return None
@@ -590,7 +591,7 @@ async def get_financials(ticker: str) -> dict[str, Any] | None:
 
     def _sync_fetch() -> dict[str, Any] | None:
         try:
-            t = yf.Ticker(ticker)
+            t = _yfs.ticker(ticker)
             # quoteType lets us classify an empty result: non-equity
             # instruments genuinely have no statements, whereas an equity
             # returning nothing almost always means the source was throttled.
@@ -646,7 +647,7 @@ async def get_company_management(ticker: str) -> dict[str, Any] | None:
 
     def _sync_fetch() -> dict[str, Any] | None:
         try:
-            raw = yf.Ticker(ticker).info
+            raw = _yfs.ticker(ticker).info
             if not raw or not raw.get("longName"):
                 # No identity for a real lookup → upstream empty/rate-limited.
                 raise MarketDataUnavailable(f"No company info returned for {ticker}")
@@ -736,7 +737,7 @@ async def get_insider_activity(ticker: str) -> dict[str, Any] | None:
 
     def _sync_fetch() -> dict[str, Any] | None:
         try:
-            t = yf.Ticker(ticker)
+            t = _yfs.ticker(ticker)
 
             # 6-month summary
             summary = None
@@ -907,7 +908,7 @@ async def get_correlation_data(tickers: list[str], period: str = "1y") -> dict:
     def _sync_compute() -> dict:
         import math
         try:
-            data = yf.download(sorted_tickers, period=period, auto_adjust=True, progress=False)
+            data = _yfs.download(sorted_tickers, period=period, auto_adjust=True, progress=False)
             if data.empty:
                 return {"tickers": sorted_tickers, "matrix": []}
 
@@ -959,7 +960,7 @@ async def get_options_chain(ticker: str) -> dict:
 
     def _sync_options(ticker: str) -> dict:
         try:
-            t = yf.Ticker(ticker)
+            t = _yfs.ticker(ticker)
             expiries = list(t.options[:4])  # nearest 4 expiry dates
             chain_data = {}
             want_cols = ["strike", "lastPrice", "bid", "ask", "impliedVolatility", "openInterest", "volume"]

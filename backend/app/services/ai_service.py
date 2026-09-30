@@ -16,6 +16,7 @@ from anthropic import AsyncAnthropic
 
 from app.config import settings
 from app.services.market_data import get_ticker_news, cache_get, cache_set
+from app.services import yf_session as _yfs
 
 logger = logging.getLogger(__name__)
 
@@ -122,7 +123,7 @@ async def get_earnings_raw_data(ticker: str) -> dict:
     def _sync_fetch() -> dict:
         data: dict = {}
         try:
-            t = yf.Ticker(ticker)
+            t = _yfs.ticker(ticker)
             info = t.info or {}
             # Yahoo soft rate-limit returns {} — treat as a failed fetch so we
             # never cache a degenerate all-None payload for 6h (poisons the
