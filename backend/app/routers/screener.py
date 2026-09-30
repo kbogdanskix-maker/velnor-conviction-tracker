@@ -449,6 +449,19 @@ async def _warm_screener_cache():
         _warming = False
 
 
+async def warm_screener_cache() -> None:
+    """Public entrypoint for the daily cron machine (scripts/warm_screener_cache).
+
+    The in-request warm below is a FastAPI BackgroundTask, so it dies with the
+    machine on every deploy and only restarts when somebody happens to open the
+    screener. Until then `/screener` serves whatever partial set is still in
+    Redis and presents it as the whole market — which is exactly how the
+    universe silently decayed to 1691 of 5692 tickers, missing 18 of the 20
+    largest US companies. A scheduled run makes that self-healing.
+    """
+    await _warm_screener_cache()
+
+
 async def _build_and_cache_result():
     """Build the full screener response from individually cached ticker info."""
     all_results: list[dict] = []
