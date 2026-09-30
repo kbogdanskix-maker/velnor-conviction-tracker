@@ -18,10 +18,32 @@ logger = logging.getLogger(__name__)
 
 # ── Database ──────────────────────────────────────────────────────────────────
 
+# We connect through Supabase's **session-mode** pooler (port 5432), which caps
+# the whole project at 15 clients:
+#
+#   asyncpg.exceptions.InternalServerError:
+#   (EMAXCONNSESSION) max clients reached in session mode
+#   - max clients are limited to pool_size: 15
+#
+# pool_size=10 + max_overflow=20 let this one process ask for 30 — twice the
+# ceiling — so under concurrency the pooler starts refusing and requests 500
+# instead of queueing. Hit while driving ~59 pages from a single browser, which
+# is less load than a link doing the rounds.
+#
+# 10 total leaves headroom inside the 15 for the cron machines (purge_demo_users
+# touches the DB) and for a one-off script or an `fly ssh` session. pool_timeout
+# makes a request that cannot get a connection fail in 10s rather than hang.
+#
+# To raise this ceiling properly, move to the **transaction-mode** pooler
+# (port 6543), which allows far more clients — that needs asyncpg's prepared
+# statements disabled (`statement_cache_size=0`), so it wants a deliberate
+# change and a load test, not a launch-day edit.
 engine = create_async_engine(
     settings.DATABASE_URL,
-    pool_size=10,
-    max_overflow=20,
+    pool_size=5,
+    max_overflow=5,
+    pool_timeout=10,
+    pool_recycle=1800,
     pool_pre_ping=True,
     echo=settings.DEBUG,
 )
