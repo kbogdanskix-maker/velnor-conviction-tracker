@@ -795,7 +795,15 @@ async def get_insider_activity(ticker: str) -> dict[str, Any] | None:
             # company genuinely has no recent filings in the window.
             if summary_err and txns_err:
                 raise MarketDataUnavailable(f"Insider data sources unavailable for {ticker}")
-            return {"ticker": ticker, "summary": summary, "transactions": txns}
+            return {
+                "ticker": ticker,
+                "summary": summary,
+                "transactions": txns,
+                # True when one of the two sources failed. The result is still
+                # worth serving, but it must not be cached as if complete —
+                # see the caching decision below.
+                "_partial": summary_err or txns_err,
+            }
         except MarketDataUnavailable:
             raise
         except Exception as e:
@@ -803,8 +811,21 @@ async def get_insider_activity(ticker: str) -> dict[str, Any] | None:
             raise MarketDataUnavailable(str(e)) from e
 
     data = await asyncio.to_thread(_sync_fetch)
-    if data is not None:
+    if data is None:
+        return None
+
+    # Only cache a complete result. When just one source failed we still answer
+    # with what we have, but caching it would pin the gap in place for 12 hours
+    # — long after the transient cause cleared — and the response looks
+    # identical to a company that genuinely has no filings, so nothing would
+    # ever reveal the omission.
+    partial = data.pop("_partial", False)
+    if not partial:
         await cache_set(cache_key, data, ttl=43200)  # 12h
+    else:
+        logger.warning(
+            "Insider data for %s is partial (one source failed); not caching.", ticker
+        )
     return data
 
 
