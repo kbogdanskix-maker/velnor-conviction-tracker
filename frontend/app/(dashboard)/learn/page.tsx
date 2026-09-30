@@ -227,7 +227,7 @@ function PlaybookDetail({ item }: { item: Playbook }) {
               {step.tip && (
                 <div className="flex items-start gap-2.5 bg-amber-500/8 border border-amber-500/20 rounded-lg px-3 py-2.5 mb-3">
                   <Lightbulb className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
-                  <p className="text-xs text-amber-300/80 leading-relaxed">{step.tip}</p>
+                  <p className="text-xs text-amber-300 leading-relaxed">{step.tip}</p>
                 </div>
               )}
 
@@ -419,7 +419,7 @@ function PositionFromLossTool() {
           <ToolResult label="Max position size" value={fmt(posSize)} highlight sub="= max loss ÷ exit drawdown %" />
           {pv > 0 && <ToolResult label="As % of portfolio" value={`${posPct.toFixed(1)}%`} />}
           {posPct > 20 && (
-            <p className="text-[11px] text-orange-400/80 mt-2">
+            <p className="text-[11px] text-orange-400 mt-2">
               This sizing puts over 20% of the portfolio into one position.
             </p>
           )}
@@ -925,7 +925,7 @@ export default function LearnPage() {
           </div>
           <div className="flex items-center gap-3 text-xs text-vela-muted">
             <span className="flex items-center gap-1.5">
-              <Zap className="w-3 h-3 text-teal-500/60" />
+              <Zap className="w-3 h-3 text-vela-teal" />
               {playbookCount} playbooks
             </span>
             <span className="text-vela-subtle">·</span>

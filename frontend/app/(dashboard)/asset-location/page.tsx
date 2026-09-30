@@ -313,7 +313,7 @@ export default function AssetLocationPage() {
                             </div>
                             <p className="text-[11px] text-vela-muted mt-0.5 leading-relaxed">{c.description}</p>
                             {c.taxEfficiency === "tax-inefficient" && c.estimatedYield && (
-                              <p className="text-[10px] text-amber-500/80 mt-1">
+                              <p className="text-[10px] text-amber-500 mt-1">
                                 est. ~${Math.round(taxDragEstimate(c.marketValue, c.estimatedYield, profile.marginalTaxRate / 100)).toLocaleString()}/yr tax drag if held in taxable
                               </p>
                             )}

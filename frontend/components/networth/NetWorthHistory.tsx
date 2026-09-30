@@ -586,7 +586,7 @@ export default function NetWorthHistory() {
                                 <span className="text-[10px] text-vela-muted italic">{snap.note}</span>
                               )}
                               {snap.note === "Auto-snapshot" && (
-                                <span className="text-[10px] text-teal-500/60">auto</span>
+                                <span className="text-[10px] text-vela-teal">auto</span>
                               )}
                             </div>
                             <div className="flex items-center gap-3 mt-1">

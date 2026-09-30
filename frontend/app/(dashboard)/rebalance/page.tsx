@@ -272,7 +272,7 @@ export default function RebalancePage() {
               })}
             </div>
             {Math.abs(rawInputSum - 100) >= 1 && (
-              <p className="mt-3 font-mono text-[11px] text-amber-400/80">
+              <p className="mt-3 font-mono text-[11px] text-amber-400">
                 Inputs do not sum to 100%. The teal figure is the effective target after normalization.
               </p>
             )}

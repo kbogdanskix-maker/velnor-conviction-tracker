@@ -105,6 +105,14 @@
   .stagger-7 { animation-delay: 0.35s; }
   .stagger-8 { animation-delay: 0.4s; }
 
+  /* Recharts paints the legend LABEL with its series colour, so a dark entry
+     in the categorical ramp (e.g. vela-teal-dim) renders as 3.89:1 text. The
+     design system requires an explicit colour on every chart label rather than
+     a charting-lib default — the swatch still carries the series identity. */
+  .recharts-legend-item-text {
+    color: theme('colors.vela.muted') !important;
+  }
+
   /* ── Colored change pills — reusable across all pages ────────── */
   .change-pill {
     @apply inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded tabular;

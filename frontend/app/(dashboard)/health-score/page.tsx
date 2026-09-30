@@ -491,7 +491,7 @@ export default function HealthScorePage() {
         <p className="text-sm text-vela-muted mt-0.5">
           A holistic assessment of your financial well-being across 5 dimensions
           {goalContext && goals && goals.length > 0 && (
-            <span className="text-[11px] text-teal-500/80 font-medium">
+            <span className="text-[11px] text-vela-teal font-medium">
               , weights adjusted for your {goalContext.hasRetirement ? "retirement" : goalContext.hasHouseOrDebt ? "home/debt" : goalContext.horizon + "-term"} goals
             </span>
           )}
@@ -542,7 +542,7 @@ export default function HealthScorePage() {
                     <d.icon className={`w-4 h-4 ${GRADE_COLORS[d.grade]}`} />
                     <span className="text-sm font-medium text-zinc-200">{d.label}</span>
                     {weights[d.key as keyof typeof weights] !== 20 && (
-                      <span className="text-[9px] font-semibold text-teal-500/70 bg-teal-500/10 px-1.5 py-0.5 rounded">
+                      <span className="text-[9px] font-semibold text-vela-teal bg-teal-500/10 px-1.5 py-0.5 rounded">
                         {weights[d.key as keyof typeof weights]}%
                       </span>
                     )}
