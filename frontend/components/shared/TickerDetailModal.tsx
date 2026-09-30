@@ -9,6 +9,7 @@ import {
 import { useTickerInfo } from "@/hooks/useTickerInfo";
 import { useOptionsChain } from "@/hooks/useOptions";
 import type { OptionContract, OptionsChain } from "@/hooks/useOptions";
+import { computeOptionsStats, type OptionsStats } from "@/lib/options-stats";
 import { formatCurrency, formatPercent, formatNumber } from "@/lib/formatters";
 
 interface Props {
@@ -215,6 +216,16 @@ function OptionsTab({ ticker }: { ticker: string }) {
   const [selectedExpiry, setSelectedExpiry] = useState<string | null>(null);
   const [showPro, setShowPro] = useState(false);
 
+  const activeExpiry = selectedExpiry || chain?.expiries?.[0] || null;
+
+  // Computed once here and passed down, so the whole tab agrees on whether open
+  // interest was published for this expiry and says so in exactly one place.
+  const stats = useMemo(() => {
+    if (!chain || !activeExpiry) return null;
+    const rows = chain.chains[activeExpiry];
+    return computeOptionsStats(rows?.calls || [], rows?.puts || [], chain.currentPrice);
+  }, [chain, activeExpiry]);
+
   if (isLoading) {
     return (
       <div className="p-5 space-y-3">
@@ -243,7 +254,7 @@ function OptionsTab({ ticker }: { ticker: string }) {
     );
   }
 
-  const expiry = selectedExpiry || chain.expiries[0];
+  const expiry = activeExpiry || chain.expiries[0];
 
   return (
     <div className="p-5 space-y-5">
@@ -278,10 +289,14 @@ function OptionsTab({ ticker }: { ticker: string }) {
       <ImpliedRangeBar chain={chain} expiry={expiry} />
 
       {/* Key metrics row */}
-      <OptionsMetrics chain={chain} expiry={expiry} />
+      <OptionsMetrics stats={stats} />
 
-      {/* OI by Strike Chart  - main chart */}
-      <OptionsOIChart chain={chain} expiry={expiry} />
+      {/* OI by Strike Chart  - main chart. Open interest is settlement-derived and
+          comes back as 0 on every contract until it is republished; say that
+          instead of drawing an empty axis. */}
+      {stats?.hasOpenInterest
+        ? <OptionsOIChart chain={chain} expiry={expiry} />
+        : <OpenInterestPending />}
 
       {/* Pro section  - IV skew + raw chain */}
       <div className="border-t border-vela-border pt-4">
@@ -374,68 +389,73 @@ function ImpliedRangeBar({ chain, expiry }: { chain: OptionsChain; expiry: strin
 
 // ── Options Key Metrics ──────────────────────────────────────────────────
 
-function OptionsMetrics({ chain, expiry }: { chain: OptionsChain; expiry: string }) {
-  const stats = useMemo(() => {
-    const calls = chain.chains[expiry]?.calls || [];
-    const puts = chain.chains[expiry]?.puts || [];
-    const price = chain.currentPrice;
-    if (!price || price === 0) return null;
-
-    const totalCallOI = calls.reduce((s, c) => s + (c.openInterest || 0), 0);
-    const totalPutOI = puts.reduce((s, p) => s + (p.openInterest || 0), 0);
-    const totalOI = totalCallOI + totalPutOI;
-
-    // Max pain  - only meaningful when there's OI data
-    let maxPainStrike = price;
-    if (totalOI > 0) {
-      const strikeSet = new Set(Array.from(calls.map(c => c.strike)).concat(puts.map(p => p.strike)));
-      const strikes = Array.from(strikeSet).sort((a, b) => a - b);
-      let minPain = Infinity;
-      for (const s of strikes) {
-        let pain = 0;
-        for (const c of calls) {
-          if (s > c.strike) pain += (s - c.strike) * (c.openInterest || 0);
-        }
-        for (const p of puts) {
-          if (s < p.strike) pain += (p.strike - s) * (p.openInterest || 0);
-        }
-        if (pain < minPain) { minPain = pain; maxPainStrike = s; }
-      }
-    }
-
-    const pcRatio = totalCallOI > 0 ? totalPutOI / totalCallOI : null;
-    const totalVol = calls.reduce((s, c) => s + (c.volume || 0), 0) + puts.reduce((s, p) => s + (p.volume || 0), 0);
-
-    return { maxPainStrike, pcRatio, totalVol, totalCallOI, totalPutOI, totalOI, price };
-  }, [chain, expiry]);
-
+function OptionsMetrics({ stats }: { stats: OptionsStats | null }) {
   if (!stats) return null;
 
-  const sentimentLabel = stats.pcRatio == null ? "No OI data" : stats.pcRatio > 1.2 ? "Bearish" : stats.pcRatio > 0.8 ? "Neutral" : "Bullish";
-  const sentimentColor = stats.pcRatio == null ? "text-vela-muted" : stats.pcRatio > 1.2 ? "text-loss" : stats.pcRatio > 0.8 ? "text-zinc-400" : "text-gain";
+  const { maxPainStrike, pcRatio, price, totalVolume } = stats;
 
-  return (
-    <div className="grid grid-cols-3 gap-2">
+  // Only the figures that were actually measured get a box. A missing reading is
+  // withheld and explained by <OpenInterestPending />, never printed as "-"
+  // beside a real one — that is what made the tab look broken.
+  const boxes = [];
+
+  if (maxPainStrike != null) {
+    boxes.push(
       <MetricBox
+        key="maxpain"
         label="Max Pain"
-        value={stats.totalOI > 0 ? `$${stats.maxPainStrike.toFixed(0)}` : " -"}
-        sub={stats.totalOI > 0
-          ? stats.maxPainStrike > stats.price
-            ? `${((stats.maxPainStrike / stats.price - 1) * 100).toFixed(1)}% above spot`
-            : `${((1 - stats.maxPainStrike / stats.price) * 100).toFixed(1)}% below spot`
-          : "Insufficient OI"}
-      />
+        value={`$${maxPainStrike.toFixed(0)}`}
+        sub={maxPainStrike > price
+          ? `${((maxPainStrike / price - 1) * 100).toFixed(1)}% above spot`
+          : `${((1 - maxPainStrike / price) * 100).toFixed(1)}% below spot`}
+      />,
+    );
+  }
+
+  if (pcRatio != null) {
+    boxes.push(
       <MetricBox
+        key="pc"
         label="Put/Call OI"
-        value={stats.pcRatio != null ? stats.pcRatio.toFixed(2) : " -"}
-        sub={sentimentLabel}
-        subColor={sentimentColor}
-      />
-      <MetricBox
-        label="Volume"
-        value={stats.totalVol >= 1000 ? `${(stats.totalVol / 1000).toFixed(1)}k` : stats.totalVol.toLocaleString()}
-        sub="contracts today"
-      />
+        value={pcRatio.toFixed(2)}
+        sub={pcRatio > 1.2 ? "Bearish" : pcRatio > 0.8 ? "Neutral" : "Bullish"}
+        subColor={pcRatio > 1.2 ? "text-loss" : pcRatio > 0.8 ? "text-vela-body" : "text-gain"}
+      />,
+    );
+  }
+
+  boxes.push(
+    <MetricBox
+      key="vol"
+      label="Volume"
+      value={totalVolume >= 1000 ? `${(totalVolume / 1000).toFixed(1)}k` : totalVolume.toLocaleString()}
+      sub="contracts today"
+    />,
+  );
+
+  // Written out rather than assembled, or Tailwind purges the class it never saw.
+  const cols = boxes.length === 3 ? "grid-cols-3" : boxes.length === 2 ? "grid-cols-2" : "grid-cols-1";
+
+  return <div className={`grid ${cols} gap-2`}>{boxes}</div>;
+}
+
+/**
+ * Shown when the chain carries no open interest at all. Exchanges publish OI
+ * after settlement, so Yahoo serves it as 0 on every contract for part of the
+ * cycle while volume on those same rows is live. Saying so is the honest
+ * reading; an empty chart and two "-" boxes read as a failure in our app.
+ */
+function OpenInterestPending() {
+  return (
+    <div className="rounded-md border border-vela-border bg-vela-card px-4 py-3">
+      <p className="font-mono text-[10px] uppercase tracking-wider text-vela-muted">
+        Open interest
+      </p>
+      <p className="mt-1.5 text-xs text-vela-body">
+        Not published for this expiry yet. Exchanges report open interest after settlement, so
+        Max Pain, Put/Call and the strike distribution are unavailable until the next update.
+        Volume and pricing above are live.
+      </p>
     </div>
   );
 }
@@ -483,6 +503,9 @@ function OptionsOIChart({ chain, expiry }: { chain: OptionsChain; expiry: string
   }, [chain, expiry]);
 
   if (chartData.length === 0) return null;
+  // Belt and braces: the tab already withholds this chart when OI is unpublished,
+  // but an all-zero series would draw a bare axis, so never render one.
+  if (!chartData.some(d => d.callOI > 0 || d.putOI > 0)) return null;
 
   const price = chain.currentPrice || 0;
 
