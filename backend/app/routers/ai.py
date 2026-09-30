@@ -474,15 +474,22 @@ def _feature_limits() -> dict[str, int]:
         "alert_insight": settings.ALERT_INSIGHTS_PER_DAY,
     }
 
-_FEATURE_LABELS = {
-    "reflect_open": "Reflect conversations",
-    "reflect": "Reflect answers",
-    "earnings": "earnings analyses",
-    "learn": "Learn analyses",
-    "thesis_review": "thesis reviews",
-    "valuation": "valuation coachings",
-    "alert_insight": "alert insights",
+# (singular, plural) — several of these allowances are 1, and "today's 1
+# Reflect conversations" reads like a bug to the person who hit it.
+_FEATURE_LABELS: dict[str, tuple[str, str]] = {
+    "reflect_open": ("Reflect conversation", "Reflect conversations"),
+    "reflect": ("Reflect answer", "Reflect answers"),
+    "earnings": ("earnings analysis", "earnings analyses"),
+    "learn": ("Learn analysis", "Learn analyses"),
+    "thesis_review": ("thesis review", "thesis reviews"),
+    "valuation": ("valuation coaching", "valuation coachings"),
+    "alert_insight": ("alert insight", "alert insights"),
 }
+
+
+def _feature_label(feature: str, count: int) -> str:
+    singular, plural = _FEATURE_LABELS.get(feature, (feature, feature))
+    return singular if count == 1 else plural
 
 
 async def _enforce_feature_quota(user: User, features: tuple[str, ...]) -> None:
@@ -500,7 +507,7 @@ async def _enforce_feature_quota(user: User, features: tuple[str, ...]) -> None:
             continue
         used = await peek_budget(user_feature_counter(feature, user.id))
         if used >= limit:
-            label = _FEATURE_LABELS.get(feature, feature)
+            label = _feature_label(feature, limit)
             raise HTTPException(
                 status_code=429,
                 detail=(
@@ -519,7 +526,7 @@ async def _enforce_feature_quota(user: User, features: tuple[str, ...]) -> None:
         if limit is None:
             continue
         if not await consume_user_feature_budget(feature, user.id, limit):
-            label = _FEATURE_LABELS.get(feature, feature)
+            label = _feature_label(feature, 2)  # always plural in this phrasing
             raise HTTPException(
                 status_code=429,
                 detail=f"Today's {label} are unavailable right now. Try again shortly.",

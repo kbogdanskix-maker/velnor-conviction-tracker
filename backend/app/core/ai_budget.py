@@ -90,14 +90,20 @@ def user_feature_counter(feature: str, user_id: object) -> str:
     return f"ai:feature:{feature}:{user_id}:{_today()}"
 
 
-async def consume_user_feature_budget(feature: str, user_id: object, limit: int) -> bool:
+async def consume_user_feature_budget(
+    feature: str, user_id: object, limit: int, key: str | None = None
+) -> bool:
     """Claim one unit of a user's daily allowance for `feature`.
 
     Fails CLOSED on a Redis error, like the global ceiling above and unlike the
     shared per-user `insight_limit` counter — these per-feature caps exist to
     keep one visitor from draining a small prepaid credit balance, which is the
     same financial-liability argument the module docstring makes.
+
+    `key` overrides the derived counter name, as on the budget functions above,
+    so tests can write under the `test:` prefix their fixture purges instead of
+    leaving real dated counters behind in a shared Redis.
     """
     return await _consume_budget(
-        "ai:feature", limit, user_feature_counter(feature, user_id)
+        "ai:feature", limit, key or user_feature_counter(feature, user_id)
     )
