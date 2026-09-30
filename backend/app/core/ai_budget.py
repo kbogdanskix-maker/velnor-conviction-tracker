@@ -70,3 +70,34 @@ async def consume_deep_dive_budget(limit: int, key: str | None = None) -> bool:
     so the cheapest correct policy is one run a day for whoever asks first.
     """
     return await _consume_budget(DEEP_DIVE_KEY_PREFIX, limit, key)
+
+
+async def peek_budget(counter: str) -> int:
+    """Current value of a budget counter, without consuming anything.
+
+    Used to check several counters before spending any of them: a Reflect
+    opening consumes both the per-day chat counter and an answer counter, and
+    burning the chat when the answers are already exhausted would cost the user
+    their one conversation for nothing.
+    """
+    from app.core.cache import rate_limit_get
+
+    return await rate_limit_get(counter)
+
+
+def user_feature_counter(feature: str, user_id: object) -> str:
+    """Counter name for one user's daily allowance of one AI feature."""
+    return f"ai:feature:{feature}:{user_id}:{_today()}"
+
+
+async def consume_user_feature_budget(feature: str, user_id: object, limit: int) -> bool:
+    """Claim one unit of a user's daily allowance for `feature`.
+
+    Fails CLOSED on a Redis error, like the global ceiling above and unlike the
+    shared per-user `insight_limit` counter — these per-feature caps exist to
+    keep one visitor from draining a small prepaid credit balance, which is the
+    same financial-liability argument the module docstring makes.
+    """
+    return await _consume_budget(
+        "ai:feature", limit, user_feature_counter(feature, user_id)
+    )

@@ -92,8 +92,31 @@ class Settings(BaseSettings):
     # unbounded supply of fresh accounts becoming an unbounded bill. Settings
     # rather than constants so they can be raised without a redeploy.
     AI_GLOBAL_DAILY_LIMIT: int = 100
-    DEMO_USER_DAILY_AI_LIMIT: int = 5
+    # Pooled backstop across every AI endpoint. Must exceed the intended
+    # per-feature mix (5 Reflect answers + 2 earnings = 7) or it, not the
+    # per-feature caps, becomes the binding limit — while still stopping one
+    # visitor from collecting every feature's allowance in a single day.
+    DEMO_USER_DAILY_AI_LIMIT: int = 8
     DEEP_DIVE_GLOBAL_DAILY_LIMIT: int = 1
+
+    # Per-feature, per-user daily allowances.
+    #
+    # DEMO_USER_DAILY_AI_LIMIT alone is one pooled counter across every AI
+    # endpoint, so a single visitor could spend their whole allowance on the
+    # most expensive surface and leave nothing for the rest. These split that
+    # allowance per feature, so one person gets a fair taste of each and the
+    # prepaid credit balance stretches across many more visitors.
+    #
+    # Reflect is the costly one — Sonnet 5 at $2/$10 per MTok, versus Haiku 4.5
+    # at $1/$5 for earnings, learn and alert insights — so it gets the tightest
+    # shape: one conversation a day, five answers inside it.
+    REFLECT_CHATS_PER_DAY: int = 1
+    REFLECT_ANSWERS_PER_DAY: int = 5
+    EARNINGS_ANALYSES_PER_DAY: int = 2
+    LEARN_ANALYSES_PER_DAY: int = 2
+    THESIS_REVIEWS_PER_DAY: int = 2
+    VALUATIONS_PER_DAY: int = 2
+    ALERT_INSIGHTS_PER_DAY: int = 3
 
     STRIPE_VOYAGER_PRICE_ID: str = "price_voyager"
     STRIPE_NAVIGATOR_PRICE_ID: str = "price_navigator"

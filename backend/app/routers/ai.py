@@ -12,7 +12,12 @@ from datetime import date
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from app.core.cache import rate_limit_increment, rate_limit_get
-from app.core.ai_budget import consume_global_ai_budget
+from app.core.ai_budget import (
+    consume_global_ai_budget,
+    consume_user_feature_budget,
+    peek_budget,
+    user_feature_counter,
+)
 from app.config import settings
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -36,7 +41,7 @@ async def earnings_summary(
     user: User = Depends(get_current_user),
 ):
     """Stream an AI-generated earnings intelligence briefing for a stock."""
-    sse_headers = await _enforce_insight_quota(user)
+    sse_headers = await _enforce_insight_quota(user, features=("earnings",))
     t = ticker.upper()
 
     return StreamingResponse(
@@ -68,7 +73,7 @@ async def learn_analysis(
     db: AsyncSession = Depends(get_db),
 ):
     """Stream a concept-applied stock analysis for the Learn section."""
-    sse_headers = await _enforce_insight_quota(user)
+    sse_headers = await _enforce_insight_quota(user, features=("learn",))
     ticker = body.ticker.upper()
 
     # Fetch ticker financial data (reuse earnings raw data)
@@ -456,7 +461,74 @@ _INSIGHT_LIMITS: dict[str, int] = {
 }
 
 
-async def _enforce_insight_quota(user: User) -> dict[str, str]:
+def _feature_limits() -> dict[str, int]:
+    """Per-feature, per-user daily allowances. Read from settings each call so
+    a limit can be raised with a Fly secret instead of a redeploy."""
+    return {
+        "reflect_open": settings.REFLECT_CHATS_PER_DAY,
+        "reflect": settings.REFLECT_ANSWERS_PER_DAY,
+        "earnings": settings.EARNINGS_ANALYSES_PER_DAY,
+        "learn": settings.LEARN_ANALYSES_PER_DAY,
+        "thesis_review": settings.THESIS_REVIEWS_PER_DAY,
+        "valuation": settings.VALUATIONS_PER_DAY,
+        "alert_insight": settings.ALERT_INSIGHTS_PER_DAY,
+    }
+
+_FEATURE_LABELS = {
+    "reflect_open": "Reflect conversations",
+    "reflect": "Reflect answers",
+    "earnings": "earnings analyses",
+    "learn": "Learn analyses",
+    "thesis_review": "thesis reviews",
+    "valuation": "valuation coachings",
+    "alert_insight": "alert insights",
+}
+
+
+async def _enforce_feature_quota(user: User, features: tuple[str, ...]) -> None:
+    """Spend one unit of each named per-feature allowance, or raise 429.
+
+    Every counter is checked before any is consumed. A Reflect opening spends
+    both "reflect_open" and "reflect"; consuming the chat and then discovering
+    the answers were gone would cost the visitor their one conversation of the
+    day and generate nothing.
+    """
+    limits = _feature_limits()
+    for feature in features:
+        limit = limits.get(feature)
+        if limit is None:
+            continue
+        used = await peek_budget(user_feature_counter(feature, user.id))
+        if used >= limit:
+            label = _FEATURE_LABELS.get(feature, feature)
+            raise HTTPException(
+                status_code=429,
+                detail=(
+                    f"You've used today's {limit} {label}. This resets at 00:00 UTC — "
+                    "the demo runs on a small prepaid balance so everyone gets a turn."
+                ),
+                headers={
+                    "X-Feature-Limit": str(limit),
+                    "X-Feature-Used": str(used),
+                    "X-Feature": feature,
+                },
+            )
+
+    for feature in features:
+        limit = limits.get(feature)
+        if limit is None:
+            continue
+        if not await consume_user_feature_budget(feature, user.id, limit):
+            label = _FEATURE_LABELS.get(feature, feature)
+            raise HTTPException(
+                status_code=429,
+                detail=f"Today's {label} are unavailable right now. Try again shortly.",
+            )
+
+
+async def _enforce_insight_quota(
+    user: User, features: tuple[str, ...] = ()
+) -> dict[str, str]:
     """
     Enforce the per-tier AI insight quota for any AI-generating endpoint.
 
@@ -488,6 +560,11 @@ async def _enforce_insight_quota(user: User) -> dict[str, str]:
             status_code=403,
             detail="AI insights are not available on the free plan. Upgrade to Voyager or Navigator.",
         )
+
+    # Per-feature allowance first: it is the narrowest gate, so a request it
+    # refuses must not have already burned a unit of the broader pooled
+    # per-user counter below, nor of the shared global ceiling.
+    await _enforce_feature_quota(user, features)
 
     sse_headers: dict[str, str] = {
         "Cache-Control": "no-cache",
@@ -534,7 +611,7 @@ async def alert_insight(
     db: AsyncSession = Depends(get_db),
 ):
     """Stream a personalised AI insight for a specific smart alert."""
-    sse_headers = await _enforce_insight_quota(user)
+    sse_headers = await _enforce_insight_quota(user, features=("alert_insight",))
 
     context = await _build_user_context(user, db)
 
@@ -577,7 +654,7 @@ async def thesis_review(
 ):
     """Stream an AI read on whether the user's own thesis for a ticker still holds,
     grounded in their thesis trail + live data."""
-    sse_headers = await _enforce_insight_quota(user)
+    sse_headers = await _enforce_insight_quota(user, features=("thesis_review",))
     tk = body.ticker.strip().upper()
 
     # The user's full thesis trail for this ticker
@@ -623,7 +700,7 @@ async def valuation_coaching(
 ):
     """Stream coaching on how to value a business: the right framework for its
     type/stage and the assumptions that matter. Not a price target."""
-    sse_headers = await _enforce_insight_quota(user)
+    sse_headers = await _enforce_insight_quota(user, features=("valuation",))
     tk = ticker.strip().upper()
     data = await ai_service.get_earnings_raw_data(tk)
     return StreamingResponse(
@@ -666,7 +743,12 @@ async def portfolio_reflect(
     # the conversational surface — the one a visitor will use most — with no
     # spend cap at all. require_tier() above is not a cap: under
     # UNLOCK_ALL_TIERS it passes for everyone.
-    sse_headers = await _enforce_insight_quota(user)
+    #
+    # Reflect is the only conversational surface and runs on Sonnet 5, the most
+    # expensive model here, so it carries two allowances: one conversation a
+    # day, and five answers within it. An opening message spends both.
+    reflect_features = ("reflect", "reflect_open") if body.is_opening else ("reflect",)
+    sse_headers = await _enforce_insight_quota(user, features=reflect_features)
 
     # ── Fetch holdings from DB ──────────────────────────────────────────────
     portfolio_result = await db.execute(
