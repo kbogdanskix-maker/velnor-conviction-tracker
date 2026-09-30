@@ -94,9 +94,18 @@ async def get_ticker_info(ticker: str, _: User = Depends(get_current_user)):
     Detailed company information — description, sector, valuation, fundamentals.
     Cached 24 hours. Used by the ticker detail modal.
     """
-    info = await market_data.get_ticker_info(ticker.upper())
+    try:
+        info = await market_data.get_ticker_info(ticker.upper())
+    except market_data.MarketDataUnavailable:
+        # Transient — distinct from a symbol the source does not cover, which
+        # returns None below and is not retryable.
+        raise HTTPException(
+            status_code=503,
+            detail=f"Company info for {ticker.upper()} couldn't be loaded right now. Try again shortly.",
+        )
     if info is None:
-        return {"ticker": ticker.upper(), "error": "Info not available"}
+        return {"ticker": ticker.upper(), "error": "not_covered",
+                "detail": "The source does not publish company information for this security."}
     return info
 
 

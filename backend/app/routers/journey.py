@@ -10,7 +10,7 @@ No new storage — this is a read-only join over existing tables + price history
 """
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select, func as sqlfunc
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -192,6 +192,19 @@ async def get_journey(
     price_line = [{"date": r["date"], "close": r["close"]} for r in (price_series or [])]
 
     state, state_colour = _journey_state(in_profit, latest_stance, holding is not None)
+
+    # Nothing of the user's touches this symbol and the market does not price it
+    # — it is not a security we can draw a journey for. Without this the endpoint
+    # answers 200 for any string at all, and the page renders a plausible-looking
+    # "watching" state for a company that does not exist.
+    if (
+        position is None
+        and not events
+        and not threads
+        and not journal
+        and current_price is None
+    ):
+        raise HTTPException(status_code=404, detail=f"No journey for {tk} — unknown symbol.")
 
     return {
         "ticker": tk,

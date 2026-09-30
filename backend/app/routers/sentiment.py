@@ -31,11 +31,15 @@ SENTIMENT_CACHE_TTL = 4 * 3600  # 4 hours
 def _score_articles(articles: list[dict]) -> dict:
     """Score a list of news articles and return aggregated sentiment."""
     if not articles:
+        # Nothing was scored, so there is no split to report. Returning
+        # neutral_pct: 100 here rendered a full "100% neutral" bar next to
+        # "0 articles scored" — a reading presented with confidence and derived
+        # from no data at all. An empty bar is the honest answer.
         return {
             "overall_score": 0,
             "bullish_pct": 0,
             "bearish_pct": 0,
-            "neutral_pct": 100,
+            "neutral_pct": 0,
             "article_count": 0,
             "headlines": [],
         }

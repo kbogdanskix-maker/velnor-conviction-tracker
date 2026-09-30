@@ -517,9 +517,18 @@ async def lookup_ticker(ticker: str, _: User = Depends(get_current_user)):
     Returns a single ScreenerStock-compatible row or 404.
     """
     t = ticker.upper().strip()
-    info = await market_data.get_ticker_info(t)
+    from fastapi import HTTPException
+
+    try:
+        info = await market_data.get_ticker_info(t)
+    except market_data.MarketDataUnavailable:
+        # We could not reach the source. Saying "not found" here would tell the
+        # user a real company does not exist.
+        raise HTTPException(
+            status_code=503,
+            detail=f"Couldn't load {t} right now — the data source is unavailable. Try again shortly.",
+        )
     if info is None:
-        from fastapi import HTTPException
         raise HTTPException(status_code=404, detail=f"Ticker {t} not found")
     quotes = await market_data.get_quotes([t], ttl=60)
     quote = quotes.get(t, {})

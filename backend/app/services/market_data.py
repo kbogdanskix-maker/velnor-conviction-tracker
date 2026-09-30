@@ -359,8 +359,12 @@ async def get_ticker_info(ticker: str) -> dict[str, Any] | None:
                 "earnings_growth": _f(raw.get("earningsGrowth")),
             }
         except Exception as e:
+            # The call itself failed (network, throttle, refused handshake).
+            # That is NOT the same as Yahoo answering "no such symbol", which
+            # returns None above — callers turn None into a 404, and a 404 tells
+            # the user a real company does not exist. Keep the two apart.
             logger.error("Ticker info fetch failed for %s: %s", ticker, e)
-            return None
+            raise MarketDataUnavailable(str(e)) from e
 
     info = await asyncio.to_thread(_sync_fetch)
     if info is not None:
