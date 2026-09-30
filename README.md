@@ -10,7 +10,7 @@ Find out how right you've actually been.
 <img src="frontend/public/velnor-banner.png" alt="Velnor" width="640">
 
 `Next.js 16` · `FastAPI` · `PostgreSQL` · `Redis` · `Claude API`
-· ~53k LOC · 22 API routers · 65 pages
+· ~53k LOC · 23 API routers · 66 pages
 
 </div>
 
@@ -96,6 +96,42 @@ It also found the root cause of the recurring issue: the prompts instructed the
 model "no em-dashes" while feeding it 24 of them in the instructions and data.
 Models imitate their context.
 
+### 4. A silent failure that looked like rate limiting and wasn't
+
+Yahoo started refusing the cookie/crumb handshake the market-data layer depends
+on. `yfinance` surfaces that as `YFRateLimitError`, so the obvious reading was
+throttling — and when it didn't clear on retry, didn't reproduce from my laptop,
+and only affected the deployed box, the next obvious reading was a datacenter-IP
+block. That conclusion pointed at a proxy or a paid data provider.
+
+It was wrong. The check is on the **TLS fingerprint**, not the IP. Holding the
+IP constant and changing only the handshake, from inside the same machine, in
+the same second:
+
+```
+requests (default TLS)        -> 429 Too Many Requests
+curl_cffi impersonate=chrome  -> 200  crumb='QWgTEWe7v7r'
+```
+
+The fix is a session that reproduces a real browser's handshake
+([`backend/app/services/yf_session.py`](backend/app/services/yf_session.py)) —
+no proxy, no vendor, no cost.
+
+What made it expensive to find is the failure *shape*. The crumb gates Yahoo's
+`quoteSummary`, so every field behind it came back **empty rather than raising**:
+company info, management, insiders, fundamentals, options, and the screener.
+Nothing errored, no alert fired, and the pages still rendered. The screener is
+assembled from per-ticker cache entries and a ticker that fails is simply
+absent — so it had quietly decayed to 1,691 of 5,692 symbols, missing 18 of the
+20 largest US companies, while still presenting itself as the whole market.
+
+Two things came out of that beyond the fix. Absence is no longer reported as
+fact — a failed lookup returns 503 instead of "Ticker TSLA not found", which had
+been telling users a real company did not exist. And the repair path itself was
+unreliable: it was a background task started by a page view, so every deploy
+killed it. It is a scheduled job now.
+
+
 ---
 
 ## Features
@@ -108,7 +144,7 @@ Models imitate their context.
 | **Closed & Lessons** | FIFO realised P&L, and what the stock did after you sold |
 | **Deep Dive** | Opus-powered research briefing with live web search and full sourcing |
 | **Reflect** | Retrospective AI that reasons about your record, not your future |
-| **Screener** | All US-listed equities (~8,000 tickers from NASDAQ/NYSE/AMEX), progressively loaded and Redis-cached |
+| **Screener** | US-listed common stock — 5,692 symbols from the NASDAQ trader directory, ~5,600 with fundamentals, progressively loaded and Redis-cached |
 | **Valuation** | DCF and reverse-DCF |
 | **The Lab** | Risk, correlation, attribution, tax, dividends, Monte Carlo, and more |
 
@@ -118,13 +154,13 @@ Models imitate their context.
 
 ```
 frontend/          Next.js 16 (App Router) · TypeScript · Tailwind
-  app/(dashboard)  65 authenticated pages
-  components/      41 components; instrument/ is the shared design kit
+  app/(dashboard)  61 authenticated pages
+  components/      42 components; instrument/ is the shared design kit
   lib/             deterministic insight engines + the enforcement tests
   proxy.ts         Next 16 middleware — auth gate + session refresh
 
 backend/           FastAPI · SQLAlchemy (async) · Alembic
-  app/routers/     22 routers
+  app/routers/     23 routers
   app/services/    market data, portfolio maths, AI, Deep Dive
   app/tasks/       Celery workers for long-running AI jobs
 
